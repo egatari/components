@@ -4,6 +4,8 @@ Versions follow [README.md § Releases and versions](README.md#releases-and-vers
 
 ## Unreleased
 
+## 1.0.2 - 2026-10-20
+
 ### Security
 
 - `m-sweep` (`f`) and `m-curves` (each series' `f`) no longer run their expressions as JavaScript (`new Function`; any code in a lesson's attribute or data ran, even in a Core document). They now use a small arithmetic parser (`tools/expr.js`, copied into both components): numbers, the component's variables, the listed `Math` functions and constants, `+ - * / % **`, comparisons, `&& || !`, `? :` and parentheses. Anything else is refused with a `SyntaxError` and the component shows its inline placeholder. Values of every expression the demos, Studio's examples and docs used are identical to v1.0.1 ([SECURITY.md](SECURITY.md), Egatari spec §6)
