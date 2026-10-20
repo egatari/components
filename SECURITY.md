@@ -32,6 +32,16 @@ Everything else is refused: other names (`fetch`, `globalThis`, `constructor`, `
 
 For every expression that the demos, Studio's examples, templates and documentation used, the values are identical (`Object.is`) to those of v1.0.1 at every sample point (`tools/test-expr.mjs`), and the rendered SVG of the demos is unchanged. Expressions outside the grammar that v1.0.1 ran as JavaScript now show the placeholder. Lessons that recorded v1.0.0 or v1.0.1 still name that version (and its `index.js` hash), and editors that keep those versions run them as before; spec §6 asks readers to treat expressions outside arithmetic as code in such documents.
 
+## Yanked versions
+
+**1.0.0 and 1.0.1 are yanked (replacement: 1.0.2).** They stay downloadable, their tags and assets are unchanged, and lessons that recorded them still name them. Since v1.0.3, `manifest.json` has a `yanked` field:
+
+```json
+"yanked": { "1.0.0": { "replacement": "1.0.2", "reason": "…", "date": "2026-10-20" }, "1.0.1": { … } }
+```
+
+The source is `yanked.json`; a version may be yanked only with a later, not yanked replacement that exists in the release that lists it. Per spec §6, an editor that finds a yanked version in a lesson should tell the user and offer a rebuild with the replacement, never replace it silently (the identity hash and the picture may change), and may play the old version only isolated from its own origin (a sandboxed frame, with no relaxed policy for the editor itself). Read the `yanked` field of the newest release's manifest. A yanked version's own `manifest.json` cannot say it is yanked, because published assets are not changed.
+
 ## Code scan
 
 `tools/scan-code.mjs` (in `npm test` and CI) fails on any `eval`, `Function` (`new Function`, `Function(…)`), `constructor` access, string or template first argument of `setTimeout` / `setInterval` / `setImmediate`, `execScript`, `import` (dynamic or static), `document.write`, `javascript:` URLs in strings, and HTML sinks (`innerHTML`, `outerHTML`, `insertAdjacentHTML`, `srcdoc`, `createContextualFragment`, `DOMParser`) in component code and in `tools/expr.js`. The only allowed HTML sink is in `m-menu` (`insertAdjacentHTML` of two constant SVG icons, no author data), listed with that reason in the scan.

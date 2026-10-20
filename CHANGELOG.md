@@ -4,6 +4,18 @@ Versions follow [README.md § Releases and versions](README.md#releases-and-vers
 
 ## Unreleased
 
+## 1.0.3 - 2026-10-20
+
+### Security
+
+- **1.0.0 and 1.0.1 are yanked; use 1.0.2.** Both let `m-sweep` and `m-curves` run a lesson's expressions as JavaScript (fixed in 1.0.2). Their tags and release assets are untouched (a tag is never moved); this release's `manifest.json` carries the withdrawal in a new field, `yanked`: `{"1.0.0": {"replacement": "1.0.2", "reason": …, "date": …}, "1.0.1": …}` (Egatari spec §6: the release stays available, the manifest marks it withdrawn and names the replacement). An editor that opens a lesson recording a yanked version should offer a rebuild with the replacement and must not substitute it silently; it may still play the old version isolated from its own origin ([SECURITY.md](SECURITY.md))
+
+### Added
+
+- `yanked.json` (the source of the manifest's `yanked`), checked by `tools/release.mjs` and `tools/test-yanked.mjs`
+
+No component changed: every file is identical to v1.0.2.
+
 ## 1.0.2 - 2026-10-20
 
 ### Security

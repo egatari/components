@@ -4,6 +4,7 @@
 //   dist/egatari-components-v1.0.0.tar.gz   LICENSE and components/<name>/… as <name>/… (every file of each component except out/)
 //   dist/manifest.json                       {name, version, tag, repository, license, tarball: {file, sha256, bytes},
 //                                             components: {<name>: {tag, series, sha256 (of index.js), files: {<path>: sha256}}},
+//                                             yanked: {<version>: {replacement, reason, date}}  (from yanked.json; Egatari spec §6: a withdrawn release stays available),
 //                                             files: {<path in the tarball>: sha256}}
 // Per-file and component sha256 values are identity hashes (line endings normalized for text files, Egatari spec §6); the tarball's is byte-exact.
 // The tarball is deterministic (tools/tar.mjs): the same files give the same bytes.
@@ -24,6 +25,22 @@ const sha = (b) => createHash('sha256').update(b).digest('hex');
 // Identity hash (Egatari spec §6): line endings normalized (CRLF and lone CR to LF, leading UTF-8 BOM removed) for text files.
 // Every per-file sha256 in manifest.json and each component's sha256 (of index.js) are identity hashes; the tarball's sha256 is byte-exact.
 const idSha = (p, b) => sha(identityBytes(p, b));
+
+// yanked.json: releases a registry withdraws (spec §6). Their tags and assets stay as they are; the newest manifest says so.
+export function readYanked(version) {
+  const y = JSON.parse(fs.readFileSync(path.join(ROOT, 'yanked.json'), 'utf8'));
+  const cmp = (a, b) => { const x = a.split('.').map(Number), z = b.split('.').map(Number); for (let i = 0; i < 3; i++) if (x[i] !== z[i]) return x[i] - z[i]; return 0; };
+  for (const [v, e] of Object.entries(y)) {
+    if (!/^\d+\.\d+\.\d+$/.test(v)) throw new Error(`yanked.json: ${v} is not X.Y.Z`);
+    if (!e || typeof e !== 'object' || Object.keys(e).sort().join() !== 'date,reason,replacement') throw new Error(`yanked.json: ${v} needs exactly replacement, reason, date`);
+    if (!/^\d+\.\d+\.\d+$/.test(e.replacement) || cmp(e.replacement, v) <= 0) throw new Error(`yanked.json: ${v}: replacement ${e.replacement} must be a later version`);
+    if (y[e.replacement]) throw new Error(`yanked.json: ${v}: replacement ${e.replacement} is itself yanked`);
+    if (cmp(e.replacement, version) > 0) throw new Error(`yanked.json: ${v}: replacement ${e.replacement} is newer than ${version}`);
+    if (typeof e.reason !== 'string' || !e.reason || !/^\d{4}-\d{2}-\d{2}$/.test(e.date)) throw new Error(`yanked.json: ${v}: reason or date missing`);
+    if (v === version) throw new Error(`yanked.json: ${v} is the release being made`);
+  }
+  return Object.fromEntries(Object.keys(y).sort(cmp).map((v) => [v, y[v]]));
+}
 
 export function release(version) {
   if (!/^\d+\.\d+\.\d+$/.test(version)) throw new Error(`version ${version} is not X.Y.Z`);
@@ -48,6 +65,7 @@ export function release(version) {
     name: NAME, version, tag: `v${version}`, repository: REPOSITORY, license: 'MIT',
     tarball: { file, sha256: sha(gz), bytes: gz.length },
     components,
+    yanked: readYanked(version),
     files: Object.fromEntries(entries.map(([p, b]) => [p, idSha(p, b)])),
   };
   // the tarball reads back to exactly these files

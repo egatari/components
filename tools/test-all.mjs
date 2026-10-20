@@ -6,6 +6,7 @@
 //   5. release          the release tarball and manifest can be made and are deterministic (tools/release.mjs --check)
 //   6. unit             the safe expression evaluator (tools/test-expr.mjs), m-codetree, m-kanbun / m-kobun / m-gendai parsing
 //                       (tools/test-codetree.mjs, tools/test-kokugo.mjs; no browser)
+//      (also tools/test-yanked.mjs: yanked.json becomes manifest.json's `yanked`)
 //   7. studio           fetch Egatari Studio at the pinned tag and overlay these components (tools/studio.mjs)
 //   8. components       each demo.html: builds, no console errors, screenshots per step, determinism, text ≥ 24px, overlap, outside the slide (tools/test-components.mjs)
 //   9. shape            wrong-shaped data and refused expressions: inline placeholder and DECK.componentErrors, no exception (tools/test-shape.mjs)
@@ -24,6 +25,7 @@ const TESTS = [
   ['expr-sync', ['tools/expr-sync.mjs', '--check']],
   ['release', ['tools/release.mjs', '--check']],
   ['test-expr', ['tools/test-expr.mjs']],
+  ['test-yanked', ['tools/test-yanked.mjs']],
   ['test-codetree', ['tools/test-codetree.mjs']],
   ['test-kokugo', ['tools/test-kokugo.mjs']],
   ['studio', ['tools/studio.mjs']],

@@ -1,0 +1,12 @@
+{
+  "1.0.0": {
+    "replacement": "1.0.2",
+    "reason": "m-sweep and m-curves ran expressions from the lesson as JavaScript (new Function); see SECURITY.md",
+    "date": "2026-10-20"
+  },
+  "1.0.1": {
+    "replacement": "1.0.2",
+    "reason": "m-sweep and m-curves ran expressions from the lesson as JavaScript (new Function); see SECURITY.md",
+    "date": "2026-10-20"
+  }
+}
