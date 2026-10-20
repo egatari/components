@@ -31,6 +31,8 @@ jobs:
       - uses: actions/setup-node@v7
         with:
           node-version: 22
+      - name: Code scan (no eval-like code in components; Egatari spec §6)
+        run: node tools/scan-code.mjs
       - name: Install Playwright Chromium (Linux)
         if: runner.os == 'Linux'
         run: npm exec --yes -- playwright-core@1.64.1 install --with-deps chromium

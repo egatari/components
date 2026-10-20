@@ -4,6 +4,17 @@ Versions follow [README.md § Releases and versions](README.md#releases-and-vers
 
 ## Unreleased
 
+### Security
+
+- `m-sweep` (`f`) and `m-curves` (each series' `f`) no longer run their expressions as JavaScript (`new Function`; any code in a lesson's attribute or data ran, even in a Core document). They now use a small arithmetic parser (`tools/expr.js`, copied into both components): numbers, the component's variables, the listed `Math` functions and constants, `+ - * / % **`, comparisons, `&& || !`, `? :` and parentheses. Anything else is refused with a `SyntaxError` and the component shows its inline placeholder. Values of every expression the demos, Studio's examples and docs used are identical to v1.0.1 ([SECURITY.md](SECURITY.md), Egatari spec §6)
+- `tools/scan-code.mjs` (in `npm test` and CI): fails on `eval`, `Function`, `constructor` access, string arguments to `setTimeout` / `setInterval`, `import`, `document.write`, `javascript:` and HTML sinks in component code (one listed exception: constant SVG icons in `m-menu`)
+- `SECURITY.md`: the expression grammar, the code scan, the audit of every component and how to report a vulnerability
+
+### Changed
+
+- `m-sweep` and `m-curves` are wrapped in a function scope (their helpers are no longer globals)
+- Tests: `tools/test-expr.mjs` (allowed and refused expressions, values identical to v1.0.1, limits, determinism, the code scan), `tools/expr-sync.mjs --check` (the copies equal `tools/expr.js`), and refused expressions in the browser (`tools/test-shape.mjs`)
+
 ## 1.0.1 - 2026-10-20
 
 - `m-kanbun` demo: the 『史記』 slide uses `size="56"` so that the figure fits above the conclusion (Studio's quality check reported R-fit, 20 px)

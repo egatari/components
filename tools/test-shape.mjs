@@ -41,6 +41,12 @@ const slides = comps.map((t, j) => `<section class="slide noconcl" id="s-w${j}">
 <section class="slide noconcl" id="s-throw">
   <h2>描くときの例外</h2>
   <div class="body"><m-curves aria-label="式が書けていない線" style="height:300px"><script type="application/json">[{"label": "a", "f": "10 - ("}]</script></m-curves></div>
+</section>
+<section class="slide noconcl" id="s-expr">
+  <h2>算術の外の式</h2>
+  <div class="body"><m-sweep f="(globalThis.__ran=1,u)" values="[0,1]" style="height:200px"></m-sweep>
+  <m-sweep f="u.constructor.constructor(u)()" values="[0,1]" style="height:200px"></m-sweep>
+  <m-curves aria-label="式がコード" style="height:200px"><script type="application/json">[{"label": "a", "f": "top.location"}]</script></m-curves></div>
 </section>`;
 fs.writeFileSync(path.join(deckDir, 'deck.html'), `<!DOCTYPE html>
 <html lang="ja" data-theme="default">
@@ -74,8 +80,13 @@ try {
     ok(s && s.box && s.text.includes('<' + t + '>'), `${t}: shows the inline placeholder`);
     ok(e && e.phase === 'data', `${t}: reported in DECK.componentErrors before mount (${e && e.kind}${e && e.why ? ' ' + e.why : ''})`);
   }
-  const th = r.errs.find((x) => x.phase === 'mount');
+  const th = r.errs.find((x) => x.phase === 'mount' && x.slide === r.max.length - 2);
   ok(th && th.tag === 'm-curves' && th.kind === 'exception' && /SyntaxError/.test(th.msg) && r.seen.filter((x) => x.tag === 'm-curves').every((x) => x.box), 'mount exception: placeholder, recorded with the message only');
+  // 算術の外の式（Egatari spec §6）：コードとして動かさず、札を出し、mount の段の SyntaxError として載る
+  const ex = r.errs.filter((x) => x.slide === r.max.length - 1);
+  ok(ex.length === 3 && ex.every((x) => x.phase === 'mount' && x.kind === 'exception' && /^SyntaxError: f = |^SyntaxError: \[0\]\.f = /.test(x.msg)),
+    'expressions outside arithmetic: refused at mount with a SyntaxError naming the expression' + (ex.length ? ' (' + ex.map((x) => x.msg).join(' | ') + ')' : ''));
+  ok(!(await page.evaluate(() => globalThis.__ran)), 'expressions outside arithmetic: nothing ran');
 } finally { await browser.close(); }
 
 console.log(fails ? `\nFAIL: ${fails}` : '\nOK');

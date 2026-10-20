@@ -43,7 +43,11 @@ Bugs in a component: [bug report](https://github.com/egatari/components/issues/n
 npm test
 ```
 
-Node 22 or later and Chrome, Edge or Playwright's Chromium. The tests build every demo with a pinned release of Egatari Studio ([tools/studio.json](tools/studio.json)); the first run clones it into `.studio/` and runs `npm ci` there (the only network access). They check, for each demo: no console errors, a screenshot of each step (mid-motion and final), determinism (the same position draws the same pixels after jumping elsewhere and back), text at least 24 px, no overlapping text or text outside the slide; and that wrong-shaped data shows an inline placeholder instead of throwing. CI runs them on Linux, macOS and Windows.
+Node 22 or later and Chrome, Edge or Playwright's Chromium. The tests build every demo with a pinned release of Egatari Studio ([tools/studio.json](tools/studio.json)); the first run clones it into `.studio/` and runs `npm ci` there (the only network access). They also scan component code for eval-like code (`tools/scan-code.mjs`) and test the expression evaluator of `m-sweep` and `m-curves` (`tools/test-expr.mjs`). They check, for each demo: no console errors, a screenshot of each step (mid-motion and final), determinism (the same position draws the same pixels after jumping elsewhere and back), text at least 24 px, no overlapping text or text outside the slide; and that wrong-shaped data shows an inline placeholder instead of throwing. CI runs them on Linux, macOS and Windows.
+
+## Security
+
+Components never run a lesson's data as code; `m-sweep` and `m-curves` evaluate their formulas with a small arithmetic parser. Grammar, audit and how to report a vulnerability: [SECURITY.md](SECURITY.md).
 
 ## History
 

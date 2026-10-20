@@ -1,11 +1,14 @@
 // Every test, in order (npm test). No network except the first fetch of the pinned Egatari Studio (tools/studio.mjs).
 //   1. lint             layout and README frontmatter of each component (tools/lint.mjs)
 //   2. catalog          CATALOG.md is up to date (tools/catalog.mjs --check)
-//   3. release          the release tarball and manifest can be made and are deterministic (tools/release.mjs --check)
-//   4. unit             m-codetree, m-kanbun / m-kobun / m-gendai parsing (tools/test-codetree.mjs, tools/test-kokugo.mjs; no browser)
-//   5. studio           fetch Egatari Studio at the pinned tag and overlay these components (tools/studio.mjs)
-//   6. components       each demo.html: builds, no console errors, screenshots per step, determinism, text ≥ 24px, overlap, outside the slide (tools/test-components.mjs)
-//   7. shape            wrong-shaped data: inline placeholder and DECK.componentErrors, no exception (tools/test-shape.mjs)
+//   3. scan-code        no eval-like code path in component code (tools/scan-code.mjs; Egatari spec §6)
+//   4. expr-sync        the evaluator copied into m-sweep / m-curves equals tools/expr.js (tools/expr-sync.mjs --check)
+//   5. release          the release tarball and manifest can be made and are deterministic (tools/release.mjs --check)
+//   6. unit             the safe expression evaluator (tools/test-expr.mjs), m-codetree, m-kanbun / m-kobun / m-gendai parsing
+//                       (tools/test-codetree.mjs, tools/test-kokugo.mjs; no browser)
+//   7. studio           fetch Egatari Studio at the pinned tag and overlay these components (tools/studio.mjs)
+//   8. components       each demo.html: builds, no console errors, screenshots per step, determinism, text ≥ 24px, overlap, outside the slide (tools/test-components.mjs)
+//   9. shape            wrong-shaped data and refused expressions: inline placeholder and DECK.componentErrors, no exception (tools/test-shape.mjs)
 //   node tools/test-all.mjs [--only name,name]
 import os from 'node:os';
 import path from 'node:path';
@@ -17,7 +20,10 @@ const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'egatari-components-test-'));
 const TESTS = [
   ['lint', ['tools/lint.mjs']],
   ['catalog', ['tools/catalog.mjs', '--check']],
+  ['scan-code', ['tools/scan-code.mjs']],
+  ['expr-sync', ['tools/expr-sync.mjs', '--check']],
   ['release', ['tools/release.mjs', '--check']],
+  ['test-expr', ['tools/test-expr.mjs']],
   ['test-codetree', ['tools/test-codetree.mjs']],
   ['test-kokugo', ['tools/test-kokugo.mjs']],
   ['studio', ['tools/studio.mjs']],

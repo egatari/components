@@ -32,6 +32,7 @@
 提案が受け入れられ名前が決まったら、`components/<名前>/` を足すプルリクエストを開きます。
 
 - [ ] `index.js` が `<m-<名前>>` を定義し、[部品の約束事](https://github.com/egatari/egatari-studio/blob/main/docs/contract.ja.md)に従う：`render(k, t)` は段階と時刻だけで画面を決める（`setTimeout`・`requestAnimationFrame`・`Date`・シードのない乱数を使わない。`t = Infinity` が最終状態）、色はテーマの変数だけ（`var(--term)` `var(--emph)` `var(--muted)` `var(--accent2)` `var(--line)` `var(--fg)` `var(--series-1..4)`）、データの形を `static shape` で宣言、デッキ固有の文言・数値を持たない
+- [ ] コードを実行する書き方がない（`npm test` の `tools/scan-code.mjs`）：`eval`・`Function`・`constructor`・文字列のタイマー・`import`・`innerHTML` などを使わない。作者が書く式は JavaScript として実行せず `tools/expr.js` で計算する（`node tools/expr-sync.mjs` で写し、その `USERS` に部品を足す。[SECURITY.md](SECURITY.md)）
 - [ ] `README.md`：frontmatter の `name`・`series`（`common`・`academic`・`business`・`kokugo`・`info`）・`summary`・`steps`・`props` と、いつ使うかの本文
 - [ ] `demo.html`：1〜2 枚の見本のデッキ。文章とデータは自作・パブリックドメイン・架空のもの
 - [ ] `tools/test-shape.mjs` に形の違うデータの例を 1 行

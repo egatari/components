@@ -45,6 +45,10 @@ npm test
 
 Node 22 以上と、Chrome・Edge・Playwright の Chromium のどれか。試験は、固定した版の Egatari Studio（[tools/studio.json](tools/studio.json)）で見本を組みます。初回は `.studio/` に clone して `npm ci` します（ネットワークを使うのはここだけ）。見本ごとに、コンソールのエラーがないこと、段階ごとの画像（動きの途中と最終状態）、決定性（ほかの位置へ飛んで戻っても同じ画素）、字が 24px 以上、字の重なりとスライドからのはみ出しがないこと、形の違うデータでは例外を出さずにその場に札を出すことを確かめます。CI は Linux・macOS・Windows で走らせます。
 
+## 安全
+
+部品は授業のデータをコードとして実行しません。`m-sweep` と `m-curves` の式は小さな算術の構文解析器で計算します（`tools/scan-code.mjs` がコードを実行する書き方を試験で止めます）。書ける式・部品ごとの点検・脆弱性の報告先：[SECURITY.md](SECURITY.md)。
+
 ## 経緯
 
 これらの部品は Egatari Studio（旧 motion-academic-slides）の中で作られ、2026 年 10 月に履歴ごとここへ移りました。v1.0.0 は Studio v0.4.3（commit 8419183）の `components/` とバイト単位で同じです。
