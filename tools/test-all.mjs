@@ -1,0 +1,41 @@
+// Every test, in order (npm test). No network except the first fetch of the pinned Egatari Studio (tools/studio.mjs).
+//   1. lint             layout and README frontmatter of each component (tools/lint.mjs)
+//   2. catalog          CATALOG.md is up to date (tools/catalog.mjs --check)
+//   3. release          the release tarball and manifest can be made and are deterministic (tools/release.mjs --check)
+//   4. unit             m-codetree, m-kanbun / m-kobun / m-gendai parsing (tools/test-codetree.mjs, tools/test-kokugo.mjs; no browser)
+//   5. studio           fetch Egatari Studio at the pinned tag and overlay these components (tools/studio.mjs)
+//   6. components       each demo.html: builds, no console errors, screenshots per step, determinism, text ≥ 24px, overlap, outside the slide (tools/test-components.mjs)
+//   7. shape            wrong-shaped data: inline placeholder and DECK.componentErrors, no exception (tools/test-shape.mjs)
+//   node tools/test-all.mjs [--only name,name]
+import os from 'node:os';
+import path from 'node:path';
+import fs from 'node:fs';
+import { spawnSync } from 'node:child_process';
+import { ROOT } from './studio.mjs';
+
+const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'egatari-components-test-'));
+const TESTS = [
+  ['lint', ['tools/lint.mjs']],
+  ['catalog', ['tools/catalog.mjs', '--check']],
+  ['release', ['tools/release.mjs', '--check']],
+  ['test-codetree', ['tools/test-codetree.mjs']],
+  ['test-kokugo', ['tools/test-kokugo.mjs']],
+  ['studio', ['tools/studio.mjs']],
+  ['test-components', ['tools/test-components.mjs', '--shots', path.join(tmp, 'shots')]],
+  ['test-shape', ['tools/test-shape.mjs', path.join(tmp, 'shape')]],
+];
+const oi = process.argv.indexOf('--only');
+const only = oi >= 0 ? new Set(process.argv[oi + 1].split(',')) : null;
+const failed = [];
+for (const [name, args] of TESTS) {
+  if (only && !only.has(name)) continue;
+  const t0 = Date.now();
+  const r = spawnSync(process.execPath, args, { cwd: ROOT, encoding: 'utf8', stdio: ['ignore', 'pipe', 'pipe'] });
+  const ok = r.status === 0;
+  const secs = ((Date.now() - t0) / 1000).toFixed(1);
+  console.log(`${ok ? 'ok  ' : 'FAIL'} ${name} (${secs}s)`);
+  if (!ok || process.env.CI) process.stdout.write((r.stdout || '') + (r.stderr || ''));
+  if (!ok) failed.push(name);
+}
+console.log(failed.length ? `\nFAIL: ${failed.join(', ')}\nscreenshots: ${tmp}` : `\nOK (screenshots: ${tmp})`);
+process.exit(failed.length ? 1 : 0);

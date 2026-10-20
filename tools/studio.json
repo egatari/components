@@ -1,0 +1,6 @@
+{
+  "repository": "https://github.com/egatari/egatari-studio",
+  "tag": "v0.4.2",
+  "commit": "839c9ed910f45f899fc8f3d7613f137a6a020607",
+  "note": "The tests build each demo with this release of Egatari Studio (its build, runtime and browser launcher). Change tag and commit together; tags are never moved."
+}

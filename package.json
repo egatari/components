@@ -1,0 +1,25 @@
+{
+  "name": "egatari-components",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Components for Egatari Studio (motion figures for Egatari lessons)",
+  "license": "MIT",
+  "homepage": "https://github.com/egatari/components",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/egatari/components.git"
+  },
+  "bugs": {
+    "url": "https://github.com/egatari/components/issues"
+  },
+  "type": "module",
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "test": "node tools/test-all.mjs",
+    "studio": "node tools/studio.mjs",
+    "catalog": "node tools/catalog.mjs",
+    "release": "node tools/release.mjs"
+  }
+}

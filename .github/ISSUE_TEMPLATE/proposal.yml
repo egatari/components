@@ -1,0 +1,84 @@
+name: Component proposal / 部品の提案
+description: "Propose a new component (or a new kind of figure for an existing one) / 新しい部品（既存の部品への新しい図）を提案する"
+title: "[proposal] "
+labels: ["proposal"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Check [CATALOG.md](https://github.com/egatari/components/blob/main/CATALOG.md) first: a new attribute on an existing component may be enough. Read [CONTRIBUTING.md](https://github.com/egatari/components/blob/main/CONTRIBUTING.md) for what happens next. **The maintainer decides the component's name at this stage**; you do not need to choose one.
+        まず [CATALOG.md](https://github.com/egatari/components/blob/main/CATALOG.md) を見てください。既存の部品に属性を足すだけで済むこともあります。この後の流れは [CONTRIBUTING.ja.md](https://github.com/egatari/components/blob/main/CONTRIBUTING.ja.md)。**部品の名前はこの段階で管理者が決めます**（決めてこなくて構いません）。
+
+        Do not paste unpublished lesson content you may not share. / 公開できない教材の中身は貼らないでください。
+  - type: textarea
+    id: example
+    attributes:
+      label: Example / 例
+      description: "The figure as it should look: an inline-SVG figure from a deck, or an image (sketch, screenshot, photo of a board). / 目指す図：デッキの中のインライン SVG の図、または画像（スケッチ・スクリーンショット・板書の写真）"
+    validations:
+      required: true
+  - type: textarea
+    id: lesson
+    attributes:
+      label: Lesson used in / 使った授業・発表
+      description: "Where you used (or will use) it: subject, level, the step of the explanation it serves. A link if public. / どの授業・発表で使ったか（使うか）：科目・対象・説明のどの場面か。公開されていればリンク"
+    validations:
+      required: true
+  - type: textarea
+    id: data
+    attributes:
+      label: Data shape (draft) / データの形（案）
+      description: "What the author would write: the child JSON (or text) and attributes. / 書く人が書くもの：子の JSON（または字）と属性"
+      render: json
+      placeholder: |
+        {"items": [{"label": "A", "value": 3}], "unit": "%"}
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps and final state / 段階と最終状態
+      description: "What appears or moves at each step, and what the last step shows (the state that is printed and shown when motion is off). / 段階ごとに何が出る・動くか、最後の段階に何が見えるか（印刷・動きを止めたときの姿）"
+      placeholder: |
+        0: axes only
+        1: first series grows
+        final: all series, labels at the ends
+    validations:
+      required: true
+  - type: textarea
+    id: why
+    attributes:
+      label: Why inline SVG and the motion primitives are not enough / インライン SVG と動きの素では足りない理由
+      description: "A deck can already draw inline SVG and animate it with data-step, marks, morph and camera. What does this figure need that those cannot give (computed layout, many elements from data, interaction, reuse across lessons)? / デッキはすでにインライン SVG と data-step・印・モーフ・カメラで動かせます。この図にはそれでは足りない何が要るか（データからの配置の計算、多くの要素、操作、授業をまたぐ再利用など）"
+    validations:
+      required: true
+  - type: textarea
+    id: rights
+    attributes:
+      label: Rights / 権利
+      description: "Sources of any text, data, images or code in the example and the demo, and their licences. Components are released under MIT; the demo's text and data must be yours, public domain, fictional, or under a licence that allows redistribution. / 例と見本に入る文章・データ・画像・コードの出典とライセンス。部品は MIT で公開します。見本の文章とデータは自作・パブリックドメイン・架空、または再配布できるライセンスのもの"
+    validations:
+      required: true
+  - type: textarea
+    id: static
+    attributes:
+      label: What must be readable when static / 静止したときに読めなければならないもの
+      description: "In print, on the reading surface (article view) and for a screen reader: what the final state and the text equivalent must convey. / 印刷・読む面（記事の表示）・スクリーンリーダーで、最終状態と代わりの文が伝えなければならないこと"
+    validations:
+      required: true
+  - type: textarea
+    id: reuse
+    attributes:
+      label: Other fields and lessons / ほかの分野・授業での使い道
+      description: "Other subjects or lessons that would use the same component. / 同じ部品を使えそうなほかの科目・授業"
+    validations:
+      required: true
+  - type: checkboxes
+    id: confirm
+    attributes:
+      label: Confirm / 確認
+      options:
+        - label: "I checked CATALOG.md and an existing component with a new attribute is not enough. / CATALOG.md を見て、既存の部品に属性を足すだけでは足りないことを確かめた"
+          required: true
+        - label: "I have the right to share everything in this issue. / この Issue に書いたものはすべて共有してよいものである"
+          required: true

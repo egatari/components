@@ -1,0 +1,25 @@
+name: Component bug / 部品の不具合
+description: "A component draws something wrong, overlaps, or behaves differently on seek / 部品の描き方・重なり・位置を飛んだときの違い"
+title: "[bug] m-"
+labels: ["bug"]
+body:
+  - type: input
+    id: component
+    attributes:
+      label: Component and version / 部品と版
+      description: "e.g. m-bars 1.0.0: the default version is in Studio's components.lock.json; a .ega.html records the version it was built with / 例：m-bars 1.0.0（Studio の components.lock.json の既定の版、.ega.html には組んだときの版）"
+    validations:
+      required: true
+  - type: textarea
+    id: what
+    attributes:
+      label: What happened and what you expected / 何が起きたか、どうなってほしかったか
+      description: "A screenshot helps. / スクリーンショットがあると助かります"
+    validations:
+      required: true
+  - type: textarea
+    id: snippet
+    attributes:
+      label: Minimal snippet / 再現する最小の断片
+      description: "The component element with its data. Only what you may share. / 部品の要素とデータ。公開してよいものだけ"
+      render: html

@@ -1,0 +1,5 @@
+blank_issues_enabled: false
+contact_links:
+  - name: "Egatari Studio (bugs, questions) / Egatari Studio の不具合・質問"
+    url: https://github.com/egatari/egatari-studio/issues/new/choose
+    about: "Problems with the editor, the build or a deck go to Egatari Studio. / 編集アプリ・組み立て・デッキの不具合は Egatari Studio へ"
