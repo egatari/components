@@ -1,0 +1,2 @@
+# Component files are released byte for byte: a lesson records the sha256 of index.js, so no line-ending conversion on checkout
+components/** -text
