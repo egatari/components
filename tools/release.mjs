@@ -5,6 +5,7 @@
 //   dist/manifest.json                       {name, version, tag, repository, license, tarball: {file, sha256, bytes},
 //                                             components: {<name>: {tag, series, sha256 (of index.js), files: {<path>: sha256}}},
 //                                             files: {<path in the tarball>: sha256}}
+// Per-file and component sha256 values are identity hashes (line endings normalized for text files, Egatari spec §6); the tarball's is byte-exact.
 // The tarball is deterministic (tools/tar.mjs): the same files give the same bytes.
 // Egatari Studio's `npm run components:update -- v1.0.0` downloads both, checks the tarball's sha256 against the manifest
 // and every file against its sha256, and copies the components to vendor/components/<name>/1.0.0/.
@@ -14,11 +15,15 @@ import { createHash } from 'node:crypto';
 import { fileURLToPath } from 'node:url';
 import { ROOT, componentNames, componentFiles } from './studio.mjs';
 import { writeTarGz, readTarGz } from './tar.mjs';
+import { identityBytes, normalizeEol } from './identity.mjs';
 import { frontmatter, lint } from './lint.mjs';
 
 export const NAME = 'egatari-components';
 export const REPOSITORY = 'https://github.com/egatari/components';
 const sha = (b) => createHash('sha256').update(b).digest('hex');
+// Identity hash (Egatari spec §6): line endings normalized (CRLF and lone CR to LF, leading UTF-8 BOM removed) for text files.
+// Every per-file sha256 in manifest.json and each component's sha256 (of index.js) are identity hashes; the tarball's sha256 is byte-exact.
+const idSha = (p, b) => sha(identityBytes(p, b));
 
 export function release(version) {
   if (!/^\d+\.\d+\.\d+$/.test(version)) throw new Error(`version ${version} is not X.Y.Z`);
@@ -31,10 +36,10 @@ export function release(version) {
     for (const f of componentFiles(name)) {
       const b = fs.readFileSync(path.join(ROOT, 'components', name, f));
       entries.push([`${name}/${f}`, b]);
-      files[f] = sha(b);
+      files[f] = idSha(f, b);
     }
     const fm = frontmatter(fs.readFileSync(path.join(ROOT, 'components', name, 'README.md'), 'utf8'));
-    components[name] = { tag: `m-${name}`, series: fm.series, sha256: files['index.js'], files };
+    components[name] = { tag: `m-${name}`, series: fm.series, sha256: sha(normalizeEol(fs.readFileSync(path.join(ROOT, 'components', name, 'index.js')))), files };
   }
   entries.sort((a, b) => (a[0] < b[0] ? -1 : a[0] > b[0] ? 1 : 0));
   const gz = writeTarGz(entries);
@@ -43,11 +48,11 @@ export function release(version) {
     name: NAME, version, tag: `v${version}`, repository: REPOSITORY, license: 'MIT',
     tarball: { file, sha256: sha(gz), bytes: gz.length },
     components,
-    files: Object.fromEntries(entries.map(([p, b]) => [p, sha(b)])),
+    files: Object.fromEntries(entries.map(([p, b]) => [p, idSha(p, b)])),
   };
   // the tarball reads back to exactly these files
   const back = readTarGz(gz);
-  if (back.size !== entries.length || entries.some(([p, b]) => !back.has(p) || sha(back.get(p)) !== sha(b))) throw new Error('the tarball does not read back to the same files');
+  if (back.size !== entries.length || entries.some(([p, b]) => !back.has(p) || !Buffer.from(back.get(p)).equals(Buffer.from(b)))) throw new Error('the tarball does not read back to the same files');
   return { gz, file, manifest };
 }
 

@@ -11,7 +11,7 @@ import { fileURLToPath } from 'node:url';
 export const NAME_RE = /^[a-z][a-z0-9-]{0,63}$/;
 export const SERIES = ['common', 'academic', 'business', 'kokugo', 'info'];
 // Components released before demo.html was required (do not add to this list)
-const NO_DEMO = new Set(['sweep']);
+const NO_DEMO = new Set([]);
 
 export function frontmatter(text) {
   const m = text.replace(/\r\n?/g, '\n').match(/^---\n([\s\S]*?)\n---/);

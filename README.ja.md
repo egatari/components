@@ -24,9 +24,9 @@ npm run components:update -- v1.0.0
 
 ## リリースと版
 
-- リリースはタグ `vX.Y.Z` と 2 つのファイル：`egatari-components-vX.Y.Z.tar.gz`（全部品のファイルと `LICENSE`）と `manifest.json`（`name`・`version`・tarball の SHA-256・各ファイルの SHA-256。`index.js` も）。リリースの説明にも tarball の SHA-256 を書きます。
+- リリースはタグ `vX.Y.Z` と 2 つのファイル：`egatari-components-vX.Y.Z.tar.gz`（全部品のファイルと `LICENSE`）と `manifest.json`（`name`・`version`・tarball の SHA-256・各ファイルの SHA-256。`index.js` も）。リリースの説明にも tarball の SHA-256 を書きます。tarball の hash はバイトのまま、各ファイルの hash は[仕様 §6](https://github.com/egatari/egatari-spec/blob/main/egatari-1.0.md#6-components-and-profiles)の同一性の hash です（字のファイルは、CRLF と単独の CR を LF にし、先頭の UTF-8 の BOM を除いてから hash する。どの OS の checkout でも同じ hash）。ファイルは LF で置きます。
 - **タグは付け替えず、使い回しません。** 直しは新しい版にします。
-- Egatari のファイルは部品庫の部品を `{name, version, sha256}` で記録し、`sha256` は `index.js` だけのハッシュです（[仕様 §6](https://github.com/egatari/egatari-spec/blob/main/egatari-1.0.md#6-components-and-profiles)）。`index.js` を変えるとハッシュが変わるので、編集アプリは教材が要る版を見分けられます。
+- Egatari のファイルは部品庫の部品を `{name, version, sha256}` で記録し、`sha256` は `index.js` だけのハッシュです（[仕様 §6](https://github.com/egatari/egatari-spec/blob/main/egatari-1.0.md#6-components-and-profiles)）。`index.js` を（改行のほかで）変えるとハッシュが変わるので、編集アプリは教材が要る版を見分けられます。
 - 版の番号：今ある教材の見え方（配置・時間・段階）が変わりうる変更はマイナー以上、教材が書くデータの形を壊す変更はメジャー。
 
 リリースの手順は [RELEASING.md](RELEASING.md)。

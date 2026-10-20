@@ -16,6 +16,7 @@ import path from 'node:path';
 import { execFileSync } from 'node:child_process';
 import { createHash } from 'node:crypto';
 import { fileURLToPath, pathToFileURL } from 'node:url';
+import { normalizeEol, toCrlf } from './identity.mjs';
 
 export const ROOT = path.dirname(path.dirname(fileURLToPath(import.meta.url)));
 export const PIN = JSON.parse(fs.readFileSync(path.join(ROOT, 'tools', 'studio.json'), 'utf8'));
@@ -74,11 +75,13 @@ function overlay(dir) {
     lock.components ||= {};
     for (const name of names) {
       copy(name, path.join(dir, 'vendor', 'components', name, TEST_VERSION));
-      const sha = createHash('sha256').update(fs.readFileSync(path.join(ROOT, 'components', name, 'index.js'))).digest('hex');
+      const code = normalizeEol(fs.readFileSync(path.join(ROOT, 'components', name, 'index.js')));
+      const sha = createHash('sha256').update(code).digest('hex'), crlf = createHash('sha256').update(toCrlf(code)).digest('hex');
       const c = lock.components[name] ||= { default: TEST_VERSION, versions: [], sha256: {} };
       c.default = TEST_VERSION;
       if (!c.versions.includes(TEST_VERSION)) c.versions.push(TEST_VERSION);
       c.sha256 = { ...c.sha256, [TEST_VERSION]: sha };
+      if (c.crlfSha256) c.crlfSha256 = { ...c.crlfSha256, [TEST_VERSION]: crlf };
     }
     fs.writeFileSync(lockFile, JSON.stringify(lock, null, 2) + '\n');
     return { dir, layout: 'vendor', compDir: (name) => path.join(dir, 'vendor', 'components', name, TEST_VERSION) };

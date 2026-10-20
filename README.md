@@ -24,9 +24,9 @@ which downloads the release tarball, checks it against `manifest.json` and keeps
 
 ## Releases and versions
 
-- A release is a tag `vX.Y.Z` with two assets: `egatari-components-vX.Y.Z.tar.gz` (every component's files and `LICENSE`) and `manifest.json` (`name`, `version`, the SHA-256 of the tarball, and the SHA-256 of every file, including each `index.js`). The release notes repeat the tarball's SHA-256.
+- A release is a tag `vX.Y.Z` with two assets: `egatari-components-vX.Y.Z.tar.gz` (every component's files and `LICENSE`) and `manifest.json` (`name`, `version`, the SHA-256 of the tarball, and the SHA-256 of every file, including each `index.js`). The release notes repeat the tarball's SHA-256. The tarball's hash is byte-exact; the per-file hashes are identity hashes as in [spec §6](https://github.com/egatari/egatari-spec/blob/main/egatari-1.0.md#6-components-and-profiles): for text files, CRLF and lone CR become LF and a leading UTF-8 BOM is removed before hashing, so a checkout on any system gives the same hash. Files are stored with LF.
 - **Tags are never moved or reused.** A fix is a new version.
-- An Egatari file records each registry component as `{name, version, sha256}`, where `sha256` covers `index.js` only ([spec §6](https://github.com/egatari/egatari-spec/blob/main/egatari-1.0.md#6-components-and-profiles)). Changing a component's `index.js` changes its hash, so editors can tell which version a lesson needs.
+- An Egatari file records each registry component as `{name, version, sha256}`, where `sha256` covers `index.js` only ([spec §6](https://github.com/egatari/egatari-spec/blob/main/egatari-1.0.md#6-components-and-profiles)). Changing a component's `index.js` (other than its line endings) changes its hash, so editors can tell which version a lesson needs.
 - Version numbers: a change that can alter how an existing lesson looks (layout, timing, steps) is a minor or major version; a major version also breaks the data a lesson writes.
 
 How a release is made: [RELEASING.md](RELEASING.md).
