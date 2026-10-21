@@ -44,7 +44,7 @@ try {
     const nums = [...c.querySelectorAll('.kb-num')].map((e) => {
       const rg = document.createRange(); rg.selectNodeContents(e);
       const cs = getComputedStyle(e);
-      return { n: e.textContent, box: rect(e), text: rect2(rg), fs: parseFloat(cs.fontSize), lh: parseFloat(cs.lineHeight), align: cs.textAlign };
+      return { n: e.textContent, annot: e.hasAttribute('data-annot'), box: rect(e), text: rect2(rg), fs: parseFloat(cs.fontSize), lh: parseFloat(cs.lineHeight), align: cs.textAlign };
     });
     function rect2(rg) { const b = rg.getBoundingClientRect(); return { l: b.left, t: b.top, r: b.right, b: b.bottom }; }
     return { S: g.S, L: g.L, chars, nums };
@@ -63,6 +63,7 @@ try {
   // 一桁の番号は変えない：箱は字の左（幅 L）、字の大きさと行の高さは max(24, round(S*0.4)) px、中央ぞろえ
   const geometry = (s, nums) => nums.every((n) => Math.abs(n.fs - Math.max(24, Math.round(s.S * 0.4))) < 1e-6 && n.lh === Math.max(24, Math.round(s.S * 0.4)) && n.align === 'center' && n.box.r - n.box.l === s.L);
   r.forEach((s, i) => ok(geometry(s, s.nums.filter((n) => n.n.length === 1)), `slide ${i}: one-digit numbers keep font-size, line-height, width and alignment`));
+  ok(r.every((s) => s.nums.every((n) => n.annot)), 'every number carries data-annot (a small annotation: Studio does not apply the minimum text size to it)');
   // 番号の箱は、読む字の箱のすぐ左に幅 L で置く（返り点のない見本なので、n 番目の番号は n 番目の字）。9 字には一桁しかない
   r.forEach((s, i) => ok(s.nums.every((n, j) => Math.abs(n.box.r - s.chars[j].l) < 0.01 && n.box.r - n.box.l === s.L), `slide ${i}: each number box sits just left of its character, L wide`));
   ok(r[2].nums.length === 9 && r[2].nums.every((n) => n.n.length === 1), 'slide 2: nine one-digit numbers');
