@@ -44,23 +44,31 @@ try {
   const render = (si, k, t) => page.evaluate(([si, k, t]) => { DECK.seek(si, 0, 0); DECK.slides[si]._comps[0].render(k, t); }, [si, k, t]);
   // Pixels: the DOM is compared exactly (above); the shots only have to agree to antialiasing noise. The same DOM is not always rasterized to the same
   // bits (a few hundred edge pixels of strokes and text, up to about 30 levels, depending on what was painted before), so two shots are the same when no
-  // pixel differs by more than TOL in any channel. An element that should be hidden but is drawn differs by far more (full contrast).
+  // 8 x 8 block of the two shots differs in its mean by more than TOL (single edge pixels may differ a lot on a software renderer; a block mean does not).
+  // An element that should be hidden but is drawn changes the mean of the blocks it covers by far more (full contrast over a stroke or a glyph).
   // The component is hidden and shown again before a shot, which drops most of the paint history. A fresh component is a second mount in the same page.
-  const TOL = 64;
+  const TOL = 40, BLOCK = 8;
   const shot = async (si) => {
     await page.evaluate((si) => { const c = DECK.slides[si]._comps[0], d = c.style.display; c.style.display = 'none'; c.offsetHeight; c.style.display = d; }, si);
     await page.evaluate(() => new Promise((r) => requestAnimationFrame(() => requestAnimationFrame(r))));
     return (await page.locator(`.slide >> nth=${si}`).locator('m-codetree').screenshot()).toString('base64');
   };
-  const same = (a, b) => page.evaluate(async ([a, b, tol]) => {
+  const same = (a, b) => page.evaluate(async ([a, b, tol, blk]) => {
     const load = (d) => new Promise((res) => { const i = new Image(); i.onload = () => res(i); i.src = 'data:image/png;base64,' + d; });
     const [x, y] = await Promise.all([load(a), load(b)]);
     if (x.width !== y.width || x.height !== y.height) return false;
     const px = (i) => { const c = document.createElement('canvas'); c.width = i.width; c.height = i.height; const g = c.getContext('2d'); g.drawImage(i, 0, 0); return g.getImageData(0, 0, i.width, i.height).data; };
-    const p = px(x), q = px(y);
-    for (let i = 0; i < p.length; i++) if (Math.abs(p[i] - q[i]) > tol) return false;
+    const p = px(x), q = px(y), W = x.width, H = x.height;
+    for (let by = 0; by < H; by += blk) for (let bx = 0; bx < W; bx += blk) {
+      let sum = 0, n = 0;
+      for (let yy = by; yy < Math.min(H, by + blk); yy++) for (let xx = bx; xx < Math.min(W, bx + blk); xx++) {
+        const i = (yy * W + xx) * 4;
+        sum += Math.max(Math.abs(p[i] - q[i]), Math.abs(p[i + 1] - q[i + 1]), Math.abs(p[i + 2] - q[i + 2])); n++;
+      }
+      if (sum / n > tol) return false;
+    }
     return true;
-  }, [a, b, TOL]);
+  }, [a, b, TOL, BLOCK]);
   await open();
   const info = await page.evaluate(() => DECK.slides.map((s) => ({ steps: s._comps[0].steps, hasSlide: !!s })));
   ok(info.length >= 3, 'the demo has ' + info.length + ' slides with a m-codetree');
