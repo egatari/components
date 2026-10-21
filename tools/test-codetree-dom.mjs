@@ -42,10 +42,13 @@ try {
     return walk(c, 0);
   }, si);
   const render = (si, k, t) => page.evaluate(([si, k, t]) => { DECK.seek(si, 0, 0); DECK.slides[si]._comps[0].render(k, t); }, [si, k, t]);
-  // Pixels: the headless browser's antialiasing is not bit-exact from one load to the next (a few edge pixels of a stroke change by a few levels),
-  // so two shots are the same when no pixel differs by more than TOL in any channel. A stale element that is drawn would differ by far more.
-  const TOL = 40;
+  // Pixels: the DOM is compared exactly (above); the shots only have to agree to antialiasing noise. The same DOM is not always rasterized to the same
+  // bits (a few hundred edge pixels of strokes and text, up to about 30 levels, depending on what was painted before), so two shots are the same when no
+  // pixel differs by more than TOL in any channel. An element that should be hidden but is drawn differs by far more (full contrast).
+  // The component is hidden and shown again before a shot, which drops most of the paint history. A fresh component is a second mount in the same page.
+  const TOL = 64;
   const shot = async (si) => {
+    await page.evaluate((si) => { const c = DECK.slides[si]._comps[0], d = c.style.display; c.style.display = 'none'; c.offsetHeight; c.style.display = d; }, si);
     await page.evaluate(() => new Promise((r) => requestAnimationFrame(() => requestAnimationFrame(r))));
     return (await page.locator(`.slide >> nth=${si}`).locator('m-codetree').screenshot()).toString('base64');
   };
@@ -66,10 +69,8 @@ try {
     let bad = 0, firstBad = '';
     const kinds = new Set();
     for (const t of TIMES) for (let b = 0; b <= n; b++) {
-      await open();
-      await page.evaluate((si) => DECK.go ? 0 : 0, si);
-      await page.evaluate((si) => { DECK.seek(si, 0, Infinity); }, si);
-      await page.evaluate(([si]) => { const c = DECK.slides[si]._comps[0]; DECK._fresh = c.cloneNode ? 0 : 0; }, [si]);
+      // a fresh component: mount it again (its SVG is rebuilt from the data)
+      await page.evaluate((si) => { const c = DECK.slides[si]._comps[0]; c.textContent = ''; c.mount(); }, si);
       await render(si, b, t);
       const direct = await dump(si), directPix = await shot(si);
       for (let a = 0; a <= n; a++) {
