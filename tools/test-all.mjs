@@ -10,7 +10,9 @@
 //   7. studio           fetch Egatari Studio at the pinned tag and overlay these components (tools/studio.mjs)
 //   8. components       each demo.html: builds, no console errors, screenshots per step, determinism, text ≥ 24px, overlap, outside the slide (tools/test-components.mjs)
 //   9. kanbun-num      m-kanbun's two-digit reading-order numbers stay inside their box and off the character boxes; one-digit numbers unchanged (tools/test-kanbun-num.mjs)
-//  10. shape            wrong-shaped data and refused expressions: inline placeholder and DECK.componentErrors, no exception (tools/test-shape.mjs)
+//  10. kobun-reset     m-kobun's open conjugation card closes on ctx.reset (tools/test-kobun-reset.mjs)
+//  11. codetree-dom    m-codetree's DOM and pixels do not depend on the order of render calls (tools/test-codetree-dom.mjs)
+//  12. shape            wrong-shaped data and refused expressions: inline placeholder and DECK.componentErrors, no exception (tools/test-shape.mjs)
 //   node tools/test-all.mjs [--only name,name]
 import os from 'node:os';
 import path from 'node:path';
@@ -32,6 +34,8 @@ const TESTS = [
   ['studio', ['tools/studio.mjs']],
   ['test-components', ['tools/test-components.mjs', '--shots', path.join(tmp, 'shots')]],
   ['test-kanbun-num', ['tools/test-kanbun-num.mjs', path.join(tmp, 'kanbun-num')]],
+  ['test-kobun-reset', ['tools/test-kobun-reset.mjs', path.join(tmp, 'kobun-reset')]],
+  ['test-codetree-dom', ['tools/test-codetree-dom.mjs', path.join(tmp, 'codetree-dom')]],
   ['test-shape', ['tools/test-shape.mjs', path.join(tmp, 'shape')]],
 ];
 const oi = process.argv.indexOf('--only');

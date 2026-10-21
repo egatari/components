@@ -7,7 +7,7 @@
 // 1 行が 1 文（1 段階）。語は / で切り、語の後ろの [ ] に品詞と詳しいこと（・で区切る）を書く。[ ] の後ろの字（、。）は語に付けて出す。
 // 「= …」の行は直前の文の現代語訳（最後の段階で、本文の下（縦書きでは左）に並べる）。{漢字|かな} は振り仮名。
 // 助動詞は [助動・基本形・意味・活用形]：押す（タップする）と、その助動詞の活用表と意味を出す（部品の中の表から。読み込みはしない）。
-// 押して出した札は発表の操作で、画面の決まり（DECK.seek(i, k, t)）の外：段階を動かす・もう一度押す・札を押すと消え、動画と印刷には出ない
+// 押して出した札は発表の操作で、画面の決まり（DECK.seek(i, k, t)）の外：段階を動かす・もう一度押す・札を押す・同じ段階に入り直す（ctx.reset）と消え、動画と印刷には出ない
 (function(){
 "use strict";
 var D = window.DECK;
@@ -198,9 +198,10 @@ D.define("m-kobun", class extends D.MotionElement {
     if (k === n + 1) return 0.6;
     return 0;
   }
-  render(k, t){
+  render(k, t, ctx){
     var self = this, P = this.props, n = this.model.lines.length, tate = P.tate;
-    if (this._open && this._open.k !== k) this._open = null;   // 段階が動いたら札を閉じる
+    // 段階が動いたら札を閉じる。同じ段階にもう一度入るとき（ctx.reset：触れた部品を、宣言した姿に戻す）も閉じる
+    if (this._open && (this._open.k !== k || (ctx && ctx.reset))) this._open = null;
     this._k = k; this._t = t;
     this.lines.forEach(function(L, li){
       // 文 li の品詞分解は段階 li + 1 に出る

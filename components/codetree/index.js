@@ -514,10 +514,11 @@ D.define("m-codetree", class extends D.MotionElement {
     this.token.setAttribute("cx", tp.x.toFixed(2)); this.token.setAttribute("cy", tp.y.toFixed(2));
     this.token.setAttribute("opacity", tokOp.toFixed(3));
     // 表にない枝の × （誤りの段階と、まとめ）
-    var cx = 0;
+    var cx = 0, stubOn = false;
     if (p && dec.error && dec.error.kind === "invalid" && (p.type === "err" || p.type === "sum")){
       var er = dec.error, last = pos[LETTER[er.color] + errPath(er)], gh = this.lay[k].ghosts[LETTER[er.color] + er.code];
       if (gh){
+        stubOn = true;
         gh = {x: gh.x - cB.x, y: yOf(this.lay[k], gh, camB)};
         this.stubLine.setAttribute("x1", last.x.toFixed(2)); this.stubLine.setAttribute("y1", last.y.toFixed(2));
         this.stubLine.setAttribute("x2", gh.x.toFixed(2)); this.stubLine.setAttribute("y2", (gh.y - 14).toFixed(2));
@@ -527,6 +528,12 @@ D.define("m-codetree", class extends D.MotionElement {
         this.stubLab.textContent = er.code.slice(-1);
         cx = p.type === "err" ? D2.prog(t, T.s(T.nb), 0.3) : 1;
       }
+    }
+    // 描かないとき（opacity 0）は、前に描いた位置と字を残さない（作った直後の姿に戻す。呼ぶ順で DOM が変わらないように）
+    if (!stubOn){
+      var clr = function(e, names){ names.forEach(function(nm){ e.removeAttribute(nm); }); };
+      clr(this.stubLine, ["x1", "y1", "x2", "y2"]); clr(this.cross, ["x", "y"]); clr(this.stubLab, ["x", "y"]);
+      this.stubLab.textContent = "";
     }
     this.stub.setAttribute("opacity", cx.toFixed(3));
     // ---- 系列：読んだ符号語は fg、今の符号語の読んだビットは emph、まだのビットは muted
@@ -566,7 +573,11 @@ D.define("m-codetree", class extends D.MotionElement {
     var right = -Infinity, S = this.S, G = this.G;
     this.runEls.forEach(function(o){
       var vis = o.r.toks.filter(function(i){ return shown[i] > 0; });
-      if (!vis.length){ o.g.setAttribute("opacity", 0); return; }
+      if (!vis.length){
+        o.g.setAttribute("opacity", 0);
+        o.br.removeAttribute("d"); o.sw.removeAttribute("x"); o.tx.removeAttribute("x"); o.tx.textContent = "";
+        return;
+      }
       var len = vis.reduce(function(a, i){ return a + shown[i]; }, 0);
       var parts = vis.map(function(i){ return dec.tokens[i].run; });
       var full = vis.every(function(i){ return shown[i] === dec.tokens[i].run; });
@@ -592,7 +603,7 @@ D.define("m-codetree", class extends D.MotionElement {
     if (cw){
       this.crumbHead.textContent = fmt0(Lb.crumb, cw.color ? Lb[cw.color] : "") + " ";
       this.crumbBits.textContent = (cw.code.match(/.{1,4}/g) || []).join(" ");
-    }
+    } else { this.crumbHead.textContent = ""; this.crumbBits.textContent = ""; }
     this.crumb.setAttribute("opacity", co.toFixed(3));
     // ---- 右上の一言
     var fmt = function(s, o){ return s.replace("{c}", o.c ? Lb[o.c] : "").replace("{n}", o.n || ""); };
