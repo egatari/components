@@ -4,6 +4,10 @@ Versions follow [README.md § Releases and versions](README.md#releases-and-vers
 
 ## Unreleased
 
+### Fixed
+
+- `m-kanbun`: reading-order numbers of two or more digits (10 and up) no longer spill out of their box into the character next to them. Only their font size is reduced (for example 24 px to 18.5 px at the default size) so that the text fits the box; the box, its position and everything about one-digit numbers are unchanged (a lesson whose kanbun has at most nine reading events draws the same pixels as before). This changes how existing two-digit numbers are drawn, so it needs a minor version at least. Checked by `tools/test-kanbun-num.mjs`
+
 ## 1.0.3 - 2026-10-20
 
 ### Security
