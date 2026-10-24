@@ -9,7 +9,11 @@ Only the maintainer releases. To withdraw a release, add it to `yanked.json` (wi
    npm test
    node tools/release.mjs X.Y.Z  # dist/egatari-components-vX.Y.Z.tar.gz, dist/manifest.json, and the sha256 line
    ```
-3. Tag and release (the notes end with the tarball's sha256 line that `tools/release.mjs` printed):
+3. Tag and release (the notes end with the tarball's sha256 line that `tools/release.mjs` printed). Before the sha line, the notes say how many bytes the READMEs of `m-bars`, `m-flow`, `m-menu`, `m-curves`, `m-quad` and `m-kpi` changed since the previous release (Egatari Studio's free-plan AI pack carries them and sits near its size cap):
+   ```bash
+   for n in bars flow menu curves quad kpi; do echo "m-$n $(( $(wc -c < components/$n/README.md) - $(git show vPREV:components/$n/README.md | wc -c) ))"; done
+   ```
+
    ```bash
    git tag -a vX.Y.Z -m "vX.Y.Z" && git push origin vX.Y.Z
    gh release create vX.Y.Z dist/egatari-components-vX.Y.Z.tar.gz dist/manifest.json --title vX.Y.Z --notes-file <notes>
