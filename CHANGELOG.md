@@ -15,6 +15,7 @@ Versions follow [README.md § Releases and versions](README.md#releases-and-vers
 
 - Demos of `m-compare`, `m-cycle`, `m-fishbone`, `m-pie`, `m-timeline`, `m-tree` and `m-venn`: the captions of the variants slide are 27 px (they are body text outside the figure; Egatari Studio's quality check flagged 24–26 px as `smallText`). `tools/test-components.mjs` now checks body text outside figures against 27 px
 - READMEs of `m-scatter`, `m-pie`, `m-cycle`, `m-fishbone`, `m-timeline`, `m-tree`: mentions of other components are a sentence of their own or a closing parenthetical, or are dropped where they were consistency notes, so that Studio's pack keeps the attribute descriptions when the named component is not in the pack (docs/conventions.md §4.1.1)
+- `tools/test-components.mjs`: when the determinism check's screenshots still differ after a retry, it compares the components' DOM; if the DOM is identical the difference is Chrome's rendering (seen on CI's Linux and Windows at rounded corners), and the check passes with a note
 - `RELEASING.md`: release notes give the README byte change of `m-bars`, `m-flow`, `m-menu`, `m-curves`, `m-quad` and `m-kpi` (Egatari Studio's free-plan AI pack carries them and sits near its size cap)
 
 ## 1.2.0 - 2026-10-25
