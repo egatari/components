@@ -4,6 +4,14 @@ Versions follow [README.md § Releases and versions](README.md#releases-and-vers
 
 ## Unreleased
 
+### Later (candidates, not in this release)
+
+- `m-flow`: connectors in `--muted` like the new box-and-line diagrams (changes existing lessons; the owner decides)
+- `m-kanbun`, `m-kobun`: some steps are not complete at their declared length (`tools/test-duration.mjs` lists them as known; they may hold their last frame on purpose; check before changing)
+- `m-compare` `by="row"`; an "outside every set" region for `m-venn`; a project-plan demo for `m-timeline` lanes
+
+## 1.2.0 - 2026-10-25
+
 ### Added
 
 - Shared conventions for components (`docs/conventions.md`, `docs/conventions.ja.md`): presentation variants and the lesson seed (spec §8.4), box-and-line diagrams, chart attribute names, purpose declarations
@@ -23,12 +31,6 @@ Versions follow [README.md § Releases and versions](README.md#releases-and-vers
 ### Changed
 
 - `m-curves`, `m-quad` and `m-kpi`: series `common` (were `academic`, `business` and `business`). Only the catalogue and the AI pack's grouping change; tag names and drawing are unchanged
-
-### Later (candidates, not in this release)
-
-- `m-flow`: connectors in `--muted` like the new box-and-line diagrams (changes existing lessons; the owner decides)
-- `m-kanbun`, `m-kobun`: some steps are not complete at their declared length (`tools/test-duration.mjs` lists them as known; they may hold their last frame on purpose; check before changing)
-- `m-compare` `by="row"`; an "outside every set" region for `m-venn`; a project-plan demo for `m-timeline` lanes
 
 ## 1.1.0 - 2026-10-24
 

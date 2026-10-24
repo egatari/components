@@ -1,16 +1,18 @@
 // Variant 0 does not change by a single pixel (docs/conventions.md §1.6). For every component with variants that existed in
 // the baseline release, build the baseline's demo.html twice, once with the baseline's index.js and once with the current one,
 // and compare screenshots at each step (35 %, 70 % and the final state). A lesson without a seed must look the same.
-//   node tools/test-seed0.mjs [shots dir]      baseline: the newest tag that is an ancestor of HEAD (git describe)
+//   node tools/test-seed0.mjs [shots dir]      baseline: the release before package.json's version (tools/baseline.mjs)
 import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
 import { execFileSync } from 'node:child_process';
 import { ROOT, studio } from './studio.mjs';
 import { USERS } from './variant-sync.mjs';
+import { baseline } from './baseline.mjs';
 
 const git = (...a) => execFileSync('git', a, { cwd: ROOT, encoding: 'utf8' });
-const base = git('describe', '--tags', '--abbrev=0').trim();
+const { base } = baseline();
+if (!base) { console.log('test-seed0: no earlier release tag (fetch tags: git fetch --tags), nothing to compare'); process.exit(0); }
 const shotsRoot = path.resolve(process.argv[2] || fs.mkdtempSync(path.join(os.tmpdir(), 'egatari-seed0-')));
 const S = await studio();
 const b = await S.browser.launch();

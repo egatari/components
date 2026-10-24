@@ -8,18 +8,15 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { ROOT, componentNames } from './studio.mjs';
-import { execFileSync } from 'node:child_process';
+import { baseline, git } from './baseline.mjs';
 import { frontmatter, list, purposeIds } from './lint.mjs';
 
 const esc = (s) => String(s ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
 const ids = purposeIds(ROOT);
-// New and changed components (index.js or demo.html) since the last release come first, marked on their first slide
-const git = (...a) => { try { return execFileSync('git', a, { cwd: ROOT, encoding: 'utf8', stdio: ['ignore', 'pipe', 'ignore'] }); } catch { return ''; } };
-const base = git('describe', '--tags', '--abbrev=0').trim();
+// New and changed components (index.js or demo.html) since the release before this one come first, marked on their first slide
+const { base, label: next } = baseline();
 const changed = new Set(base ? git('diff', '--name-only', base, '--', 'components').split('\n').filter((p) => /\/(index\.js|demo\.html)$/.test(p)).map((p) => p.split('/')[1]) : []);
 const existed = (name) => !!base && git('cat-file', '-t', `${base}:components/${name}/index.js`).trim() === 'blob';
-// the release these changes go into: the next minor after the last tag (new components and new options are minor changes)
-const next = /^v(\d+)\.(\d+)\.\d+$/.test(base) ? base.replace(/^v(\d+)\.(\d+)\.\d+$/, (_, a, b) => `v${a}.${+b + 1}.0`) : '';
 const status = (name) => (!base ? '' : !existed(name) ? '新しい' : changed.has(name) ? '変わった' : '');
 const order = componentNames().map((name) => ({ name, st: status(name) }));
 const rank = { '新しい': 0, '変わった': 1, '': 2 };
