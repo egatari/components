@@ -22,7 +22,7 @@ Versions follow [README.md § Releases and versions](README.md#releases-and-vers
 
 ### Changed
 
-- `m-curves` and `m-quad`: series `common` (were `academic` and `business`). Only the catalogue and the AI pack's grouping change; tag names and drawing are unchanged
+- `m-curves`, `m-quad` and `m-kpi`: series `common` (were `academic`, `business` and `business`). Only the catalogue and the AI pack's grouping change; tag names and drawing are unchanged
 
 ### Later (candidates, not in this release)
 

@@ -313,14 +313,14 @@ DECK.define("m-timeline", class extends DECK.MotionElement {
     this.L = L;
     // 軸（印 class="axis"：試験が軸を横切る字を探す）と矢じり、目盛り
     var a0 = this.xy(L.axisU0, L.axisC), a1 = this.xy(L.axisU1, L.axisC);
-    this.axis = {g: gAxis, line: D.el("line", {class: "axis", x1: a0[0], y1: a0[1], x2: a0[0], y2: a0[1], stroke: "var(--line)", "stroke-width": 5}, gAxis),
-      head: D.el("path", {d: "M0,0L-16,-7L-16,7Z", fill: "var(--line)"}, gAxis), p0: a0, p1: a1, ang: hz ? 0 : 90,
+    this.axis = {g: gAxis, line: D.el("line", {class: "axis", x1: a0[0], y1: a0[1], x2: a0[0], y2: a0[1], stroke: "var(--muted)", "stroke-width": 5}, gAxis),
+      head: D.el("path", {d: "M0,0L-16,-7L-16,7Z", fill: "var(--muted)"}, gAxis), p0: a0, p1: a1, ang: hz ? 0 : 90,
       ticks: D.el("g", {opacity: 0}, gAxis)};
     L.ticks.forEach(function(k){
       var p = self.xy(k.u, L.axisC), q = self.xy(k.u, L.axisC + 11);
-      D.el("line", {x1: p[0], y1: p[1], x2: q[0], y2: q[1], stroke: "var(--line)", "stroke-width": 2}, self.axis.ticks);
-      if (hz) D.el("text", {x: k.x.toFixed(1), y: (L.axisC + 38).toFixed(1), "text-anchor": k.anchor, "font-size": 24, fill: "var(--muted)"}, self.axis.ticks).textContent = k.text;
-      else D.el("text", {x: (L.axisC + 18).toFixed(1), y: (k.u + 8).toFixed(1), "font-size": 24, fill: "var(--muted)"}, self.axis.ticks).textContent = k.text;
+      D.el("line", {x1: p[0], y1: p[1], x2: q[0], y2: q[1], stroke: "var(--muted)", "stroke-width": 2}, self.axis.ticks);
+      if (hz) D.el("text", {x: k.x.toFixed(1), y: (L.axisC + 40).toFixed(1), "text-anchor": k.anchor, "font-size": size, fill: "var(--muted)"}, self.axis.ticks).textContent = k.text;
+      else D.el("text", {x: (L.axisC + 18).toFixed(1), y: (k.u + 9).toFixed(1), "font-size": size, fill: "var(--muted)"}, self.axis.ticks).textContent = k.text;
     });
     // 段のまとまりの名前と、まとまりの間の線
     this.laneLabels = L.groups.map(function(g, gk){

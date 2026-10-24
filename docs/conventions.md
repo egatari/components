@@ -157,7 +157,7 @@ Example (timeline):
 - Box widths are estimated from character counts (as in `m-kpi`; no waiting for fonts). Boxes, and text and lines, stay at least 4 px apart (checked by `tools/test-components.mjs`, as for `m-flow`).
 - Direction is the `orient` attribute: `m-timeline` `h` (default, left to right) or `v` (top to bottom); `m-tree` `down` (default) or `right`; `m-fishbone` head on the right (default). `m-cycle` starts at 12 o'clock and runs clockwise.
 - `m-timeline` spacing is the `scale` attribute: `time` (default, proportional to time) or `even` (equal spacing, for very uneven gaps). Labels alternate above and below the axis.
-- Lines that connect boxes to boxes or to the axis are `--muted`, 3 px (`--line` is too faint on a projector, as seen in the 2026-10-23 workshop). `--line` is only for axes, ticks and grids. The arrowhead is the same in every component; emphasised lines use the `tone` colour.
+- Lines that connect boxes to boxes or to the axis are `--muted`, 3 px (`--line` is too faint on a projector, as seen in the 2026-10-23 workshop). `--line` is only for grid lines (and separators that carry no ticks or labels). An axis that carries ticks or labels is information and uses `--muted` (the timeline axis, its ticks, and its tick labels at the figure's text size). Axes drawn by `DECK.Plot` (`m-curves`, `m-scatter`) stay `--fg`. The arrowhead is the same in every component; emphasised lines use the `tone` colour.
 - One "main line" per diagram (the fishbone spine, the timeline axis) may be up to 5 px.
 - `m-flow`'s lines do not change in v1.2.0 (seed 0 must look the same). Moving them to `--muted` changes existing lessons, so the owner decides it for a later release.
 - No vertical writing (that is for the kokugo components).
