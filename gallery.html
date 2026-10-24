@@ -76,84 +76,12 @@ document.addEventListener("DOMContentLoaded", function(){
   <h2>部品の一覧（22 個、73 枚）</h2>
   <div class="body">
     <p>部品ごとに、説明の 1 枚と見本のスライドが続きます。→ で段階を進めます。</p>
-    <p>m-compare（変わった）　m-curves（変わった）　m-cycle（変わった）　m-fishbone（変わった）　m-pie（変わった）　m-scatter（変わった）　m-timeline（変わった）　m-tree（変わった）　m-venn（変わった）　m-bars　m-codetree　m-collect　m-flow　m-gendai　m-kanbun　m-kobun　m-kpi　m-market　m-menu　m-quad　m-seq　m-sweep</p>
+    <p>m-curves（変わった）　m-scatter（変わった）　m-bars　m-codetree　m-collect　m-compare　m-cycle　m-fishbone　m-flow　m-gendai　m-kanbun　m-kobun　m-kpi　m-market　m-menu　m-pie　m-quad　m-seq　m-sweep　m-timeline　m-tree　m-venn</p>
   </div>
 </section>
 
 <section class="slide">
-  <h2>m-compare（変わった、v1.2.1）</h2>
-  <div class="body">
-    <p>2 つ（3 つまで）を横に並べて比べる表。一方の列、もう一方の列、それから行ごとの違い</p>
-    <ul>
-      <li>言いたいこと：比べる（量・特徴）</li>
-      <li>見せ方：fade・slide・reveal</li>
-      <li>系列：common　見本のスライド：3 枚</li>
-    </ul>
-  </div>
-</section>
-
-<section class="slide">
-  <h2>紙の申請とオンライン申請（架空）</h2>
-  <div class="body">
-    <m-compare style="height:420px">
-      <script type="application/json">{
-        "sides": [{"label": "紙の申請", "tone": "muted"}, {"label": "オンライン申請"}],
-        "rows": [
-          {"label": "受付時間", "values": ["平日 9〜17 時", "24 時間"], "better": 1, "diff": "夜や休日にも出せる"},
-          {"label": "書類", "values": ["窓口で書く", "画面に入力"], "better": 1, "diff": "書き損じがない"},
-          {"label": "結果が届くまで", "values": ["約 2 週間", "約 3 日"], "better": 1, "diff": "11 日ほど早い"},
-          {"label": "手数料", "values": ["300 円", "300 円"], "diff": "同じ"}
-        ]
-      }</script>
-    </m-compare>
-  </div>
-  <div class="concl"><span>→ 違うのは時間。費用は変わらない</span></div>
-</section>
-
-<section class="slide">
-  <h2>植物の細胞と動物の細胞</h2>
-  <div class="body">
-    <m-compare style="height:420px">
-      <script type="application/json">{
-        "sides": [{"label": "植物の細胞"}, {"label": "動物の細胞", "tone": "accent2"}],
-        "rows": [
-          {"label": "核・細胞膜", "values": ["ある", "ある"], "diff": "どちらにもある"},
-          {"label": "細胞壁", "values": ["ある", "ない"], "diff": "植物だけ"},
-          {"label": "葉緑体", "values": ["ある（緑の部分）", "ない"], "diff": "植物だけ"},
-          {"label": "液胞", "values": ["大きく発達", "小さく目立たない"], "diff": "植物で大きい"}
-        ]
-      }</script>
-    </m-compare>
-  </div>
-  <div class="concl"><span>→ 細胞壁と葉緑体は植物の細胞だけにある</span></div>
-</section>
-
-<section class="slide">
-  <h2>見せ方の種類（variant）</h2>
-  <div class="body">
-    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:0 32px">
-      <div><p class="vlabel">fade（既定）</p>
-      <m-compare variant="fade" style="height:380px">
-        <script type="application/json">{"sides": [{"label": "A 案", "tone": "muted"}, {"label": "B 案"}],
-          "rows": [{"values": ["3 日", "1 日"], "better": 1}, {"values": ["5 万円", "8 万円"], "better": 0}, {"values": ["2 人", "1 人"], "better": 1}]}</script>
-      </m-compare></div>
-      <div><p class="vlabel">slide（横から寄る）</p>
-      <m-compare variant="slide" style="height:380px">
-        <script type="application/json">{"sides": [{"label": "A 案", "tone": "muted"}, {"label": "B 案"}],
-          "rows": [{"values": ["3 日", "1 日"], "better": 1}, {"values": ["5 万円", "8 万円"], "better": 0}, {"values": ["2 人", "1 人"], "better": 1}]}</script>
-      </m-compare></div>
-      <div><p class="vlabel">reveal（1 行ずつ）</p>
-      <m-compare variant="reveal" style="height:380px">
-        <script type="application/json">{"sides": [{"label": "A 案", "tone": "muted"}, {"label": "B 案"}],
-          "rows": [{"values": ["3 日", "1 日"], "better": 1}, {"values": ["5 万円", "8 万円"], "better": 0}, {"values": ["2 人", "1 人"], "better": 1}]}</script>
-      </m-compare></div>
-    </div>
-  </div>
-  <div class="concl"><span>→ 資料のシード値（data-egatari-seed）で 1 つが選ばれる。数字は架空</span></div>
-</section>
-
-<section class="slide">
-  <h2>m-curves（変わった、v1.2.1）</h2>
+  <h2>m-curves（変わった、v1.3.0）</h2>
   <div class="body">
     <p>同じ座標軸に線を 1 本ずつ引く（線の名前は凡例でなく線の端に直接書く）</p>
     <ul>
@@ -205,232 +133,7 @@ document.addEventListener("DOMContentLoaded", function(){
 </section>
 
 <section class="slide">
-  <h2>m-cycle（変わった、v1.2.1）</h2>
-  <div class="body">
-    <p>循環の図。段階の箱を円の上に 12 時から時計回りに並べ、円に沿った矢印でつなぐ（最後から最初へ戻る矢印も）</p>
-    <ul>
-      <li>言いたいこと：循環</li>
-      <li>見せ方：fade・draw・grow</li>
-      <li>系列：common　見本のスライド：3 枚</li>
-    </ul>
-  </div>
-</section>
-
-<section class="slide">
-  <h2>PDCA サイクル</h2>
-  <div class="body">
-    <m-cycle style="height:430px">
-      <script type="application/json">{
-        "center": {"label": "PDCA"},
-        "nodes": [
-          {"label": "計画（Plan）", "note": "目標と手順を決める"},
-          {"label": "実行（Do）", "note": "計画どおりにやってみる"},
-          {"label": "評価（Check）", "note": "結果を目標と比べる"},
-          {"label": "改善（Act）", "note": "やり方を直して次へ", "tone": "emph"}
-        ]
-      }</script>
-    </m-cycle>
-  </div>
-  <div class="concl"><span>→ 1 周ごとに、やり方が少しずつよくなる</span></div>
-</section>
-
-<section class="slide">
-  <h2>水の循環</h2>
-  <div class="body">
-    <m-cycle style="height:430px">
-      <script type="application/json">{
-        "center": {"label": "水の循環", "note": "太陽の熱で動く"},
-        "nodes": [
-          {"label": "蒸発", "note": "海や地面の水が水蒸気に"},
-          {"label": "雲ができる", "note": "上空で冷えて水や氷の粒に"},
-          {"label": "雨・雪", "note": "粒が大きくなって落ちる"},
-          {"label": "しみこむ・流れる", "note": "地下水や川になる"},
-          {"label": "海へ", "note": "川が海に注ぐ"}
-        ]
-      }</script>
-    </m-cycle>
-  </div>
-  <div class="concl"><span>→ 水は形を変えながら、地球の上を回り続ける</span></div>
-</section>
-
-<section class="slide">
-  <h2>見せ方の種類（variant）</h2>
-  <div class="body">
-    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:0 36px">
-      <div><p class="vcap">現れてから矢印（fade、既定）</p>
-        <m-cycle variant="fade" style="height:360px">
-          <script type="application/json">{"nodes": [{"label": "計画"}, {"label": "実行"}, {"label": "評価"}, {"label": "改善"}]}</script>
-        </m-cycle></div>
-      <div><p class="vcap">矢印を引いてから（draw）</p>
-        <m-cycle variant="draw" style="height:360px">
-          <script type="application/json">{"nodes": [{"label": "計画"}, {"label": "実行"}, {"label": "評価"}, {"label": "改善"}]}</script>
-        </m-cycle></div>
-      <div><p class="vcap">前の箱の側から大きくなる（grow）</p>
-        <m-cycle variant="grow" style="height:360px">
-          <script type="application/json">{"nodes": [{"label": "計画"}, {"label": "実行"}, {"label": "評価"}, {"label": "改善"}]}</script>
-        </m-cycle></div>
-    </div>
-  </div>
-  <div class="concl"><span>→ 資料のシード値（data-egatari-seed）で 1 つが選ばれる</span></div>
-</section>
-
-<section class="slide">
-  <h2>m-fishbone（変わった、v1.2.1）</h2>
-  <div class="body">
-    <p>原因と結果の図（特性要因図・フィッシュボーン図）を、大骨 1 本ずつ組み立て、最後に結果（頭）を出す。座標は書かず、配置は部品が決める</p>
-    <ul>
-      <li>言いたいこと：原因と結果</li>
-      <li>見せ方：fade・draw・grow</li>
-      <li>系列：common　見本のスライド：3 枚</li>
-    </ul>
-  </div>
-</section>
-
-<section class="slide">
-  <h2>配送の遅れの原因（架空）</h2>
-  <div class="body">
-    <m-fishbone aria-label="配送の遅れの特性要因図" style="height:440px">
-      <script type="application/json">{
-        "effect": {"label": "配送の遅れ", "note": "1 日 12 件"},
-        "nodes": [
-          {"id": "p", "label": "人"},
-          {"id": "p1", "label": "人手が足りない", "parent": "p"},
-          {"id": "p11", "label": "繁忙期の採用が遅い", "parent": "p1"},
-          {"id": "p2", "label": "道に慣れていない", "parent": "p"},
-          {"id": "m", "label": "機械"},
-          {"id": "m1", "label": "車の故障が多い", "parent": "m"},
-          {"id": "m2", "label": "端末の反応が遅い", "parent": "m"},
-          {"id": "h", "label": "方法"},
-          {"id": "h1", "label": "積み込みの順が悪い", "parent": "h", "tone": "emph"},
-          {"id": "h2", "label": "経路を手で決めている", "parent": "h"},
-          {"id": "z", "label": "材料"},
-          {"id": "z1", "label": "伝票の記入漏れ", "parent": "z"},
-          {"id": "z2", "label": "箱の大きさがばらばら", "parent": "z"}
-        ]
-      }</script>
-    </m-fishbone>
-  </div>
-  <div class="concl"><span>→ 人・機械・方法・材料（4M）に分けて原因を洗い出す</span></div>
-</section>
-
-<section class="slide">
-  <h2>植物が育たないのはなぜ（order="effect-first"）</h2>
-  <div class="body">
-    <m-fishbone order="effect-first" aria-label="植物が育たない原因" style="height:440px">
-      <script type="application/json">{
-        "effect": {"label": "植物が\n育たない"},
-        "nodes": [
-          {"id": "l", "label": "光"},
-          {"id": "l1", "label": "日当たりが悪い", "parent": "l"},
-          {"id": "l2", "label": "光の当たる時間が短い", "parent": "l"},
-          {"id": "w", "label": "水"},
-          {"id": "w1", "label": "水が足りない", "parent": "w"},
-          {"id": "w2", "label": "水のやりすぎ", "parent": "w"},
-          {"id": "w21", "label": "根が腐る", "parent": "w2"},
-          {"id": "s", "label": "土"},
-          {"id": "s1", "label": "肥料が足りない", "parent": "s"},
-          {"id": "s2", "label": "水はけが悪い", "parent": "s"},
-          {"id": "t", "label": "温度"},
-          {"id": "t1", "label": "気温が低い", "parent": "t", "note": "15 ℃ 未満"},
-          {"id": "t2", "label": "昼と夜の差が大きい", "parent": "t"}
-        ]
-      }</script>
-    </m-fishbone>
-  </div>
-  <div class="concl"><span>→ 結果を先に置き、光・水・土・温度の順に原因を足す</span></div>
-</section>
-
-<section class="slide">
-  <h2>見せ方の種類（variant）</h2>
-  <div class="body">
-    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:28px">
-      <div><div class="vcap">箱と字、それから線（fade、既定）</div>
-      <m-fishbone variant="fade" aria-label="遅刻の原因（fade）" style="height:340px">
-        <script type="application/json">{"effect": {"label": "遅刻"}, "nodes": [{"id": "a", "label": "自分"}, {"id": "a1", "label": "寝坊", "parent": "a"}, {"id": "a2", "label": "準備が遅い", "parent": "a"}, {"id": "b", "label": "交通"}, {"id": "b1", "label": "電車の遅れ", "parent": "b"}, {"id": "b2", "label": "道の混雑", "parent": "b"}]}</script>
-      </m-fishbone></div>
-      <div><div class="vcap">線を引いてから箱と字（draw）</div>
-      <m-fishbone variant="draw" aria-label="遅刻の原因（draw）" style="height:340px">
-        <script type="application/json">{"effect": {"label": "遅刻"}, "nodes": [{"id": "a", "label": "自分"}, {"id": "a1", "label": "寝坊", "parent": "a"}, {"id": "a2", "label": "準備が遅い", "parent": "a"}, {"id": "b", "label": "交通"}, {"id": "b1", "label": "電車の遅れ", "parent": "b"}, {"id": "b2", "label": "道の混雑", "parent": "b"}]}</script>
-      </m-fishbone></div>
-      <div><div class="vcap">背骨の側から伸びる（grow）</div>
-      <m-fishbone variant="grow" aria-label="遅刻の原因（grow）" style="height:340px">
-        <script type="application/json">{"effect": {"label": "遅刻"}, "nodes": [{"id": "a", "label": "自分"}, {"id": "a1", "label": "寝坊", "parent": "a"}, {"id": "a2", "label": "準備が遅い", "parent": "a"}, {"id": "b", "label": "交通"}, {"id": "b1", "label": "電車の遅れ", "parent": "b"}, {"id": "b2", "label": "道の混雑", "parent": "b"}]}</script>
-      </m-fishbone></div>
-    </div>
-  </div>
-  <div class="concl"><span>→ 資料のシード値（data-egatari-seed）で 1 つが選ばれる</span></div>
-</section>
-
-<section class="slide">
-  <h2>m-pie（変わった、v1.2.1）</h2>
-  <div class="body">
-    <p>円グラフとドーナツグラフ。切れの名前と値・割合は、大きい切れなら中に、小さい切れなら外に引き出し線で書く</p>
-    <ul>
-      <li>言いたいこと：全体と内訳</li>
-      <li>見せ方：fade・sweep・grow</li>
-      <li>系列：common　見本のスライド：3 枚</li>
-    </ul>
-  </div>
-</section>
-
-<section class="slide">
-  <h2>1 か月の支出の内訳（架空）</h2>
-  <div class="body">
-    <m-pie unit="万円" digits="1" show="both" style="height:440px">
-      <script type="application/json">{
-        "slices": [
-          {"label": "住まい", "value": 8.5},
-          {"label": "食費", "value": 7.2},
-          {"label": "教育・娯楽", "value": 3.1},
-          {"label": "光熱・通信", "value": 2.6},
-          {"label": "交通", "value": 1.8},
-          {"label": "その他", "value": 2.0, "tone": "muted"}
-        ]
-      }</script>
-    </m-pie>
-  </div>
-  <div class="concl"><span>→ 住まいと食費で支出の 6 割を超える</span></div>
-</section>
-
-<section class="slide">
-  <h2>通学の手段（ドーナツ、1 切れずつ。架空）</h2>
-  <div class="body">
-    <m-pie donut="0.56" unit="人" per-step="1" style="height:440px">
-      <script type="application/json">{
-        "center": "回答\n{total}",
-        "slices": [
-          {"label": "自転車", "value": 41},
-          {"label": "徒歩", "value": 32},
-          {"label": "バス", "value": 18},
-          {"label": "電車", "value": 9}
-        ]
-      }</script>
-    </m-pie>
-  </div>
-  <div class="concl"><span>→ 7 割が自転車か徒歩で通っている</span></div>
-</section>
-
-<section class="slide">
-  <h2>見せ方の種類（variant）</h2>
-  <div class="body">
-    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:0 28px;text-align:center;font-size:27px">
-      <div>フェード（fade、既定）</div><div>掃くように（sweep）</div><div>大きくなる（grow）</div>
-      <m-pie variant="fade" style="height:340px">
-        <script type="application/json">{"slices": [{"label": "A", "value": 50}, {"label": "B", "value": 30}, {"label": "C", "value": 20}]}</script>
-      </m-pie>
-      <m-pie variant="sweep" style="height:340px">
-        <script type="application/json">{"slices": [{"label": "A", "value": 50}, {"label": "B", "value": 30}, {"label": "C", "value": 20}]}</script>
-      </m-pie>
-      <m-pie variant="grow" style="height:340px">
-        <script type="application/json">{"slices": [{"label": "A", "value": 50}, {"label": "B", "value": 30}, {"label": "C", "value": 20}]}</script>
-      </m-pie>
-    </div>
-  </div>
-  <div class="concl"><span>→ 資料のシード値（data-egatari-seed）で 1 つが選ばれる。数字は架空</span></div>
-</section>
-
-<section class="slide">
-  <h2>m-scatter（変わった、v1.2.1）</h2>
+  <h2>m-scatter（変わった、v1.3.0）</h2>
   <div class="body">
     <p>散布図。点の組（系列）を段階ごとに出し、そのあと傾向の線（最小二乗の直線か、書いた 2 点）を引く</p>
     <ul>
@@ -489,229 +192,6 @@ document.addEventListener("DOMContentLoaded", function(){
     </div>
   </div>
   <div class="concl"><span>→ 資料のシード値（data-egatari-seed）で 1 つが選ばれる。数字は架空</span></div>
-</section>
-
-<section class="slide">
-  <h2>m-timeline（変わった、v1.2.1）</h2>
-  <div class="body">
-    <p>年表。出来事を時間の軸の上に 1 つずつ出す。期間は帯にして、重なる期間は段を分けて積む。end は含まない（"1912" は 1912 年の初め）</p>
-    <ul>
-      <li>言いたいこと：年表・予定</li>
-      <li>見せ方：fade・draw・grow</li>
-      <li>系列：common　見本のスライド：3 枚</li>
-    </ul>
-  </div>
-</section>
-
-<section class="slide">
-  <h2>明治のおもな出来事</h2>
-  <div class="body">
-    <m-timeline style="height:430px">
-      <script type="application/json">{
-        "nodes": [
-          {"label": "明治維新", "when": "1868", "whenLabel": "明治元年", "note": "五箇条の御誓文"},
-          {"label": "廃藩置県", "when": "1871"},
-          {"label": "鉄道の開業", "when": "1872", "note": "新橋〜横浜"},
-          {"label": "西南戦争", "when": "1877"},
-          {"label": "憲法の発布", "when": "1889", "tone": "emph"},
-          {"label": "日清戦争", "when": "1894"},
-          {"label": "日露戦争", "when": "1904"}
-        ]
-      }</script>
-    </m-timeline>
-  </div>
-  <div class="concl"><span>→ 約 20 年で憲法をもつ国になった</span></div>
-</section>
-
-<section class="slide">
-  <h2>明治・大正の作家の生涯</h2>
-  <div class="body">
-    <m-timeline style="height:430px">
-      <script type="application/json">{
-        "nodes": [
-          {"label": "明治", "when": "1868", "end": "1912", "lane": "時代", "tone": "muted"},
-          {"label": "大正", "when": "1912", "end": "1926", "lane": "時代", "tone": "muted"},
-          {"label": "森鷗外", "when": "1862", "end": "1922", "lane": "作家"},
-          {"label": "夏目漱石", "when": "1867", "end": "1916", "lane": "作家"},
-          {"label": "正岡子規", "when": "1867", "end": "1902", "lane": "作家"},
-          {"label": "樋口一葉\n24 歳で没", "when": "1872", "end": "1896", "lane": "作家", "tone": "emph"},
-          {"label": "芥川龍之介", "when": "1892", "end": "1927", "lane": "作家"},
-          {"label": "宮沢賢治", "when": "1896", "end": "1933", "lane": "作家"}
-        ]
-      }</script>
-    </m-timeline>
-  </div>
-  <div class="concl"><span>→ 重なる生涯は段を分けて積む。漱石と子規は同じ年の生まれ</span></div>
-</section>
-
-<section class="slide">
-  <h2>見せ方の種類（variant）</h2>
-  <div class="body">
-    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:0 36px">
-      <div><p class="vcap">現れてから線（fade、既定）</p>
-        <m-timeline variant="fade" style="height:330px">
-          <script type="application/json">{"nodes": [{"label": "明治維新", "when": "1868"}, {"label": "明治", "when": "1868", "end": "1912"}, {"label": "憲法の発布", "when": "1889"}]}</script>
-        </m-timeline></div>
-      <div><p class="vcap">線を引いてから（draw）</p>
-        <m-timeline variant="draw" style="height:330px">
-          <script type="application/json">{"nodes": [{"label": "明治維新", "when": "1868"}, {"label": "明治", "when": "1868", "end": "1912"}, {"label": "憲法の発布", "when": "1889"}]}</script>
-        </m-timeline></div>
-      <div><p class="vcap">軸の側から大きくなる（grow）</p>
-        <m-timeline variant="grow" style="height:330px">
-          <script type="application/json">{"nodes": [{"label": "明治維新", "when": "1868"}, {"label": "明治", "when": "1868", "end": "1912"}, {"label": "憲法の発布", "when": "1889"}]}</script>
-        </m-timeline></div>
-    </div>
-  </div>
-  <div class="concl"><span>→ 資料のシード値（data-egatari-seed）で 1 つが選ばれる</span></div>
-</section>
-
-<section class="slide">
-  <h2>m-tree（変わった、v1.2.1）</h2>
-  <div class="body">
-    <p>階層・分類の木（組織図、生物の分類など）を、根から 1 段ずつ組み立てる。座標は書かず、配置は部品が決める</p>
-    <ul>
-      <li>言いたいこと：階層・分類</li>
-      <li>見せ方：fade・draw・grow</li>
-      <li>系列：common　見本のスライド：3 枚</li>
-    </ul>
-  </div>
-</section>
-
-<section class="slide">
-  <h2>会社の組織（架空）</h2>
-  <div class="body">
-    <m-tree aria-label="架空の会社の組織図" style="height:440px">
-      <script type="application/json">{
-        "nodes": [
-          {"id": "ceo", "label": "社長", "tone": "emph"},
-          {"id": "s", "label": "営業本部", "parent": "ceo"},
-          {"id": "d", "label": "開発本部", "parent": "ceo"},
-          {"id": "a", "label": "管理本部", "parent": "ceo"},
-          {"id": "s1", "label": "国内営業部", "parent": "s"},
-          {"id": "s2", "label": "海外営業部", "parent": "s"},
-          {"id": "d1", "label": "製品開発部", "parent": "d"},
-          {"id": "d2", "label": "品質保証部", "parent": "d"},
-          {"id": "a1", "label": "人事部", "parent": "a"},
-          {"id": "a2", "label": "経理部", "parent": "a"},
-          {"id": "d11", "label": "設計課", "parent": "d1"},
-          {"id": "d12", "label": "試作課", "parent": "d1"},
-          {"id": "d13", "label": "試験課", "parent": "d1", "note": "2026 年に新設"}
-        ]
-      }</script>
-    </m-tree>
-  </div>
-  <div class="concl"><span>→ 上から 1 段ずつ：本部、部、課</span></div>
-</section>
-
-<section class="slide">
-  <h2>動物の分け方（orient="right"）</h2>
-  <div class="body">
-    <m-tree orient="right" aria-label="動物の分類" style="height:440px">
-      <script type="application/json">{
-        "nodes": [
-          {"id": "an", "label": "動物"},
-          {"id": "v", "label": "脊椎動物", "parent": "an", "note": "背骨がある"},
-          {"id": "i", "label": "無脊椎動物", "parent": "an", "note": "背骨がない", "tone": "muted"},
-          {"id": "f", "label": "魚類", "parent": "v"},
-          {"id": "am", "label": "両生類", "parent": "v"},
-          {"id": "r", "label": "は虫類", "parent": "v"},
-          {"id": "b", "label": "鳥類", "parent": "v"},
-          {"id": "m", "label": "哺乳類", "parent": "v", "tone": "emph"},
-          {"id": "ar", "label": "節足動物", "parent": "i", "tone": "muted"},
-          {"id": "mo", "label": "軟体動物", "parent": "i", "tone": "muted"}
-        ],
-        "edges": [
-          {"from": "r", "to": "b", "label": "近い仲間", "step": 4}
-        ]
-      }</script>
-    </m-tree>
-  </div>
-  <div class="concl"><span>→ 背骨の有無で分け、脊椎動物をさらに 5 つに分ける</span></div>
-</section>
-
-<section class="slide">
-  <h2>見せ方の種類（variant）</h2>
-  <div class="body">
-    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:28px">
-      <div><div class="vcap">箱、それから線（fade、既定）</div>
-      <m-tree variant="fade" aria-label="植物の分類（fade）" style="height:330px">
-        <script type="application/json">{"nodes": [{"id": "p", "label": "植物"}, {"id": "s", "label": "種子植物", "parent": "p"}, {"id": "f", "label": "胞子植物", "parent": "p"}, {"id": "a", "label": "被子植物", "parent": "s"}, {"id": "g", "label": "裸子植物", "parent": "s"}]}</script>
-      </m-tree></div>
-      <div><div class="vcap">線を引いてから箱（draw）</div>
-      <m-tree variant="draw" aria-label="植物の分類（draw）" style="height:330px">
-        <script type="application/json">{"nodes": [{"id": "p", "label": "植物"}, {"id": "s", "label": "種子植物", "parent": "p"}, {"id": "f", "label": "胞子植物", "parent": "p"}, {"id": "a", "label": "被子植物", "parent": "s"}, {"id": "g", "label": "裸子植物", "parent": "s"}]}</script>
-      </m-tree></div>
-      <div><div class="vcap">親の側から大きくなる（grow）</div>
-      <m-tree variant="grow" aria-label="植物の分類（grow）" style="height:330px">
-        <script type="application/json">{"nodes": [{"id": "p", "label": "植物"}, {"id": "s", "label": "種子植物", "parent": "p"}, {"id": "f", "label": "胞子植物", "parent": "p"}, {"id": "a", "label": "被子植物", "parent": "s"}, {"id": "g", "label": "裸子植物", "parent": "s"}]}</script>
-      </m-tree></div>
-    </div>
-  </div>
-  <div class="concl"><span>→ 資料のシード値（data-egatari-seed）で 1 つが選ばれる</span></div>
-</section>
-
-<section class="slide">
-  <h2>m-venn（変わった、v1.2.1）</h2>
-  <div class="body">
-    <p>2 つか 3 つの集合の円（ベン図）。集合を 1 つずつ出し、最後に重なりを強めてその中の項目を出す</p>
-    <ul>
-      <li>言いたいこと：重なり</li>
-      <li>見せ方：fade・draw</li>
-      <li>系列：common　見本のスライド：3 枚</li>
-    </ul>
-  </div>
-</section>
-
-<section class="slide">
-  <h2>哺乳類と海の生き物</h2>
-  <div class="body">
-    <m-venn style="height:420px">
-      <script type="application/json">{
-        "sets": [{"label": "哺乳類"}, {"label": "海の生き物"}],
-        "regions": {
-          "A": ["ライオン", "ウマ", "コウモリ"],
-          "B": ["マグロ", "タコ", "サンゴ"],
-          "AB": ["クジラ", "イルカ", "ジュゴン"]
-        }
-      }</script>
-    </m-venn>
-  </div>
-  <div class="concl"><span>→ クジラもイルカも、海にすむ哺乳類</span></div>
-</section>
-
-<section class="slide">
-  <h2>3 つのスキルの重なり（架空）</h2>
-  <div class="body">
-    <m-venn style="height:430px">
-      <script type="application/json">{
-        "sets": [{"label": "統計"}, {"label": "プログラミング"}, {"label": "現場の知識"}],
-        "regions": {
-          "AB": "機械学習",
-          "AC": "調査",
-          "BC": "自動化",
-          "ABC": "データ\n活用"
-        }
-      }</script>
-    </m-venn>
-  </div>
-  <div class="concl"><span>→ 3 つが重なるところで、データが仕事に生きる</span></div>
-</section>
-
-<section class="slide">
-  <h2>見せ方の種類（variant）</h2>
-  <div class="body">
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:0 40px">
-      <div><p class="vlabel">fade（既定）</p>
-      <m-venn variant="fade" style="height:330px">
-        <script type="application/json">{"sets": [{"label": "朝型"}, {"label": "運動部"}], "regions": {"AB": ["早朝練習"]}}</script>
-      </m-venn></div>
-      <div><p class="vlabel">draw（線を引いてから塗る）</p>
-      <m-venn variant="draw" style="height:330px">
-        <script type="application/json">{"sets": [{"label": "朝型"}, {"label": "運動部"}], "regions": {"AB": ["早朝練習"]}}</script>
-      </m-venn></div>
-    </div>
-  </div>
-  <div class="concl"><span>→ 資料のシード値（data-egatari-seed）で 1 つが選ばれる。例は架空</span></div>
 </section>
 
 <section class="slide">
@@ -829,6 +309,235 @@ document.addEventListener("DOMContentLoaded", function(){
     </m-collect>
   </div>
   <div class="concl"><span>→ 次の予測には，この 2 つの値だけ持てばよい</span></div>
+</section>
+
+<section class="slide">
+  <h2>m-compare</h2>
+  <div class="body">
+    <p>2 つ（3 つまで）を横に並べて比べる表。一方の列、もう一方の列、それから行ごとの違い</p>
+    <ul>
+      <li>言いたいこと：比べる（量・特徴）</li>
+      <li>見せ方：fade・slide・reveal</li>
+      <li>系列：common　見本のスライド：3 枚</li>
+    </ul>
+  </div>
+</section>
+
+<section class="slide">
+  <h2>紙の申請とオンライン申請（架空）</h2>
+  <div class="body">
+    <m-compare style="height:420px">
+      <script type="application/json">{
+        "sides": [{"label": "紙の申請", "tone": "muted"}, {"label": "オンライン申請"}],
+        "rows": [
+          {"label": "受付時間", "values": ["平日 9〜17 時", "24 時間"], "better": 1, "diff": "夜や休日にも出せる"},
+          {"label": "書類", "values": ["窓口で書く", "画面に入力"], "better": 1, "diff": "書き損じがない"},
+          {"label": "結果が届くまで", "values": ["約 2 週間", "約 3 日"], "better": 1, "diff": "11 日ほど早い"},
+          {"label": "手数料", "values": ["300 円", "300 円"], "diff": "同じ"}
+        ]
+      }</script>
+    </m-compare>
+  </div>
+  <div class="concl"><span>→ 違うのは時間。費用は変わらない</span></div>
+</section>
+
+<section class="slide">
+  <h2>植物の細胞と動物の細胞</h2>
+  <div class="body">
+    <m-compare style="height:420px">
+      <script type="application/json">{
+        "sides": [{"label": "植物の細胞"}, {"label": "動物の細胞", "tone": "accent2"}],
+        "rows": [
+          {"label": "核・細胞膜", "values": ["ある", "ある"], "diff": "どちらにもある"},
+          {"label": "細胞壁", "values": ["ある", "ない"], "diff": "植物だけ"},
+          {"label": "葉緑体", "values": ["ある（緑の部分）", "ない"], "diff": "植物だけ"},
+          {"label": "液胞", "values": ["大きく発達", "小さく目立たない"], "diff": "植物で大きい"}
+        ]
+      }</script>
+    </m-compare>
+  </div>
+  <div class="concl"><span>→ 細胞壁と葉緑体は植物の細胞だけにある</span></div>
+</section>
+
+<section class="slide">
+  <h2>見せ方の種類（variant）</h2>
+  <div class="body">
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:0 32px">
+      <div><p class="vlabel">fade（既定）</p>
+      <m-compare variant="fade" style="height:380px">
+        <script type="application/json">{"sides": [{"label": "A 案", "tone": "muted"}, {"label": "B 案"}],
+          "rows": [{"values": ["3 日", "1 日"], "better": 1}, {"values": ["5 万円", "8 万円"], "better": 0}, {"values": ["2 人", "1 人"], "better": 1}]}</script>
+      </m-compare></div>
+      <div><p class="vlabel">slide（横から寄る）</p>
+      <m-compare variant="slide" style="height:380px">
+        <script type="application/json">{"sides": [{"label": "A 案", "tone": "muted"}, {"label": "B 案"}],
+          "rows": [{"values": ["3 日", "1 日"], "better": 1}, {"values": ["5 万円", "8 万円"], "better": 0}, {"values": ["2 人", "1 人"], "better": 1}]}</script>
+      </m-compare></div>
+      <div><p class="vlabel">reveal（1 行ずつ）</p>
+      <m-compare variant="reveal" style="height:380px">
+        <script type="application/json">{"sides": [{"label": "A 案", "tone": "muted"}, {"label": "B 案"}],
+          "rows": [{"values": ["3 日", "1 日"], "better": 1}, {"values": ["5 万円", "8 万円"], "better": 0}, {"values": ["2 人", "1 人"], "better": 1}]}</script>
+      </m-compare></div>
+    </div>
+  </div>
+  <div class="concl"><span>→ 資料のシード値（data-egatari-seed）で 1 つが選ばれる。数字は架空</span></div>
+</section>
+
+<section class="slide">
+  <h2>m-cycle</h2>
+  <div class="body">
+    <p>循環の図。段階の箱を円の上に 12 時から時計回りに並べ、円に沿った矢印でつなぐ（最後から最初へ戻る矢印も）</p>
+    <ul>
+      <li>言いたいこと：循環</li>
+      <li>見せ方：fade・draw・grow</li>
+      <li>系列：common　見本のスライド：3 枚</li>
+    </ul>
+  </div>
+</section>
+
+<section class="slide">
+  <h2>PDCA サイクル</h2>
+  <div class="body">
+    <m-cycle style="height:430px">
+      <script type="application/json">{
+        "center": {"label": "PDCA"},
+        "nodes": [
+          {"label": "計画（Plan）", "note": "目標と手順を決める"},
+          {"label": "実行（Do）", "note": "計画どおりにやってみる"},
+          {"label": "評価（Check）", "note": "結果を目標と比べる"},
+          {"label": "改善（Act）", "note": "やり方を直して次へ", "tone": "emph"}
+        ]
+      }</script>
+    </m-cycle>
+  </div>
+  <div class="concl"><span>→ 1 周ごとに、やり方が少しずつよくなる</span></div>
+</section>
+
+<section class="slide">
+  <h2>水の循環</h2>
+  <div class="body">
+    <m-cycle style="height:430px">
+      <script type="application/json">{
+        "center": {"label": "水の循環", "note": "太陽の熱で動く"},
+        "nodes": [
+          {"label": "蒸発", "note": "海や地面の水が水蒸気に"},
+          {"label": "雲ができる", "note": "上空で冷えて水や氷の粒に"},
+          {"label": "雨・雪", "note": "粒が大きくなって落ちる"},
+          {"label": "しみこむ・流れる", "note": "地下水や川になる"},
+          {"label": "海へ", "note": "川が海に注ぐ"}
+        ]
+      }</script>
+    </m-cycle>
+  </div>
+  <div class="concl"><span>→ 水は形を変えながら、地球の上を回り続ける</span></div>
+</section>
+
+<section class="slide">
+  <h2>見せ方の種類（variant）</h2>
+  <div class="body">
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:0 36px">
+      <div><p class="vcap">現れてから矢印（fade、既定）</p>
+        <m-cycle variant="fade" style="height:360px">
+          <script type="application/json">{"nodes": [{"label": "計画"}, {"label": "実行"}, {"label": "評価"}, {"label": "改善"}]}</script>
+        </m-cycle></div>
+      <div><p class="vcap">矢印を引いてから（draw）</p>
+        <m-cycle variant="draw" style="height:360px">
+          <script type="application/json">{"nodes": [{"label": "計画"}, {"label": "実行"}, {"label": "評価"}, {"label": "改善"}]}</script>
+        </m-cycle></div>
+      <div><p class="vcap">前の箱の側から大きくなる（grow）</p>
+        <m-cycle variant="grow" style="height:360px">
+          <script type="application/json">{"nodes": [{"label": "計画"}, {"label": "実行"}, {"label": "評価"}, {"label": "改善"}]}</script>
+        </m-cycle></div>
+    </div>
+  </div>
+  <div class="concl"><span>→ 資料のシード値（data-egatari-seed）で 1 つが選ばれる</span></div>
+</section>
+
+<section class="slide">
+  <h2>m-fishbone</h2>
+  <div class="body">
+    <p>原因と結果の図（特性要因図・フィッシュボーン図）を、大骨 1 本ずつ組み立て、最後に結果（頭）を出す。座標は書かず、配置は部品が決める</p>
+    <ul>
+      <li>言いたいこと：原因と結果</li>
+      <li>見せ方：fade・draw・grow</li>
+      <li>系列：common　見本のスライド：3 枚</li>
+    </ul>
+  </div>
+</section>
+
+<section class="slide">
+  <h2>配送の遅れの原因（架空）</h2>
+  <div class="body">
+    <m-fishbone aria-label="配送の遅れの特性要因図" style="height:440px">
+      <script type="application/json">{
+        "effect": {"label": "配送の遅れ", "note": "1 日 12 件"},
+        "nodes": [
+          {"id": "p", "label": "人"},
+          {"id": "p1", "label": "人手が足りない", "parent": "p"},
+          {"id": "p11", "label": "繁忙期の採用が遅い", "parent": "p1"},
+          {"id": "p2", "label": "道に慣れていない", "parent": "p"},
+          {"id": "m", "label": "機械"},
+          {"id": "m1", "label": "車の故障が多い", "parent": "m"},
+          {"id": "m2", "label": "端末の反応が遅い", "parent": "m"},
+          {"id": "h", "label": "方法"},
+          {"id": "h1", "label": "積み込みの順が悪い", "parent": "h", "tone": "emph"},
+          {"id": "h2", "label": "経路を手で決めている", "parent": "h"},
+          {"id": "z", "label": "材料"},
+          {"id": "z1", "label": "伝票の記入漏れ", "parent": "z"},
+          {"id": "z2", "label": "箱の大きさがばらばら", "parent": "z"}
+        ]
+      }</script>
+    </m-fishbone>
+  </div>
+  <div class="concl"><span>→ 人・機械・方法・材料（4M）に分けて原因を洗い出す</span></div>
+</section>
+
+<section class="slide">
+  <h2>植物が育たないのはなぜ（order="effect-first"）</h2>
+  <div class="body">
+    <m-fishbone order="effect-first" aria-label="植物が育たない原因" style="height:440px">
+      <script type="application/json">{
+        "effect": {"label": "植物が\n育たない"},
+        "nodes": [
+          {"id": "l", "label": "光"},
+          {"id": "l1", "label": "日当たりが悪い", "parent": "l"},
+          {"id": "l2", "label": "光の当たる時間が短い", "parent": "l"},
+          {"id": "w", "label": "水"},
+          {"id": "w1", "label": "水が足りない", "parent": "w"},
+          {"id": "w2", "label": "水のやりすぎ", "parent": "w"},
+          {"id": "w21", "label": "根が腐る", "parent": "w2"},
+          {"id": "s", "label": "土"},
+          {"id": "s1", "label": "肥料が足りない", "parent": "s"},
+          {"id": "s2", "label": "水はけが悪い", "parent": "s"},
+          {"id": "t", "label": "温度"},
+          {"id": "t1", "label": "気温が低い", "parent": "t", "note": "15 ℃ 未満"},
+          {"id": "t2", "label": "昼と夜の差が大きい", "parent": "t"}
+        ]
+      }</script>
+    </m-fishbone>
+  </div>
+  <div class="concl"><span>→ 結果を先に置き、光・水・土・温度の順に原因を足す</span></div>
+</section>
+
+<section class="slide">
+  <h2>見せ方の種類（variant）</h2>
+  <div class="body">
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:28px">
+      <div><div class="vcap">箱と字、それから線（fade、既定）</div>
+      <m-fishbone variant="fade" aria-label="遅刻の原因（fade）" style="height:340px">
+        <script type="application/json">{"effect": {"label": "遅刻"}, "nodes": [{"id": "a", "label": "自分"}, {"id": "a1", "label": "寝坊", "parent": "a"}, {"id": "a2", "label": "準備が遅い", "parent": "a"}, {"id": "b", "label": "交通"}, {"id": "b1", "label": "電車の遅れ", "parent": "b"}, {"id": "b2", "label": "道の混雑", "parent": "b"}]}</script>
+      </m-fishbone></div>
+      <div><div class="vcap">線を引いてから箱と字（draw）</div>
+      <m-fishbone variant="draw" aria-label="遅刻の原因（draw）" style="height:340px">
+        <script type="application/json">{"effect": {"label": "遅刻"}, "nodes": [{"id": "a", "label": "自分"}, {"id": "a1", "label": "寝坊", "parent": "a"}, {"id": "a2", "label": "準備が遅い", "parent": "a"}, {"id": "b", "label": "交通"}, {"id": "b1", "label": "電車の遅れ", "parent": "b"}, {"id": "b2", "label": "道の混雑", "parent": "b"}]}</script>
+      </m-fishbone></div>
+      <div><div class="vcap">背骨の側から伸びる（grow）</div>
+      <m-fishbone variant="grow" aria-label="遅刻の原因（grow）" style="height:340px">
+        <script type="application/json">{"effect": {"label": "遅刻"}, "nodes": [{"id": "a", "label": "自分"}, {"id": "a1", "label": "寝坊", "parent": "a"}, {"id": "a2", "label": "準備が遅い", "parent": "a"}, {"id": "b", "label": "交通"}, {"id": "b1", "label": "電車の遅れ", "parent": "b"}, {"id": "b2", "label": "道の混雑", "parent": "b"}]}</script>
+      </m-fishbone></div>
+    </div>
+  </div>
+  <div class="concl"><span>→ 資料のシード値（data-egatari-seed）で 1 つが選ばれる</span></div>
 </section>
 
 <section class="slide">
@@ -1120,6 +829,74 @@ document.addEventListener("DOMContentLoaded", function(){
 </section>
 
 <section class="slide">
+  <h2>m-pie</h2>
+  <div class="body">
+    <p>円グラフとドーナツグラフ。切れの名前と値・割合は、大きい切れなら中に、小さい切れなら外に引き出し線で書く</p>
+    <ul>
+      <li>言いたいこと：全体と内訳</li>
+      <li>見せ方：fade・sweep・grow</li>
+      <li>系列：common　見本のスライド：3 枚</li>
+    </ul>
+  </div>
+</section>
+
+<section class="slide">
+  <h2>1 か月の支出の内訳（架空）</h2>
+  <div class="body">
+    <m-pie unit="万円" digits="1" show="both" style="height:440px">
+      <script type="application/json">{
+        "slices": [
+          {"label": "住まい", "value": 8.5},
+          {"label": "食費", "value": 7.2},
+          {"label": "教育・娯楽", "value": 3.1},
+          {"label": "光熱・通信", "value": 2.6},
+          {"label": "交通", "value": 1.8},
+          {"label": "その他", "value": 2.0, "tone": "muted"}
+        ]
+      }</script>
+    </m-pie>
+  </div>
+  <div class="concl"><span>→ 住まいと食費で支出の 6 割を超える</span></div>
+</section>
+
+<section class="slide">
+  <h2>通学の手段（ドーナツ、1 切れずつ。架空）</h2>
+  <div class="body">
+    <m-pie donut="0.56" unit="人" per-step="1" style="height:440px">
+      <script type="application/json">{
+        "center": "回答\n{total}",
+        "slices": [
+          {"label": "自転車", "value": 41},
+          {"label": "徒歩", "value": 32},
+          {"label": "バス", "value": 18},
+          {"label": "電車", "value": 9}
+        ]
+      }</script>
+    </m-pie>
+  </div>
+  <div class="concl"><span>→ 7 割が自転車か徒歩で通っている</span></div>
+</section>
+
+<section class="slide">
+  <h2>見せ方の種類（variant）</h2>
+  <div class="body">
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:0 28px;text-align:center;font-size:27px">
+      <div>フェード（fade、既定）</div><div>掃くように（sweep）</div><div>大きくなる（grow）</div>
+      <m-pie variant="fade" style="height:340px">
+        <script type="application/json">{"slices": [{"label": "A", "value": 50}, {"label": "B", "value": 30}, {"label": "C", "value": 20}]}</script>
+      </m-pie>
+      <m-pie variant="sweep" style="height:340px">
+        <script type="application/json">{"slices": [{"label": "A", "value": 50}, {"label": "B", "value": 30}, {"label": "C", "value": 20}]}</script>
+      </m-pie>
+      <m-pie variant="grow" style="height:340px">
+        <script type="application/json">{"slices": [{"label": "A", "value": 50}, {"label": "B", "value": 30}, {"label": "C", "value": 20}]}</script>
+      </m-pie>
+    </div>
+  </div>
+  <div class="concl"><span>→ 資料のシード値（data-egatari-seed）で 1 つが選ばれる。数字は架空</span></div>
+</section>
+
+<section class="slide">
   <h2>m-quad</h2>
   <div class="body">
     <p>2 軸の位置づけ（ポジショニングマップ・SWOT 風の 4 象限）に、点を段階ごとに 1 つずつ置く</p>
@@ -1221,6 +998,229 @@ document.addEventListener("DOMContentLoaded", function(){
              xl="*t*" yl="損失の比" digits="1" style="height:400px"></m-sweep>
   </div>
   <div class="concl"><span>→ ηa が 2 を超えると、誤差は減らずに増える</span></div>
+</section>
+
+<section class="slide">
+  <h2>m-timeline</h2>
+  <div class="body">
+    <p>年表。出来事を時間の軸の上に 1 つずつ出す。期間は帯にして、重なる期間は段を分けて積む。end は含まない（"1912" は 1912 年の初め）</p>
+    <ul>
+      <li>言いたいこと：年表・予定</li>
+      <li>見せ方：fade・draw・grow</li>
+      <li>系列：common　見本のスライド：3 枚</li>
+    </ul>
+  </div>
+</section>
+
+<section class="slide">
+  <h2>明治のおもな出来事</h2>
+  <div class="body">
+    <m-timeline style="height:430px">
+      <script type="application/json">{
+        "nodes": [
+          {"label": "明治維新", "when": "1868", "whenLabel": "明治元年", "note": "五箇条の御誓文"},
+          {"label": "廃藩置県", "when": "1871"},
+          {"label": "鉄道の開業", "when": "1872", "note": "新橋〜横浜"},
+          {"label": "西南戦争", "when": "1877"},
+          {"label": "憲法の発布", "when": "1889", "tone": "emph"},
+          {"label": "日清戦争", "when": "1894"},
+          {"label": "日露戦争", "when": "1904"}
+        ]
+      }</script>
+    </m-timeline>
+  </div>
+  <div class="concl"><span>→ 約 20 年で憲法をもつ国になった</span></div>
+</section>
+
+<section class="slide">
+  <h2>明治・大正の作家の生涯</h2>
+  <div class="body">
+    <m-timeline style="height:430px">
+      <script type="application/json">{
+        "nodes": [
+          {"label": "明治", "when": "1868", "end": "1912", "lane": "時代", "tone": "muted"},
+          {"label": "大正", "when": "1912", "end": "1926", "lane": "時代", "tone": "muted"},
+          {"label": "森鷗外", "when": "1862", "end": "1922", "lane": "作家"},
+          {"label": "夏目漱石", "when": "1867", "end": "1916", "lane": "作家"},
+          {"label": "正岡子規", "when": "1867", "end": "1902", "lane": "作家"},
+          {"label": "樋口一葉\n24 歳で没", "when": "1872", "end": "1896", "lane": "作家", "tone": "emph"},
+          {"label": "芥川龍之介", "when": "1892", "end": "1927", "lane": "作家"},
+          {"label": "宮沢賢治", "when": "1896", "end": "1933", "lane": "作家"}
+        ]
+      }</script>
+    </m-timeline>
+  </div>
+  <div class="concl"><span>→ 重なる生涯は段を分けて積む。漱石と子規は同じ年の生まれ</span></div>
+</section>
+
+<section class="slide">
+  <h2>見せ方の種類（variant）</h2>
+  <div class="body">
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:0 36px">
+      <div><p class="vcap">現れてから線（fade、既定）</p>
+        <m-timeline variant="fade" style="height:330px">
+          <script type="application/json">{"nodes": [{"label": "明治維新", "when": "1868"}, {"label": "明治", "when": "1868", "end": "1912"}, {"label": "憲法の発布", "when": "1889"}]}</script>
+        </m-timeline></div>
+      <div><p class="vcap">線を引いてから（draw）</p>
+        <m-timeline variant="draw" style="height:330px">
+          <script type="application/json">{"nodes": [{"label": "明治維新", "when": "1868"}, {"label": "明治", "when": "1868", "end": "1912"}, {"label": "憲法の発布", "when": "1889"}]}</script>
+        </m-timeline></div>
+      <div><p class="vcap">軸の側から大きくなる（grow）</p>
+        <m-timeline variant="grow" style="height:330px">
+          <script type="application/json">{"nodes": [{"label": "明治維新", "when": "1868"}, {"label": "明治", "when": "1868", "end": "1912"}, {"label": "憲法の発布", "when": "1889"}]}</script>
+        </m-timeline></div>
+    </div>
+  </div>
+  <div class="concl"><span>→ 資料のシード値（data-egatari-seed）で 1 つが選ばれる</span></div>
+</section>
+
+<section class="slide">
+  <h2>m-tree</h2>
+  <div class="body">
+    <p>階層・分類の木（組織図、生物の分類など）を、根から 1 段ずつ組み立てる。座標は書かず、配置は部品が決める</p>
+    <ul>
+      <li>言いたいこと：階層・分類</li>
+      <li>見せ方：fade・draw・grow</li>
+      <li>系列：common　見本のスライド：3 枚</li>
+    </ul>
+  </div>
+</section>
+
+<section class="slide">
+  <h2>会社の組織（架空）</h2>
+  <div class="body">
+    <m-tree aria-label="架空の会社の組織図" style="height:440px">
+      <script type="application/json">{
+        "nodes": [
+          {"id": "ceo", "label": "社長", "tone": "emph"},
+          {"id": "s", "label": "営業本部", "parent": "ceo"},
+          {"id": "d", "label": "開発本部", "parent": "ceo"},
+          {"id": "a", "label": "管理本部", "parent": "ceo"},
+          {"id": "s1", "label": "国内営業部", "parent": "s"},
+          {"id": "s2", "label": "海外営業部", "parent": "s"},
+          {"id": "d1", "label": "製品開発部", "parent": "d"},
+          {"id": "d2", "label": "品質保証部", "parent": "d"},
+          {"id": "a1", "label": "人事部", "parent": "a"},
+          {"id": "a2", "label": "経理部", "parent": "a"},
+          {"id": "d11", "label": "設計課", "parent": "d1"},
+          {"id": "d12", "label": "試作課", "parent": "d1"},
+          {"id": "d13", "label": "試験課", "parent": "d1", "note": "2026 年に新設"}
+        ]
+      }</script>
+    </m-tree>
+  </div>
+  <div class="concl"><span>→ 上から 1 段ずつ：本部、部、課</span></div>
+</section>
+
+<section class="slide">
+  <h2>動物の分け方（orient="right"）</h2>
+  <div class="body">
+    <m-tree orient="right" aria-label="動物の分類" style="height:440px">
+      <script type="application/json">{
+        "nodes": [
+          {"id": "an", "label": "動物"},
+          {"id": "v", "label": "脊椎動物", "parent": "an", "note": "背骨がある"},
+          {"id": "i", "label": "無脊椎動物", "parent": "an", "note": "背骨がない", "tone": "muted"},
+          {"id": "f", "label": "魚類", "parent": "v"},
+          {"id": "am", "label": "両生類", "parent": "v"},
+          {"id": "r", "label": "は虫類", "parent": "v"},
+          {"id": "b", "label": "鳥類", "parent": "v"},
+          {"id": "m", "label": "哺乳類", "parent": "v", "tone": "emph"},
+          {"id": "ar", "label": "節足動物", "parent": "i", "tone": "muted"},
+          {"id": "mo", "label": "軟体動物", "parent": "i", "tone": "muted"}
+        ],
+        "edges": [
+          {"from": "r", "to": "b", "label": "近い仲間", "step": 4}
+        ]
+      }</script>
+    </m-tree>
+  </div>
+  <div class="concl"><span>→ 背骨の有無で分け、脊椎動物をさらに 5 つに分ける</span></div>
+</section>
+
+<section class="slide">
+  <h2>見せ方の種類（variant）</h2>
+  <div class="body">
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:28px">
+      <div><div class="vcap">箱、それから線（fade、既定）</div>
+      <m-tree variant="fade" aria-label="植物の分類（fade）" style="height:330px">
+        <script type="application/json">{"nodes": [{"id": "p", "label": "植物"}, {"id": "s", "label": "種子植物", "parent": "p"}, {"id": "f", "label": "胞子植物", "parent": "p"}, {"id": "a", "label": "被子植物", "parent": "s"}, {"id": "g", "label": "裸子植物", "parent": "s"}]}</script>
+      </m-tree></div>
+      <div><div class="vcap">線を引いてから箱（draw）</div>
+      <m-tree variant="draw" aria-label="植物の分類（draw）" style="height:330px">
+        <script type="application/json">{"nodes": [{"id": "p", "label": "植物"}, {"id": "s", "label": "種子植物", "parent": "p"}, {"id": "f", "label": "胞子植物", "parent": "p"}, {"id": "a", "label": "被子植物", "parent": "s"}, {"id": "g", "label": "裸子植物", "parent": "s"}]}</script>
+      </m-tree></div>
+      <div><div class="vcap">親の側から大きくなる（grow）</div>
+      <m-tree variant="grow" aria-label="植物の分類（grow）" style="height:330px">
+        <script type="application/json">{"nodes": [{"id": "p", "label": "植物"}, {"id": "s", "label": "種子植物", "parent": "p"}, {"id": "f", "label": "胞子植物", "parent": "p"}, {"id": "a", "label": "被子植物", "parent": "s"}, {"id": "g", "label": "裸子植物", "parent": "s"}]}</script>
+      </m-tree></div>
+    </div>
+  </div>
+  <div class="concl"><span>→ 資料のシード値（data-egatari-seed）で 1 つが選ばれる</span></div>
+</section>
+
+<section class="slide">
+  <h2>m-venn</h2>
+  <div class="body">
+    <p>2 つか 3 つの集合の円（ベン図）。集合を 1 つずつ出し、最後に重なりを強めてその中の項目を出す</p>
+    <ul>
+      <li>言いたいこと：重なり</li>
+      <li>見せ方：fade・draw</li>
+      <li>系列：common　見本のスライド：3 枚</li>
+    </ul>
+  </div>
+</section>
+
+<section class="slide">
+  <h2>哺乳類と海の生き物</h2>
+  <div class="body">
+    <m-venn style="height:420px">
+      <script type="application/json">{
+        "sets": [{"label": "哺乳類"}, {"label": "海の生き物"}],
+        "regions": {
+          "A": ["ライオン", "ウマ", "コウモリ"],
+          "B": ["マグロ", "タコ", "サンゴ"],
+          "AB": ["クジラ", "イルカ", "ジュゴン"]
+        }
+      }</script>
+    </m-venn>
+  </div>
+  <div class="concl"><span>→ クジラもイルカも、海にすむ哺乳類</span></div>
+</section>
+
+<section class="slide">
+  <h2>3 つのスキルの重なり（架空）</h2>
+  <div class="body">
+    <m-venn style="height:430px">
+      <script type="application/json">{
+        "sets": [{"label": "統計"}, {"label": "プログラミング"}, {"label": "現場の知識"}],
+        "regions": {
+          "AB": "機械学習",
+          "AC": "調査",
+          "BC": "自動化",
+          "ABC": "データ\n活用"
+        }
+      }</script>
+    </m-venn>
+  </div>
+  <div class="concl"><span>→ 3 つが重なるところで、データが仕事に生きる</span></div>
+</section>
+
+<section class="slide">
+  <h2>見せ方の種類（variant）</h2>
+  <div class="body">
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:0 40px">
+      <div><p class="vlabel">fade（既定）</p>
+      <m-venn variant="fade" style="height:330px">
+        <script type="application/json">{"sets": [{"label": "朝型"}, {"label": "運動部"}], "regions": {"AB": ["早朝練習"]}}</script>
+      </m-venn></div>
+      <div><p class="vlabel">draw（線を引いてから塗る）</p>
+      <m-venn variant="draw" style="height:330px">
+        <script type="application/json">{"sets": [{"label": "朝型"}, {"label": "運動部"}], "regions": {"AB": ["早朝練習"]}}</script>
+      </m-venn></div>
+    </div>
+  </div>
+  <div class="concl"><span>→ 資料のシード値（data-egatari-seed）で 1 つが選ばれる。例は架空</span></div>
 </section>
 
 </div>
