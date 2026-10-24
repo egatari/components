@@ -15,6 +15,7 @@
 //  11. codetree-dom    m-codetree's DOM and pixels do not depend on the order of render calls (tools/test-codetree-dom.mjs)
 //  12. shape            wrong-shaped data and refused expressions: inline placeholder and DECK.componentErrors, no exception (tools/test-shape.mjs)
 //  13. seed0           variant 0 of every component with variants is pixel-identical to the last release (tools/test-seed0.mjs)
+//  14. duration        every step is complete when its declared length ends (tools/test-duration.mjs)
 //   node tools/test-all.mjs [--only name,name]
 import os from 'node:os';
 import path from 'node:path';
@@ -43,6 +44,7 @@ const TESTS = [
   ['test-codetree-dom', ['tools/test-codetree-dom.mjs', path.join(tmp, 'codetree-dom')]],
   ['test-shape', ['tools/test-shape.mjs', path.join(tmp, 'shape')]],
   ['test-seed0', ['tools/test-seed0.mjs', path.join(tmp, 'seed0')]],
+  ['test-duration', ['tools/test-duration.mjs']],
 ];
 const oi = process.argv.indexOf('--only');
 const only = oi >= 0 ? new Set(process.argv[oi + 1].split(',')) : null;
