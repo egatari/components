@@ -2,17 +2,17 @@
 
 [日本語](conventions.ja.md)
 
-> Draft (2026-10-24), not yet reviewed by the standards work or the owner. Component names are working names and become final when this document is approved.
+> Draft (2026-10-24), reviewed by the standards work, not yet by the owner. Component names are working names and become final when this document is approved.
 
 The 8 components added in v1.2.0 (`m-compare` `m-timeline` `m-fishbone` `m-cycle` `m-scatter` `m-tree` `m-pie` `m-venn`) follow these conventions from the start. Existing components adopt them gradually, without changing how existing lessons look ([1.6](#16-adding-variants-to-an-existing-component)).
 
-The component contract (`render(k, t)` depends only on the step and the time, colours only through theme variables, and so on) is in Studio's [contract](https://github.com/egatari/egatari-studio/blob/main/docs/contract.md) and in [CONTRIBUTING](../CONTRIBUTING.md). This document adds to it.
+Variants and the seed are defined in spec [§8.4](https://github.com/egatari/egatari-spec/blob/main/egatari-1.0.md#84-component-contract-summary). The component contract (`render(k, t)` depends only on the step and the time, colours only through theme variables, and so on) is in Studio's [contract](https://github.com/egatari/egatari-studio/blob/main/docs/contract.md) and in [CONTRIBUTING](../CONTRIBUTING.md). This document adds to it.
 
 1. [Variants and the seed](#1-variants-and-the-seed)
 2. [Box-and-line diagrams](#2-box-and-line-diagrams-timeline-cycle-tree-cause-and-effect)
 3. [Chart components](#3-chart-components)
 4. [Declaring purposes](#4-declaring-purposes)
-5. [Open questions](#5-open-questions)
+5. [Decided and deferred](#5-decided-and-deferred)
 
 ## 1. Variants and the seed
 
@@ -43,7 +43,7 @@ Because steps, lengths and cues stay the same, the narration, video timing, capt
 
 | Where | Syntax | Meaning |
 |---|---|---|
-| Lesson | `<html data-egatari-seed="N">` | The lesson's seed: an integer 0 ≤ N < 2³². Written once when the lesson is created and not changed afterwards; 0 when absent. **Name and place are provisional** (the standards work fixes them in spec §8.4) |
+| Lesson | `<html data-egatari-seed="N">` | The lesson's seed: an integer 0 ≤ N < 2³². A decimal integer on the root element of the lesson source, written once when the lesson is created and preserved on every save; 0 when absent (spec [§8.4](https://github.com/egatari/egatari-spec/blob/main/egatari-1.0.md#84-component-contract-summary)) |
 | Component | `seed="N"` | Overrides the seed for this component only |
 | Component | `variant="name"` | Chooses a variant by name (for example when the author asks for "counting up"). Stronger than any seed |
 
@@ -92,8 +92,8 @@ Alternatively Studio's component base class (`DECK.MotionElement`) could provide
 ### 1.6 Adding variants to an existing component
 
 - **Variant 0 does not change by a single pixel.** Lessons without a seed (all existing lessons) look the same. The tests compare each demo's screenshots (mid-step and final) with those of the release before the variants were added.
-- A lesson with a seed may look different after it is rebuilt with a newer release (about 1/(n+1) of them, see 1.4). Adding variants is therefore a minor version and goes in the CHANGELOG.
-- If an existing prop overlaps with a variant, the prop wins. For example `count="false"` on `m-kpi` still means "do not count": if a counting variant (`count`, `flip`) is chosen, the component uses the non-counting one (`rise`).
+- A lesson pins its component versions (spec [§6](https://github.com/egatari/egatari-spec/blob/main/egatari-1.0.md#6-components-and-profiles)), so a seeded lesson changes look only when its author moves to a newer release (about 1/(n+1) of them, see 1.4). Updating a component already shows what changes; a variant change is one more thing shown there. Adding variants is a minor version and goes in the CHANGELOG.
+- If an existing prop overlaps with a variant, the prop wins. For example `count="false"` on `m-kpi` still means "do not count": if a counting variant (`count`, `flip`) is chosen, the component uses the non-counting one (`rise`) and logs a `console.info` once saying why.
 - In v1.2.0 only `m-kpi` gains variants (it is where the complaint came from); other components follow in later releases.
 
 ### 1.7 Example: `m-kpi`
@@ -153,7 +153,7 @@ Example (timeline):
 
 ### 2.3 Layout rules
 
-- **Stay inside the element's box.** The font size follows the element's size and shrinks if needed, down to 22 px (the minimum body size). If it still does not fit, do not overflow: report with `console.warn` (the tests check this).
+- **Stay inside the element's box.** The font size follows the element's size and shrinks if needed, down to 24 px (what Studio's checker requires for text in figures; body text is 27 px). Never below that: if it still does not fit, report with `console.warn` (the tests check this). Text that is deliberately smaller (a note, a tick label) carries `data-annot` (as in `m-kanbun`; the checker's `smallSvgText` exempts it).
 - Box widths are estimated from character counts (as in `m-kpi`; no waiting for fonts). Boxes, and text and lines, stay at least 4 px apart (checked by `tools/test-components.mjs`, as for `m-flow`).
 - Direction is the `orient` attribute: `m-timeline` `h` (default, left to right) or `v` (top to bottom); `m-tree` `down` (default) or `right`; `m-fishbone` head on the right (default). `m-cycle` starts at 12 o'clock and runs clockwise.
 - `m-timeline` spacing is the `scale` attribute: `time` (default, proportional to time) or `even` (equal spacing, for very uneven gaps). Labels alternate above and below the axis.
@@ -181,6 +181,8 @@ Following section 1, the four share variant names:
 - `fade` (0): boxes fade in, then the lines are drawn (as `m-flow` does now)
 - `draw`: the line is drawn first and the box appears at its end
 - `grow`: a box grows out of its parent's (or the previous box's) position and moves into place
+
+The total motion of `draw` and `grow` stays within `fade`'s duration and travel (no more motion than variant 0, 1.2).
 
 ## 3. Chart components
 
@@ -218,7 +220,10 @@ The purposes a component can serve are listed in one file in this repository (`p
 | `contents` | Contents | Whole at once |
 | `parameter` | Varying a parameter | One value at a time |
 
-The list may grow, but an `id` never changes (lessons and instructions record it). `spatial` (place) is added when the map component arrives.
+| `deviation` | Deviation, increase and decrease (diverging bars, waterfall) | (reserved; no component yet) |
+| `concept-links` | Concept links (concept map) | (reserved; no component yet) |
+
+The list may grow, but an `id` never changes (lessons and instructions record it). `deviation` and `concept-links` are gaps in section 8 of the parts map; their ids are reserved now so they stay stable. `spatial` (place) is added when the map component arrives.
 
 ### 4.2 Declaring them in a component
 
@@ -228,7 +233,7 @@ The README frontmatter gets `purposes:`, main purpose first:
 purposes: change, compare
 ```
 
-`tools/catalog.mjs` rejects ids not in the list and adds a "purpose → components" table to CATALOG.md. When Studio builds the AI instructions, it lists the components by purpose from that table.
+`tools/catalog.mjs` rejects ids not in the list and adds a "purpose → components" table to CATALOG.md. `purposes.json` belongs to this repository: Studio vendors it with the components, and the nightly evaluation reads it from there. When Studio builds the AI instructions, it lists the components by purpose from that table.
 
 Proposed declarations for existing and v1.2.0 components:
 
@@ -255,10 +260,12 @@ Proposed declarations for existing and v1.2.0 components:
 | `m-pie` | part-whole |
 | `m-venn` | overlap |
 
-## 5. Open questions
+## 5. Decided and deferred
 
-1. The name and place of the lesson seed (`data-egatari-seed` is provisional), and where the new-lesson flow writes it. (Standards, spec §8.4)
-2. Does a lesson keep the component code of the release it was built with? If so, a seeded lesson changes look only when rebuilt (1.6).
-3. Should Studio's base class provide the variant choice (with dev, after v0.4.8)?
-4. Renaming the series to match the subject part sets (standards to dev, with #99). This document does not rename them.
-5. Whether `purposes.json` belongs to this repository or to Studio. This draft puts it here.
+Decided in the standards review (2026-10-24):
+
+1. The lesson seed is `data-egatari-seed` (spec §8.4, egatari-spec 270767a).
+2. Lessons pin component versions (spec §6); a seeded lesson changes look only when moved to a newer release (1.6).
+3. A base-class `this.variant` in Studio comes later, with dev. v1.2.0 uses `tools/variant.js` and `variant-sync`.
+4. This document does not rename the series (standards to dev, with #99).
+5. `purposes.json` lives in this repository (4.2).
