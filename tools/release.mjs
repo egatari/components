@@ -3,7 +3,7 @@
 // Writes
 //   dist/egatari-components-v1.0.0.tar.gz   LICENSE and components/<name>/… as <name>/… (every file of each component except out/)
 //   dist/manifest.json                       {name, version, tag, repository, license, tarball: {file, sha256, bytes},
-//                                             purposes (purposes.json),
+//                                             purposes: [{id, ja, en, steps: {ja, en}, reserved?}] (purposes.json's list),
 //                                             components: {<name>: {tag, series, purposes, variants, sha256 (of index.js), files: {<path>: sha256}}},
 //                                             yanked: {<version>: {replacement, reason, date}}  (from yanked.json; Egatari spec §6: a withdrawn release stays available),
 //                                             files: {<path in the tarball>: sha256}}
@@ -67,7 +67,7 @@ export function release(version) {
     name: NAME, version, tag: `v${version}`, repository: REPOSITORY, license: 'MIT',
     tarball: { file, sha256: sha(gz), bytes: gz.length },
     // purposes.json rides in the manifest, not the tarball: Studio's updater takes only LICENSE and component folders
-    purposes: JSON.parse(fs.readFileSync(path.join(ROOT, 'purposes.json'), 'utf8')),
+    purposes: JSON.parse(fs.readFileSync(path.join(ROOT, 'purposes.json'), 'utf8')).purposes,
     components,
     yanked: readYanked(version),
     files: Object.fromEntries(entries.map(([p, b]) => [p, idSha(p, b)])),
