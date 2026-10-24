@@ -2,7 +2,7 @@
 
 Versions follow [README.md § Releases and versions](README.md#releases-and-versions). Tags are never moved.
 
-## Unreleased
+## 1.1.0 - 2026-10-24
 
 ### Fixed
 
