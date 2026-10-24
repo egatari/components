@@ -35,7 +35,7 @@ From `purposes.json` (docs/conventions.md §4). Bold: the component's main purpo
 
 | id | 言いたいこと | Purpose | 既定の段階 | 部品 |
 |---|---|---|---|---|
-| `compare` | 量を比べる | Compare amounts | 一方を出し、それから違い | **`<m-bars>`** **`<m-compare>`** |
+| `compare` | 比べる（量・特徴） | Compare (amounts or features) | 一方を出し、それから違い | **`<m-bars>`** **`<m-compare>`** |
 | `ranking` | 順位 | Ranking | 並べ替えた棒を 1 本ずつ | `<m-bars>` |
 | `change` | 時間での変化 | Change over time | 線を 1 本ずつ | `<m-bars>` **`<m-curves>`** |
 | `part-whole` | 全体と内訳 | Part of a whole | 一度に全部 | `<m-bars>` **`<m-market>`** **`<m-pie>`** |

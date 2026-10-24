@@ -1,7 +1,7 @@
 {
   "note": "What a slide may want to say (docs/conventions.md §4). An id never changes; the list may grow. A component lists its ids in its README frontmatter (purposes:), main purpose first. reserved: an id kept for a gap with no component yet.",
   "purposes": [
-    {"id": "compare", "ja": "量を比べる", "en": "Compare amounts", "steps": {"ja": "一方を出し、それから違い", "en": "One side, then the difference"}},
+    {"id": "compare", "ja": "比べる（量・特徴）", "en": "Compare (amounts or features)", "steps": {"ja": "一方を出し、それから違い", "en": "One side, then the difference"}},
     {"id": "ranking", "ja": "順位", "en": "Ranking", "steps": {"ja": "並べ替えた棒を 1 本ずつ", "en": "Sorted bars one at a time"}},
     {"id": "change", "ja": "時間での変化", "en": "Change over time", "steps": {"ja": "線を 1 本ずつ", "en": "One line at a time"}},
     {"id": "part-whole", "ja": "全体と内訳", "en": "Part of a whole", "steps": {"ja": "一度に全部", "en": "Whole at once"}},

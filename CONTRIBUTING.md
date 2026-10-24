@@ -34,7 +34,7 @@ After the proposal is accepted and named, open a pull request that adds `compone
 - [ ] `index.js` defines `<m-<name>>` and follows the [component contract](https://github.com/egatari/egatari-studio/blob/main/docs/contract.md#3-components-web-components): `render(k, t)` decides the picture from the step and time only (no `setTimeout`, `requestAnimationFrame`, `Date` or unseeded random; `t = Infinity` is the final state), colors only through theme variables (`var(--term)` `var(--emph)` `var(--muted)` `var(--accent2)` `var(--line)` `var(--fg)` `var(--series-1..4)`), the data's shape declared in `static shape`, no deck-specific text or numbers
 - [ ] no eval-like code (`npm test` runs `tools/scan-code.mjs`): no `eval`, `Function`, `constructor`, string timers, `import`, `innerHTML` and similar; a formula an author writes is evaluated with `tools/expr.js` (copy it in with `node tools/expr-sync.mjs` and add the component to its `USERS`), never as JavaScript ([SECURITY.md](SECURITY.md))
 - [ ] `README.md` with frontmatter `name`, `series` (`common`, `academic`, `business`, `kokugo` or `info`), `summary`, `steps`, `props`, and a body saying when to use it
-- [ ] `demo.html`: a 1–2 slide sample deck whose texts and data are yours, public domain or fictional
+- [ ] `demo.html`: a sample deck of 1–3 slides, plus a slide showing the variants side by side when the component has variants, whose texts and data are yours, public domain or fictional
 - [ ] a wrong-shape example for it in `tools/test-shape.mjs`
 - [ ] `node tools/catalog.mjs` re-run (CATALOG.md is generated)
 - [ ] `npm test` passes, and you looked at the screenshots it writes (mid-step and final)

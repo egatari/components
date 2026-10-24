@@ -125,7 +125,7 @@ The child JSON is always `{"nodes": [...], "edges": [...]}`; `edges` may be omit
 |---|---|
 | `id` | String or integer, used to refer to the node |
 | `label` | The box text (short; `\n` for a line break; `*italic*` `_sub` `^sup` as in `m-flow`), or `tex` (KaTeX) |
-| `note` | Small text under the box (`--muted`): a remark, a note on a date |
+| `note` | Supplementary text (`--muted`). Under the box or as the box's last line, whichever avoids the lines; the component decides and its README says which (timeline and cycle: inside; tree and fishbone: under) |
 | `tone` | `term` (default), `emph`, `muted`, `accent2`, `series-1..4` |
 | `step` | The step the node appears at (default: 2.4) |
 | `at` | Start time within the step, in seconds |
@@ -134,7 +134,7 @@ The child JSON is always `{"nodes": [...], "edges": [...]}`; `edges` may be omit
 
 | Component | Field | Meaning |
 |---|---|---|
-| `m-timeline` | `when`, `end` | A time (a number, or a string such as `"1868"`, `"2026-10"`, `"2026-10-24"`). With `end`, a period (drawn as a band) |
+| `m-timeline` | `when`, `end`, `whenLabel` | A time (a number, or a string such as `"1868"`, `"2026-10"`, `"2026-10-24"`). With `end`, a period (drawn as a band). **`end` is exclusive** (the moment it ends: `"1912"` is the start of 1912), so Meiji 1868–1912 and Taishō 1912–1926 share a lane; to include December, write the next month (`"2027-01"`). `whenLabel` is the date text shown (`明治元年`); the position still comes from `when` |
 | `m-cycle` | (array order) | The cycle runs in array order; the arrow from the last back to the first is drawn automatically |
 | `m-tree` | `parent` | The parent's `id`. The node without `parent` is the root (exactly one) |
 | `m-fishbone` | `parent` | The parent's `id`. Nodes without `parent` are the main bones (categories such as people, machines, methods, materials), their children are causes, grandchildren sub-causes (3 levels at most). The effect (head) is given separately as `{"effect": {"label": …}}` |
@@ -157,7 +157,9 @@ Example (timeline):
 - Box widths are estimated from character counts (as in `m-kpi`; no waiting for fonts). Boxes, and text and lines, stay at least 4 px apart (checked by `tools/test-components.mjs`, as for `m-flow`).
 - Direction is the `orient` attribute: `m-timeline` `h` (default, left to right) or `v` (top to bottom); `m-tree` `down` (default) or `right`; `m-fishbone` head on the right (default). `m-cycle` starts at 12 o'clock and runs clockwise.
 - `m-timeline` spacing is the `scale` attribute: `time` (default, proportional to time) or `even` (equal spacing, for very uneven gaps). Labels alternate above and below the axis.
-- Lines are `--line`, 3 px, with the same arrowhead in every component; emphasised lines use the `tone` colour.
+- Lines that connect boxes to boxes or to the axis are `--muted`, 3 px (`--line` is too faint on a projector, as seen in the 2026-10-23 workshop). `--line` is only for axes, ticks and grids. The arrowhead is the same in every component; emphasised lines use the `tone` colour.
+- One "main line" per diagram (the fishbone spine, the timeline axis) may be up to 5 px.
+- `m-flow`'s lines do not change in v1.2.0 (seed 0 must look the same). Moving them to `--muted` changes existing lessons, so the owner decides it for a later release.
 - No vertical writing (that is for the kokugo components).
 
 ### 2.4 Step order (defaults)

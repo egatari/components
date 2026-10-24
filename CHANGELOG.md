@@ -24,6 +24,12 @@ Versions follow [README.md § Releases and versions](README.md#releases-and-vers
 
 - `m-curves` and `m-quad`: series `common` (were `academic` and `business`). Only the catalogue and the AI pack's grouping change; tag names and drawing are unchanged
 
+### Later (candidates, not in this release)
+
+- `m-flow`: connectors in `--muted` like the new box-and-line diagrams (changes existing lessons; the owner decides)
+- `m-kanbun`, `m-kobun`: some steps are not complete at their declared length (`tools/test-duration.mjs` lists them as known; they may hold their last frame on purpose; check before changing)
+- `m-compare` `by="row"`; an "outside every set" region for `m-venn`; a project-plan demo for `m-timeline` lanes
+
 ## 1.1.0 - 2026-10-24
 
 ### Fixed
