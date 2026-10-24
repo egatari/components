@@ -311,7 +311,11 @@ D.define("m-kanbun", class extends D.MotionElement {
     ce.forEach(function(ev, m){
       var e = self.cells[ev.c], second = ev.kind === "second" && e.c.second !== null;
       var nx = second && !e.c.ruby ? e.x + S + 1 : e.x - L, ny = second && e.c.ruby ? e.y - NF : e.y + 3;
-      var nb = box("span", "kb-num", "position:absolute;left:" + nx + "px;top:" + ny + "px;width:" + L + "px;font-family:var(--font-sans);font-size:" + NF + "px;line-height:" + NF + "px;text-align:center;font-weight:700;color:var(--emph);font-variant-numeric:tabular-nums;opacity:0", kb, String(m + 1));
+      // 二桁以上は箱（幅 L）に収まるよう字の大きさだけを下げる（数字 1 つの幅を 0.75em と見て 2 px の余白を残す）。一桁は従来のまま
+      var nd = String(m + 1).length, NS = nd > 1 ? Math.floor(Math.min(NF, (L - 2) / (nd * 0.75)) * 2) / 2 : NF;
+      var nb = box("span", "kb-num", "position:absolute;left:" + nx + "px;top:" + ny + "px;width:" + L + "px;font-family:var(--font-sans);font-size:" + NS + "px;line-height:" + NF + "px;text-align:center;font-weight:700;color:var(--emph);font-variant-numeric:tabular-nums;opacity:0", kb, String(m + 1));
+      // 字の脇に添える小さい注記の印（Egatari Studio の品質チェックが字の大きさの最小を見ない。docs/contract.md §10）
+      nb.setAttribute("data-annot", "");
       e.nums.push(nb); ev.num = nb;
     });
     // 目（今読んでいる字の枠）と、上へ戻るところの弧

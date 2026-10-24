@@ -4,6 +4,12 @@ Versions follow [README.md § Releases and versions](README.md#releases-and-vers
 
 ## Unreleased
 
+### Fixed
+
+- `m-kanbun`: reading-order numbers of two or more digits (10 and up) no longer spill out of their box into the character next to them. Only their font size is reduced (for example 24 px to 18.5 px at the default size) so that the text fits the box; the box, its position and everything about one-digit numbers are unchanged (a lesson whose kanbun has at most nine reading events draws the same pixels as before). This changes how existing two-digit numbers are drawn, so it needs a minor version at least. Every reading-order number also carries `data-annot` (the small-annotation mark of Egatari Studio's quality check, which then does not apply its 24 px minimum text size to it). Checked by `tools/test-kanbun-num.mjs`
+- `m-kobun`: the conjugation card the viewer opened also closes when the runtime passes `ctx.reset` to `render` (Egatari Studio re-entering a step after the viewer touched a component; contract §3), as it already did when `k` changes. Without `ctx.reset` and with the same `k` the card stays open. Normal stepping draws the same pixels as before. Checked by `tools/test-kobun-reset.mjs`
+- `m-codetree`: `render` no longer leaves the state of an earlier call on elements that are not drawn (opacity 0), so the DOM, attributes included, no longer depends on the order of `render` calls. What was left: the position (`x1 y1 x2 y2`, `x`, `y`) and the bit of the dashed branch and the `×` for an unknown code, the bracket path (`d`), the swatch and label `x` and the label text of a pixel run that is not shown yet, and the text of the "so far" line above the window. They are now removed (or emptied) when not drawn, which is how they were created. Nothing visible changes: the screenshots of the demos at every step are byte-identical to before. Checked by `tools/test-codetree-dom.mjs` (`render(a)` then `render(b)` against a fresh `render(b)`: same DOM, same pixels)
+
 ## 1.0.3 - 2026-10-20
 
 ### Security
