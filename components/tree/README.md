@@ -13,13 +13,13 @@ props: orient, by, link, size, fade, draw
 
 子の JSON：`{"nodes": [...], "edges": [...]}`（`edges` は省いてよい）。
 
-- node：`id`、`label`（`\n` で改行、`*斜体*` `_下付き` `^上付き`）か `tex`（KaTeX）、`parent`（親の `id`。`parent` のない節（根）はちょうど 1 つ）、`note`（箱の**下**に小さな一言、`--muted`。m-fishbone も箱の外、m-timeline・m-cycle は箱の中の最後の行）、`tone`（`term`（既定）・`emph`・`muted`・`accent2`・`series-1..4`）、`step`、`at`（段階の中の開始秒）
+- node：`id`、`label`（`\n` で改行、`*斜体*` `_下付き` `^上付き`）か `tex`（KaTeX）、`parent`（親の `id`。`parent` のない節（根）はちょうど 1 つ）、`note`（箱の**下**に小さな一言、`--muted`）、`tone`（`term`（既定）・`emph`・`muted`・`accent2`・`series-1..4`）、`step`、`at`（段階の中の開始秒）
 - 子は配列の順に並ぶ。親は子の並びの中央に置く
 - edge：親子のほかのつながり（`from` `to` `label` `tone` `dash` `step`）。破線で矢印つき、木の外側（`down` は下、`right` は右）へふくらむ。同じ深さの節どうしに向く。段階は既定で両端の遅いほう
 - `orient`：`down`（既定、上から下）か `right`（左から右。分類を横に広げるとき）
 - `by`：`level`（既定。根、それから深さごとに 1 段）か `node`（深さ優先の順に 1 つずつ。1 つの枝をたどって話すとき）。節の `step` が勝つ
 - `link`：親子の線。`elbow`（既定、かぎ形）か `straight`（まっすぐ）。線の色は `--muted`、3 px
-- `tone: emph` の箱は、地が `--emph-tint`、枠と字が `--emph`（m-fishbone・m-timeline・m-cycle と同じ）
+- `tone: emph` の箱は、地が `--emph-tint`、枠と字が `--emph`
 - 入る大きさの目安（1280×720 の本文、高さ 440 px ほど）：`down` は 1 段に 4 字ほどの箱が 8 個、`right` は 7 個ほど。深さは 5 段ほど。
   それより多い葉（子のない節）が 1 つの親に並ぶと、子を 2 段に互い違いに並べる（`down` で 16 個ほど、`right` で 11 個ほどまで）。
   さらに入らなければ名前を 2 行に折る。字は 24 px より小さくならず、入らない分は要素の箱からはみ出す（`console.warn` が足りない px を言う）。多いときは木を分ける
