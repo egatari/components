@@ -29,7 +29,7 @@ Open a [proposal](https://github.com/egatari/components/issues/new?template=prop
 
 ## 3. Pull request
 
-After the proposal is accepted and named, open a pull request that adds `components/<name>/`:
+After the proposal is accepted and named, open a pull request that adds `components/<name>/`. Variants and the seed, box-and-line diagrams and purpose declarations follow the [shared conventions](docs/conventions.md) (draft).
 
 - [ ] `index.js` defines `<m-<name>>` and follows the [component contract](https://github.com/egatari/egatari-studio/blob/main/docs/contract.md#3-components-web-components): `render(k, t)` decides the picture from the step and time only (no `setTimeout`, `requestAnimationFrame`, `Date` or unseeded random; `t = Infinity` is the final state), colors only through theme variables (`var(--term)` `var(--emph)` `var(--muted)` `var(--accent2)` `var(--line)` `var(--fg)` `var(--series-1..4)`), the data's shape declared in `static shape`, no deck-specific text or numbers
 - [ ] no eval-like code (`npm test` runs `tools/scan-code.mjs`): no `eval`, `Function`, `constructor`, string timers, `import`, `innerHTML` and similar; a formula an author writes is evaluated with `tools/expr.js` (copy it in with `node tools/expr-sync.mjs` and add the component to its `USERS`), never as JavaScript ([SECURITY.md](SECURITY.md))
