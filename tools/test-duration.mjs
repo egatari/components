@@ -8,7 +8,7 @@ import { ROOT, studio } from './studio.mjs';
 import { LAUNCH, TOLERANCE, hideChrome, settle, pixelDiff } from './shot-helpers.mjs';
 
 // Released before this check, and not complete at their declared step length (reported, to be looked at; do not add to this list)
-const KNOWN = new Set(['kanbun', 'kobun']);
+const KNOWN = new Set([]);
 const S = await studio();
 const names = process.argv.slice(2).length ? process.argv.slice(2) : fs.readdirSync(path.join(ROOT, 'components')).filter((n) => fs.existsSync(path.join(ROOT, 'components', n, 'demo.html')));
 const b = await S.browser.launch(LAUNCH);
