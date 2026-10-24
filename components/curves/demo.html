@@ -49,6 +49,22 @@ document.addEventListener("DOMContentLoaded", function(){
   <div class="concl"><span>→ どの損失を使うかで，最適な決定 <i>a</i> が変わる</span></div>
 </section>
 
+<section class="slide">
+  <h2>需要が増えると（架空の例）</h2>
+  <div class="body">
+    <m-curves xr="[0,10]" yr="[0,12]" xt="[0,2,4,6,8,10]" yt="[0,3,6,9,12]" xl="数量 *Q*" yl="価格 *P*" style="height:420px">
+      <script type="application/json">[
+        {"label": "需要 D", "f": "10 - x", "tone": "term", "step": 1, "labelAt": 1.5, "anchor": "below"},
+        {"label": "供給 S", "f": "2 + x", "tone": "accent2", "step": 1, "labelAt": 8.5, "anchor": "left"},
+        {"label": "増えた需要 D′", "f": "13 - x", "tone": "emph", "step": 2, "labelAt": 2, "anchor": "right"},
+        {"label": "均衡", "pts": [[4, 0], [4, 6]], "tone": "muted", "dash": true, "step": 3, "anchor": "left", "ly": 1},
+        {"label": "新しい均衡", "pts": [[5.5, 0], [5.5, 7.5]], "tone": "emph", "dash": true, "step": 3, "anchor": "right", "ly": 1}
+      ]</script>
+    </m-curves>
+  </div>
+  <div class="concl"><span>→ 需要が増えると，価格も取引量も上がる</span></div>
+</section>
+
 </div>
 </body>
 </html>

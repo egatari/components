@@ -46,6 +46,10 @@ const slides = comps.map((t, j) => `<section class="slide noconcl" id="s-w${j}">
   <h2>${t}</h2>
   <div class="body">${t === 'm-sweep' ? '<m-sweep f="u*u + c" values="[1]" style="height:300px"></m-sweep>' : `<${t} aria-label="${t} の図" style="height:300px">${WRONG[t]}</${t}>`}</div>
 </section>`).join('\n') + `
+<section class="slide noconcl" id="s-accept">
+  <h2>形に合う新しい欄</h2>
+  <div class="body"><m-curves id="ok-curves" aria-label="段階をそろえた線" xr="[0,10]" yr="[0,12]" style="height:300px"><script type="application/json">[{"label": "需要", "f": "10 - x", "tone": "term", "step": 1, "labelAt": 2, "anchor": "below"}, {"label": "供給", "f": "2 + x", "tone": "accent2", "step": 1, "anchor": "left"}, {"label": "均衡", "pts": [[4, 0], [4, 6]], "step": 2, "anchor": "above", "dash": true}, {"label": "古い書き方", "f": "6", "color": "muted", "at": 8, "anchor": "end"}]</script></m-curves></div>
+</section>
 <section class="slide noconcl" id="s-semantic">
   <h2>形は合うが中身が合わない</h2>
   <div class="body"><m-compare id="w-cmp-values" aria-label="値の数が列と違う" style="height:200px"><script type="application/json">{"sides": [{"label": "A 案"}, {"label": "B 案"}], "rows": [{"label": "日数", "values": ["3 日"]}]}</script></m-compare>
@@ -84,9 +88,10 @@ try {
   const r = await page.evaluate(() => {
     const seen = [];
     DECK.slides.forEach((s, i) => { for (let k = 0; k <= s._max; k++) { DECK.seek(i, k, 0.3); DECK.seek(i, k, Infinity); } });
-    DECK.slides.forEach((s) => s._comps.forEach((c) => seen.push({ tag: c.tagName.toLowerCase(), box: !!c.querySelector('.m-error'), text: (c.querySelector('.m-error') || {}).textContent || '' })));
+    DECK.slides.forEach((s) => s._comps.forEach((c) => seen.push({ tag: c.tagName.toLowerCase(), id: c.id, box: !!c.querySelector('.m-error'), text: (c.querySelector('.m-error') || {}).textContent || '' })));
     const semantic = ['w-cmp-values', 'w-cmp-better', 'w-venn-c'].map((id) => !!document.querySelector('#' + id + ' .m-error'));
-    return { semantic, seen, errs: DECK.componentErrors.map((x) => JSON.parse(JSON.stringify(x))), max: DECK.slides.map((s) => s._max) };
+    const acc = DECK.slides.findIndex((s) => s.id === 's-accept');
+    return { acc, accMax: DECK.slides[acc]._max, semantic, seen, errs: DECK.componentErrors.map((x) => JSON.parse(JSON.stringify(x))), max: DECK.slides.map((s) => s._max) };
   });
   ok(errors.length === 0, 'no exception or console error while opening and seeking' + (errors.length ? ': ' + errors[0] : ''));
   ok(r.max.every((m) => Number.isFinite(m)), 'every slide has a finite number of steps');
@@ -95,6 +100,11 @@ try {
     ok(s && s.box && s.text.includes('<' + t + '>'), `${t}: shows the inline placeholder`);
     ok(e && e.phase === 'data', `${t}: reported in DECK.componentErrors before mount (${e && e.kind}${e && e.why ? ' ' + e.why : ''})`);
   }
+  // m-curves の系列の語（共通の決まり §3）：step・tone・labelAt・anchor（right/left/above/below）は形に合い、古い color・at・anchor（start/middle/end）も動く。
+  // 段階は step の最大（書かない系列は i + 1）：ここでは 1, 1, 2, 4 → 4
+  const okc = r.seen.find((x) => x.id === 'ok-curves');
+  ok(okc && !okc.box && !r.errs.some((x) => x.slide === r.acc), 'm-curves: series step, tone, labelAt and anchor right/left/above/below are accepted (no placeholder, no error)');
+  ok(r.accMax === 4, 'm-curves: steps = the largest series step (got ' + r.accMax + ')');
   // 形（static shape）では書けない中身の決まり：mount で例外を投げ、札を出す（値を黙って落とさない）
   const sem = r.errs.filter((x) => x.slide === r.max.length - 3);
   const semOk = (tag, re) => sem.some((x) => x.tag === tag && x.phase === 'mount' && x.kind === 'exception' && re.test(x.msg));
@@ -103,7 +113,7 @@ try {
   ok(semOk('m-compare', /rows\[0\]\.better is 2/), 'm-compare: better outside the sides is refused at mount');
   ok(semOk('m-venn', /regions AC need a third set/), 'm-venn: a region with C in a two-set diagram is refused at mount');
   const th = r.errs.find((x) => x.phase === 'mount' && x.slide === r.max.length - 2);
-  ok(th && th.tag === 'm-curves' && th.kind === 'exception' && /SyntaxError/.test(th.msg) && r.seen.filter((x) => x.tag === 'm-curves').every((x) => x.box), 'mount exception: placeholder, recorded with the message only');
+  ok(th && th.tag === 'm-curves' && th.kind === 'exception' && /SyntaxError/.test(th.msg) && r.seen.filter((x) => x.tag === 'm-curves' && !x.id).every((x) => x.box), 'mount exception: placeholder, recorded with the message only');
   // 算術の外の式（Egatari spec §6）：コードとして動かさず、札を出し、mount の段の SyntaxError として載る
   const ex = r.errs.filter((x) => x.slide === r.max.length - 1);
   ok(ex.length === 3 && ex.every((x) => x.phase === 'mount' && x.kind === 'exception' && /^SyntaxError: f = |^SyntaxError: \[0\]\.f = /.test(x.msg)),
