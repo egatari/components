@@ -137,6 +137,14 @@ for (const name of names) {
             out.push(...hit);
           }
         }
+        // 図の外の本文の字（見本の見出し・説明）：Studio の品質検査（smallText）と同じく 27px から（data-annot の小さな注は除く）
+        for (const el of sl.querySelectorAll('.body *')) {
+          if (sl._comps.some((c) => c.contains(el)) || el.closest('svg, .katex')) continue;   // inside a component or a figure: 24px, checked above
+          if (![...el.childNodes].some((n) => n.nodeType === 3 && n.textContent.trim())) continue;   // only elements with their own text
+          if (el.closest('[data-annot]') || !vis(el)) continue;
+          const fs = parseFloat(getComputedStyle(el).fontSize);
+          if (fs < 27) out.push(`small body text ${fs}px (27px needed outside figures): ${el.textContent.trim().slice(0, 30)}`);
+        }
         return out;
       }, s.i);
       bad.forEach((x) => issues.push(`s${s.i} k${k}: ${x}`));

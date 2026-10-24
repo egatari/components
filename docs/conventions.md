@@ -228,6 +228,10 @@ The purposes a component can serve are listed in one file in this repository (`p
 
 The list may grow, but an `id` never changes (lessons and instructions record it). `deviation` and `concept-links` are gaps in section 8 of the parts map; their ids are reserved now so they stay stable. `spatial` (place) is added when the map component arrives.
 
+### 4.1.1 Mentioning other components in a README
+
+The AI instructions carry only the READMEs of the components a lesson can use, and Studio drops a clause that names a component not in the pack. So a mention of another component ("to compare amounts, use `m-bars`", "names and meanings as in `m-curves`") goes in **a sentence of its own or a closing parenthetical**, never in the middle of an attribute description (dropping it would drop the description too). Consistency notes between components ("as in m-tree") are for maintainers: put them in `<!-- llm: omit -->` or leave them out.
+
 ### 4.2 Declaring them in a component
 
 The README frontmatter gets `purposes:`, main purpose first:
