@@ -43,7 +43,7 @@ DECK.define("m-flow", class extends DECK.MotionElement {
     var svg = D.el("svg", {viewBox: "0 0 " + W + " " + H, width: W, height: H, style: "display:block;overflow:visible"}, this);
     var gE = D.el("g", {}, svg), gN = D.el("g", {}, svg);
     var tone = {term: ["var(--term)", "var(--term-tint)", "var(--fg)"], emph: ["var(--emph)", "var(--emph-tint)", "var(--emph)"],
-                muted: ["var(--muted)", "var(--bg)", "var(--muted)"]};
+                muted: ["var(--muted)", "var(--bg)", "var(--fg)"]};   // muted：枠は --muted、字は --fg（字は情報。薄い字は投影で読めない）
     var byId = {};
     // 箱。段階の中の開始時刻 at（既定 0）
     this.nodes = (data.nodes || []).map(function(n){
@@ -108,7 +108,7 @@ DECK.define("m-flow", class extends DECK.MotionElement {
       // shift でずらした辺は、ずらした側に書く（行きと帰りの字が同じ側に重ならない）
       var sg = e.shift && (-dy * nx + dx * ny) * e.shift < 0 ? -1 : 1;
       var hasAmt = e.amount !== undefined && e.amount !== "";
-      if (e.label) lab = side(sg, e.label, {fill: tn ? col : "var(--muted)"}, !hasAmt);
+      if (e.label) lab = side(sg, e.label, {fill: tn ? col : "var(--fg)"}, !hasAmt);
       if (hasAmt) amt = side(e.label ? -sg : sg, String(e.amount), {fill: col, "font-weight": 700, "font-size": 26}, !e.label);
       var step = e.step || Math.max(a.step, b.step);
       // 同じ段階で出る箱があれば、その箱が出てから引く

@@ -2,6 +2,8 @@
 // the baseline release, build the baseline's demo.html twice, once with the baseline's index.js and once with the current one,
 // and compare screenshots at each step (35 %, 70 % and the final state). A lesson without a seed must look the same
 // (the runtime's interface hidden, and the anti-aliasing tolerance of tools/shot-helpers.mjs).
+// Deliberate exception approved by the owner (v1.2.0, issue #1): m-flow's edge labels and muted-box text became --fg, so
+// lessons using m-flow look different when rebuilt; m-flow has no variants and is not compared here.
 //   node tools/test-seed0.mjs [shots dir]      baseline: the release before package.json's version (tools/baseline.mjs)
 import fs from 'node:fs';
 import os from 'node:os';

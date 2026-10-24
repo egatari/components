@@ -148,7 +148,8 @@ DECK.define("m-cycle", class extends DECK.MotionElement {
     var th = function(i){ return -Math.PI / 2 + 2 * Math.PI * i / N; };
     var boxes = pl.stages.map(function(o, i){
       var lines = labelLines(o.n, size, textFill(o.n.tone));
-      if (o.n.note) lines.push({text: o.n.note, size: 24, fill: "var(--muted)"});
+      // 強調の箱（--emph-tint の地）の中の補足は --fg（--muted では 4.5:1 に届かない。共通の決まり §2.3）
+      if (o.n.note) lines.push({text: o.n.note, size: 24, fill: o.n.tone === "emph" ? "var(--fg)" : "var(--muted)"});
       var bs = boxSize(self, lines);
       return {o: o, bs: bs, w: bs.w, h: bs.h, th: th(i)};
     });
