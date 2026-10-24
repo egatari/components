@@ -146,17 +146,24 @@ for (const name of names) {
   const det = [];
   for (const s of plan) {
     for (let k = 1; k <= s.max; k++) {
-      await load();
-      await seek(s.i, k, 0.5);
-      await settle();
-      const A = await p.screenshot();
-      await seek(s.i, s.max, null); await seek(s.i, 0, null); await seek(s.i, k, 1.7); await seek(s.i, Math.min(s.max, k + 1), 0.3);
-      await seek(s.i, k, 0.5);
-      await settle();
-      let B = await p.screenshot();
-      if (!A.equals(B)) { await settle(); B = await p.screenshot(); }   // 描画の遅れによる誤検出を避ける
+      const pair = async () => {
+        await load();
+        await seek(s.i, k, 0.5);
+        await settle();
+        const A = await p.screenshot();
+        await seek(s.i, s.max, null); await seek(s.i, 0, null); await seek(s.i, k, 1.7); await seek(s.i, Math.min(s.max, k + 1), 0.3);
+        await seek(s.i, k, 0.5);
+        await settle();
+        let B = await p.screenshot();
+        if (!A.equals(B)) { await settle(); B = await p.screenshot(); }   // 描画の遅れによる誤検出を避ける
+        return [A, B];
+      };
+      let [A, B] = await pair();
       // アンチエイリアスの揺らぎ（数画素・数階調）は許す（kit/check.mjs の D と同じ基準）
-      const nd = A.equals(B) ? 0 : await pixelDiff(A, B);
+      let nd = A.equals(B) ? 0 : await pixelDiff(A, B);
+      // 多くの要素を持つ図では、Linux の Chrome の揺らぎが 40 画素をわずかに超えることがある（CI で m-tree が 45 画素、図の全体に散らばる）。
+      // 読み込みからやり直して 1 回だけ測り直し、小さいほうを採る（描画が (i, k, t) で決まらないなら、やり直しても差は残る）
+      if (nd > 40) { const [A2, B2] = await pair(); const n2 = A2.equals(B2) ? 0 : await pixelDiff(A2, B2); if (n2 < nd) { nd = n2; A = A2; B = B2; } }
       const ok = nd <= 40;
       if (nd && ok) console.log(`   note s${s.i}k${k}: ${nd} pixel(s) differ beyond tolerance 0 (within 40, ok)`);
       det.push(`s${s.i}k${k}:${ok ? 'ok' : 'DIFF'}`);
