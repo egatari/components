@@ -7,6 +7,8 @@
 // scale：[{"step": 3, "max": 200}] で、その段階の始めに値の軸の上限を動かす（対数で補間。前の上限までの範囲は薄い帯で残す）。
 //        上限を超える棒は軸の上端で止まり、上限が広がるにつれて伸びる（「軸を突き抜ける」見せ方）
 // 値の数字は伸びきってから出す（途中の値を読ませない）。count="true" なら伸びに合わせて数え上げる
+// stack="true"：組の値を横に並べず 1 本に積み上げる（積み上げ棒）。下の系列から順に色が満ちていき、合計を棒の端に、
+//              それぞれの値を単位なしで区切りの中に（入るときだけ）書く。系列の名前は最後の組の棒の右（横棒なら最初の組の棒の上）に書く
 DECK.define("m-bars", class extends DECK.MotionElement {
   // データの形（kit/shape.js）
   static shape = {
@@ -30,6 +32,7 @@ DECK.define("m-bars", class extends DECK.MotionElement {
     ticks:      {type: "bool", default: true, doc: "値の軸の目盛りと格子"},
     zoom:       {type: "number", default: 1.6, doc: "scale で上限を動かす秒数"},
     al:         {type: "string", default: "", doc: "値の軸の名前"},
+    stack:      {type: "bool", default: false, doc: "組の値を 1 本に積み上げる（積み上げ棒）"},
   };
   get steps(){
     if (this.getAttribute("steps") !== null) return +this.getAttribute("steps");
@@ -59,10 +62,13 @@ DECK.define("m-bars", class extends DECK.MotionElement {
     var svg = D.el("svg", {viewBox: "0 0 " + W + " " + H, width: W, height: H, style: "display:block;overflow:visible"}, this);
     var series = d.series && d.series.length ? d.series : [{}];
     var ns = Math.max(series.length, Math.max.apply(null, pl.groups.map(function(g){ return g.vals.length; }).concat([1])));
-    var all = [].concat.apply([], pl.groups.map(function(g){ return g.vals; }));
+    // 積み上げ棒では、軸と端の数字は組の合計で決める
+    var st = P.stack, sum = function(g){ return g.vals.reduce(function(a, v){ return a + Math.max(0, v); }, 0); };
+    var tops = function(g){ return st ? [sum(g)] : g.vals; };
+    var all = [].concat.apply([], pl.groups.map(tops));
     // 軸の上限：scale の最初の段階より前に出る棒が収まるように
     var first = pl.scale.length ? pl.scale[0].step : Infinity;
-    var early = [].concat.apply([], pl.groups.filter(function(g){ return g.step < first; }).map(function(g){ return g.vals; }));
+    var early = [].concat.apply([], pl.groups.filter(function(g){ return g.step < first; }).map(tops));
     this.M0 = P.max || d.max || nice(Math.max.apply(null, (early.length ? early : all).concat([1e-9])) * 1.12);
     this.levels = [this.M0].concat(pl.scale.map(function(s){ return s.max || nice(Math.max.apply(null, all) * 1.12); }));
     pl.scale.forEach(function(s, i){ s.max = self.levels[i + 1]; });
@@ -73,6 +79,10 @@ DECK.define("m-bars", class extends DECK.MotionElement {
     var lines = Math.max.apply(null, pl.groups.map(function(g){ return String(g.g.label || "").split("\n").length; }).concat([1]));
     var m = this.m = hor ? {l: Math.min(W * 0.42, longest + 24), r: valW + 24, t: P.al ? 40 : 8, b: P.ticks ? 44 : 8}
                          : {l: P.ticks ? 24 + est(this.fmtTick(this.levels[this.levels.length - 1], 1), 24) + (P.al ? 36 : 0) : 16, r: 16, t: ns > 1 ? 80 : 44, b: 18 + 30 * lines};
+    // 積み上げ棒：系列の名前を縦棒は右に、横棒は最初の棒の上に書くので、その分をあける
+    var serW = Math.max.apply(null, series.map(function(sr){ return est(sr.label || "", 24); }).concat([0]));
+    if (st && hor && ns > 1) m.t = Math.max(m.t, P.al ? 40 : 36);
+    if (st && !hor){ m.t = 44; if (ns > 1 && serW) m.r = serW + 30; }
     this.x0 = m.l; this.x1 = W - m.r; this.y0 = m.t; this.y1 = H - m.b;
     this.len = hor ? this.x1 - this.x0 : this.y1 - this.y0;
     // 前の上限までの範囲（上限を動かす間だけ）
@@ -105,9 +115,39 @@ DECK.define("m-bars", class extends DECK.MotionElement {
     else D.el("line", {x1: this.x0, y1: this.y1, x2: this.x1, y2: this.y1, stroke: "var(--fg)", "stroke-width": 1.5}, svg);
     // 組と棒の位置（組の幅は枠の 64%、棒は組の幅を系列で分ける）
     var n = pl.groups.length || 1, cross = hor ? this.y1 - this.y0 : this.x1 - this.x0, slot = cross / n;
-    var bw = Math.min(hor ? 56 : 96, slot * 0.64 / ns);
+    var bw = Math.min(hor ? 56 : 96, slot * 0.64 / (st ? 1 : ns));
     this.bars = [];
-    this.groups = pl.groups.map(function(o, i){
+    this.stacks = null;
+    if (st) this.stacks = pl.groups.map(function(o, i){
+      var c = (hor ? self.y0 : self.x0) + slot * (i + 0.5), cum = 0;
+      String(o.g.label || "").split("\n").forEach(function(s, j, a){
+        if (hor) D.mtext(gL, self.x0 - 12, c + 8 + (j - (a.length - 1) / 2) * 30, s, {"text-anchor": "end", "font-size": 26});
+        else D.mtext(gL, c, self.y1 + 34 + j * 30, s, {"text-anchor": "middle", "font-size": 26});
+      });
+      var segs = o.vals.map(function(v, j){
+        v = Math.max(0, v);
+        var col = tone(series[j] && series[j].tone || (ns > 1 ? "series-" + (j % 4 + 1) : "term"));
+        var sg = {v: v, j: j, from: cum, col: col, rect: D.el("rect", {rx: 3, fill: col, opacity: 0}, gB),
+          val: D.el("text", {"font-size": 24, "font-weight": 700, "text-anchor": "middle", fill: "var(--bg)", opacity: 0, style: "font-variant-numeric:tabular-nums"}, gL)};
+        // 区切りの中の値は単位を付けない（単位は端の合計に付く）
+        sg.val.textContent = self.fmt(v, undefined, "");
+        sg.vw = est(sg.val.textContent, 24);
+        cum += v;
+        return sg;
+      });
+      var tot = D.el("text", {"font-size": 26, "font-weight": 700, "text-anchor": hor ? "start" : "middle", fill: o.g.tone ? tone(o.g.tone) : "var(--fg)", opacity: 0, style: "font-variant-numeric:tabular-nums"}, gL);
+      return {o: o, c: c, segs: segs, total: cum, tot: tot};
+    });
+    // 系列の名前：縦棒は最後の組の棒の右、横棒は最初の組の棒の上に、区切りの真ん中にそろえて書く（重なれば離す）
+    this.serLabs = [];
+    if (st && ns > 1){
+      var ref = hor ? this.stacks[0] : this.stacks[this.stacks.length - 1];
+      ref.segs.forEach(function(sg){
+        if (!series[sg.j] || !series[sg.j].label) return;
+        self.serLabs.push({sg: sg, ref: ref, el: D.mtext(gL, 0, 0, series[sg.j].label, {"text-anchor": hor ? "middle" : "start", "font-size": 24, "font-weight": 700, fill: sg.col, opacity: 0}), w: est(series[sg.j].label, 24)});
+      });
+    }
+    if (!st) this.groups = pl.groups.map(function(o, i){
       var c = (hor ? self.y0 : self.x0) + slot * (i + 0.5);
       var lab = String(o.g.label || "").split("\n").map(function(s, j, a){
         return hor ? D.mtext(gL, self.x0 - 12, c + 8 + (j - (a.length - 1) / 2) * 30, s, {"text-anchor": "end", "font-size": 26})
@@ -154,7 +194,7 @@ DECK.define("m-bars", class extends DECK.MotionElement {
   }
   duration(k){
     var P = this.props, d = 0;
-    this.plan().groups.forEach(function(o){ if (o.step === k) d = Math.max(d, o.at + 0.1 * (o.vals.length - 1) + P.dur + (P.count ? 0 : 0.35)); });
+    this.plan().groups.forEach(function(o){ if (o.step === k) d = Math.max(d, o.at + (P.stack ? 0 : 0.1 * (o.vals.length - 1)) + P.dur + (P.count ? 0 : 0.35)); });
     this.plan().scale.forEach(function(s){ if (s.step === k) d = Math.max(d, s.at + P.zoom + 0.3); });
     return d;
   }
@@ -185,6 +225,7 @@ DECK.define("m-bars", class extends DECK.MotionElement {
     if (hor){ this.band.setAttribute("x", this.x0); this.band.setAttribute("width", Math.max(0, pb - this.x0).toFixed(1)); this.band.setAttribute("y", this.y0); this.band.setAttribute("height", this.y1 - this.y0); }
     else { this.band.setAttribute("x", this.x0); this.band.setAttribute("width", this.x1 - this.x0); this.band.setAttribute("y", pb.toFixed(1)); this.band.setAttribute("height", Math.max(0, this.y1 - pb).toFixed(1)); }
     this.band.setAttribute("opacity", bo.toFixed(3));
+    if (this.stacks) return this.renderStack(k, t, pos);
     this.bars.forEach(function(b){
       var o = b.o, at = o.at + 0.1 * b.j;
       var e = o.step < k ? 1 : o.step > k ? 0 : D.prog(t, at, P.dur);
@@ -204,6 +245,50 @@ DECK.define("m-bars", class extends DECK.MotionElement {
         else { b.ser.setAttribute("x", b.c.toFixed(1)); b.ser.setAttribute("y", (pos(b.v) - 44).toFixed(1)); }
         b.ser.setAttribute("opacity", vo.toFixed(3));
       }
+    });
+  }
+  // 積み上げ棒：棒の先が 0 から合計まで伸び、下の系列から順に色が満ちる。値の数字は伸びきってから
+  renderStack(k, t, pos){
+    var P = this.props, D = DECK, self = this, hor = this.hor, w = this.bw;
+    var len = function(a, b){ return Math.abs(pos(b) - pos(a)); };
+    this.stacks.forEach(function(sk){
+      var o = sk.o, e = o.step < k ? 1 : o.step > k ? 0 : D.prog(t, o.at, P.dur), top = sk.total * e;
+      var vo = o.step < k ? 1 : o.step > k ? 0 : D.prog(t, o.at + P.dur, 0.35);
+      sk.segs.forEach(function(sg, j){
+        var a = Math.min(sg.from, top), b = Math.min(sg.from + sg.v, top), pa = pos(a), pb = pos(b), gap = j > 0 && b > a ? 2 : 0;
+        var px = Math.max(0, Math.abs(pb - pa) - gap);
+        if (hor){ sg.rect.setAttribute("x", (pa + gap).toFixed(1)); sg.rect.setAttribute("width", px.toFixed(1)); sg.rect.setAttribute("y", (sk.c - w / 2).toFixed(1)); sg.rect.setAttribute("height", w.toFixed(1)); }
+        else { sg.rect.setAttribute("x", (sk.c - w / 2).toFixed(1)); sg.rect.setAttribute("width", w.toFixed(1)); sg.rect.setAttribute("y", pb.toFixed(1)); sg.rect.setAttribute("height", px.toFixed(1)); }
+        sg.rect.setAttribute("opacity", px > 0 ? 1 : 0);
+        // 区切りの中の値：伸びきった区切りに字が収まるときだけ
+        var full = len(sg.from, sg.from + sg.v) - gap, mid = (pos(sg.from) + pos(sg.from + sg.v)) / 2;
+        var room = hor ? full >= sg.vw + 12 && w >= 30 : full >= 30 && w >= sg.vw + 8;
+        if (hor){ sg.val.setAttribute("x", mid.toFixed(1)); sg.val.setAttribute("y", (sk.c + 8).toFixed(1)); }
+        else { sg.val.setAttribute("x", sk.c.toFixed(1)); sg.val.setAttribute("y", (mid + 8).toFixed(1)); }
+        sg.val.setAttribute("opacity", (room ? vo : 0).toFixed(3));
+      });
+      // 合計：棒の端（count なら伸びに合わせて数え上げる）
+      sk.tot.textContent = self.fmt(P.count ? top : sk.total);
+      var pe = P.count ? pos(top) : pos(sk.total);
+      if (hor){ sk.tot.setAttribute("x", (pe + 10).toFixed(1)); sk.tot.setAttribute("y", (sk.c + 9).toFixed(1)); }
+      else { sk.tot.setAttribute("x", sk.c.toFixed(1)); sk.tot.setAttribute("y", (pe - 12).toFixed(1)); }
+      sk.tot.setAttribute("opacity", (P.count ? (e > 0 ? 1 : 0) : vo).toFixed(3));
+    });
+    // 系列の名前：区切りの真ん中。縦に並ぶ名前（縦棒）は 28 px、横に並ぶ名前（横棒）は字の幅より近づけない
+    var prev = null;
+    this.serLabs.forEach(function(sl){
+      var sk = sl.ref, o = sk.o, sg = sl.sg, mid = (pos(sg.from) + pos(sg.from + sg.v)) / 2;
+      var vo = o.step < k ? 1 : o.step > k ? 0 : D.prog(t, o.at + P.dur, 0.35);
+      if (hor){
+        var x = prev ? Math.max(mid, prev.x + (prev.w + sl.w) / 2 + 12) : mid;
+        sl.el.setAttribute("x", x.toFixed(1)); sl.el.setAttribute("y", (sk.c - w / 2 - 10).toFixed(1));
+        prev = {x: x, w: sl.w};
+      } else {
+        var y = prev ? Math.min(mid + 8, prev.y - 28) : mid + 8;
+        sl.el.setAttribute("x", (sk.c + w / 2 + 12).toFixed(1)); sl.el.setAttribute("y", y.toFixed(1));
+        prev = {y: y};
+      }
+      sl.el.setAttribute("opacity", vo.toFixed(3));
     });
   }
 });

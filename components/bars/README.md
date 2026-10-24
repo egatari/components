@@ -1,10 +1,10 @@
 ---
 name: m-bars
 series: common
-summary: 棒を段階ごとに 0 から伸ばす（縦棒・横棒・組の棒）。値の軸の上限を段階で広げて「軸を突き抜ける伸び」も見せられる
+summary: 棒を段階ごとに 0 から伸ばす（縦棒・横棒・組の棒・積み上げ棒）。値の軸の上限を段階で広げて「軸を突き抜ける伸び」も見せられる
 steps: 組の step と scale の step の最大（既定は組 1 つ = 1 段階。per-step で n 組ずつ）
 purposes: compare, ranking, change, part-whole
-props: orient, max, unit, digits, per-step, dur, stagger, count, ticks, zoom, al
+props: orient, max, unit, digits, per-step, dur, stagger, count, ticks, zoom, al, stack
 ---
 
 年ごとの売上・費用、聞き取りの結果の順位、導入の前と後の比較など、量を 1 つずつ見せて比べるときに使う
@@ -19,11 +19,12 @@ props: orient, max, unit, digits, per-step, dur, stagger, count, ticks, zoom, al
 - 軸の上限は `max` か JSON の `max`、なければ値（scale があれば、最初の scale より前に出る組の値）の 1.12 倍を切りのよい数にしたもの
 <!-- llm: end -->
 - 横棒（`orient="h"`）は組の名前を左に、値を棒の右に書く。順位を見せるなら `ticks="false"` で目盛りを消してよい
+- 積み上げ棒（`stack="true"`）：組の `values` を横に並べず 1 本に積み上げる（売上の内訳の年ごとの変化など、全体と内訳を組ごとに見せるとき）。下の系列から順に色が満ちながら棒が合計まで伸び、合計を棒の端に（`unit` 付き）、それぞれの値を区切りの中に単位なしで書く（区切りが字より小さければ書かない）。系列の名前は、縦棒なら最後の組の棒の右、横棒なら最初の組の棒の上に、区切りの真ん中にそろえて書く。軸の上限は合計から決める。組の `tone` は合計の数字の色になる（区切りの色は系列の色のまま）。値は 0 以上にする（負の値は 0 として描く）
 <!-- llm: omit -->
 - 値の数字は `digits` 桁で 3 桁ごとにカンマを入れ、`unit` を後ろに付ける
 <!-- llm: end -->
 
-見本は `demo.html`（年ごとの売上と軸の広がり、聞き取りの順位、2 系列）。数値はすべて架空。
+見本は `demo.html`（年ごとの売上と軸の広がり、聞き取りの順位、2 系列、売上の内訳の積み上げ）。数値はすべて架空。
 
 注意
 
