@@ -7,9 +7,11 @@
 // 頭（結果の箱）は右、背骨は横。大骨は上下に交互に、斜めに付く。原因は大骨に付く横の線の上に書き、細かい原因は原因の線から大骨と平行に下ろした線に付ける
 // 段階：order="causes-first"（既定：大骨 1 本ずつ（その原因と一緒に）、最後に頭）か order="effect-first"（頭と背骨、それから大骨 1 本ずつ）。節の step が勝つ
 // edges：原因どうしなど、ほかのつながり（破線、矢印つき）。段階は両端の遅いほう
-// 字の大きさは要素の大きさから決め（27 px から）、入らなければ 24 px まで縮める。それでも入らなければ全体を縮めて console.warn
-// 見せ方（docs/conventions.md §2.5）：fade（箱と字が現れてから線を引く、既定）・draw（線を先に引き、その先に箱と字が現れる）・
-// grow（分類の箱が背骨から大骨に沿って、原因の字が大骨から横の線に沿って出てくる）。段階の数・長さ・最後の中身はどれも同じ
+// 字の大きさは要素の大きさから決め（27 px から）、入らなければ 24 px まで縮める。それでも入らなければ、字は 24 px のまま
+// 大骨の間を詰め、要素の箱からはみ出して console.warn（足りない px）
+// 見せ方（docs/conventions.md §2.5）：fade（箱と字が下から 12 px 上がりながら現れてから線を引く、既定）・draw（線を先に引き、
+// その先に箱と字が現れる）・grow（分類の箱が背骨の側から 12 px 寄りながら 0.85 → 1 に、原因の字が大骨の側から 12 px 寄って出る）。
+// 箱と字の動きはどれも 12 px まで。段階の数・長さ・最後の中身はどれも同じ
 // ---- BEGIN egatari-variant (source: tools/variant.js; copy with `node tools/variant-sync.mjs`; do not edit inside a component) ----
 // Choosing a presentation variant (Egatari spec §8.4, docs/conventions.md §1). A component lists its variant names in
 // `static variants` (index 0 is variant 0) and calls VARIANT.of(this) once, in mount. The choice reads, in order:
@@ -175,7 +177,8 @@ DECK.define("m-fishbone", class extends DECK.MotionElement {
       c.rows.forEach(function(o, r){
         // 行 r の横の線の、背骨からの縦の距離 v（上の骨は外から内へ、下の骨は内から外へ並ぶ）。字は線の上（画面で上）に書く
         var v = up ? Lv - M1 - (r + 1) * rh + 6 : M2 + (r + 1) * rh - 6, y = sg * v, sz = o.lv === 1 ? cs : ss;
-        var tw = est(o.n.label || "") * sz, x0, xe, mini = null;
+        // 字の幅：tex は字数から見積もる。note は後ろに続けて小さく（--muted）書く
+        var nw = o.n.note ? est("  " + o.n.note) * NS : 0, tw = (o.n.tex ? texEst(o.n.tex) * sz : est(o.n.label || "") * sz) + nw, x0, xe, mini = null;
         if (o.lv === 1){ x0 = xb(v); xe = Math.min(xb(v), xb(v - sg * TXT)) - 10; }
         else {
           // 細かい原因：親の原因の線から、大骨と平行な線を下ろした先に付く
@@ -187,7 +190,7 @@ DECK.define("m-fishbone", class extends DECK.MotionElement {
         }
         var xl = xe - tw - 8;
         lo = Math.min(lo, xl); hi = Math.max(hi, x0);
-        g.rows.push({o: o, v: v, y: y, x0: x0, xe: xe, xl: xl, tw: tw, sz: sz});
+        g.rows.push({o: o, v: v, y: y, x0: x0, xe: xe, xl: xl, tw: tw, nw: nw, sz: sz});
       });
       g.lo = lo; g.hi = hi;
       g.ext = Lv + g.b.h + g.b.nh;   // 背骨からの縦の広がり
@@ -217,19 +220,21 @@ DECK.define("m-fishbone", class extends DECK.MotionElement {
         }
       }
     }
-    if (!L){ L = layout(sizes[sizes.length - 1], 40, 0.3, 28); L.s = sizes[sizes.length - 1]; L.rh = 40; L.k = 0.3; fit = false; }
+    if (!L){
+      // 24 px でも入らない：字は小さくせず、大骨の間を 12 px まで詰め、はみ出しのいちばん少ない形にする（中央に置き、両側へ同じだけはみ出す）
+      fit = false;
+      var s24 = sizes[sizes.length - 1], miss = function(t){ return Math.max(0, t.width - W) + Math.max(0, t.height - H); };
+      for (var cg0 = 28; cg0 >= 12; cg0 -= 4){ var t0 = layout(s24, 40, 0.3, cg0); if (!L || miss(t0) < miss(L)) L = t0; }
+      L.s = s24; L.rh = 40; L.k = 0.3;
+      console.warn("m-fishbone: the diagram does not fit at " + s24 + " px; it overflows its box by " + Math.ceil(Math.max(0, L.width - W)) + " px across and " +
+        Math.ceil(Math.max(0, L.height - H)) + " px up and down (text is not made smaller). Use fewer causes per bone, shorter causes or a larger element");
+    }
     // 横に余れば、大骨の間を広げる（80 px まで）
     if (fit) for (var cg = 80; cg > 28; cg -= 4){ var t2 = layout(L.s, L.rh, L.k, cg); if (t2.width <= W){ t2.s = L.s; t2.rh = L.rh; t2.k = L.k; L = t2; break; } }
     var s = L.s, ox = (W - L.width) / 2 - L.tail, oy = H / 2;
-    if (!fit){
-      var sc = Math.min(W / L.width, H / L.height);
-      ox = -L.tail; oy = L.height / 2;
-      root.setAttribute("transform", "scale(" + sc.toFixed(4) + ")");
-      console.warn("m-fishbone: the diagram does not fit at 24 px (" + Math.round(L.width) + " × " + Math.round(L.height) + " px needed); drawn smaller");
-    }
     this.size = s;
     var X = function(x){ return ox + x; }, Y = function(y){ return oy + y; };
-    var mkLine = function(parent, w, col){ return D.el("path", {d: "", fill: "none", stroke: col || "var(--line)", "stroke-width": w, "stroke-linecap": "round", "stroke-linejoin": "round"}, parent); };
+    var mkLine = function(parent, w, col){ return D.el("path", {d: "", fill: "none", stroke: col || "var(--muted)", "stroke-width": w, "stroke-linecap": "round", "stroke-linejoin": "round"}, parent); };
     var boxText = function(g, b, n, x, y, c, sz){
       var cx = x + b.w / 2, cy = y + b.h / 2;
       if (n.tex) D.svgMath(g, cx, cy + sz * 0.36, n.tex, {size: sz, anchor: "middle", color: c[2], w: b.w, h: b.h}).firstChild.style.verticalAlign = "top";
@@ -246,11 +251,11 @@ DECK.define("m-fishbone", class extends DECK.MotionElement {
     hb.notes.forEach(function(t, j){ D.mtext(H0.g, hx + hb.w / 2, hy + hb.h + 4 + NLH * j + NS * 0.95, t, {"text-anchor": "middle", "font-size": NS, fill: "var(--muted)"}); });
     // 背骨（尾から頭の手前まで）と矢じり
     this.spine = {path: this.poly([[X(L.tail), Y(0)], [hx - 3, Y(0)]]), line: mkLine(gL, 5), step: pl.spineStep};
-    H0.arrow = D.el("path", {d: "M0,0L-16,-7L-16,7Z", fill: "var(--line)", transform: "translate(" + (hx - 1).toFixed(1) + " " + Y(0).toFixed(1) + ")", opacity: 0}, gL);
+    H0.arrow = D.el("path", {d: "M0,0L-16,-7L-16,7Z", fill: "var(--muted)", transform: "translate(" + (hx - 1).toFixed(1) + " " + Y(0).toFixed(1) + ")", opacity: 0}, gL);
     // 大骨と原因
     var cnt = {};
     this.bones = cats.map(function(c, i){
-      var g = L.geo[i], bx = L.xs[Math.floor(i / 2)], col = c.n.tone ? toneOf(c.n.tone)[0] : "var(--line)", cc = toneOf(c.n.tone);
+      var g = L.geo[i], bx = L.xs[Math.floor(i / 2)], col = c.n.tone ? toneOf(c.n.tone)[0] : "var(--muted)", cc = toneOf(c.n.tone);
       var at = c.n.at !== undefined ? c.n.at : c.step === pl.spineStep && c.step !== pl.head.step ? P.draw * 0.8 : c.step === pl.head.step ? self.span() : 0;
       var B = {o: c, step: c.step, at: at, g: D.el("g", {opacity: 0}, gN)};
       // 大骨：背骨の点から外の端まで（path は外から背骨へ。fade と grow は外から引く、draw は背骨から引く）
@@ -265,11 +270,12 @@ DECK.define("m-fishbone", class extends DECK.MotionElement {
         D.mtext(B.g, x0 + g.b.w / 2, ny, t, {"text-anchor": "middle", "font-size": NS, fill: "var(--muted)"});
       });
       B.cx = x0 + g.b.w / 2; B.cy = y0 + g.b.h / 2;
-      // 箱が付く点（grow はここを大骨に沿って動かす）
-      B.anchor = [B.outP[0], B.outP[1]];
+      // 背骨の側から箱へ向かう向き（draw と grow で箱が寄ってくる向き）
+      var dx = B.cx - B.spineP[0], dy = B.cy - B.spineP[1], dl = Math.hypot(dx, dy) || 1;
+      B.dir = [dx / dl, dy / dl];
       // 原因：横の線（大骨の点から左へ）と、その上の字
       B.rows = g.rows.map(function(r, j){
-        var o = r.o, tc = o.n.tone ? toneOf(o.n.tone)[0] : "var(--fg)", lc = o.n.tone ? toneOf(o.n.tone)[0] : "var(--line)";
+        var o = r.o, tc = o.n.tone ? toneOf(o.n.tone)[0] : "var(--fg)", lc = o.n.tone ? toneOf(o.n.tone)[0] : "var(--muted)";
         var gr = D.el("g", {opacity: 0}, gT);
         var y = Y(r.y), xa = X(bx + r.x0), xl = X(bx + r.xl);
         var rec = {o: o, step: o.step, g: gr, path: self.poly([[xa, y], [xl, y]]), line: mkLine(gL, 2.5, lc)};
@@ -278,9 +284,16 @@ DECK.define("m-fishbone", class extends DECK.MotionElement {
           var p0 = [X(bx + r.mini.x0), y], p1 = [X(bx + r.mini.xm(r.y + r.miniEnd)), y + r.miniEnd];
           rec.mpath = self.poly([p0, p1]); rec.mline = mkLine(gL, 2.5, lc);
         }
-        var tx = D.mtext(gr, X(bx + r.xe), y - 8, o.n.label || "", {"text-anchor": "end", "font-size": r.sz, fill: tc});
-        if (o.n.tone === "emph") tx.setAttribute("font-weight", 700);
-        rec.slide = xa - X(bx + r.xe);   // grow：字が大骨から動く長さ
+        var tx, xe = X(bx + r.xe);
+        if (o.n.tex){
+          // 式（KaTeX）：箱と同じ svgMath で、行の右端に寄せる。note はその右に別の字で
+          D.svgMath(gr, xe - r.nw, y - 8, o.n.tex, {size: r.sz, anchor: "end", color: tc, w: r.tw - r.nw + 40, h: r.sz * 1.6}).firstChild.style.verticalAlign = "top";
+          if (o.n.note) D.mtext(gr, xe, y - 8, "  " + o.n.note, {"text-anchor": "end", "font-size": NS, fill: "var(--muted)"});
+        } else {
+          tx = D.mtext(gr, xe, y - 8, o.n.label || "", {"text-anchor": "end", "font-size": r.sz, fill: tc});
+          if (o.n.tone === "emph") tx.setAttribute("font-weight", 700);
+          if (o.n.note){ var ns = D.el("tspan", {"font-size": NS, fill: "var(--muted)", "font-weight": 400}, tx); ns.textContent = "  " + o.n.note; }
+        }
         // 段階の中の開始時刻：同じ段階の行を上から順に少しずつずらす
         var key = rec.step, base = rec.step === c.step ? at + self.span() * 0.8 : 0;
         cnt[key + "|" + i] = (cnt[key + "|" + i] || 0) + 1;
@@ -353,51 +366,59 @@ DECK.define("m-fishbone", class extends DECK.MotionElement {
     // 授業の表示：後の段階は薄く（0.45）、今の段階は薄い状態から濃くなる。位置は動かさない（どの見せ方でも同じ）
     var faint = function(tt, e){ return tt < 0 ? FAINT : FAINT + (1 - FAINT) * e; };
     var line = function(el, path, e){ el.setAttribute("d", e > 0 ? self.part(path, e).d : ""); };
-    var scl = function(cx, cy, s){ return s >= 1 ? "" : "translate(" + cx.toFixed(2) + " " + cy.toFixed(2) + ") scale(" + s.toFixed(4) + ") translate(" + (-cx).toFixed(2) + " " + (-cy).toFixed(2) + ")"; };
     // 背骨：尾から頭へ引く（どの見せ方でも同じ）
     var sp = this.spine, ts = tOf(sp.step), es = pr(ts, 0, P.draw);
     if (lect){ line(sp.line, sp.path, 1); sp.line.setAttribute("opacity", faint(ts, es).toFixed(3)); }
     else { line(sp.line, sp.path, es); sp.line.setAttribute("opacity", es > 0 ? 1 : 0); }
-    // 頭
-    var h = this.head, th = tOf(h.o.step), at = h.o.n.at || 0, eb, ea, sc = 1;
-    if (vr === "draw"){ ea = pr(th, at, S * 0.5); eb = pr(th, at + S * 0.45, S * 0.55); sc = D.lerp(0.92, 1, eb); }
-    else if (vr === "grow"){ eb = pr(th, at, S * 0.35); ea = eb; sc = D.lerp(0.6, 1, pr(th, at, S)); }
-    else { eb = pr(th, at, P.fade); ea = pr(th, at + P.fade * 0.6, P.draw * 0.5); sc = D.lerp(0.92, 1, eb); }
+    // 箱と字の動きは 12 px まで（docs/conventions.md §1.2：どの見せ方も fade より遠くへ動かさない）
+    // fade：下から 12 px 上がりながら現れる（0.92 → 1）。draw：線の後、背骨の側から 12 px 寄りながら現れる。
+    // grow：背骨の側から 12 px 寄りながら 0.85 → 1 に大きくなる
+    var OFF = 12;
+    var tf = function(cx, cy, s, dx, dy){
+      return s >= 1 && Math.abs(dx) < 0.01 && Math.abs(dy) < 0.01 ? "" :
+        "translate(" + (cx + dx).toFixed(2) + " " + (cy + dy).toFixed(2) + ") scale(" + s.toFixed(4) + ") translate(" + (-cx).toFixed(2) + " " + (-cy).toFixed(2) + ")";
+    };
+    // 頭（背骨は左から来る）
+    var h = this.head, th = tOf(h.o.step), at = h.o.n.at || 0, eb, ea, sc = 1, m, sh;
+    if (vr === "draw"){ ea = pr(th, at, S * 0.5); eb = pr(th, at + S * 0.45, S * 0.55); sc = D.lerp(0.92, 1, eb); sh = [-OFF * (1 - eb), 0]; }
+    else if (vr === "grow"){ m = pr(th, at, P.fade); eb = pr(th, at, P.fade * 0.6); ea = pr(th, at, S * 0.5); sc = D.lerp(0.85, 1, m); sh = [-OFF * (1 - m), 0]; }
+    else { eb = pr(th, at, P.fade); ea = pr(th, at + P.fade * 0.6, P.draw * 0.5); sc = D.lerp(0.92, 1, eb); sh = [0, OFF * (1 - eb)]; }
     if (lect){ var fh = faint(th, eb); h.g.setAttribute("opacity", fh.toFixed(3)); h.g.setAttribute("transform", ""); h.arrow.setAttribute("opacity", fh.toFixed(3)); }
     else {
       h.g.setAttribute("opacity", eb.toFixed(3));
-      h.g.setAttribute("transform", vr === "grow" ? scl(h.inP[0], h.inP[1], sc) : scl(h.cx, h.cy, sc));
+      h.g.setAttribute("transform", tf(h.cx, h.cy, sc, sh[0], sh[1]));
       h.arrow.setAttribute("opacity", ea.toFixed(3));
     }
     // 大骨
     this.bones.forEach(function(B){
-      var tt = tOf(B.step), eb, el, u = 1, sc = 1, path = B.path;
-      if (vr === "draw"){ el = pr(tt, B.at, S * 0.5); eb = pr(tt, B.at + S * 0.45, S * 0.55); sc = D.lerp(0.92, 1, eb); path = B.rpath; }
-      else if (vr === "grow"){ u = pr(tt, B.at, S); el = u; eb = pr(tt, B.at, S * 0.35); sc = D.lerp(0.5, 1, u); path = B.rpath; }
-      else { eb = pr(tt, B.at, P.fade); el = pr(tt, B.at + P.fade * 0.6, P.draw); sc = D.lerp(0.92, 1, eb); }
+      var tt = tOf(B.step), eb, el, sc = 1, m, sh, path = B.path;
+      if (vr === "draw"){
+        el = pr(tt, B.at, S * 0.5); eb = pr(tt, B.at + S * 0.45, S * 0.55); sc = D.lerp(0.92, 1, eb); path = B.rpath;
+        sh = [-B.dir[0] * OFF * (1 - eb), -B.dir[1] * OFF * (1 - eb)];
+      } else if (vr === "grow"){
+        m = pr(tt, B.at, P.fade); eb = pr(tt, B.at, P.fade * 0.6); el = pr(tt, B.at, S); sc = D.lerp(0.85, 1, m); path = B.rpath;
+        sh = [-B.dir[0] * OFF * (1 - m), -B.dir[1] * OFF * (1 - m)];
+      } else { eb = pr(tt, B.at, P.fade); el = pr(tt, B.at + P.fade * 0.6, P.draw); sc = D.lerp(0.92, 1, eb); sh = [0, OFF * (1 - eb)]; }
       if (lect){ var f = faint(tt, eb); B.g.setAttribute("opacity", f.toFixed(3)); B.g.setAttribute("transform", ""); line(B.line, B.path, 1); B.line.setAttribute("opacity", f.toFixed(3)); }
       else {
         B.g.setAttribute("opacity", eb.toFixed(3));
-        if (u < 1){
-          // grow：箱の付く点を、背骨から大骨に沿って動かす
-          var q = self.part(B.rpath, u).end;
-          B.g.setAttribute("transform", "translate(" + q[0].toFixed(2) + " " + q[1].toFixed(2) + ") scale(" + sc.toFixed(4) + ") translate(" + (-B.anchor[0]).toFixed(2) + " " + (-B.anchor[1]).toFixed(2) + ")");
-        } else B.g.setAttribute("transform", scl(B.cx, B.cy, sc));
+        B.g.setAttribute("transform", tf(B.cx, B.cy, sc, sh[0], sh[1]));
         line(B.line, path, el); B.line.setAttribute("opacity", el > 0 ? 1 : 0);
       }
-      // 原因の行：fade は字が現れてから線、draw は線から字、grow は字が大骨から線に沿って出る（どれも 0.45 秒）
+      // 原因の行（どれも 0.45 秒）：fade は字が下から 12 px 上がりながら現れてから線、draw は線から字、
+      // grow は字が大骨の側（右）から 12 px 寄りながら現れ、線は同時に大骨から引く
       B.rows.forEach(function(r){
-        var tr = tOf(r.step), et, el2, dx = 0;
+        var tr = tOf(r.step), et, el2, dx = 0, dy = 0;
         if (vr === "draw"){ el2 = pr(tr, r.at, 0.25); et = pr(tr, r.at + 0.15, 0.3); }
-        else if (vr === "grow"){ el2 = pr(tr, r.at, 0.45); et = pr(tr, r.at, 0.2); dx = (1 - el2) * r.slide; }
-        else { et = pr(tr, r.at, 0.3); el2 = pr(tr, r.at + 0.15, 0.3); }
+        else if (vr === "grow"){ el2 = pr(tr, r.at, 0.45); et = pr(tr, r.at, 0.3); dx = OFF * (1 - et); }
+        else { et = pr(tr, r.at, 0.3); el2 = pr(tr, r.at + 0.15, 0.3); dy = OFF * (1 - et); }
         if (lect){
           var f = faint(tr, et);
           r.g.setAttribute("opacity", f.toFixed(3)); r.g.setAttribute("transform", "");
           line(r.line, r.path, 1); r.line.setAttribute("opacity", f.toFixed(3));
         } else {
           r.g.setAttribute("opacity", et.toFixed(3));
-          r.g.setAttribute("transform", dx > 0.01 ? "translate(" + dx.toFixed(2) + " 0)" : "");
+          r.g.setAttribute("transform", Math.abs(dx) > 0.01 || Math.abs(dy) > 0.01 ? "translate(" + dx.toFixed(2) + " " + dy.toFixed(2) + ")" : "");
           line(r.line, r.path, el2); r.line.setAttribute("opacity", el2 > 0 ? 1 : 0);
         }
         if (r.mline){

@@ -8,9 +8,11 @@
 // orient：down（既定、上から下）か right（左から右）。link：elbow（既定、かぎ形）か straight（まっすぐ）
 // 段階：by="level"（既定、根、それから深さごとに 1 段）か by="node"（深さ優先の順に 1 つずつ）。節の step が勝つ
 // edges：親子のほかのつながり（破線、矢印つき）。段階は両端の遅いほう
-// 字の大きさは要素の大きさから決め（27 px から）、入らなければ 24 px まで縮める。それでも入らなければ全体を縮めて console.warn
-// 見せ方（docs/conventions.md §2.5）：fade（箱が現れてから線を引く、既定）・draw（線を先に引き、その先に箱が現れる）・
-// grow（箱が親の位置から線に沿って出てくる）。段階の数・長さ・最後の中身はどれも同じ
+// 字の大きさは要素の大きさから決め（27 px から）、入らなければ 24 px まで縮める。それでも入らなければ、字は 24 px のまま
+// 葉だけの子を 2 段に互い違いに並べ、名前を 2 行に折る。それでも入らなければ要素の箱からはみ出して console.warn（足りない px）
+// 見せ方（docs/conventions.md §2.5）：fade（箱が下から 12 px 上がりながら現れてから線を引く、既定）・draw（線を先に引き、
+// その先に箱が親の側から 12 px 寄りながら現れる）・grow（箱が親の側から 12 px 寄りながら 0.85 → 1 に大きくなる）。
+// 箱の動きはどれも 12 px まで。段階の数・長さ・最後の中身はどれも同じ
 // ---- BEGIN egatari-variant (source: tools/variant.js; copy with `node tools/variant-sync.mjs`; do not edit inside a component) ----
 // Choosing a presentation variant (Egatari spec §8.4, docs/conventions.md §1). A component lists its variant names in
 // `static variants` (index 0 is variant 0) and calls VARIANT.of(this) once, in mount. The choice reads, in order:
@@ -142,10 +144,31 @@ DECK.define("m-tree", class extends DECK.MotionElement {
     var labW = 0;
     pl.edges.forEach(function(x){ if (x.e.label) labW = Math.max(labW, est(x.e.label) * 24); });
     var edgeRoom = pl.edges.length ? 56 + (labW ? (right ? labW + 14 : 36) : 0) : 0;
+    // 名前を 2 行に折る（入らないときだけ）。\n も *_^ もない 4 字以上の名前に限る。空白があれば真ん中に近い空白で、
+    // 和文は真ん中あたりで（小さい仮名・長音・句読点を行の頭にしない）。空白のない欧文の 1 語は折らない
+    function wrap2(t){
+      var ch = [...t], n = ch.length, best = -1;
+      if (n < 4 || /[*_^]/.test(t)) return null;
+      if (/ /.test(t)){
+        ch.forEach(function(c, i){ if (c === " " && (best < 0 || Math.abs(i - n / 2) < Math.abs(best - n / 2))) best = i; });
+        return [ch.slice(0, best).join(""), ch.slice(best + 1).join("")];
+      }
+      if (/^[\u0000-ɏ]+$/.test(t)) return null;
+      // 真ん中から 2 字以内で、平仮名の後ろで平仮名でない字の前（「とても長い｜分類」）があればそこで
+      var cut = Math.ceil(n / 2), hira = /[ぁ-ゖ]/, d;
+      for (d = 0; d <= 2; d++){
+        if (cut - d >= 2 && hira.test(ch[cut - d - 1]) && !hira.test(ch[cut - d])){ cut -= d; break; }
+        if (d && cut + d <= n - 2 && hira.test(ch[cut + d - 1]) && !hira.test(ch[cut + d])){ cut += d; break; }
+      }
+      while (cut < n - 1 && /[ぁぃぅぇぉっゃゅょゎァィゥェォッャュョヮー、。・）」』]/.test(ch[cut])) cut++;
+      return [ch.slice(0, cut).join(""), ch.slice(cut).join("")];
+    }
+    var wrapOn = false, RG = 14;   // RG：2 段に並べた子の、段の間
     // 大きさ s の字で箱を測る（b：並ぶ向きの幅、d：深さの向きの幅）
     function measure(s){
       pl.nodes.forEach(function(o){
         var n = o.n, lines = n.tex ? [n.tex] : String(n.label || "").split("\n");
+        if (wrapOn && !n.tex && lines.length === 1){ var w2 = wrap2(lines[0]); if (w2) lines = w2; }
         var tw = n.tex ? texEst(n.tex) * s : Math.max.apply(null, lines.map(est)) * s;
         o.lines = lines;
         o.w = Math.max(s * 2.4, tw + s * 1.3); o.h = (n.tex ? s * 1.5 : lines.length * s * 1.25) + s * 0.75;
@@ -157,10 +180,26 @@ DECK.define("m-tree", class extends DECK.MotionElement {
     }
     // 部分木を置く：段ごとの輪郭 [左, 右] を返し、子の親からのずれ off を決める
     function lay(o, gap){
-      var half = o.fb / 2;
-      if (!o.kids.length){ o.cont = [[-half, half]]; return; }
+      var half = o.fb / 2, ks = o.kids;
+      if (!ks.length){ o.cont = [[-half, half]]; return; }
+      if (o.fold){
+        // 葉だけの子を 2 段に互い違いに並べる（row 1 が奥の段）。奥の段への線は手前の段の箱の間を通るので、箱から C 空ける
+        var p = [], C = 12;
+        ks.forEach(function(c, j){
+          c.cont = [[-c.fb / 2, c.fb / 2]];
+          if (!j){ p.push(0); return; }
+          var v = j % 2 ? p[j - 1] + ks[j - 1].fb / 2 + C : p[j - 1] + C + c.fb / 2;
+          if (j >= 2) v = Math.max(v, p[j - 2] + (ks[j - 2].fb + c.fb) / 2 + gap);
+          p.push(v);
+        });
+        var m0 = (p[0] + p[p.length - 1]) / 2, lo = Infinity, hi = -Infinity;
+        ks.forEach(function(c, j){ c.off = p[j] - m0; c.row = j % 2; lo = Math.min(lo, c.off - c.fb / 2); hi = Math.max(hi, c.off + c.fb / 2); });
+        o.cont = [[-half, half], [lo, hi]];
+        return;
+      }
       var acc = null, pos = [];
-      o.kids.forEach(function(c){
+      ks.forEach(function(c){
+        c.row = 0;
         lay(c, gap);
         if (!acc){ pos.push(0); acc = c.cont.map(function(a){ return a.slice(); }); return; }
         var sh = -Infinity, dd;
@@ -172,7 +211,7 @@ DECK.define("m-tree", class extends DECK.MotionElement {
         }
       });
       var mid = (pos[0] + pos[pos.length - 1]) / 2;
-      o.kids.forEach(function(c, i){ c.off = pos[i] - mid; });
+      ks.forEach(function(c, i){ c.off = pos[i] - mid; });
       o.cont = [[-half, half]].concat(acc.map(function(a){ return [a[0] - mid, a[1] - mid]; }));
     }
     function breadth(gap){
@@ -181,19 +220,41 @@ DECK.define("m-tree", class extends DECK.MotionElement {
       pl.root.cont.forEach(function(a){ lo = Math.min(lo, a[0]); hi = Math.max(hi, a[1]); });
       return {lo: lo, hi: hi, span: hi - lo};
     }
+    // 深さの向きの段ごとの幅（2 段に並べた子のある段は、奥の段の分だけ広い）
     function depthSum(){
-      var ext = [];
-      pl.nodes.forEach(function(o){ ext[o.depth] = Math.max(ext[o.depth] || 0, o.fd); });
-      return {ext: ext, sum: ext.reduce(function(a, b){ return a + b; }, 0)};
+      var ext = [], r2 = [], rowOff = [];
+      pl.nodes.forEach(function(o){ if (o.row) r2[o.depth] = Math.max(r2[o.depth] || 0, o.fd); else ext[o.depth] = Math.max(ext[o.depth] || 0, o.fd); });
+      r2.forEach(function(e, d){ rowOff[d] = (ext[d] || 0) + RG; ext[d] = rowOff[d] + e; });
+      return {ext: ext, rowOff: rowOff, sum: ext.reduce(function(a, b){ return a + b; }, 0)};
     }
     var B = right ? H : W, DA = (right ? W : H) - edgeRoom;
     var gmin = right ? 14 : 22, gmax = right ? 30 : 64, lgmin = right ? 56 : 40, lgmax = right ? 110 : 90;
-    var sizes = P.size ? [P.size] : [27, 26, 25, 24], s = null, fit = true, br, ds;
-    for (var i = 0; i < sizes.length && s === null; i++){
-      measure(sizes[i]); br = breadth(gmin); ds = depthSum();
-      if (br.span <= B && ds.sum + (levels - 1) * lgmin <= DA) s = sizes[i];
+    // 入れ方を順に試す：字を 27 → 24 px、それでも入らなければ 24 px のまま、葉だけの子の多い親から順に子を 2 段にし、
+    // さらに名前を 2 行に折る。字は 24 px より小さくしない（docs/conventions.md §2.3）。どれでも入らなければ、
+    // はみ出しのいちばん少ない形で描き、足りない px を console.warn で知らせる
+    var cands = P.link === "straight" ? [] : pl.nodes.filter(function(o){ return o.kids.length >= 3 && o.kids.every(function(c){ return !c.kids.length; }); })
+      .sort(function(a, b){ return b.kids.length - a.kids.length; });
+    var sizes = P.size ? [P.size] : [27, 26, 25, 24], s24 = sizes[sizes.length - 1], tries = [], cfg = null, best = null, nf;
+    sizes.forEach(function(z){ tries.push([z, false, 0]); });
+    for (nf = 1; nf <= cands.length; nf++) tries.push([s24, false, nf]);
+    for (nf = 0; nf <= cands.length; nf++) tries.push([s24, true, nf]);
+    var setup = function(t){
+      wrapOn = t[1];
+      pl.nodes.forEach(function(o){ o.fold = false; o.row = 0; });
+      cands.slice(0, t[2]).forEach(function(o){ o.fold = true; });
+      measure(t[0]);
+      var b = breadth(gmin), d = depthSum();
+      return [Math.max(0, b.span - B), Math.max(0, d.sum + (levels - 1) * lgmin - DA)];
+    };
+    for (var i = 0; i < tries.length && !cfg; i++){
+      var miss = setup(tries[i]);
+      if (!miss[0] && !miss[1]) cfg = tries[i];
+      else if (!best || miss[0] + miss[1] < best.m[0] + best.m[1]) best = {t: tries[i], m: miss};
     }
-    if (s === null){ s = sizes[sizes.length - 1]; measure(s); fit = false; }
+    var fit = !!cfg;
+    if (!fit){ cfg = best.t; console.warn("m-tree: the tree does not fit at " + cfg[0] + " px; it overflows its box by " + Math.ceil(best.m[0]) + " px across and " + Math.ceil(best.m[1]) + " px along the levels (text is not made smaller). Split the tree, shorten the labels or make the element larger"); }
+    setup(cfg);
+    var s = cfg[0], br, ds;
     // 並ぶ向きの間：入る範囲で広げる
     var gap = gmin;
     if (fit) for (var g = gmax; g > gmin; g -= 2){ if (breadth(g).span <= B){ gap = g; break; } }
@@ -202,15 +263,9 @@ DECK.define("m-tree", class extends DECK.MotionElement {
     var totalD = ds.sum + (levels - 1) * lgap;
     var lvStart = [], acc = 0;
     ds.ext.forEach(function(e, d){ lvStart[d] = acc; acc += e + lgap; });
-    // 絶対位置（b：並ぶ向きの中心、d0：その段の始まり）
+    // 絶対位置（b：並ぶ向きの中心、d0：その段の始まり）。入らないときは並ぶ向きに中央（両側へ同じだけはみ出す）、深さの向きは端から
     (function place(o, b){ o.b = b; o.kids.forEach(function(c){ place(c, b + c.off); }); })(pl.root, 0);
     var oB = (B - br.span) / 2 - br.lo, oD = Math.max(0, (DA - totalD) / 2);
-    if (!fit){
-      oB = -br.lo; oD = 0;
-      var sc = Math.min(B / br.span, (DA + edgeRoom) / (totalD + edgeRoom));
-      root.setAttribute("transform", "scale(" + sc.toFixed(4) + ")");
-      console.warn("m-tree: the tree does not fit at 24 px (" + Math.round(br.span) + " × " + Math.round(totalD) + " px needed); drawn smaller");
-    }
     var tones = {term: ["var(--term)", "var(--term-tint)", "var(--fg)"], emph: ["var(--emph)", "var(--emph-tint)", "var(--emph)"]};
     var toneOf = function(t){
       if (tones[t]) return tones[t];
@@ -220,7 +275,7 @@ DECK.define("m-tree", class extends DECK.MotionElement {
     this.size = s;
     // 箱
     pl.nodes.forEach(function(o){
-      var n = o.n, c = toneOf(n.tone), b = o.b + oB, d0 = lvStart[o.depth] + oD;
+      var n = o.n, c = toneOf(n.tone), b = o.b + oB, d0 = lvStart[o.depth] + oD + (o.row ? ds.rowOff[o.depth] : 0);
       if (right){ o.x = d0; o.y = b - o.fb / 2; } else { o.x = b - o.w / 2; o.y = d0; }
       o.cx = o.x + o.w / 2; o.cy = o.y + o.h / 2;
       o.g = D.el("g", {opacity: 0}, gN);
@@ -238,15 +293,17 @@ DECK.define("m-tree", class extends DECK.MotionElement {
       o.inP = right ? [o.x, o.cy] : [o.cx, o.y];
       o.outP = right ? [o.x + o.w, o.cy] : [o.cx, o.y + o.h + o.nh];
     });
-    // 親子の線
+    // 親子の線。o.dir：親の中心から箱の中心への向き（draw と grow で箱が寄ってくる向き）
     pl.nodes.forEach(function(o){
-      if (!o.par) return;
+      if (!o.par){ o.dir = [0, 1]; return; }
+      var dx = o.cx - o.par.cx, dy = o.cy - o.par.cy, dl = Math.hypot(dx, dy) || 1;
+      o.dir = [dx / dl, dy / dl];
       var p = o.par, a = p.outP, z = o.inP, pts;
       if (P.link === "straight") pts = [a, z];
       else if (right){ var bx = lvStart[p.depth] + oD + ds.ext[p.depth] + lgap / 2; pts = [a, [bx, a[1]], [bx, z[1]], z]; }
       else { var by = lvStart[p.depth] + oD + ds.ext[p.depth] + lgap / 2; pts = [a, [a[0], by], [z[0], by], z]; }
       o.path = self.poly(pts);
-      o.line = D.el("path", {d: "", fill: "none", stroke: "var(--line)", "stroke-width": 3, "stroke-linejoin": "round"}, gL);
+      o.line = D.el("path", {d: "", fill: "none", stroke: "var(--muted)", "stroke-width": 3, "stroke-linejoin": "round"}, gL);
     });
     // そのほかのつながり：外側（down は下、right は右）にふくらむ破線の曲線
     var depthEnd = oD + totalD;
@@ -309,11 +366,22 @@ DECK.define("m-tree", class extends DECK.MotionElement {
     // 段階 step の要素の、その段階の中の時刻（-1 = まだ、Infinity = 済み）
     var tOf = function(step){ return step < k ? Infinity : step > k ? -1 : t; };
     var pr = function(tt, at, dur){ return tt < 0 ? 0 : D.prog(tt, at, dur); };
+    // 箱の動きは 12 px まで（docs/conventions.md §1.2：どの見せ方も fade より遠くへ動かさない）
+    var OFF = 12;
     this.plan().nodes.forEach(function(o){
-      var tt = tOf(o.step), eb, el, u = 1, sc = 1;
-      if (!o.par || vr === "fade"){ eb = pr(tt, o.at, P.fade); el = pr(tt, o.at + P.fade * 0.6, P.draw); sc = D.lerp(0.92, 1, eb); }
-      else if (vr === "draw"){ el = pr(tt, o.at, S * 0.5); eb = pr(tt, o.at + S * 0.45, S * 0.55); sc = D.lerp(0.92, 1, eb); }
-      else { u = pr(tt, o.at, S); el = u; eb = pr(tt, o.at, S * 0.35); sc = D.lerp(0.5, 1, u); }
+      var tt = tOf(o.step), eb, el, sc = 1, m, sh;
+      if (!o.par || vr === "fade"){
+        // fade：箱が下から 12 px 上がりながら現れ（0.92 → 1）、それから線を引く
+        eb = pr(tt, o.at, P.fade); el = pr(tt, o.at + P.fade * 0.6, P.draw); sc = D.lerp(0.92, 1, eb); sh = [0, OFF * (1 - eb)];
+      } else if (vr === "draw"){
+        // draw：線を先に引き、その先に箱が親の側から 12 px 寄りながら現れる
+        el = pr(tt, o.at, S * 0.5); eb = pr(tt, o.at + S * 0.45, S * 0.55); sc = D.lerp(0.92, 1, eb);
+        sh = [-o.dir[0] * OFF * (1 - eb), -o.dir[1] * OFF * (1 - eb)];
+      } else {
+        // grow：箱が親の側から 12 px 寄りながら 0.85 → 1 に大きくなる。線は同時に親から引く
+        m = pr(tt, o.at, P.fade); eb = pr(tt, o.at, P.fade * 0.6); el = pr(tt, o.at, S); sc = D.lerp(0.85, 1, m);
+        sh = [-o.dir[0] * OFF * (1 - m), -o.dir[1] * OFF * (1 - m)];
+      }
       if (lect){
         // 授業の表示：後の段階は薄く、今の段階は薄い状態から濃くなる（位置は動かさない。どの見せ方でも同じ）
         var f = tt < 0 ? FAINT : FAINT + (1 - FAINT) * eb;
@@ -322,13 +390,8 @@ DECK.define("m-tree", class extends DECK.MotionElement {
         return;
       }
       o.g.setAttribute("opacity", eb.toFixed(3));
-      var tr = "";
-      if (u < 1 && o.par){
-        // grow：箱の入る点を、線の上の今の点に置き、小さい大きさから戻す
-        var q = self.part(o.path, u).end;
-        tr = "translate(" + q[0].toFixed(2) + " " + q[1].toFixed(2) + ") scale(" + sc.toFixed(4) + ") translate(" + (-o.inP[0]).toFixed(2) + " " + (-o.inP[1]).toFixed(2) + ")";
-      } else if (sc < 1) tr = "translate(" + o.cx.toFixed(2) + " " + o.cy.toFixed(2) + ") scale(" + sc.toFixed(4) + ") translate(" + (-o.cx).toFixed(2) + " " + (-o.cy).toFixed(2) + ")";
-      o.g.setAttribute("transform", tr);
+      o.g.setAttribute("transform", sc >= 1 && Math.abs(sh[0]) < 0.01 && Math.abs(sh[1]) < 0.01 ? "" :
+        "translate(" + (o.cx + sh[0]).toFixed(2) + " " + (o.cy + sh[1]).toFixed(2) + ") scale(" + sc.toFixed(4) + ") translate(" + (-o.cx).toFixed(2) + " " + (-o.cy).toFixed(2) + ")");
       if (o.line){ o.line.setAttribute("d", el > 0 ? self.part(o.path, el).d : ""); o.line.setAttribute("opacity", el > 0 ? 1 : 0); }
     });
     this.edges.forEach(function(o){

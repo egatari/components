@@ -9,8 +9,9 @@
 // 段のまとまりに分け、まとまりの名前を左（v なら上）に書く。lane のある出来事（end なし）は、その段の中の ◆（節目）になる
 // 期間があるときは軸に目盛りを付け、出来事の箱はすべて軸の上（v なら左）に置く
 // 段階：既定は時刻の順に 1 つずつ（per-step で n 個ずつ、node の step で直接、at で段階の中の開始秒）。軸は最初の出来事と一緒に出る
-// 見せ方（docs/conventions.md §2.5）：fade（既定。箱が現れてから軸からの線を引く）・draw（軸からの線を先に引き、その先に箱が出る。帯は左から
-// 右へ引く）・grow（箱が軸の側から伸びて出る。帯は中ほどから両側へ伸びる）。段階の数・長さ・合図・最後の中身はどれも同じ
+// 見せ方（docs/conventions.md §2.5）：fade（既定。箱が軸の側から 12 px 寄りながら現れてから軸からの線を引く）・draw（軸からの線を先に引き、
+// その先に箱が軸の側から 12 px 寄りながら出る。帯は始まりから終わりへ引く）・grow（箱が軸の側から 12 px 寄りながら 0.85 → 1 に大きくなる。
+// 帯は両端が 12 px ずつ伸びる）。箱の動きはどれも 12 px まで。段階の数・長さ・合図・最後の中身はどれも同じ
 // 字の幅は字数から見積もる（字の読み込みを待たない）。入らなければ字を 24px まで縮め、それでも入らなければ console.warn
 // ---- BEGIN egatari-variant (source: tools/variant.js; copy with `node tools/variant-sync.mjs`; do not edit inside a component) ----
 // Choosing a presentation variant (Egatari spec §8.4, docs/conventions.md §1). A component lists its variant names in
@@ -80,13 +81,13 @@ DECK.define("m-timeline", class extends DECK.MotionElement {
     schema: {type: "object", additionalProperties: false, required: ["nodes"], properties: {
       nodes: {type: "array", minItems: 1, items: {type: "object", required: ["when"], properties: {
         id: {type: ["string", "integer"]}, label: {type: "string"}, tex: {type: "string"}, note: {type: "string"}, tone: {type: "string"},
-        when: {type: ["number", "string"]}, end: {type: ["number", "string"]}, lane: {type: "string"}, step: {type: "integer"}, at: {type: "number"}}}},
+        when: {type: ["number", "string"]}, whenLabel: {type: "string"}, end: {type: ["number", "string"]}, lane: {type: "string"}, step: {type: "integer"}, at: {type: "number"}}}},
       edges: {type: "array", items: {type: "object", required: ["from", "to"], properties: {
         from: {type: ["string", "integer"]}, to: {type: ["string", "integer"]}, label: {type: "string"}, tone: {type: "string"}, dash: {type: "boolean"},
         step: {type: "integer"}, at: {type: "number"}}}}}},
-    example: {nodes: [{id: "a", label: "明治維新", when: "1868"}, {id: "b", label: "憲法の発布", when: "1889", note: "2 月 11 日"},
+    example: {nodes: [{id: "a", label: "明治維新", when: "1868", whenLabel: "明治元年"}, {id: "b", label: "憲法の発布", when: "1889", note: "2 月 11 日"},
       {id: "c", label: "日清戦争", when: "1894", end: "1895", tone: "emph"}]},
-    note: "when / end: a number or \"YYYY\", \"YYYY-MM\", \"YYYY-MM-DD\". A node with end is a period (a band); lane groups bands into named lanes",
+    note: "when / end: a number or \"YYYY\", \"YYYY-MM\", \"YYYY-MM-DD\"; end is exclusive (\"1912\" is the start of 1912). whenLabel: the date text shown instead of the computed one (when still sets the position). A node with end is a period (a band); lane groups bands into named lanes",
   };
   static props = {
     orient:     {type: "string", default: "h", doc: "h（左から右へ）か v（上から下へ）"},
@@ -165,7 +166,7 @@ DECK.define("m-timeline", class extends DECK.MotionElement {
     var STEM = 30, ROWG = 10, GAP = 14, LANEG = 6, GROUPG = 16, why = [];
     var points = its.filter(function(o){ return o.kind === "point"; }), lanesIt = its.filter(function(o){ return o.kind !== "point"; }), hasL = lanesIt.length > 0;
     points.forEach(function(o){
-      var lines = [{text: fmtTime(o.a, ja), size: 24, fill: tone(o.n.tone), weight: 700}].concat(labelLines(o.n, size));
+      var lines = [{text: o.n.whenLabel !== undefined ? String(o.n.whenLabel) : fmtTime(o.a, ja), size: 24, fill: tone(o.n.tone), weight: 700}].concat(labelLines(o.n, size, textFill(o.n.tone)));
       if (o.n.note) lines.push({text: o.n.note, size: 24, fill: "var(--muted)"});
       o.bs = boxSize(self, lines);
       o.eu = hz ? o.bs.w : o.bs.h; o.ec = hz ? o.bs.h : o.bs.w;
@@ -225,10 +226,15 @@ DECK.define("m-timeline", class extends DECK.MotionElement {
     // 期間の段：帯の名前を中・右・左（v なら中・下・上）に置き、u の区間が重ならない段に積む
     var tickExt = 0, ticks = [];
     lanesIt.forEach(function(o){
-      var lab = labelLines(o.n, size)[0], tw = (lab.tex ? texWidth(self, lab) : est(lab.text, size)) + (o.n.note ? est("  " + o.n.note, 24) : 0);
-      o.tw = tw; o.lab = lab;
+      // 名前は \n で何行でも（帯を太くするか、帯の横に行を重ねる）。note は最後の行に続けて小さく
+      var labs = labelLines(o.n, size), nl = labs.length, lab = labs[0], ws = labs.map(function(l){ return l.tex ? texWidth(self, l) : est(l.text, size); });
+      ws[nl - 1] += o.n.note ? est("  " + o.n.note, 24) : 0;
+      var tw = Math.max.apply(null, ws), lb = nl * size * 1.25;
+      o.tw = tw; o.lab = lab; o.labs = labs;
+      // 帯（h）と節目の段の太さ：1 行なら今まで通り 1.7 字
+      o.need = Math.max(Math.round(size * 1.7), Math.ceil(lb + (o.kind === "band" ? size * 0.45 : 4)));
       if (o.kind === "band"){
-        var u0 = U(o.a.v), u1 = U(o.b.v), len = u1 - u0, th = size * 1.3;
+        var u0 = U(o.a.v), u1 = U(o.b.v), len = u1 - u0, th = size * 1.3 * nl;
         o.u0 = u0; o.u1 = u1;
         if (hz){
           o.where = tw + 20 <= len ? "in" : u1 + 10 + tw <= Lu ? "after" : u0 - 10 - tw >= M ? "before" : "in";
@@ -244,7 +250,7 @@ DECK.define("m-timeline", class extends DECK.MotionElement {
         if (hz){
           o.where = u + 21 + tw <= Lu ? "after" : "before";
           o.lo = o.where === "before" ? u - 21 - tw : u - 11; o.hi = o.where === "after" ? u + 21 + tw : u + 11;
-        } else { o.where = "after"; o.lo = u - Math.max(11, size * 0.7); o.hi = u + Math.max(11, size * 0.7); }
+        } else { o.where = "after"; o.lo = u - Math.max(11, lb / 2 + 2); o.hi = u + Math.max(11, lb / 2 + 2); }
       }
     });
     var lanesExt = 0;
@@ -263,8 +269,8 @@ DECK.define("m-timeline", class extends DECK.MotionElement {
         o.group = gk; o.sub = g.subs.indexOf(sub);
       });
       g.thick = g.subs.map(function(sub){
-        if (hz) return Math.round(size * 1.7);
         var m = 0;
+        if (hz){ sub.forEach(function(o){ m = Math.max(m, o.need); }); return m; }
         sub.forEach(function(o){ m = Math.max(m, o.kind === "band" ? o.tw + 24 : 30 + o.tw + 10); });
         return Math.ceil(m);
       });
@@ -307,11 +313,11 @@ DECK.define("m-timeline", class extends DECK.MotionElement {
     this.L = L;
     // 軸（印 class="axis"：試験が軸を横切る字を探す）と矢じり、目盛り
     var a0 = this.xy(L.axisU0, L.axisC), a1 = this.xy(L.axisU1, L.axisC);
-    this.axis = {g: gAxis, line: D.el("line", {class: "axis", x1: a0[0], y1: a0[1], x2: a0[0], y2: a0[1], stroke: "var(--line)", "stroke-width": 3}, gAxis),
+    this.axis = {g: gAxis, line: D.el("line", {class: "axis", x1: a0[0], y1: a0[1], x2: a0[0], y2: a0[1], stroke: "var(--line)", "stroke-width": 5}, gAxis),
       head: D.el("path", {d: "M0,0L-16,-7L-16,7Z", fill: "var(--line)"}, gAxis), p0: a0, p1: a1, ang: hz ? 0 : 90,
       ticks: D.el("g", {opacity: 0}, gAxis)};
     L.ticks.forEach(function(k){
-      var p = self.xy(k.u, L.axisC), q = self.xy(k.u, L.axisC + 9);
+      var p = self.xy(k.u, L.axisC), q = self.xy(k.u, L.axisC + 11);
       D.el("line", {x1: p[0], y1: p[1], x2: q[0], y2: q[1], stroke: "var(--line)", "stroke-width": 2}, self.axis.ticks);
       if (hz) D.el("text", {x: k.x.toFixed(1), y: (L.axisC + 38).toFixed(1), "text-anchor": k.anchor, "font-size": 24, fill: "var(--muted)"}, self.axis.ticks).textContent = k.text;
       else D.el("text", {x: (L.axisC + 18).toFixed(1), y: (k.u + 8).toFixed(1), "font-size": 24, fill: "var(--muted)"}, self.axis.ticks).textContent = k.text;
@@ -339,22 +345,27 @@ DECK.define("m-timeline", class extends DECK.MotionElement {
       // 箱の軸に近い辺の、点にいちばん近いところへ線を引く
       var ua = Math.max(o.u0b + 14, Math.min(o.u0b + o.eu - 14, o.u));
       var p0 = self.xy(o.u, L.axisC), p1 = self.xy(ua, o.cn);
-      var stem = D.el("line", {x1: p0[0], y1: p0[1], x2: p0[0], y2: p0[1], stroke: "var(--line)", "stroke-width": 3, opacity: 0}, gStem);
+      var stem = D.el("line", {x1: p0[0], y1: p0[1], x2: p0[0], y2: p0[1], stroke: "var(--muted)", "stroke-width": 3, opacity: 0}, gStem);
       var g = D.el("g", {opacity: 0}, gBox);
-      D.el("rect", {class: "box", x: r.x.toFixed(1), y: r.y.toFixed(1), width: bs.w, height: bs.h, rx: 10, fill: tint(col, 12), stroke: col, "stroke-width": o.n.tone === "emph" ? 3 : 2.2}, g);
+      D.el("rect", {class: "box", x: r.x.toFixed(1), y: r.y.toFixed(1), width: bs.w, height: bs.h, rx: 10, fill: boxFill(o.n.tone), stroke: col, "stroke-width": o.n.tone === "emph" ? 3 : 2.2}, g);
       boxDraw(self, g, r.x, r.y, bs);
       rects[o.n.id] = r;
-      return {o: o, g: g, dot: dot, stem: stem, p0: p0, p1: p1, cx: r.x + bs.w / 2, cy: r.y + bs.h / 2};
+      // 軸から箱へ向かう向き（箱は軸の側から寄ってくる）
+      return {o: o, g: g, dot: dot, stem: stem, p0: p0, p1: p1, cx: r.x + bs.w / 2, cy: r.y + bs.h / 2, dir: hz ? [0, o.side] : [o.side, 0]};
     });
     // 期間（帯）と節目（◆）
-    var bandT = Math.round(size * 1.7);
     this.lanes = L.lanesIt.map(function(o){
       var g0 = L.groups[o.group], c0 = g0.subC[o.sub], th = g0.thick[o.sub], col = tone(o.n.tone);
       var g = D.el("g", {opacity: 0}, gBand), lg = D.el("g", {}), rect = null, dia = null, r;
       var noteSpan = function(t){ if (o.n.note){ var s = D.el("tspan", {"font-size": 24, fill: "var(--muted)"}, t); s.textContent = "  " + o.n.note; } return t; };
-      var text = function(x, y, anchor){
-        if (o.lab.tex){ D.svgMath(lg, x, y, o.lab.tex, {size: size, anchor: anchor, color: "var(--fg)", w: o.tw + 8, h: size * 1.6}).firstChild.style.verticalAlign = "top"; return; }
-        noteSpan(D.mtext(lg, x, y, o.lab.text, {"text-anchor": anchor, "font-size": size, fill: "var(--fg)"}));
+      // 名前の行を、行の塊の中心 yc に合わせて書く
+      var text = function(x, yc, anchor, lh){
+        var nl = o.labs.length, y0 = yc - (nl - 1) * lh / 2 + size * 0.36;
+        o.labs.forEach(function(l, j){
+          if (l.tex){ D.svgMath(lg, x, y0 + j * lh, l.tex, {size: size, anchor: anchor, color: "var(--fg)", w: o.tw + 8, h: size * 1.6}).firstChild.style.verticalAlign = "top"; return; }
+          var t = D.mtext(lg, x, y0 + j * lh, l.text, {"text-anchor": anchor, "font-size": size, fill: "var(--fg)"});
+          if (j === nl - 1) noteSpan(t);
+        });
       };
       if (o.kind === "band"){
         // 隣の帯と線が重ならないように両端を 1.5px 内へ
@@ -362,26 +373,27 @@ DECK.define("m-timeline", class extends DECK.MotionElement {
         r = hz ? {x: u0, y: c0, w: u1 - u0, h: th} : {x: c0, y: u0, w: th, h: u1 - u0};
         rect = D.el("rect", {class: "box", x: r.x.toFixed(1), y: r.y.toFixed(1), width: r.w.toFixed(1), height: r.h.toFixed(1), rx: 8, fill: tint(col, 26), stroke: col, "stroke-width": 2}, g);
         if (hz){
-          var by = c0 + th / 2 + size * 0.36;
-          if (o.where === "in") text((u0 + u1) / 2, by, "middle");
-          else if (o.where === "after") text(o.u1 + 10, by, "start");
-          else text(o.u0 - 10, by, "end");
+          var by = c0 + th / 2, lhh = size * 1.25;
+          if (o.where === "in") text((u0 + u1) / 2, by, "middle", lhh);
+          else if (o.where === "after") text(o.u1 + 10, by, "start", lhh);
+          else text(o.u0 - 10, by, "end", lhh);
         } else {
-          var bx = c0 + th / 2, th2 = size * 1.3;
-          if (o.where === "in") text(bx, (u0 + u1) / 2 + size * 0.36, "middle");
-          else if (o.where === "after") text(bx, o.u1 + 6 + th2 * 0.75, "middle");
-          else text(bx, o.u0 - 6 - th2 * 0.25, "middle");
+          var bx = c0 + th / 2, th2 = size * 1.3, blk = th2 * o.labs.length;
+          if (o.where === "in") text(bx, (u0 + u1) / 2, "middle", th2);
+          else if (o.where === "after") text(bx, o.u1 + 6 + blk / 2, "middle", th2);
+          else text(bx, o.u0 - 6 - blk / 2, "middle", th2);
         }
       } else {
         var mc = hz ? [o.u0, c0 + th / 2] : [c0 + 15, o.u0];
         dia = D.el("path", {d: "M0,-12L12,0L0,12L-12,0Z", fill: col, stroke: "var(--bg)", "stroke-width": 2, transform: "translate(" + mc[0].toFixed(1) + " " + mc[1].toFixed(1) + ")"}, g);
         r = {x: mc[0] - 12, y: mc[1] - 12, w: 24, h: 24};
-        if (hz) text(o.where === "after" ? o.u0 + 21 : o.u0 - 21, mc[1] + size * 0.36, o.where === "after" ? "start" : "end");
-        else text(c0 + 33, o.u0 + size * 0.36, "start");
+        if (hz) text(o.where === "after" ? o.u0 + 21 : o.u0 - 21, mc[1], o.where === "after" ? "start" : "end", size * 1.25);
+        else text(c0 + 33, o.u0, "start", size * 1.25);
       }
       g.appendChild(lg);   // 名前は帯の上に（帯と同じ g の中：試験は帯の中の字を除く）
       rects[o.n.id] = r;
-      return {o: o, g: g, lg: lg, rect: rect, dia: dia, r: r, mc: dia ? (hz ? [o.u0, c0 + th / 2] : [c0 + 15, o.u0]) : null};
+      return {o: o, g: g, lg: lg, rect: rect, dia: dia, r: r, mc: dia ? (hz ? [o.u0, c0 + th / 2] : [c0 + 15, o.u0]) : null,
+        cx: r.x + r.w / 2, cy: r.y + r.h / 2};
     });
     // ほかのつながり（edges）：破線、箱の縁から縁へ
     this.edges = this.plan().edges.map(function(x){
@@ -389,7 +401,7 @@ DECK.define("m-timeline", class extends DECK.MotionElement {
       if (!A || !B) return null;
       var ac = [A.x + A.w / 2, A.y + A.h / 2], bc = [B.x + B.w / 2, B.y + B.h / 2], dx = bc[0] - ac[0], dy = bc[1] - ac[1], Lh = Math.hypot(dx, dy) || 1;
       var cut = function(R, c, sx, sy){ var s = Math.min(sx ? (R.w / 2 + 6) / Math.abs(sx) : Infinity, sy ? (R.h / 2 + 6) / Math.abs(sy) : Infinity); return [c[0] + sx * s, c[1] + sy * s]; };
-      var p0 = cut(A, ac, dx / Lh, dy / Lh), p1 = cut(B, bc, -dx / Lh, -dy / Lh), col = e.tone ? tone(e.tone) : "var(--line)";
+      var p0 = cut(A, ac, dx / Lh, dy / Lh), p1 = cut(B, bc, -dx / Lh, -dy / Lh), col = e.tone ? tone(e.tone) : "var(--muted)";
       var g = D.el("g", {opacity: 0}, gEdge), ux = (p1[0] - p0[0]), uy = (p1[1] - p0[1]), l2 = Math.hypot(ux, uy) || 1;
       D.el("line", {x1: p0[0].toFixed(1), y1: p0[1].toFixed(1), x2: (p1[0] - ux / l2 * 14).toFixed(1), y2: (p1[1] - uy / l2 * 14).toFixed(1), stroke: col, "stroke-width": 3, "stroke-dasharray": e.dash === false ? "none" : "8 6"}, g);
       D.el("path", {d: "M0,0L-16,-7L-16,7Z", fill: col, transform: "translate(" + p1[0].toFixed(1) + " " + p1[1].toFixed(1) + ") rotate(" + (Math.atan2(uy, ux) * 180 / Math.PI).toFixed(1) + ")"}, g);
@@ -433,43 +445,52 @@ DECK.define("m-timeline", class extends DECK.MotionElement {
       ln.setAttribute("x2", D.lerp(p0[0], p1[0], e).toFixed(2)); ln.setAttribute("y2", D.lerp(p0[1], p1[1], e).toFixed(2));
       ln.setAttribute("opacity", e > 0 ? 1 : 0);
     };
-    var scaleAt = function(g, cx, cy, s){ g.setAttribute("transform", s >= 1 ? "" : "translate(" + cx.toFixed(1) + " " + cy.toFixed(1) + ") scale(" + s.toFixed(4) + ") translate(" + (-cx).toFixed(1) + " " + (-cy).toFixed(1) + ")"); };
+    // 箱の動きは 12 px まで（docs/conventions.md §1.2：どの見せ方も fade より遠くへ動かさない）。箱は軸の側から寄ってくる
+    var OFF = 12;
+    var place = function(g, cx, cy, s, d, e){
+      var dx = -d[0] * OFF * (1 - e), dy = -d[1] * OFF * (1 - e);
+      g.setAttribute("transform", s >= 1 && Math.abs(dx) < 0.01 && Math.abs(dy) < 0.01 ? "" :
+        "translate(" + (cx + dx).toFixed(2) + " " + (cy + dy).toFixed(2) + ") scale(" + s.toFixed(4) + ") translate(" + (-cx).toFixed(2) + " " + (-cy).toFixed(2) + ")");
+    };
     this.points.forEach(function(o){
-      var s = o.o.step, st = o.o.at, boxO, boxS = 1, sx = o.cx, sy = o.cy, dotO, stemE;
+      var s = o.o.step, st = o.o.at, boxO, boxS = 1, e = 1, dotO, stemE;
       if (lecture){ boxO = dotO = faint(s, st); stemE = 1; o.stem.setAttribute("opacity", 1); }
       else if (vr === "draw"){
-        // 軸からの線を先に引き、その先に箱が出る
-        dotO = pr(s, st, 0.2 * T); stemE = pr(s, st, 0.5 * T); boxO = pr(s, st + 0.45 * T, 0.55 * T);
+        // 軸からの線を先に引き、その先に箱が軸の側から 12 px 寄りながら出る
+        dotO = pr(s, st, 0.2 * T); stemE = pr(s, st, 0.5 * T); e = boxO = pr(s, st + 0.45 * T, 0.55 * T); boxS = 0.92 + 0.08 * e;
       } else if (vr === "grow"){
-        // 箱が軸の側の辺から伸びる（大きさ 0.6 → 1）
+        // 線を引きながら、箱が軸の側から 12 px 寄り、0.85 → 1 に大きくなる
         dotO = pr(s, st, 0.2 * T); stemE = pr(s, st, 0.4 * T);
-        var e = pr(s, st + 0.25 * T, 0.75 * T);
-        boxO = Math.min(1, e * 1.6); boxS = 0.6 + 0.4 * e; sx = o.p1[0]; sy = o.p1[1];
+        e = pr(s, st + 0.25 * T, 0.75 * T); boxO = Math.min(1, e * 1.6); boxS = 0.85 + 0.15 * e;
       } else {
-        // fade：箱が現れてから線を引く
-        var f = pr(s, st, 0.75 * T);
-        boxO = dotO = f; boxS = 0.92 + 0.08 * f; stemE = pr(s, st + 0.5 * T, 0.5 * T);
+        // fade：箱が軸の側から 12 px 寄りながら現れてから、線を引く
+        e = pr(s, st, 0.75 * T); boxO = dotO = e; boxS = 0.92 + 0.08 * e; stemE = pr(s, st + 0.5 * T, 0.5 * T);
       }
       o.g.setAttribute("opacity", boxO.toFixed(3));
-      scaleAt(o.g, sx, sy, boxS);
+      place(o.g, o.cx, o.cy, boxS, o.dir, lecture ? 1 : e);
       o.dot.setAttribute("opacity", dotO.toFixed(3));
       setLine(o.stem, o.p0, o.p1, stemE);
       if (lecture) o.stem.setAttribute("opacity", dotO.toFixed(3));
     });
+    // 期間と節目：段は軸の下（v なら右）。fade と grow は軸の側から 12 px 寄りながら現れる（grow は帯が両端 12 px ずつ伸びる）。
+    // draw は帯を始まりから終わりへ引き（線を引くのと同じ）、名前は後から
+    var ld = hz ? [0, 1] : [1, 0];
     this.lanes.forEach(function(o){
-      var s = o.o.step, st = o.o.at, gO = 1, labO = 1, w = 1, mid = false, diaS = 1;
+      var s = o.o.step, st = o.o.at, gO = 1, labO = 1, e = 1, w = 1, grow = 0, diaS = 1;
       if (lecture) gO = faint(s, st);
-      else if (vr === "fade"){ gO = pr(s, st, 0.75 * T); }
+      else if (vr === "fade"){ e = gO = pr(s, st, 0.75 * T); }
+      else if (vr === "grow"){ e = pr(s, st, 0.75 * T); gO = Math.min(1, e * 1.6); grow = 1 - e; if (o.dia) diaS = 0.85 + 0.15 * e; }
       else {
-        // draw：帯を始まりから終わりへ引く。grow：帯が中ほどから両側へ伸びる。名前は後から
-        w = pr(s, st, 0.7 * T); labO = pr(s, st + 0.6 * T, 0.4 * T); gO = w > 0 ? 1 : 0; mid = vr === "grow";
+        w = pr(s, st, 0.7 * T); labO = pr(s, st + 0.6 * T, 0.4 * T); gO = w > 0 ? 1 : 0;
         if (o.dia){ diaS = pr(s, st, 0.4 * T); labO = pr(s, st + 0.4 * T, 0.6 * T); gO = diaS > 0 ? 1 : 0; }
       }
       o.g.setAttribute("opacity", gO.toFixed(3));
       o.lg.setAttribute("opacity", labO.toFixed(3));
+      place(o.g, o.cx, o.cy, 1, ld, e);
       if (o.rect){
-        var r = o.r, len = hz ? r.w : r.h, l = len * w, p = hz ? r.x : r.y, q = mid ? p + (len - l) / 2 : p;
-        o.rect.setAttribute(hz ? "x" : "y", q.toFixed(2)); o.rect.setAttribute(hz ? "width" : "height", Math.max(0, l).toFixed(2));
+        var r = o.r, len = hz ? r.w : r.h, l = len * w, p = hz ? r.x : r.y;
+        if (grow > 0){ var cut = Math.min(len * 0.15, 2 * OFF) * grow; l = len - cut; p += cut / 2; }
+        o.rect.setAttribute(hz ? "x" : "y", p.toFixed(2)); o.rect.setAttribute(hz ? "width" : "height", Math.max(0, l).toFixed(2));
       }
       if (o.dia) o.dia.setAttribute("transform", "translate(" + o.mc[0].toFixed(1) + " " + o.mc[1].toFixed(1) + ")" + (diaS < 1 ? " scale(" + diaS.toFixed(4) + ")" : ""));
     });
@@ -492,6 +513,9 @@ function parseTime(v){
   return {v: y + doy / (leap ? 366 : 365), p: m[3] ? "d" : m[2] ? "m" : "y", y: y, m: mo, d: d};
 }
 function tone(t){ return "var(--" + (/^(term|emph|muted|accent2|series-[1-4])$/.test(t || "") ? t : "term") + ")"; }
+// 箱の地と字の色（m-tree・m-fishbone と同じ決まり）：term と emph はテーマの薄い色の地、emph は字も emph
+function boxFill(t){ return t === "emph" ? "var(--emph-tint)" : /^(muted|accent2|series-[1-4])$/.test(t || "") ? tint(tone(t), 12) : "var(--term-tint)"; }
+function textFill(t){ return t === "emph" ? "var(--emph)" : "var(--fg)"; }
 function tint(c, p){ return "color-mix(in srgb," + c + " " + p + "%,var(--bg))"; }
 // 字の幅（px）：数字 0.6 字、ほかの欧文 0.62 字、空白 0.3 字、和文 1 字。*斜体* の * は数えない
 function est(s, fs){
@@ -506,9 +530,10 @@ function texWidth(el, l){
   el.svg.removeChild(g);
   return w;
 }
-function labelLines(n, size){
-  if (n.tex) return [{tex: n.tex, size: size, fill: "var(--fg)"}];
-  return String(n.label || "").split("\n").map(function(s){ return {text: s, size: size, fill: "var(--fg)"}; });
+function labelLines(n, size, fill){
+  fill = fill || "var(--fg)";
+  if (n.tex) return [{tex: n.tex, size: size, fill: fill}];
+  return String(n.label || "").split("\n").map(function(s){ return {text: s, size: size, fill: fill}; });
 }
 // 箱の大きさと行の位置（基線は前の行の下 0.3 字 ＋ 今の行の 1.12 字：字の箱どうしが重ならない）
 function boxSize(el, lines){

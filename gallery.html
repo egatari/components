@@ -213,7 +213,7 @@ document.addEventListener("DOMContentLoaded", function(){
         <m-cycle variant="draw" style="height:360px">
           <script type="application/json">{"nodes": [{"label": "計画"}, {"label": "実行"}, {"label": "評価"}, {"label": "改善"}]}</script>
         </m-cycle></div>
-      <div><p class="vcap">矢印の先から伸びる（grow）</p>
+      <div><p class="vcap">前の箱の側から大きくなる（grow）</p>
         <m-cycle variant="grow" style="height:360px">
           <script type="application/json">{"nodes": [{"label": "計画"}, {"label": "実行"}, {"label": "評価"}, {"label": "改善"}]}</script>
         </m-cycle></div>
@@ -279,7 +279,7 @@ document.addEventListener("DOMContentLoaded", function(){
           {"id": "s1", "label": "肥料が足りない", "parent": "s"},
           {"id": "s2", "label": "水はけが悪い", "parent": "s"},
           {"id": "t", "label": "温度"},
-          {"id": "t1", "label": "気温が低い", "parent": "t"},
+          {"id": "t1", "label": "気温が低い", "parent": "t", "note": "15 ℃ 未満"},
           {"id": "t2", "label": "昼と夜の差が大きい", "parent": "t"}
         ]
       }</script>
@@ -300,7 +300,7 @@ document.addEventListener("DOMContentLoaded", function(){
       <m-fishbone variant="draw" aria-label="遅刻の原因（draw）" style="height:340px">
         <script type="application/json">{"effect": {"label": "遅刻"}, "nodes": [{"id": "a", "label": "自分"}, {"id": "a1", "label": "寝坊", "parent": "a"}, {"id": "a2", "label": "準備が遅い", "parent": "a"}, {"id": "b", "label": "交通"}, {"id": "b1", "label": "電車の遅れ", "parent": "b"}, {"id": "b2", "label": "道の混雑", "parent": "b"}]}</script>
       </m-fishbone></div>
-      <div><div class="vcap">骨に沿って出る（grow）</div>
+      <div><div class="vcap">背骨の側から伸びる（grow）</div>
       <m-fishbone variant="grow" aria-label="遅刻の原因（grow）" style="height:340px">
         <script type="application/json">{"effect": {"label": "遅刻"}, "nodes": [{"id": "a", "label": "自分"}, {"id": "a1", "label": "寝坊", "parent": "a"}, {"id": "a2", "label": "準備が遅い", "parent": "a"}, {"id": "b", "label": "交通"}, {"id": "b1", "label": "電車の遅れ", "parent": "b"}, {"id": "b2", "label": "道の混雑", "parent": "b"}]}</script>
       </m-fishbone></div>
@@ -442,7 +442,7 @@ document.addEventListener("DOMContentLoaded", function(){
 <section class="slide">
   <h2>m-timeline（新しい、v1.1.0 から）</h2>
   <div class="body">
-    <p>年表。出来事を時間の軸の上に 1 つずつ出す。期間は帯にして、重なる期間は段を分けて積む</p>
+    <p>年表。出来事を時間の軸の上に 1 つずつ出す。期間は帯にして、重なる期間は段を分けて積む。end は含まない（"1912" は 1912 年の初め）</p>
     <ul>
       <li>言いたいこと：年表・予定</li>
       <li>見せ方：fade・draw・grow</li>
@@ -457,7 +457,7 @@ document.addEventListener("DOMContentLoaded", function(){
     <m-timeline style="height:430px">
       <script type="application/json">{
         "nodes": [
-          {"label": "明治維新", "when": "1868", "note": "五箇条の御誓文"},
+          {"label": "明治維新", "when": "1868", "whenLabel": "明治元年", "note": "五箇条の御誓文"},
           {"label": "廃藩置県", "when": "1871"},
           {"label": "鉄道の開業", "when": "1872", "note": "新橋〜横浜"},
           {"label": "西南戦争", "when": "1877"},
@@ -482,7 +482,7 @@ document.addEventListener("DOMContentLoaded", function(){
           {"label": "森鷗外", "when": "1862", "end": "1922", "lane": "作家"},
           {"label": "夏目漱石", "when": "1867", "end": "1916", "lane": "作家"},
           {"label": "正岡子規", "when": "1867", "end": "1902", "lane": "作家"},
-          {"label": "樋口一葉", "when": "1872", "end": "1896", "lane": "作家", "tone": "emph"},
+          {"label": "樋口一葉\n24 歳で没", "when": "1872", "end": "1896", "lane": "作家", "tone": "emph"},
           {"label": "芥川龍之介", "when": "1892", "end": "1927", "lane": "作家"},
           {"label": "宮沢賢治", "when": "1896", "end": "1933", "lane": "作家"}
         ]
@@ -504,7 +504,7 @@ document.addEventListener("DOMContentLoaded", function(){
         <m-timeline variant="draw" style="height:330px">
           <script type="application/json">{"nodes": [{"label": "明治維新", "when": "1868"}, {"label": "明治", "when": "1868", "end": "1912"}, {"label": "憲法の発布", "when": "1889"}]}</script>
         </m-timeline></div>
-      <div><p class="vcap">伸びて出る（grow）</p>
+      <div><p class="vcap">軸の側から大きくなる（grow）</p>
         <m-timeline variant="grow" style="height:330px">
           <script type="application/json">{"nodes": [{"label": "明治維新", "when": "1868"}, {"label": "明治", "when": "1868", "end": "1912"}, {"label": "憲法の発布", "when": "1889"}]}</script>
         </m-timeline></div>
@@ -589,7 +589,7 @@ document.addEventListener("DOMContentLoaded", function(){
       <m-tree variant="draw" aria-label="植物の分類（draw）" style="height:330px">
         <script type="application/json">{"nodes": [{"id": "p", "label": "植物"}, {"id": "s", "label": "種子植物", "parent": "p"}, {"id": "f", "label": "胞子植物", "parent": "p"}, {"id": "a", "label": "被子植物", "parent": "s"}, {"id": "g", "label": "裸子植物", "parent": "s"}]}</script>
       </m-tree></div>
-      <div><div class="vcap">親から伸びる（grow）</div>
+      <div><div class="vcap">親の側から大きくなる（grow）</div>
       <m-tree variant="grow" aria-label="植物の分類（grow）" style="height:330px">
         <script type="application/json">{"nodes": [{"id": "p", "label": "植物"}, {"id": "s", "label": "種子植物", "parent": "p"}, {"id": "f", "label": "胞子植物", "parent": "p"}, {"id": "a", "label": "被子植物", "parent": "s"}, {"id": "g", "label": "裸子植物", "parent": "s"}]}</script>
       </m-tree></div>
