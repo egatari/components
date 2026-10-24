@@ -14,6 +14,7 @@ props: fade, draw, size, pulse-dur, pulse-n, label-gap
 
 - node：`id` `label`（`*斜体*` `_下付き` `^上付き`、`\n` で改行）または `tex`（KaTeX）、`step`、`tone`（`term` / `emph` / `muted`）、`at`（段階の中の開始秒）
 - edge：`from` `to` `step`（既定は両端の箱の遅いほう）、`label`、`tone`、`dash`、`offset`（名前と線の距離）、`at`
+- 色：線と線の名前は `--fg`（`tone` があればその色）。`muted` の箱は枠が `--muted`、地が `--bg`、字は `--fg`（v1.2.0 から。前は線の名前と `muted` の箱の字が `--muted` で、投影すると薄かった）
 - 箱は薄く拡大しながら現れ、矢印は同じ段階の箱が出てから引く
 
 <!-- llm: business -->

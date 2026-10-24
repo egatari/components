@@ -207,7 +207,8 @@ DECK.define("m-venn", class MVenn extends DECK.MotionElement {
       // 名前は円の外：A は左上、B は右上、C は右下
       var ang = n === 3 ? [150, 30, -30][i] : [135, 45][i], ca = Math.cos(ang * Math.PI / 180), sa = Math.sin(ang * Math.PI / 180);
       var lx = c.x + ca * (r + 12), ly = c.y - sa * (r + 12) + (sa < 0 ? LS * 0.8 : 0);
-      D.mtext(gt, lx, ly, sets[i].label, {"text-anchor": ca < 0 ? "end" : "start", "font-size": LS, "font-weight": 700, fill: col});
+      // 灰色の集合（--muted・--series-4）の名前は、ほかの円の薄い塗りに重なると 4.5:1 に届かないので --fg（共通の決まり §2.3）
+      D.mtext(gt, lx, ly, sets[i].label, {"text-anchor": ca < 0 ? "end" : "start", "font-size": LS, "font-weight": 700, fill: /muted|series-4/.test(col) ? "var(--fg)" : col});
       text(gt, LET[i], false);
       return {fill: fill, line: line, gt: gt, step: st};
     });

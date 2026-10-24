@@ -6,7 +6,6 @@ Versions follow [README.md § Releases and versions](README.md#releases-and-vers
 
 ### Later (candidates, not in this release)
 
-- `m-flow`: connectors in `--muted` like the new box-and-line diagrams (changes existing lessons; the owner decides)
 - `m-kanbun`, `m-kobun`: some steps are not complete at their declared length (`tools/test-duration.mjs` lists them as known; they may hold their last frame on purpose; check before changing)
 - `m-compare` `by="row"`; an "outside every set" region for `m-venn`; a project-plan demo for `m-timeline` lanes
 
@@ -30,6 +29,8 @@ Versions follow [README.md § Releases and versions](README.md#releases-and-vers
 
 ### Changed
 
+- `m-flow`: edge labels without a `tone`, and the text of `muted` boxes, are drawn in `--fg` instead of `--muted` (the box border stays `--muted`). They read too pale on a projector. **This changes how existing lessons look when rebuilt with v1.2.0** (owner-approved, issue #1). Edges themselves were already `--fg` and are unchanged
+- `m-cycle`, `m-timeline`: a `note` inside an `emph` box is drawn in `--fg` (`--muted` on `--emph-tint` is below 4.5:1)
 - `m-curves`, `m-quad` and `m-kpi`: series `common` (were `academic`, `business` and `business`). Only the catalogue and the AI pack's grouping change; tag names and drawing are unchanged
 
 ## 1.1.0 - 2026-10-24

@@ -158,8 +158,9 @@ Example (timeline):
 - Direction is the `orient` attribute: `m-timeline` `h` (default, left to right) or `v` (top to bottom); `m-tree` `down` (default) or `right`; `m-fishbone` head on the right (default). `m-cycle` starts at 12 o'clock and runs clockwise.
 - `m-timeline` spacing is the `scale` attribute: `time` (default, proportional to time) or `even` (equal spacing, for very uneven gaps). Labels alternate above and below the axis.
 - Lines that connect boxes to boxes or to the axis are `--muted`, 3 px (`--line` is too faint on a projector, as seen in the 2026-10-23 workshop). `--line` is only for grid lines (and separators that carry no ticks or labels). An axis that carries ticks or labels is information and uses `--muted` (the timeline axis, its ticks, and its tick labels at the figure's text size). Axes drawn by `DECK.Plot` (`m-curves`, `m-scatter`) stay `--fg`. The arrowhead is the same in every component; emphasised lines use the `tone` colour.
+- **Text contrast**: every component text reaches at least 4.5:1 against what is under it (background, box fill), in the default, kokugo and business themes (measured by `tools/test-contrast.mjs`). Text that carries information (box text, edge labels, values) is `--fg` or its `tone` colour; `--muted` is for supplementary notes only. A `--muted` note on a tinted fill (`--emph-tint` and the like) becomes `--fg` when it would fall below 4.5:1.
 - One "main line" per diagram (the fishbone spine, the timeline axis) may be up to 5 px.
-- `m-flow`'s lines do not change in v1.2.0 (seed 0 must look the same). Moving them to `--muted` changes existing lessons, so the owner decides it for a later release.
+- `m-flow`'s edges were already `--fg`, darker than `--muted`, so they stay. Its edge labels and the text of `muted` boxes became `--fg` in v1.2.0 (owner-approved; existing lessons change; issue #1).
 - No vertical writing (that is for the kokugo components).
 
 ### 2.4 Step order (defaults)

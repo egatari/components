@@ -167,7 +167,8 @@ DECK.define("m-timeline", class extends DECK.MotionElement {
     var points = its.filter(function(o){ return o.kind === "point"; }), lanesIt = its.filter(function(o){ return o.kind !== "point"; }), hasL = lanesIt.length > 0;
     points.forEach(function(o){
       var lines = [{text: o.n.whenLabel !== undefined ? String(o.n.whenLabel) : fmtTime(o.a, ja), size: 24, fill: tone(o.n.tone), weight: 700}].concat(labelLines(o.n, size, textFill(o.n.tone)));
-      if (o.n.note) lines.push({text: o.n.note, size: 24, fill: "var(--muted)"});
+      // 強調の箱（--emph-tint の地）の中の補足は --fg（--muted では 4.5:1 に届かない。共通の決まり §2.3）
+      if (o.n.note) lines.push({text: o.n.note, size: 24, fill: o.n.tone === "emph" ? "var(--fg)" : "var(--muted)"});
       o.bs = boxSize(self, lines);
       o.eu = hz ? o.bs.w : o.bs.h; o.ec = hz ? o.bs.h : o.bs.w;
     });
