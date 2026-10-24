@@ -10,7 +10,7 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 export const NAME_RE = /^[a-z][a-z0-9-]{0,63}$/;
-export const SERIES = ['common', 'academic', 'business', 'kokugo', 'info'];
+export const SERIES = ['common', 'academic', 'business', 'kokugo', 'info', 'social'];
 // Components released before demo.html was required (do not add to this list)
 const NO_DEMO = new Set([]);
 

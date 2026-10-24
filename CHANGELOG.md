@@ -4,6 +4,11 @@ Versions follow [README.md § Releases and versions](README.md#releases-and-vers
 
 ## Unreleased
 
+### Added
+
+- `m-map-japan` (working name, map-design §6 7): the 47 prefectures of Japan for geography and history lessons. Regions by JIS code or the 八地方区分 (`group`), a choropleth of up to 3 classes (adjacent classes ≥ 3:1; class numbers or values on the regions where they fit, and a legend), points, arrows and author-drawn lon/lat shapes, each with `step` `at` `tone`; insets for 南西諸島 and 小笠原 (`layout="true"` for true positions); `data-mark="JP-<code>"` on each prefecture for Studio's camera; variants `fade`, `sweep`, `draw`. Map data: Natural Earth 5.1.1 (public domain), modified, built by `tools/map/build-japan.mjs` with the Japanese government's position on the territories fixed in the data (docs/map-design.md §4.5) and ownership checks at build time. New series `social` and purpose `spatial` (場所・地図)
+- `tools/test-classes.mjs`: adjacent legend classes ≥ 3:1 in the default, kokugo and business themes; `npm test` also checks the map block's sha256 (`tools/map/build-japan.mjs --check`, no network)
+
 ### Later (candidates, not in this release)
 
 - `m-kanbun`, `m-kobun`: some steps are not complete at their declared length (`tools/test-duration.mjs` lists them as known; they may hold their last frame on purpose; check before changing)

@@ -3,3 +3,4 @@ node_modules/
 **/out/
 .studio/
 dist/
+tools/map/.cache/

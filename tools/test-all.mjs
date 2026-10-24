@@ -17,6 +17,8 @@
 //  13. seed0           variant 0 of every component with variants is pixel-identical to the last release (tools/test-seed0.mjs)
 //  14. duration        every step is complete when its declared length ends (tools/test-duration.mjs)
 //  15. contrast        every component text ≥ 4.5:1 in the default, kokugo and business themes (tools/test-contrast.mjs)
+//  16. classes         adjacent choropleth classes in a legend ≥ 3:1 in the same themes (tools/test-classes.mjs)
+//      map-data        m-map-japan's generated map block matches the sha256 recorded by tools/map/build-japan.mjs (no network)
 //   node tools/test-all.mjs [--only name,name]
 import os from 'node:os';
 import path from 'node:path';
@@ -32,6 +34,7 @@ const TESTS = [
   ['scan-code', ['tools/scan-code.mjs']],
   ['expr-sync', ['tools/expr-sync.mjs', '--check']],
   ['variant-sync', ['tools/variant-sync.mjs', '--check']],
+  ['map-data', ['tools/map/build-japan.mjs', '--check']],
   ['release', ['tools/release.mjs', '--check']],
   ['test-expr', ['tools/test-expr.mjs']],
   ['test-yanked', ['tools/test-yanked.mjs']],
@@ -47,6 +50,7 @@ const TESTS = [
   ['test-seed0', ['tools/test-seed0.mjs', path.join(tmp, 'seed0')]],
   ['test-duration', ['tools/test-duration.mjs']],
   ['test-contrast', ['tools/test-contrast.mjs']],
+  ['test-classes', ['tools/test-classes.mjs']],
 ];
 const oi = process.argv.indexOf('--only');
 const only = oi >= 0 ? new Set(process.argv[oi + 1].split(',')) : null;
