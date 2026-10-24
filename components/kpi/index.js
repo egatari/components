@@ -207,7 +207,8 @@ DECK.define("m-kpi", class extends DECK.MotionElement {
       } else {
         // underline：最後の値で出て、数字の下に左から右へ線を引く
         o.num.textContent = (o.o.c.prefix || "") + self.fmt(o.o.c.value, o.dg);
-        var u = tt < 0 ? 0 : D.prog(tt, at + 0.45, Math.max(0.1, span - 0.45));
+        // 線は段階の長さの中で引き終える（count="false" なら段階は 0.45 秒なので、後半の半分で引く）
+        var u0 = Math.min(0.45, span * 0.5), u = tt < 0 ? 0 : D.prog(tt, at + u0, span - u0);
         o.line.setAttribute("x2", (o.lx + o.lw * u).toFixed(1));
         o.line.setAttribute("opacity", u > 0 ? 1 : 0);
       }
