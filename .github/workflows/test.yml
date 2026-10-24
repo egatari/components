@@ -28,6 +28,9 @@ jobs:
         os: [ubuntu-latest, macos-latest, windows-latest]
     steps:
       - uses: actions/checkout@v7
+        with:
+          # the whole history and the tags: tools/test-seed0.mjs and tools/gallery.mjs compare with the release before (tools/baseline.mjs)
+          fetch-depth: 0
       - uses: actions/setup-node@v7
         with:
           node-version: 22

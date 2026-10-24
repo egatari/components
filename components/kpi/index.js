@@ -5,7 +5,69 @@
 // 段階：既定は札 1 枚 = 1 段階（per-step で n 枚ずつ、札の step で直接、at で段階の中の開始秒）
 // 数え上げは (k, t) だけで決まる（初めに速く、終わりにゆっくり。t = Infinity なら最後の値）。count="false" で数えずに出す
 // 札の幅は cols（既定は札の数、4 まで）で決める。数字と単位の幅は字数から見積もって中央にそろえる（字の読み込みを待たない）
+// 見せ方（docs/conventions.md §1）：count（数え上げ、既定）・rise（最後の値のまま少し小さい大きさから戻る）・flip（右の桁から 1 桁ずつ
+// めくれて止まる）・underline（出たあと数字の下に線を引く）。段階の数・長さ・合図・最後の中身はどれも同じ
+// ---- BEGIN egatari-variant (source: tools/variant.js; copy with `node tools/variant-sync.mjs`; do not edit inside a component) ----
+// Choosing a presentation variant (Egatari spec §8.4, docs/conventions.md §1). A component lists its variant names in
+// `static variants` (index 0 is variant 0) and calls VARIANT.of(this) once, in mount. The choice reads, in order:
+//   the component's `variant` attribute (a name) → its `seed` attribute → `data-egatari-seed` on the root element → 0.
+// Seed 0 gives variant 0. Any other seed s gives the name v with the largest h("<s>|<tag>|<v>") (highest random weight),
+// so every instance of a component in one lesson shows the same variant, components choose independently, and adding a
+// variant later changes only the lessons where the new one wins. h is FNV-1a followed by the mixing of kit/deck.js's rng.
+// The choice is a pure function of these values: the picture still depends on (i, k, t) only.
+var VARIANT = (function(){
+  "use strict";
+  function mix(h){
+    h = Math.imul(h ^ (h >>> 15), 2246822507);
+    h = Math.imul(h ^ (h >>> 13), 3266489909);
+    return (h ^ (h >>> 16)) >>> 0;
+  }
+  function hash(s){
+    var h = 2166136261;
+    for (var i = 0; i < s.length; i++){ h ^= s.charCodeAt(i); h = Math.imul(h, 16777619); }
+    return mix(h);
+  }
+  // A seed is a decimal integer 0 ≤ N < 2^32. Anything else is warned about and ignored (null)
+  function seedOf(v, what){
+    if (v === null || v === undefined) return null;
+    var s = String(v).trim();
+    if (/^\d{1,10}$/.test(s) && +s < 4294967296) return +s;
+    console.warn(what + "=" + JSON.stringify(v) + " is not an integer 0 ≤ N < 2^32 (ignored)");
+    return null;
+  }
+  // The variant name for seed s among names (for tools and tests; components call of)
+  function pick(s, tag, names){
+    if (!names.length) return null;
+    if (!s) return names[0];
+    var best = names[0], bh = -1;
+    names.forEach(function(v){ var x = hash(s + "|" + tag + "|" + v); if (x > bh){ bh = x; best = v; } });
+    return best;
+  }
+  // The effective seed of a component element (0 when nothing is written)
+  function seed(el){
+    var tag = el.tagName.toLowerCase(), s = seedOf(el.getAttribute("seed"), tag + " seed");
+    if (s === null) s = seedOf(document.documentElement.getAttribute("data-egatari-seed"), "data-egatari-seed");
+    return s === null ? 0 : s;
+  }
+  function of(el){
+    var tag = el.tagName.toLowerCase(), C = customElements.get(tag), names = (C && C.variants) || [], v = el.getAttribute("variant");
+    if (v !== null){
+      if (names.indexOf(v) >= 0) return v;
+      console.warn(tag + ' variant="' + v + '" is not one of ' + names.join(", ") + " (variant 0 is used)");
+      return names[0] || null;
+    }
+    return pick(seed(el), tag, names);
+  }
+  // A seeded generator for a variant that needs randomness (0 ≤ x < 1), from the same seed, tag and a key of your own
+  function rng(el, key){
+    var h = hash(seed(el) + "|" + el.tagName.toLowerCase() + "|" + (key || ""));
+    return function(){ h = mix((h + 0x9e3779b9) >>> 0); return h / 4294967296; };
+  }
+  return {of: of, pick: pick, seed: seed, rng: rng, hash: hash};
+})();
+// ---- END egatari-variant ----
 DECK.define("m-kpi", class extends DECK.MotionElement {
+  static variants = ["count", "rise", "flip", "underline"];
   // データの形（kit/shape.js）
   static shape = {
     schema: {type: "object", additionalProperties: false, required: ["cards"], properties: {
@@ -40,6 +102,12 @@ DECK.define("m-kpi", class extends DECK.MotionElement {
   }
   mount(){
     var P = this.props, D = DECK, self = this, pl = this.plan();
+    var vr = this.variant = VARIANT.of(this);
+    // count="false"（数えない）が見せ方より強い：数える見せ方なら rise にする
+    if (!P.count && (vr === "count" || vr === "flip")){
+      console.info('m-kpi: count="false", so the variant "' + vr + '" is shown as "rise"');
+      vr = this.variant = "rise";
+    }
     this.style.display = "block"; this.style.position = "relative";
     var W = this.clientWidth, H = this.clientHeight;
     var svg = D.el("svg", {viewBox: "0 0 " + W + " " + H, width: W, height: H, style: "display:block;overflow:visible"}, this);
@@ -60,8 +128,20 @@ DECK.define("m-kpi", class extends DECK.MotionElement {
       var dg = c.digits !== undefined ? c.digits : P.digits, usz = Math.round(size * 0.46);
       var finalS = (c.prefix || "") + self.fmt(c.value, dg);
       var nw = est(finalS, size), uw = c.unit ? est(c.unit, usz) + 6 : 0, xr = cx - (nw + uw) / 2 + nw;
-      var num = D.el("text", {x: xr.toFixed(1), y: yn.toFixed(1), "text-anchor": "end", "font-size": size, "font-weight": 700, fill: col, style: "font-variant-numeric:tabular-nums"}, g);
-      if (c.unit){ var u = D.el("text", {x: (xr + 6).toFixed(1), y: yn.toFixed(1), "font-size": usz, "font-weight": 700, fill: col}, g); u.textContent = c.unit; }
+      var gn = D.el("g", {}, g);   // 数字と単位（rise はこれを拡大する）
+      var num = D.el("text", {x: xr.toFixed(1), y: yn.toFixed(1), "text-anchor": "end", "font-size": size, "font-weight": 700, fill: col, style: "font-variant-numeric:tabular-nums"}, gn);
+      if (c.unit){ var u = D.el("text", {x: (xr + 6).toFixed(1), y: yn.toFixed(1), "font-size": usz, "font-weight": 700, fill: col}, gn); u.textContent = c.unit; }
+      // flip：字ごとの tspan（桁だけがめくれる。y でなく dy で前の字との差を書く：y を書くと字の塊が分かれて右寄せが崩れる）
+      var digits = null;
+      if (vr === "flip"){
+        digits = [...finalS].map(function(ch){
+          var ts = D.el("tspan", {}, num); ts.textContent = ch;
+          return {ts: ts, d: /[0-9]/.test(ch) ? +ch : null};
+        });
+        var nd = digits.filter(function(o){ return o.d !== null; }).length, j = 0;
+        for (var q = digits.length - 1; q >= 0; q--) if (digits[q].d !== null) digits[q].j = j++, digits[q].n = nd;
+      }
+      var line = vr === "underline" ? D.el("line", {x1: (xr - nw).toFixed(1), x2: (xr - nw).toFixed(1), y1: (yn + size * 0.14).toFixed(1), y2: (yn + size * 0.14).toFixed(1), stroke: "var(--term)", "stroke-width": 5, "stroke-linecap": "round"}, g) : null;
       var gd = null;
       if (hasD){
         // 増減：▲ / ▼ と一言。良い向き（good、既定は up）なら --term、悪い向きなら --emph
@@ -73,7 +153,7 @@ DECK.define("m-kpi", class extends DECK.MotionElement {
         D.mtext(gd, tx + 30, yd, c.delta.text || "", {"font-size": 24, fill: dc, "font-weight": 700});
       }
       var note = hasN ? D.mtext(g, cx, y + ch - 22, c.note, {"text-anchor": "middle", "font-size": 24, fill: "var(--muted)"}) : null;
-      return {o: o, g: g, num: num, gd: gd, dg: dg, from: c.from || 0, cx: cx, cy: y + ch / 2};
+      return {o: o, g: g, gn: gn, num: num, gd: gd, dg: dg, from: c.from || 0, cx: cx, cy: y + ch / 2, xn: xr - nw / 2 + uw / 2, yn: yn, size: size, digits: digits, line: line, lx: xr - nw, lw: nw + uw};
     });
   }
   fmt(v, dg){
@@ -98,10 +178,40 @@ DECK.define("m-kpi", class extends DECK.MotionElement {
       var e = tt < 0 ? 0 : D.prog(tt, at, 0.45);
       o.g.setAttribute("opacity", e.toFixed(3));
       o.g.setAttribute("transform", "translate(0 " + ((1 - e) * 14).toFixed(2) + ")");
-      // 数え上げ：ease-out（初めに速く）。t = Infinity なら最後の値
-      var c = tt < 0 ? 0 : tt === Infinity || !P.count ? 1 : D.clamp01((tt - at) / P.dur);
-      var q = 1 - Math.pow(1 - c, 3), v = D.lerp(o.from, o.o.c.value, q);
-      o.num.textContent = (o.o.c.prefix || "") + self.fmt(c >= 1 ? o.o.c.value : v, o.dg);
+      var vr = self.variant, span = P.count ? P.dur : 0.45;
+      if (vr === "count"){
+        // 数え上げ：ease-out（初めに速く）。t = Infinity なら最後の値
+        var c = tt < 0 ? 0 : tt === Infinity || !P.count ? 1 : D.clamp01((tt - at) / P.dur);
+        var q = 1 - Math.pow(1 - c, 3), v = D.lerp(o.from, o.o.c.value, q);
+        o.num.textContent = (o.o.c.prefix || "") + self.fmt(c >= 1 ? o.o.c.value : v, o.dg);
+      } else if (vr === "rise"){
+        // 最後の値のまま、0.85 倍から元の大きさへ（札が現れるのと同じ 0.45 秒）
+        var s = 0.85 + 0.15 * (tt < 0 ? 0 : D.prog(tt, at, 0.45)), cx = o.xn, cy = o.yn - o.size * 0.35;
+        o.num.textContent = (o.o.c.prefix || "") + self.fmt(o.o.c.value, o.dg);
+        o.gn.setAttribute("transform", s >= 1 ? "" : "translate(" + cx.toFixed(1) + " " + cy.toFixed(1) + ") scale(" + s.toFixed(4) + ") translate(" + (-cx).toFixed(1) + " " + (-cy).toFixed(1) + ")");
+      } else if (vr === "flip"){
+        // 札が出たあと（0.45 秒）、右の桁から 1 桁ずつ 0 → 最後の数字へめくれて、上から定位置に止まる（段階の長さの中で終わる）
+        var t0 = at + 0.45, len = Math.max(0.1, span - 0.45), prev = 0;
+        o.digits.forEach(function(d){
+          var off = 0;
+          if (d.d !== null){
+            var w = len / (d.n + 1), st = t0 + d.j * w, e = tt < 0 ? 0 : tt === Infinity ? 1 : D.clamp01((tt - st) / (2 * w));
+            var shown = e >= 1 ? d.d : Math.min(d.d, Math.floor(e * (d.d + 1))), frac = (e * (d.d + 1)) % 1;
+            d.ts.textContent = String(shown);
+            // めくれる桁は上から少し（字の 0.12）下りて止まる
+            off = e > 0 && e < 1 ? -(1 - D.ease(frac)) * o.size * 0.12 : 0;
+          }
+          d.ts.setAttribute("dy", (off - prev).toFixed(1));
+          prev = off;
+        });
+      } else {
+        // underline：最後の値で出て、数字の下に左から右へ線を引く
+        o.num.textContent = (o.o.c.prefix || "") + self.fmt(o.o.c.value, o.dg);
+        // 線は段階の長さの中で引き終える（count="false" なら段階は 0.45 秒なので、後半の半分で引く）
+        var u0 = Math.min(0.45, span * 0.5), u = tt < 0 ? 0 : D.prog(tt, at + u0, span - u0);
+        o.line.setAttribute("x2", (o.lx + o.lw * u).toFixed(1));
+        o.line.setAttribute("opacity", u > 0 ? 1 : 0);
+      }
       if (o.gd) o.gd.setAttribute("opacity", (tt < 0 ? 0 : D.prog(tt, at + (P.count ? P.dur : 0.45) * 0.85, 0.4)).toFixed(3));
     });
   }

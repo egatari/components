@@ -3,6 +3,7 @@ name: m-collect
 series: academic
 summary: 並んだ札（回答など）が動いて縮み、少数の箱（要約）にまとまる
 steps: 1
+purposes: grouping
 props: move, stagger, shrink, chip-w, chip-h, box-w, box-h
 ---
 

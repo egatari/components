@@ -78,7 +78,8 @@ for (const name of names) {
         const texts = sl._comps.flatMap((c) => [...c.querySelectorAll('text')]).filter((e) => e.textContent.trim() && vis(e));
         const boxes = texts.map((e) => ({ e, r: e.getBoundingClientRect(), s: e.textContent }));
         for (const { e, r, s } of boxes) {
-          if (parseFloat(getComputedStyle(e).fontSize) < 24) out.push(`small text ${getComputedStyle(e).fontSize}: ${s}`);
+          // small annotations marked data-annot are exempt, as in Egatari Studio's checker (docs/conventions.md §2.3)
+          if (parseFloat(getComputedStyle(e).fontSize) < 24 && !e.closest('[data-annot]')) out.push(`small text ${getComputedStyle(e).fontSize}: ${s}`);
           if (r.left < R.left || r.right > R.right || r.top < R.top || r.bottom > R.bottom) out.push(`outside slide: ${s}`);
         }
         for (let a = 0; a < boxes.length; a++) for (let b = a + 1; b < boxes.length; b++) {

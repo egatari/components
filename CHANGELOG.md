@@ -2,6 +2,36 @@
 
 Versions follow [README.md § Releases and versions](README.md#releases-and-versions). Tags are never moved.
 
+## Unreleased
+
+### Later (candidates, not in this release)
+
+- `m-flow`: connectors in `--muted` like the new box-and-line diagrams (changes existing lessons; the owner decides)
+- `m-kanbun`, `m-kobun`: some steps are not complete at their declared length (`tools/test-duration.mjs` lists them as known; they may hold their last frame on purpose; check before changing)
+- `m-compare` `by="row"`; an "outside every set" region for `m-venn`; a project-plan demo for `m-timeline` lanes
+
+## 1.2.0 - 2026-10-25
+
+### Added
+
+- Shared conventions for components (`docs/conventions.md`, `docs/conventions.ja.md`): presentation variants and the lesson seed (spec §8.4), box-and-line diagrams, chart attribute names, purpose declarations
+- `purposes.json`: the purposes a slide may want to say, with default step patterns. Every README declares `purposes:` (checked by `tools/lint.mjs`); CATALOG.md gains a purpose and variant column and a "by purpose" table; `manifest.json` carries `purposes` and each component's `purposes` and `variants` (the tarball is unchanged in layout)
+- `tools/variant.js`, copied into components with variants by `tools/variant-sync.mjs` (checked by `npm test`); `tools/test-variant.mjs` (the choice), `tools/test-seed0.mjs` (variant 0 is pixel-identical to the last release)
+- `m-kpi`: variants `count` (default, unchanged), `rise`, `flip`, `underline`, chosen by `variant`, `seed` or the lesson's `data-egatari-seed`. A lesson without a seed draws the same pixels as before. `count="false"` turns a counting variant into `rise` (with a `console.info`)
+- `m-compare` (series common, purpose `compare`): two or three things side by side in a table. A column per side with its heading, a row per criterion, and an optional difference per row (`diff` in a right-hand column, `better` framing the better value). Steps: one side, then the other, then the differences. Variants `fade` (default), `slide`, `reveal`
+- `m-venn` (series common, purpose `overlap`): a Venn diagram of two or three sets (fixed symmetric layout, not area-proportional), with items placed inside each region (`A`, `AB`, `ABC`, …). Steps: one set at a time, then the overlaps highlighted with their items (`overlaps="each"`: one overlap per step). Variants `fade` (default), `draw`
+- `m-tree` (series common, purpose `hierarchy`): a hierarchy or classification tree laid out from the data (no coordinates; parents centred over their children, subtrees packed by their per-level contours). `orient` down or right, `link` elbow or straight, steps `by="level"` (default) or `by="node"`, optional dashed `edges`; variants `fade`, `draw`, `grow`
+- `m-fishbone` (series common, purpose `cause-effect`): a cause-and-effect (Ishikawa) diagram laid out from the data: effect head on the right, main bones alternating above and below, causes and sub-causes as labelled ticks. Steps `order="causes-first"` (default; one main bone per step, the head last) or `order="effect-first"`; optional dashed `edges`; causes may carry `tex` and a `note`; variants `fade`, `draw`, `grow`
+- `m-scatter` (series `common`, purpose `correlation`): a scatter plot. Groups of points (series) appear one step each, then a trend line (`"linear"`: least squares over all points or chosen series, or two points written in `pts`). Axis attributes `xr yr xt yt xf yf xl yl` have the names and meaning of `m-curves` (ranges and ticks are chosen from the data when left out). Labelled points, a marker shape per series, series and trend names above the plot (`{r}` `{a}` `{b}` in a trend name become the correlation, slope and intercept). Variants `fade` (default), `sweep`, `grow`
+- `m-pie` (series `common`, purpose `part-whole`): pie and donut charts (`donut`). Labels inside large slices, outside with leader lines otherwise; values with `unit`/`digits` and percentages that add up to 100 (`show`, `pct-digits`); text in the donut's hole (`center`, `{total}`). The whole pie in one step by default; `per-step` reveals it slice by slice. Variants `fade` (default), `sweep`, `grow`
+- `m-bars`: `stack="true"` draws each group's values stacked in one bar (stacked bars): the bar grows to the total while the series fill it from the bottom, the total is written at the end of the bar and each value inside its part when it fits; series names beside the last bar (vertical) or above the first (horizontal). Without `stack` the drawing is unchanged (the demo's first three slides are pixel-identical to before)
+- `m-timeline` (series common, purpose `timeline`): a timeline laid out from the data (no coordinates). Events (`when`: a number, `"YYYY"`, `"YYYY-MM"` or `"YYYY-MM-DD"`) sit on the axis with their date and label in boxes alternating above and below (`orient="v"`: left and right; two rows when crowded); periods (`end`) are bands in lanes under the axis, overlapping periods stack in separate lanes automatically, and `lane` groups them into named lanes (a `lane` event without `end` is a milestone ◆ in its lane); band and milestone labels may have several lines; `whenLabel` replaces the computed date text (明治元年) while `when` keeps the position; `end` is exclusive. `scale` `time` (default) or `even`; ticks when there are periods. One event per step in time order (`per-step`, node `step`); the axis appears with the first event. Variants `fade` (default), `draw`, `grow`
+- `m-cycle` (series common, purpose `cycle`): stages in array order on a circle (an ellipse in a wide box) from 12 o'clock, clockwise, joined by arrows along the circle; the arrow from the last stage back to the first comes with the last stage. Optional `center` label. 3 to 8 stages. One stage per step (`per-step`, node `step`). Variants `fade` (default), `draw`, `grow`
+
+### Changed
+
+- `m-curves`, `m-quad` and `m-kpi`: series `common` (were `academic`, `business` and `business`). Only the catalogue and the AI pack's grouping change; tag names and drawing are unchanged
+
 ## 1.1.0 - 2026-10-24
 
 ### Fixed

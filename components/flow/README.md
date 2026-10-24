@@ -3,6 +3,7 @@ name: m-flow
 series: common
 summary: 流れ図の箱と矢印を段階ごとに出して、図を組み立てる
 steps: nodes と edges の step の最大
+purposes: process
 props: fade, draw, size, pulse-dur, pulse-n, label-gap
 ---
 

@@ -3,6 +3,7 @@ name: m-sweep
 series: academic
 summary: パラメータを動かして関数の形の変化を見せる（前の形は灰色で残す）
 steps: values の数 − 1
+purposes: parameter
 props: f, values, param, xr, yr, xt, yt, xl, yl, digits, dur
 ---
 

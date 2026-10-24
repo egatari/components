@@ -1,8 +1,9 @@
 ---
 name: m-curves
-series: academic
+series: common
 summary: 同じ座標軸に線を 1 本ずつ引く（線の名前は凡例でなく線の端に直接書く）
 steps: 系列の数
+purposes: change
 props: xr, yr, xt, yt, xf, yf, xl, yl, n, dur, lw
 ---
 

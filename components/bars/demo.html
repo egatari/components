@@ -63,6 +63,24 @@
   <div class="concl"><span>→ どの部門でも残業の割合が下がった</span></div>
 </section>
 
+<section class="slide">
+  <h2>売上の内訳を積み上げる（stack。架空）</h2>
+  <div class="body">
+    <m-bars stack="true" unit="億円" digits="1" al="売上" style="height:420px">
+      <script type="application/json">{
+        "series": [{"label": "店頭"}, {"label": "通販"}, {"label": "卸"}],
+        "groups": [
+          {"label": "1 年目", "values": [2.4, 0.6, 1.0]},
+          {"label": "2 年目", "values": [2.5, 1.4, 1.1]},
+          {"label": "3 年目", "values": [2.3, 2.6, 1.2]},
+          {"label": "4 年目", "values": [2.2, 3.9, 1.2], "tone": "emph"}
+        ]
+      }</script>
+    </m-bars>
+  </div>
+  <div class="concl"><span>→ 伸びたのは通販。店頭はほぼ横ばい</span></div>
+</section>
+
 </div>
 </body>
 </html>

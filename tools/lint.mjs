@@ -1,6 +1,7 @@
 // The layout of each component (no browser):
 //   components/<name>/index.js     defines <m-<name>> (DECK.define('m-<name>', …))
-//   components/<name>/README.md    frontmatter: name (m-<name>), series, summary, steps, props
+//   components/<name>/README.md    frontmatter: name (m-<name>), series, summary, steps, purposes (ids in purposes.json), props,
+//                                  and variants when index.js declares `static variants` (the same names in the same order)
 //   components/<name>/demo.html    a 1–2 slide sample deck (required for new components; m-sweep predates the rule)
 // <name> is a registry name: ^[a-z][a-z0-9-]{0,63}$ (Egatari spec §6). Only regular files; no symbolic links, no out/ in git.
 //   node tools/lint.mjs
@@ -12,6 +13,13 @@ export const NAME_RE = /^[a-z][a-z0-9-]{0,63}$/;
 export const SERIES = ['common', 'academic', 'business', 'kokugo', 'info'];
 // Components released before demo.html was required (do not add to this list)
 const NO_DEMO = new Set([]);
+
+export const list = (s) => (s ? s.split(',').map((x) => x.trim()).filter(Boolean) : []);
+// purposes.json: id → entry
+export function purposeIds(root) {
+  const j = JSON.parse(fs.readFileSync(path.join(root, 'purposes.json'), 'utf8'));
+  return new Map(j.purposes.map((p) => [p.id, p]));
+}
 
 export function frontmatter(text) {
   const m = text.replace(/\r\n?/g, '\n').match(/^---\n([\s\S]*?)\n---/);
@@ -27,6 +35,13 @@ export function frontmatter(text) {
 export function lint(root) {
   const errs = [];
   const base = path.join(root, 'components');
+  const pj = JSON.parse(fs.readFileSync(path.join(root, 'purposes.json'), 'utf8'));
+  const seen = new Set();
+  for (const p of pj.purposes) {
+    if (!/^[a-z][a-z-]*$/.test(p.id || '') || seen.has(p.id)) errs.push(`purposes.json: id ${JSON.stringify(p.id)} is not a unique lower-case id`);
+    seen.add(p.id);
+    if (!p.ja || !p.en || !p.steps || !p.steps.ja || !p.steps.en) errs.push(`purposes.json: ${p.id} needs ja, en and steps.{ja,en}`);
+  }
   for (const d of fs.readdirSync(base, { withFileTypes: true })) {
     const name = d.name, dir = path.join(base, name);
     if (name.startsWith('.')) continue;
@@ -52,6 +67,15 @@ export function lint(root) {
     for (const k of ['name', 'series', 'summary', 'steps', 'props']) if (!(k in f)) errs.push(`components/${name}/README.md: frontmatter has no ${k}`);
     if (f.name && f.name !== `m-${name}`) errs.push(`components/${name}/README.md: name is ${f.name}, expected m-${name}`);
     if (f.series && !SERIES.includes(f.series)) errs.push(`components/${name}/README.md: series ${f.series} is not one of ${SERIES.join(', ')}`);
+    const ids = purposeIds(root);
+    if (!f.purposes) errs.push(`components/${name}/README.md: frontmatter has no purposes`);
+    else for (const p of list(f.purposes)) {
+      if (!ids.has(p)) errs.push(`components/${name}/README.md: purpose ${p} is not in purposes.json`);
+      else if (ids.get(p).reserved) errs.push(`components/${name}/README.md: purpose ${p} is reserved in purposes.json (remove "reserved" there when a component serves it)`);
+    }
+    const sv = js.match(/static\s+variants\s*=\s*\[([^\]]*)\]/);
+    const declared = sv ? [...sv[1].matchAll(/["']([^"']+)["']/g)].map((x) => x[1]) : [];
+    if (declared.join() !== list(f.variants).join()) errs.push(`components/${name}/README.md: variants (${f.variants || 'none'}) differ from static variants in index.js (${declared.join(', ') || 'none'})`);
   }
   return errs;
 }
