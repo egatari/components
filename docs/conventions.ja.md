@@ -82,10 +82,10 @@ README の frontmatter にも同じ並びを書く（`variants: count, rise, fli
 
 ```js
 // mount の中で 1 回
-this.variant = variantOf(this);   // "count" | "rise" | …
+this.variant = VARIANT.of(this);   // "count" | "rise" | …
 ```
 
-`variantOf` は `variant` 属性 → `seed` 属性 → `document.documentElement` の `data-egatari-seed` → 0 の順に読み、1.4 のとおりに選ぶ。
+`VARIANT.of` は部品の `static variants` を `customElements.get(タグ名)` から読み（部品のコードに `.constructor` は書けない）、`variant` 属性 → `seed` 属性 → `document.documentElement` の `data-egatari-seed` → 0 の順に読み、1.4 のとおりに選ぶ。
 
 Studio の部品の基底クラス（`DECK.MotionElement`）に同じものを持たせる案もある（`this.variant`）。そうなれば写した関数は要らなくなるが、Studio の変更なので dev と相談する（v0.4.8 の後）。それまでは部品庫の中だけで完結させる。
 

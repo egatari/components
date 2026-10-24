@@ -2,6 +2,19 @@
 
 Versions follow [README.md § Releases and versions](README.md#releases-and-versions). Tags are never moved.
 
+## Unreleased
+
+### Added
+
+- Shared conventions for components (`docs/conventions.md`, `docs/conventions.ja.md`): presentation variants and the lesson seed (spec §8.4), box-and-line diagrams, chart attribute names, purpose declarations
+- `purposes.json`: the purposes a slide may want to say, with default step patterns. Every README declares `purposes:` (checked by `tools/lint.mjs`); CATALOG.md gains a purpose and variant column and a "by purpose" table; `manifest.json` carries `purposes` and each component's `purposes` and `variants` (the tarball is unchanged in layout)
+- `tools/variant.js`, copied into components with variants by `tools/variant-sync.mjs` (checked by `npm test`); `tools/test-variant.mjs` (the choice), `tools/test-seed0.mjs` (variant 0 is pixel-identical to the last release)
+- `m-kpi`: variants `count` (default, unchanged), `rise`, `flip`, `underline`, chosen by `variant`, `seed` or the lesson's `data-egatari-seed`. A lesson without a seed draws the same pixels as before. `count="false"` turns a counting variant into `rise` (with a `console.info`)
+
+### Changed
+
+- `m-curves` and `m-quad`: series `common` (were `academic` and `business`). Only the catalogue and the AI pack's grouping change; tag names and drawing are unchanged
+
 ## 1.1.0 - 2026-10-24
 
 ### Fixed

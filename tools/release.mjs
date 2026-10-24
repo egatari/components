@@ -3,7 +3,8 @@
 // Writes
 //   dist/egatari-components-v1.0.0.tar.gz   LICENSE and components/<name>/… as <name>/… (every file of each component except out/)
 //   dist/manifest.json                       {name, version, tag, repository, license, tarball: {file, sha256, bytes},
-//                                             components: {<name>: {tag, series, sha256 (of index.js), files: {<path>: sha256}}},
+//                                             purposes (purposes.json),
+//                                             components: {<name>: {tag, series, purposes, variants, sha256 (of index.js), files: {<path>: sha256}}},
 //                                             yanked: {<version>: {replacement, reason, date}}  (from yanked.json; Egatari spec §6: a withdrawn release stays available),
 //                                             files: {<path in the tarball>: sha256}}
 // Per-file and component sha256 values are identity hashes (line endings normalized for text files, Egatari spec §6); the tarball's is byte-exact.
@@ -56,7 +57,8 @@ export function release(version) {
       files[f] = idSha(f, b);
     }
     const fm = frontmatter(fs.readFileSync(path.join(ROOT, 'components', name, 'README.md'), 'utf8'));
-    components[name] = { tag: `m-${name}`, series: fm.series, sha256: sha(normalizeEol(fs.readFileSync(path.join(ROOT, 'components', name, 'index.js')))), files };
+    const list = (s) => (s ? s.split(',').map((x) => x.trim()).filter(Boolean) : []);
+    components[name] = { tag: `m-${name}`, series: fm.series, purposes: list(fm.purposes), variants: list(fm.variants), sha256: sha(normalizeEol(fs.readFileSync(path.join(ROOT, 'components', name, 'index.js')))), files };
   }
   entries.sort((a, b) => (a[0] < b[0] ? -1 : a[0] > b[0] ? 1 : 0));
   const gz = writeTarGz(entries);
@@ -64,6 +66,8 @@ export function release(version) {
   const manifest = {
     name: NAME, version, tag: `v${version}`, repository: REPOSITORY, license: 'MIT',
     tarball: { file, sha256: sha(gz), bytes: gz.length },
+    // purposes.json rides in the manifest, not the tarball: Studio's updater takes only LICENSE and component folders
+    purposes: JSON.parse(fs.readFileSync(path.join(ROOT, 'purposes.json'), 'utf8')),
     components,
     yanked: readYanked(version),
     files: Object.fromEntries(entries.map(([p, b]) => [p, idSha(p, b)])),

@@ -3,6 +3,7 @@ name: m-kanbun
 series: kokugo
 summary: 白文に返り点・送り仮名を付け、訓読の順に字をたどり（返り点で上へ戻るところに弧）、書き下し文にする（縦書き）
 steps: phases の数（既定 3：訓点・読む順・書き下し文）
+purposes: text-structure
 props: size, slot, phases, kaki, nums
 ---
 

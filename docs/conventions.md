@@ -82,10 +82,10 @@ The choice is a small function in `tools/variant.js`, copied into the components
 
 ```js
 // once, in mount
-this.variant = variantOf(this);   // "count" | "rise" | …
+this.variant = VARIANT.of(this);   // "count" | "rise" | …
 ```
 
-`variantOf` reads the `variant` attribute → the `seed` attribute → `data-egatari-seed` on `document.documentElement` → 0, and chooses as in 1.4.
+`VARIANT.of` reads the component's `static variants` through `customElements.get(tag)` (component code may not write `.constructor`), then the `variant` attribute → the `seed` attribute → `data-egatari-seed` on `document.documentElement` → 0, and chooses as in 1.4.
 
 Alternatively Studio's component base class (`DECK.MotionElement`) could provide the same thing (`this.variant`), which would make the copied function unnecessary. That is a Studio change, to be discussed with dev after v0.4.8. Until then everything stays inside the components library.
 

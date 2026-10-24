@@ -44,6 +44,27 @@
   <div class="concl"><span>→ 数字は架空</span></div>
 </section>
 
+<section class="slide">
+  <h2>見せ方の種類（variant）</h2>
+  <div class="body">
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:24px 40px">
+      <m-kpi variant="count" style="height:200px">
+        <script type="application/json">{"cards": [{"label": "数え上げ（count、既定）", "value": 1280, "unit": "人", "delta": {"dir": "up", "text": "前の月から 120 人"}}]}</script>
+      </m-kpi>
+      <m-kpi variant="rise" style="height:200px">
+        <script type="application/json">{"cards": [{"label": "浮かび上がる（rise）", "value": 1280, "unit": "人", "delta": {"dir": "up", "text": "前の月から 120 人"}}]}</script>
+      </m-kpi>
+      <m-kpi variant="flip" style="height:200px">
+        <script type="application/json">{"cards": [{"label": "桁ごとにめくる（flip）", "value": 1280, "unit": "人", "delta": {"dir": "up", "text": "前の月から 120 人"}}]}</script>
+      </m-kpi>
+      <m-kpi variant="underline" style="height:200px">
+        <script type="application/json">{"cards": [{"label": "下線を引く（underline）", "value": 1280, "unit": "人", "delta": {"dir": "up", "text": "前の月から 120 人"}}]}</script>
+      </m-kpi>
+    </div>
+  </div>
+  <div class="concl"><span>→ 資料のシード値（data-egatari-seed）で 1 つが選ばれる。数字は架空</span></div>
+</section>
+
 </div>
 </body>
 </html>

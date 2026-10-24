@@ -3,6 +3,8 @@ name: m-kpi
 series: business
 summary: 大きな数字の札（KPI）を段階ごとに出す。数字は数え上げ、下に増減の矢印と一言
 steps: 札の step の最大（既定は札 1 枚 = 1 段階。per-step で n 枚ずつ）
+purposes: key-number
+variants: count, rise, flip, underline
 props: cols, digits, per-step, dur, stagger, count, size
 ---
 
@@ -19,6 +21,7 @@ props: cols, digits, per-step, dur, stagger, count, size
 <!-- llm: omit -->
 - 数え上げは初めに速く終わりにゆっくり（ease-out）で、(k, t) だけで決まる（t = Infinity なら最後の値）。`count="false"` なら数えずに出す
 <!-- llm: end -->
+- 見せ方（`variant`、[共通の決まり](../../docs/conventions.ja.md) §1.7）：`count`（数え上げ、既定）・`rise`（最後の値のまま、少し小さい大きさから戻る）・`flip`（右の桁から 1 桁ずつめくれて止まる）・`underline`（出たあと数字の下に線を引く）。書かなければ資料のシード値（`data-egatari-seed`）で選ばれる。`count="false"` なら数える見せ方は `rise` になる
 - 札の並び：`cols`（既定は札の数、4 まで）列で、行が足りなければ折り返す
 - `cues(k)`：同じ段階に 2 枚以上の札があれば、2 枚目からの開始時刻を返す（口述原稿の `{cue}` に合わせられる）
 
