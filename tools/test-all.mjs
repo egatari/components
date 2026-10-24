@@ -1,6 +1,6 @@
 // Every test, in order (npm test). No network except the first fetch of the pinned Egatari Studio (tools/studio.mjs).
 //   1. lint             layout and README frontmatter of each component (tools/lint.mjs)
-//   2. catalog          CATALOG.md is up to date (tools/catalog.mjs --check)
+//   2. catalog          CATALOG.md is up to date (tools/catalog.mjs --check); gallery.html likewise (tools/gallery.mjs --check)
 //   3. scan-code        no eval-like code path in component code (tools/scan-code.mjs; Egatari spec §6)
 //   4. expr-sync        the evaluator copied into m-sweep / m-curves equals tools/expr.js (tools/expr-sync.mjs --check)
 //      variant-sync  the variant chooser copied into components equals tools/variant.js (tools/variant-sync.mjs --check)
@@ -26,6 +26,7 @@ const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'egatari-components-test-'));
 const TESTS = [
   ['lint', ['tools/lint.mjs']],
   ['catalog', ['tools/catalog.mjs', '--check']],
+  ['gallery', ['tools/gallery.mjs', '--check']],
   ['scan-code', ['tools/scan-code.mjs']],
   ['expr-sync', ['tools/expr-sync.mjs', '--check']],
   ['variant-sync', ['tools/variant-sync.mjs', '--check']],
