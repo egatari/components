@@ -4,15 +4,18 @@ Versions follow [README.md § Releases and versions](README.md#releases-and-vers
 
 ## Unreleased
 
-### Fixed
-
-- Demos of `m-compare`, `m-cycle`, `m-fishbone`, `m-pie`, `m-timeline`, `m-tree` and `m-venn`: the captions of the variants slide are 27 px (they are body text outside the figure; Egatari Studio's quality check flagged 24–26 px as `smallText`). `tools/test-components.mjs` now checks body text outside figures against 27 px
-- READMEs of `m-scatter`, `m-pie`, `m-cycle`, `m-fishbone`, `m-timeline`, `m-tree`: mentions of other components are a sentence of their own or a closing parenthetical, or are dropped where they were consistency notes, so that Studio's pack keeps the attribute descriptions when the named component is not in the pack (docs/conventions.md §4.1.1)
-
 ### Later (candidates, not in this release)
 
 - `m-kanbun`, `m-kobun`: some steps are not complete at their declared length (`tools/test-duration.mjs` lists them as known; they may hold their last frame on purpose; check before changing)
 - `m-compare` `by="row"`; an "outside every set" region for `m-venn`; a project-plan demo for `m-timeline` lanes
+
+## 1.2.1 - 2026-10-25
+
+### Fixed
+
+- Demos of `m-compare`, `m-cycle`, `m-fishbone`, `m-pie`, `m-timeline`, `m-tree` and `m-venn`: the captions of the variants slide are 27 px (they are body text outside the figure; Egatari Studio's quality check flagged 24–26 px as `smallText`). `tools/test-components.mjs` now checks body text outside figures against 27 px
+- READMEs of `m-scatter`, `m-pie`, `m-cycle`, `m-fishbone`, `m-timeline`, `m-tree`: mentions of other components are a sentence of their own or a closing parenthetical, or are dropped where they were consistency notes, so that Studio's pack keeps the attribute descriptions when the named component is not in the pack (docs/conventions.md §4.1.1)
+- `RELEASING.md`: release notes give the README byte change of `m-bars`, `m-flow`, `m-menu`, `m-curves`, `m-quad` and `m-kpi` (Egatari Studio's free-plan AI pack carries them and sits near its size cap)
 
 ## 1.2.0 - 2026-10-25
 
