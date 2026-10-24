@@ -7,8 +7,9 @@
 // 段階は 3〜8 個を想定。箱の幅は字数から見積もる（字の読み込みを待たない）。入らなければ字を 24px まで縮め、それでも入らなければ console.warn
 // center（任意）：真ん中の名前。最初の段階と一緒に出る（center.step で変えられる）
 // 段階：既定は 1 段階に 1 つ（per-step で n 個ずつ、node の step で直接、at で段階の中の開始秒）
-// 見せ方（docs/conventions.md §2.5）：fade（既定。箱が現れてから入ってくる矢印を引く）・draw（矢印を先に引き、その先に箱が出る）・
-// grow（矢印を引き、箱が矢印の先から伸びて出る）。段階の数・長さ・合図・最後の中身はどれも同じ
+// 見せ方（docs/conventions.md §2.5）：fade（既定。箱が下から 12 px 上がりながら現れてから入ってくる矢印を引く）・draw（矢印を先に引き、
+// その先に箱が前の箱の側から 12 px 寄りながら出る）・grow（矢印を引きながら、箱が前の箱の側から 12 px 寄って 0.92 → 1 に大きくなる）。
+// 箱の動きはどれも 12 px まで。段階の数・長さ・合図・最後の中身はどれも同じ
 // ---- BEGIN egatari-variant (source: tools/variant.js; copy with `node tools/variant-sync.mjs`; do not edit inside a component) ----
 // Choosing a presentation variant (Egatari spec §8.4, docs/conventions.md §1). A component lists its variant names in
 // `static variants` (index 0 is variant 0) and calls VARIANT.of(this) once, in mount. The choice reads, in order:
@@ -146,7 +147,7 @@ DECK.define("m-cycle", class extends DECK.MotionElement {
     var self = this, W = this.W, H = this.H, pl = this.plan(), N = pl.stages.length, why = [];
     var th = function(i){ return -Math.PI / 2 + 2 * Math.PI * i / N; };
     var boxes = pl.stages.map(function(o, i){
-      var lines = labelLines(o.n, size);
+      var lines = labelLines(o.n, size, textFill(o.n.tone));
       if (o.n.note) lines.push({text: o.n.note, size: 24, fill: "var(--muted)"});
       var bs = boxSize(self, lines);
       return {o: o, bs: bs, w: bs.w, h: bs.h, th: th(i)};
@@ -204,18 +205,21 @@ DECK.define("m-cycle", class extends DECK.MotionElement {
     var rects = {};
     this.boxes = L.boxes.map(function(b){
       var col = tone(b.o.n.tone), g = D.el("g", {opacity: 0}, gB);
-      D.el("rect", {class: "box", x: b.x.toFixed(1), y: b.y.toFixed(1), width: b.w, height: b.h, rx: 12, fill: tint(col, 12), stroke: col, "stroke-width": b.o.n.tone === "emph" ? 3 : 2.2}, g);
+      D.el("rect", {class: "box", x: b.x.toFixed(1), y: b.y.toFixed(1), width: b.w, height: b.h, rx: 12, fill: boxFill(b.o.n.tone), stroke: col, "stroke-width": b.o.n.tone === "emph" ? 3 : 2.2}, g);
       boxDraw(self, g, b.x, b.y, b.bs);
       if (b.o.n.id !== undefined) rects[b.o.n.id] = b;
       return {b: b, g: g, o: b.o};
     });
     this.arcs = L.arcs.map(function(a){
-      var col = "var(--line)", g = D.el("g", {opacity: 0}, gA);
+      var col = "var(--muted)", g = D.el("g", {opacity: 0}, gA);
       return {a: a, r: a.r, g: g, path: D.el("path", {d: "", fill: "none", stroke: col, "stroke-width": 3, "stroke-linecap": "round"}, g),
         head: D.el("path", {d: "M0,0L-16,-7L-16,7Z", fill: col}, g)};
     });
-    // 箱が伸びて出る（grow）ときの起点：入ってくる矢印の先
-    this.boxes.forEach(function(o){ var r = o.o.inArrow, a = r && L.arcs.filter(function(x){ return x.r === r; })[0]; o.from = a ? self.pt(a.t1) : [o.b.cx, o.b.cy]; });
+    // 前の段階の箱から、この箱へ向かう向き（draw と grow で箱が寄ってくる向き）
+    this.boxes.forEach(function(o, i){
+      var q = L.boxes[(i + L.boxes.length - 1) % L.boxes.length], dx = o.b.cx - q.cx, dy = o.b.cy - q.cy, dl = Math.hypot(dx, dy) || 1;
+      o.dir = [dx / dl, dy / dl];
+    });
     this.center = null;
     if (L.cen){
       var g = D.el("g", {opacity: 0}, gC);
@@ -227,7 +231,7 @@ DECK.define("m-cycle", class extends DECK.MotionElement {
       if (!A || !B) return null;
       var dx = B.cx - A.cx, dy = B.cy - A.cy, Lh = Math.hypot(dx, dy) || 1;
       var cut = function(R, sx, sy){ var s = Math.min(sx ? (R.w / 2 + 6) / Math.abs(sx) : Infinity, sy ? (R.h / 2 + 6) / Math.abs(sy) : Infinity); return [R.cx + sx * s, R.cy + sy * s]; };
-      var p0 = cut(A, dx / Lh, dy / Lh), p1 = cut(B, -dx / Lh, -dy / Lh), col = e.tone ? tone(e.tone) : "var(--line)";
+      var p0 = cut(A, dx / Lh, dy / Lh), p1 = cut(B, -dx / Lh, -dy / Lh), col = e.tone ? tone(e.tone) : "var(--muted)";
       var g = D.el("g", {opacity: 0}, gE), ux = p1[0] - p0[0], uy = p1[1] - p0[1], l2 = Math.hypot(ux, uy) || 1;
       D.el("line", {x1: p0[0].toFixed(1), y1: p0[1].toFixed(1), x2: (p1[0] - ux / l2 * 14).toFixed(1), y2: (p1[1] - uy / l2 * 14).toFixed(1), stroke: col, "stroke-width": 3, "stroke-dasharray": e.dash === false ? "none" : "8 6"}, g);
       D.el("path", {d: "M0,0L-16,-7L-16,7Z", fill: col, transform: "translate(" + p1[0].toFixed(1) + " " + p1[1].toFixed(1) + ") rotate(" + (Math.atan2(uy, ux) * 180 / Math.PI).toFixed(1) + ")"}, g);
@@ -261,20 +265,25 @@ DECK.define("m-cycle", class extends DECK.MotionElement {
     var faint = function(s, start, len){ return s < k ? 1 : s > k ? 0.45 : 0.45 + 0.55 * D.prog(t, start, len); };
     var boxE = {}, arrE = {};
     // 段階ごとの箱と、一緒に出る入ってくる矢印の進み
+    // 箱の動きは 12 px まで（docs/conventions.md §1.2：どの見せ方も fade より遠くへ動かさない）
+    var OFF = 12;
     this.boxes.forEach(function(o){
-      var s = o.o.step, st = o.o.at, op, sc = 1, ox = o.b.cx, oy = o.b.cy, ar;
+      var s = o.o.step, st = o.o.at, op, sc = 1, e = 1, d = [0, -1], ar;
       if (lecture){ op = faint(s, st, T); ar = 1; }
-      else if (vr === "draw"){ ar = pr(s, st, 0.5 * T); op = pr(s, st + 0.45 * T, 0.55 * T); }
-      else if (vr === "grow"){
-        ar = pr(s, st, 0.5 * T);
-        var e = pr(s, st + 0.35 * T, 0.65 * T);
-        op = Math.min(1, e * 2); sc = 0.6 + 0.4 * e; ox = o.from[0]; oy = o.from[1];
+      else if (vr === "draw"){
+        // 矢印を先に引き、その先に箱が前の箱の側から 12 px 寄りながら出る
+        ar = pr(s, st, 0.5 * T); e = op = pr(s, st + 0.45 * T, 0.55 * T); sc = 0.92 + 0.08 * e; d = o.dir;
+      } else if (vr === "grow"){
+        // 矢印を引きながら、箱が前の箱の側から 12 px 寄り、0.92 → 1 に大きくなる
+        ar = pr(s, st, 0.5 * T); e = pr(s, st + 0.3 * T, 0.55 * T); op = Math.min(1, e * 1.6); sc = 0.92 + 0.08 * e; d = o.dir;
       } else {
-        var f = pr(s, st, 0.55 * T);
-        op = f; sc = 0.92 + 0.08 * f; ar = pr(s, st + 0.45 * T, 0.55 * T);
+        // fade：箱が下から 12 px 上がりながら現れてから、入ってくる矢印を引く
+        e = op = pr(s, st, 0.55 * T); sc = 0.92 + 0.08 * e; ar = pr(s, st + 0.45 * T, 0.55 * T);
       }
+      var dx = -d[0] * OFF * (1 - e), dy = -d[1] * OFF * (1 - e), cx = o.b.cx, cy = o.b.cy;
       o.g.setAttribute("opacity", op.toFixed(3));
-      o.g.setAttribute("transform", sc >= 1 ? "" : "translate(" + ox.toFixed(1) + " " + oy.toFixed(1) + ") scale(" + sc.toFixed(4) + ") translate(" + (-ox).toFixed(1) + " " + (-oy).toFixed(1) + ")");
+      o.g.setAttribute("transform", sc >= 1 && Math.abs(dx) < 0.01 && Math.abs(dy) < 0.01 ? "" :
+        "translate(" + (cx + dx).toFixed(2) + " " + (cy + dy).toFixed(2) + ") scale(" + sc.toFixed(4) + ") translate(" + (-cx).toFixed(2) + " " + (-cy).toFixed(2) + ")");
       if (o.o.inArrow) arrE[o.o.inArrow.i] = lecture ? [1, op] : [ar, 1];
     });
     this.arcs.forEach(function(o){
@@ -297,6 +306,9 @@ DECK.define("m-cycle", class extends DECK.MotionElement {
 
 // ---- 下の関数は m-cycle の中だけで使う（字の幅の見積もり・箱の中の行）
 function tone(t){ return "var(--" + (/^(term|emph|muted|accent2|series-[1-4])$/.test(t || "") ? t : "term") + ")"; }
+// 箱の地と字の色（m-tree・m-fishbone と同じ決まり）：term と emph はテーマの薄い色の地、emph は字も emph
+function boxFill(t){ return t === "emph" ? "var(--emph-tint)" : /^(muted|accent2|series-[1-4])$/.test(t || "") ? tint(tone(t), 12) : "var(--term-tint)"; }
+function textFill(t){ return t === "emph" ? "var(--emph)" : "var(--fg)"; }
 function tint(c, p){ return "color-mix(in srgb," + c + " " + p + "%,var(--bg))"; }
 // 字の幅（px）：数字 0.6 字、ほかの欧文 0.62 字、空白 0.3 字、和文 1 字。*斜体* の * は数えない
 function est(s, fs){
@@ -311,9 +323,10 @@ function texWidth(el, l){
   el.svg.removeChild(g);
   return w;
 }
-function labelLines(n, size){
-  if (n.tex) return [{tex: n.tex, size: size, fill: "var(--fg)"}];
-  return String(n.label || "").split("\n").map(function(s){ return {text: s, size: size, fill: "var(--fg)"}; });
+function labelLines(n, size, fill){
+  fill = fill || "var(--fg)";
+  if (n.tex) return [{tex: n.tex, size: size, fill: fill}];
+  return String(n.label || "").split("\n").map(function(s){ return {text: s, size: size, fill: fill}; });
 }
 // 箱の大きさと行の位置（基線は前の行の下 0.3 字 ＋ 今の行の 1.12 字：字の箱どうしが重ならない）
 function boxSize(el, lines){
