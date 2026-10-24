@@ -9,6 +9,18 @@ Versions follow [README.md § Releases and versions](README.md#releases-and-vers
 - `m-kanbun`, `m-kobun`: some steps are not complete at their declared length (`tools/test-duration.mjs` lists them as known; they may hold their last frame on purpose; check before changing)
 - `m-compare` `by="row"`; an "outside every set" region for `m-venn`; a project-plan demo for `m-timeline` lanes
 
+## 1.3.0 - 2026-10-25
+
+### Added
+
+- `m-curves`: series `step` (the step at which the line is drawn; series sharing a step draw together; steps = the largest step; default unchanged, series i at step i + 1), series `tone` (the colour field of the other components), `labelAt` (the x value where the line's name goes) and `anchor` values `right` `left` `above` `below` (the words of `m-scatter`'s point labels). The demo has a third slide (demand and supply drawn in one step, a `below` name). Existing lessons draw exactly as before: `color`, `at` (as the x of the name, only when `labelAt` is absent) and `anchor` `start` `middle` `end` still work and are documented only in the README's maintainer notes
+- docs/conventions.md §3: chart parts share one series vocabulary (`label`, `tone`, `step`, `at` = start s within the step, `anchor`, `labelAt`)
+
+### Changed
+
+- READMEs of `m-curves` and `m-scatter`: one wording for series, steps and label sides. `m-curves` says how its steps are counted (one series = one step, in order, unless `step`); `m-scatter` no longer says its axes are "the same as `m-curves`" (in the README and in its data-shape note), it lists them. AI authors had mixed the two schemas (`"anchor": "below"` and `"step"` on `m-curves` series, nightly evaluation 2026-10-25)
+- `tools/test-components.mjs`: a renderer difference it passes (identical component DOM) is logged with the component, position and pixel count, the two screenshots are kept (`renderer_s*_k*_A/B.png`), and a summary line lists them all
+
 ## 1.2.1 - 2026-10-25
 
 ### Fixed

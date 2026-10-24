@@ -84,8 +84,8 @@ DECK.define("m-scatter", class extends DECK.MotionElement {
           items: {type: "object", properties: {fit: {enum: ["linear"]}, pts: PTS, series: {type: ["integer", "array"]},
             label: {type: "string"}, tone: {type: "string"}, dash: {type: "boolean"}, step: {type: "integer"}, at: {type: "number"}, digits: {type: "integer"}}}}}},
       example: {series: [{label: "晴れ", points: [[24, 210], [28, 380], [31, 560], {x: 34, y: 690, label: "猛暑日"}]}], trend: "linear"},
-      note: {en: "points are [x, y] or {\"x\", \"y\", \"label\"}; axes go in attributes (xr=\"[0,10]\" xl=\"…\"), as in m-curves; trend is \"linear\" or {\"fit\": \"linear\", \"label\": \"…\"} or {\"pts\": [[x0, y0], [x1, y1]]}",
-             ja: "点は [x, y] か {\"x\", \"y\", \"label\"}。軸は属性に書く（xr=\"[0,10]\" xl=\"…\"。m-curves と同じ）。trend は \"linear\" か {\"fit\": \"linear\", \"label\": \"…\"} か {\"pts\": [[x0, y0], [x1, y1]]}"},
+      note: {en: "points are [x, y] or {\"x\", \"y\", \"label\"}; axes go in attributes (xr=\"[0,10]\" xl=\"…\"); trend is \"linear\" or {\"fit\": \"linear\", \"label\": \"…\"} or {\"pts\": [[x0, y0], [x1, y1]]}",
+             ja: "点は [x, y] か {\"x\", \"y\", \"label\"}。軸は属性に書く（xr=\"[0,10]\" xl=\"…\"）。trend は \"linear\" か {\"fit\": \"linear\", \"label\": \"…\"} か {\"pts\": [[x0, y0], [x1, y1]]}"},
     };
   })();
   static props = {

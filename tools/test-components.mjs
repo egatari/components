@@ -16,7 +16,8 @@ const names = args.length ? args : fs.readdirSync(path.join(ROOT, 'components'))
 
 const b = await S.browser.launch();
 let fail = 0;
-const failed = [];   // [名前, 理由]
+const failed = [];
+const rendererNotes = [];   // 部品の DOM は同じで、画素だけが違った所（描画系の揺れとして通したもの）   // [名前, 理由]
 for (const name of names) {
   const dir = path.join(ROOT, 'components', name);
   const out = path.join(S.compDir(name), 'out', 'demo.html');
@@ -177,7 +178,12 @@ for (const name of names) {
       // それでも違うとき、部品の DOM（属性まで）が同じなら、違いは部品でなく Chrome の描き方（前に変換を受けた要素の角の
       // アンチエイリアスなど。CI の Linux・Windows で m-tree・m-venn に出た）。部品が (i, k, t) で決まることは DOM で確かめられるので通す
       const sameDom = nd > 40 && domA === domB;
-      if (sameDom) console.log(`   note s${s.i}k${k}: ${nd} pixel(s) differ but the component DOM is identical (renderer, ok)`);
+      if (sameDom) {
+        // 通したことが見えるように、部品・位置・画素数を書き、2 枚を残す（CI では失敗のときだけ上げるので、ここでは手元と記録用）
+        fs.writeFileSync(path.join(shots, `renderer_s${s.i}_k${k}_A.png`), A); fs.writeFileSync(path.join(shots, `renderer_s${s.i}_k${k}_B.png`), B);
+        console.log(`   note ${name} s${s.i}k${k}: ${nd} pixel(s) differ but the component DOM is identical (renderer, ok; renderer_s${s.i}_k${k}_A/B.png)`);
+        rendererNotes.push(`${name} s${s.i}k${k} ${nd}px`);
+      }
       const ok = nd <= 40 || sameDom;
       if (nd && ok) console.log(`   note s${s.i}k${k}: ${nd} pixel(s) differ beyond tolerance 0 (within 40, ok)`);
       det.push(`s${s.i}k${k}:${ok ? 'ok' : 'DIFF'}`);
@@ -204,4 +210,5 @@ if (fail) {
   console.log(`FAIL: ${fail} of ${names.length} component(s)`);
   for (const [n, w] of failed) console.log(`  - ${n}: ${w}`);
 } else console.log(`OK: ${names.length} component(s)`);
+if (rendererNotes.length) console.log(`renderer differences passed (identical component DOM): ${rendererNotes.join(', ')}`);
 process.exit(fail ? 1 : 0);
