@@ -94,12 +94,14 @@ export function lcc(P) {
   return (lon, lat) => { const q = F / Math.pow(f(lat * r), n), a = n * (lon - P.lon0) * r; return [P.k * q * Math.sin(a), -P.k * (F - q * Math.cos(a))]; };
 }
 
-// Insets (map-design §5.3, layout="inset"): polygons and points inside a lon/lat box are moved by (dx, dy) in projected
-// units, into a framed box. ryukyu = 南西諸島 (沖縄県 and 鹿児島県's islands south of 28.9°N), ogasawara = 小笠原諸島 with
-// 沖ノ鳥島 and 南鳥島 (東京都). The positions (dx, dy, frame) are set below after projecting.
+// Insets (map-design §5.3, layout="inset"): polygons and points inside a lon/lat box are drawn in a framed box beside the
+// main map, at s times the main map's scale (atlases enlarge the small islands; the frame's caption says the scale differs).
+// ryukyu = 南西諸島 (沖縄県, and 鹿児島県's islands south of 30.1°N: トカラ列島 and 奄美群島), ogasawara = 小笠原諸島 with
+// 沖ノ鳥島, 南鳥島 and 鳥島 (東京都). The component places the frames (it knows the element's size); the block gives each
+// inset's content box (cb, projected units, true positions).
 const INSETS = [
-  { id: 'ryukyu', name: '南西諸島', box: [122, 23.5, 132, 28.9] },
-  { id: 'ogasawara', name: '小笠原諸島', box: [135, 19.5, 155, 28.9] },
+  { id: 'ryukyu', name: '南西諸島', s: 2, box: [122, 23.5, 132, 30.1] },
+  { id: 'ogasawara', name: '小笠原諸島', s: 0.5, box: [135, 19.5, 155, 31.0] },
 ];
 const SIMPLIFY = 1.0;   // Visvalingam interval in projected units (≈ km); map-design §6 9: the finer level
 
@@ -303,21 +305,20 @@ async function rebuild() {
   const pad = 8;
   const inPts = (i) => fts.filter((f) => f.inset === i).flatMap((f) => polysOfFeat(f).flatMap((p) => p[0])).concat(FIXED.filter((f) => insetOf(f[1], f[2]) === i).map((f) => P(f[1], f[2])));
   const ib = INSETS.map((s, i) => bboxOf(inPts(i)));
-  if (process.env.MAPDEBUG) console.log('main', mb.map(Math.round), 'insets', ib.map((b) => b.map(Math.round)), fts.map((f) => f.code + ':' + f.inset).join(' '));
-  // 南西諸島 into the top-left corner, 小笠原 into the bottom-right corner of the main frame. Each inset is drawn at the
-  // largest scale (≤ 1, in steps of 0.05) whose frame (content + margin m) leaves a gap of at least g to main-frame land
+  const ins = INSETS.map((s, i) => ({ id: s.id, name: s.name, s: s.s, box: s.box, cb: [ib[i][0], ib[i][1], ib[i][2] - ib[i][0], ib[i][3] - ib[i][1]].map(Math.round) }));
+  // For small elements the component can instead draw the insets in the empty corners of the main frame (南西諸島 top left,
+  // 小笠原 bottom right), at the largest scale ≤ 1 (steps of 0.05) whose frame (content + margin m) leaves a gap g to land
   const m = 30, g = 40;
-  const ins = INSETS.map((s, i) => {
+  ins.forEach((s, i) => {
     const b = ib[i];
     for (let sc = 1; sc > 0.1; sc = Math.round((sc - 0.05) * 100) / 100) {
       const w = (b[2] - b[0]) * sc + 2 * m, h = (b[3] - b[1]) * sc + 2 * m;
       const fx = i === 0 ? mb[0] : mb[2] - w, fy = i === 0 ? mb[1] : mb[3] - h;
-      const hit = mainPts.some((q) => q[0] > fx - g && q[0] < fx + w + g && q[1] > fy - g && q[1] < fy + h + g);
-      if (!hit) return { id: s.id, name: s.name, box: s.box, s: sc, tx: Math.round(fx + m - b[0] * sc), ty: Math.round(fy + m - b[1] * sc), frame: [fx, fy, w, h].map(Math.round) };
+      if (!mainPts.some((q) => q[0] > fx - g && q[0] < fx + w + g && q[1] > fy - g && q[1] < fy + h + g)) { s.corner = { s: sc, frame: [fx, fy, w, h].map(Math.round) }; break; }
     }
-    throw new Error(`inset ${s.id} does not fit`);
+    if (!s.corner) throw new Error(`inset ${s.id} does not fit a corner`);
   });
-  for (const s of ins) say(`inset ${s.id}: scale ${s.s}, frame ${s.frame.join(',')}`);
+  for (const s of ins) say(`inset ${s.id}: beside ${s.s} × the main scale (content ${s.cb[2]}×${s.cb[3]} km), in the corner ${s.corner.s} ×`);
   const allTrue = bboxOf(fts.flatMap((f) => polysOfFeat(f).flatMap((p) => p[0])).concat(FIXED.map((f) => P(f[1], f[2]))));
   const boundsInset = [mb[0] - pad, mb[1] - pad, mb[2] - mb[0] + 2 * pad, mb[3] - mb[1] + 2 * pad].map(Math.round);
   const boundsTrue = [allTrue[0] - pad, allTrue[1] - pad, allTrue[2] - allTrue[0] + 2 * pad, allTrue[3] - allTrue[1] + 2 * pad].map(Math.round);
@@ -349,7 +350,7 @@ async function rebuild() {
     `var MAP = {`,
     `  proj: ${J(PROJ)},`,
     `  alph: ${J(ALPH)},`,
-    `  bounds: {inset: ${J(boundsInset)}, "true": ${J(boundsTrue)}},`,
+    `  bounds: {main: ${J(boundsInset)}, "true": ${J(boundsTrue)}},`,
     `  insets: ${J(ins)},`,
     `  prefs: ${J(PREFS.map(([c, n, lon, lat]) => [c, n, lon, lat]))},`,
     `  groups: ${J(GROUPS.map(([id, n, codes]) => [id, n, codes, gAnchors[id]]))},`,

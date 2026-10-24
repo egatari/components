@@ -17,7 +17,7 @@
 //  13. seed0           variant 0 of every component with variants is pixel-identical to the last release (tools/test-seed0.mjs)
 //  14. duration        every step is complete when its declared length ends (tools/test-duration.mjs)
 //  15. contrast        every component text ≥ 4.5:1 in the default, kokugo and business themes (tools/test-contrast.mjs)
-//  16. classes         adjacent choropleth classes in a legend ≥ 3:1 in the same themes (tools/test-classes.mjs)
+//  16. classes         choropleth classes evenly spaced in lightness (adjacent ΔL ≥ 0.08), lightest outlined, boundaries drawn (tools/test-classes.mjs)
 //      map-data        m-map-japan's generated map block matches the sha256 recorded by tools/map/build-japan.mjs (no network)
 //   node tools/test-all.mjs [--only name,name]
 import os from 'node:os';
