@@ -18,6 +18,8 @@ const git = (...a) => { try { return execFileSync('git', a, { cwd: ROOT, encodin
 const base = git('describe', '--tags', '--abbrev=0').trim();
 const changed = new Set(base ? git('diff', '--name-only', base, '--', 'components').split('\n').filter((p) => /\/(index\.js|demo\.html)$/.test(p)).map((p) => p.split('/')[1]) : []);
 const existed = (name) => !!base && git('cat-file', '-t', `${base}:components/${name}/index.js`).trim() === 'blob';
+// the release these changes go into: the next minor after the last tag (new components and new options are minor changes)
+const next = /^v(\d+)\.(\d+)\.\d+$/.test(base) ? base.replace(/^v(\d+)\.(\d+)\.\d+$/, (_, a, b) => `v${a}.${+b + 1}.0`) : '';
 const status = (name) => (!base ? '' : !existed(name) ? '新しい' : changed.has(name) ? '変わった' : '');
 const order = componentNames().map((name) => ({ name, st: status(name) }));
 const rank = { '新しい': 0, '変わった': 1, '': 2 };
@@ -37,7 +39,7 @@ for (const { name, st: mark } of order) {
   const variants = list(f.variants);
   index.push({ name: f.name, n: secs.length, mark });
   slides.push(`<section class="slide">
-  <h2>${esc(f.name)}${mark ? `（${mark}${base ? `、${base} から` : ''}）` : ''}</h2>
+  <h2>${esc(f.name)}${mark ? `（${mark}${next ? `、${next}` : ''}）` : ''}</h2>
   <div class="body">
     <p>${esc(f.summary)}</p>
     <ul>
