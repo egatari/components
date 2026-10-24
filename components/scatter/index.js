@@ -70,20 +70,24 @@ var VARIANT = (function(){
 DECK.define("m-scatter", class extends DECK.MotionElement {
   static variants = ["fade", "sweep", "grow"];
   // データの形（kit/shape.js）
-  static shape = {
-    schema: {type: "object", additionalProperties: false, required: ["series"], properties: {
-      series: {type: "array", minItems: 1, items: {type: "object", additionalProperties: false, required: ["points"], properties: {
-        label: {type: "string"}, tone: {type: "string"}, step: {type: "integer"}, at: {type: "number"},
-        points: {type: "array", items: {type: ["array", "object"], items: {type: "number"}, minItems: 2, maxItems: 2, required: ["x", "y"],
-          properties: {x: {type: "number"}, y: {type: "number"}, label: {type: "string"}, anchor: {enum: ["right", "left", "above", "below"]}, tone: {type: "string"}}}}}}},
-      trend: {type: ["string", "object", "array"], properties: {fit: {enum: ["linear"]}, pts: {type: "array"}, series: {type: ["integer", "array"]},
-        label: {type: "string"}, tone: {type: "string"}, dash: {type: "boolean"}, step: {type: "integer"}, at: {type: "number"}, digits: {type: "integer"}},
-        items: {type: "object", properties: {fit: {enum: ["linear"]}, pts: {type: "array"}, series: {type: ["integer", "array"]},
-          label: {type: "string"}, tone: {type: "string"}, dash: {type: "boolean"}, step: {type: "integer"}, at: {type: "number"}, digits: {type: "integer"}}}}}},
-    example: {series: [{label: "晴れ", points: [[24, 210], [28, 380], [31, 560], {x: 34, y: 690, label: "猛暑日"}]}], trend: "linear"},
-    note: {en: "points are [x, y] or {\"x\", \"y\", \"label\"}; axes go in attributes (xr=\"[0,10]\" xl=\"…\"), as in m-curves; trend is \"linear\" or {\"fit\": \"linear\", \"label\": \"…\"} or {\"pts\": [[x0, y0], [x1, y1]]}",
-           ja: "点は [x, y] か {\"x\", \"y\", \"label\"}。軸は属性に書く（xr=\"[0,10]\" xl=\"…\"。m-curves と同じ）。trend は \"linear\" か {\"fit\": \"linear\", \"label\": \"…\"} か {\"pts\": [[x0, y0], [x1, y1]]}"},
-  };
+  static shape = (function(){
+    // 傾向の線の 2 点：ちょうど 2 つの [x, y]
+    var PTS = {type: "array", minItems: 2, maxItems: 2, items: {type: "array", minItems: 2, maxItems: 2, items: {type: "number"}}};
+    return {
+      schema: {type: "object", additionalProperties: false, required: ["series"], properties: {
+        series: {type: "array", minItems: 1, items: {type: "object", additionalProperties: false, required: ["points"], properties: {
+          label: {type: "string"}, tone: {type: "string"}, step: {type: "integer"}, at: {type: "number"},
+          points: {type: "array", items: {type: ["array", "object"], items: {type: "number"}, minItems: 2, maxItems: 2, required: ["x", "y"],
+            properties: {x: {type: "number"}, y: {type: "number"}, label: {type: "string"}, anchor: {enum: ["right", "left", "above", "below"]}, tone: {type: "string"}}}}}}},
+        trend: {type: ["string", "object", "array"], properties: {fit: {enum: ["linear"]}, pts: PTS, series: {type: ["integer", "array"]},
+          label: {type: "string"}, tone: {type: "string"}, dash: {type: "boolean"}, step: {type: "integer"}, at: {type: "number"}, digits: {type: "integer"}},
+          items: {type: "object", properties: {fit: {enum: ["linear"]}, pts: PTS, series: {type: ["integer", "array"]},
+            label: {type: "string"}, tone: {type: "string"}, dash: {type: "boolean"}, step: {type: "integer"}, at: {type: "number"}, digits: {type: "integer"}}}}}},
+      example: {series: [{label: "晴れ", points: [[24, 210], [28, 380], [31, 560], {x: 34, y: 690, label: "猛暑日"}]}], trend: "linear"},
+      note: {en: "points are [x, y] or {\"x\", \"y\", \"label\"}; axes go in attributes (xr=\"[0,10]\" xl=\"…\"), as in m-curves; trend is \"linear\" or {\"fit\": \"linear\", \"label\": \"…\"} or {\"pts\": [[x0, y0], [x1, y1]]}",
+             ja: "点は [x, y] か {\"x\", \"y\", \"label\"}。軸は属性に書く（xr=\"[0,10]\" xl=\"…\"。m-curves と同じ）。trend は \"linear\" か {\"fit\": \"linear\", \"label\": \"…\"} か {\"pts\": [[x0, y0], [x1, y1]]}"},
+    };
+  })();
   static props = {
     xr: {type: "json", default: null, doc: "横軸の範囲（書かなければデータから）"}, yr: {type: "json", default: null, doc: "縦軸の範囲（書かなければデータから）"},
     xt: {type: "json", default: null, doc: "横軸の目盛り（書かなければ自動）"}, yt: {type: "json", default: null, doc: "縦軸の目盛り（書かなければ自動）"},
@@ -196,11 +200,14 @@ DECK.define("m-scatter", class extends DECK.MotionElement {
     // 傾向の線：最小二乗の直線（fit: "linear"）か、2 点（pts）
     this.trends = pl.trends.map(function(o){
       var t = o.t, a, b, r = null, xa, xb;
+      var ya, yb;
       if (t.pts){
-        if (t.pts.length !== 2) throw new Error("trend.pts: write two points [[x0, y0], [x1, y1]]");
-        xa = +t.pts[0][0]; xb = +t.pts[1][0];
-        var ya = +t.pts[0][1], yb = +t.pts[1][1];
-        a = xb !== xa ? (yb - ya) / (xb - xa) : 0; b = ya - a * xa;
+        if (t.pts.length !== 2 || !t.pts.every(function(q){ return Array.isArray(q) && q.length === 2 && q.every(isFinite); }))
+          throw new Error("trend.pts: write two points [[x0, y0], [x1, y1]]");
+        xa = +t.pts[0][0]; xb = +t.pts[1][0]; ya = +t.pts[0][1]; yb = +t.pts[1][1];
+        if (xa === xb && ya === yb) throw new Error("trend.pts: the two points are the same (write two different points)");
+        // 書いた 2 点をそのまま端にする（縦の線なら傾きと切片はない）
+        if (xb !== xa){ a = (yb - ya) / (xb - xa); b = ya - a * xa; } else { a = null; b = null; }
       } else {
         if (t.fit !== undefined && t.fit !== "linear") throw new Error('trend: "' + t.fit + '" is not "linear" (write "linear", {"fit": "linear"} or {"pts": [[x0, y0], [x1, y1]]})');
         var use = t.series === undefined ? pl.series : [].concat(t.series).map(function(i){ return pl.series[i]; }).filter(Boolean);
@@ -213,9 +220,10 @@ DECK.define("m-scatter", class extends DECK.MotionElement {
         a = sxx ? sxy / sxx : 0; b = my - a * mx;
         r = sxx && syy ? sxy / Math.sqrt(sxx * syy) : 0;
         xa = Math.min.apply(null, q.map(function(v){ return v.x; })); xb = Math.max.apply(null, q.map(function(v){ return v.x; }));
+        ya = a * xa + b; yb = a * xb + b;
       }
       var col = t.tone ? colorOf(t.tone, 0) : "var(--fg)";
-      var A = [p.x(xa), p.y(a * xa + b)], B = [p.x(xb), p.y(a * xb + b)];
+      var A = [p.x(xa), p.y(ya)], B = [p.x(xb), p.y(yb)], out = false;
       // 図の枠の中に切る（Liang–Barsky。clip-path は使わない）
       var u0 = 0, u1 = 1, dx = B[0] - A[0], dy = B[1] - A[1];
       [[-dx, A[0] - x0], [dx, x1 - A[0]], [-dy, A[1] - y0], [dy, y1 - A[1]]].forEach(function(c){
@@ -223,15 +231,16 @@ DECK.define("m-scatter", class extends DECK.MotionElement {
         var u = c[1] / c[0];
         if (c[0] < 0) u0 = Math.max(u0, u); else u1 = Math.min(u1, u);
       });
-      if (u1 <= u0) console.warn("m-scatter: the trend line is outside the axes");
+      // 枠の外の線は描かない（名前も図の上に出さない）
+      if (u1 <= u0){ out = true; console.warn("m-scatter: the trend line is outside the axes (it is not drawn)"); }
       else { B = [A[0] + dx * u1, A[1] + dy * u1]; A = [A[0] + dx * u0, A[1] + dy * u0]; }
       var line = D.el("path", {d: "M0,0", fill: "none", stroke: col, "stroke-width": 3.5, "stroke-linecap": "round", opacity: 0}, gT);
       if (t.dash) line.setAttribute("stroke-dasharray", "12 9");
       // 名前：{r} {a} {b} を相関係数・傾き・切片に置き換える（digits 桁、既定 2）
-      var dg = t.digits !== undefined ? t.digits : 2, num = function(v){ return (v < 0 ? "−" : "") + Math.abs(v).toFixed(dg); };
-      var text = String(t.label || "").replace(/\{r\}/g, r === null ? "" : num(r)).replace(/\{a\}/g, num(a)).replace(/\{b\}/g, num(b));
+      var dg = t.digits !== undefined ? t.digits : 2, num = function(v){ return v === null ? "" : (v < 0 ? "−" : "") + Math.abs(v).toFixed(dg); };
+      var text = String(t.label || "").replace(/\{r\}/g, num(r)).replace(/\{a\}/g, num(a)).replace(/\{b\}/g, num(b));
       var len = Math.hypot(B[0] - A[0], B[1] - A[1]);
-      return {o: o, line: line, text: text, col: col, A: A, B: B, len: len, dash: !!t.dash};
+      return {o: o, line: line, text: out ? "" : text, col: col, A: A, B: B, len: len, dash: !!t.dash, out: out};
     });
     // 系列と傾向の線の名前：図の上（右寄せ）に印と一緒に並べる（凡例の箱は作らない。点や線と重ならない）
     var lx = x1, entries = this.series.filter(function(se){ return se.o.s.label; }).map(function(se){ return {it: se, text: se.o.s.label, col: se.col, path: se.path}; })
@@ -292,7 +301,7 @@ DECK.define("m-scatter", class extends DECK.MotionElement {
       else op = e;
       tr.line.setAttribute("d", "M" + D.lerp(A[0], B[0], s0).toFixed(1) + "," + D.lerp(A[1], B[1], s0).toFixed(1) + "L" + D.lerp(A[0], B[0], s1).toFixed(1) + "," + D.lerp(A[1], B[1], s1).toFixed(1));
       if (tr.dash) tr.line.setAttribute("stroke-dashoffset", (s0 * tr.len).toFixed(1));
-      tr.line.setAttribute("opacity", (f ? 0.45 : op).toFixed(3));
+      tr.line.setAttribute("opacity", (tr.out ? 0 : f ? 0.45 : op).toFixed(3));
       if (tr.leg) tr.leg.setAttribute("opacity", (f ? 0.45 : tt < 0 ? 0 : D.prog(tt, span, dur * 0.3)).toFixed(3));
     });
   }

@@ -194,7 +194,8 @@ DECK.define("m-bars", class extends DECK.MotionElement {
   }
   duration(k){
     var P = this.props, d = 0;
-    this.plan().groups.forEach(function(o){ if (o.step === k) d = Math.max(d, o.at + (P.stack ? 0 : 0.1 * (o.vals.length - 1)) + P.dur + (P.count ? 0 : 0.35)); });
+    // 積み上げ棒の区切りの値と系列の名前は count でも伸びきってから 0.35 秒で出るので、その分も段階に含める
+    this.plan().groups.forEach(function(o){ if (o.step === k) d = Math.max(d, o.at + (P.stack ? 0 : 0.1 * (o.vals.length - 1)) + P.dur + (P.count && !P.stack ? 0 : 0.35)); });
     this.plan().scale.forEach(function(s){ if (s.step === k) d = Math.max(d, s.at + P.zoom + 0.3); });
     return d;
   }

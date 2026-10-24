@@ -96,6 +96,13 @@ DECK.define("m-compare", class extends DECK.MotionElement {
   mount(){
     var P = this.props, D = DECK, self = this, data = this.data || {sides: [], rows: []};
     this.variant = VARIANT.of(this);
+    // 形（static shape）では書けない決まり：values は列の数だけ、better は列の番号（0 から）。黙って値を落とさない
+    var ns = (data.sides || []).length;
+    (data.rows || []).forEach(function(r, j){
+      var nv = (r.values || []).length;
+      if (nv !== ns) throw new Error("m-compare: rows[" + j + "].values has " + nv + " value(s) but there are " + ns + " sides (write one value per side, in the order of sides)");
+      if (r.better !== undefined && !(r.better >= 0 && r.better < ns)) throw new Error("m-compare: rows[" + j + "].better is " + JSON.stringify(r.better) + " but it must be a side number from 0 to " + (ns - 1));
+    });
     this.style.display = "block"; this.style.position = "relative";
     var W = this.clientWidth, H = this.clientHeight;
     var svg = D.el("svg", {viewBox: "0 0 " + W + " " + H, width: W, height: H, style: "display:block;overflow:visible"}, this);

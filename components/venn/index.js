@@ -104,6 +104,11 @@ DECK.define("m-venn", class MVenn extends DECK.MotionElement {
   mount(){
     var P = this.props, D = DECK, data = this.data || {sets: []}, self = this, id = "m-venn-" + (++MVenn.n);
     this.variant = VARIANT.of(this);
+    // 形（static shape）では書けない決まり：集合が 2 つなら C を含む領域（C・AC・BC・ABC）は書けない。黙って項目を落とさない
+    if ((data.sets || []).length < 3){
+      var bad = Object.keys(data.regions || {}).filter(function(k){ return k.indexOf("C") >= 0; });
+      if (bad.length) throw new Error("m-venn: regions " + bad.join(", ") + " need a third set, but sets has " + (data.sets || []).length + " (with two sets write only A, B and AB)");
+    }
     this.style.display = "block"; this.style.position = "relative";
     var W = this.clientWidth, H = this.clientHeight;
     var svg = D.el("svg", {viewBox: "0 0 " + W + " " + H, width: W, height: H, style: "display:block;overflow:visible"}, this);

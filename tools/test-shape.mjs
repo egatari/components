@@ -46,6 +46,12 @@ const slides = comps.map((t, j) => `<section class="slide noconcl" id="s-w${j}">
   <h2>${t}</h2>
   <div class="body">${t === 'm-sweep' ? '<m-sweep f="u*u + c" values="[1]" style="height:300px"></m-sweep>' : `<${t} aria-label="${t} の図" style="height:300px">${WRONG[t]}</${t}>`}</div>
 </section>`).join('\n') + `
+<section class="slide noconcl" id="s-semantic">
+  <h2>形は合うが中身が合わない</h2>
+  <div class="body"><m-compare id="w-cmp-values" aria-label="値の数が列と違う" style="height:200px"><script type="application/json">{"sides": [{"label": "A 案"}, {"label": "B 案"}], "rows": [{"label": "日数", "values": ["3 日"]}]}</script></m-compare>
+  <m-compare id="w-cmp-better" aria-label="better が列の外" style="height:200px"><script type="application/json">{"sides": [{"label": "A 案"}, {"label": "B 案"}], "rows": [{"label": "日数", "values": ["3 日", "5 日"], "better": 2}]}</script></m-compare>
+  <m-venn id="w-venn-c" aria-label="集合 2 つで C の領域" style="height:200px"><script type="application/json">{"sets": [{"label": "哺乳類"}, {"label": "海の生き物"}], "regions": {"A": ["ライオン"], "AC": ["クジラ"]}}</script></m-venn></div>
+</section>
 <section class="slide noconcl" id="s-throw">
   <h2>描くときの例外</h2>
   <div class="body"><m-curves aria-label="式が書けていない線" style="height:300px"><script type="application/json">[{"label": "a", "f": "10 - ("}]</script></m-curves></div>
@@ -79,7 +85,8 @@ try {
     const seen = [];
     DECK.slides.forEach((s, i) => { for (let k = 0; k <= s._max; k++) { DECK.seek(i, k, 0.3); DECK.seek(i, k, Infinity); } });
     DECK.slides.forEach((s) => s._comps.forEach((c) => seen.push({ tag: c.tagName.toLowerCase(), box: !!c.querySelector('.m-error'), text: (c.querySelector('.m-error') || {}).textContent || '' })));
-    return { seen, errs: DECK.componentErrors.map((x) => JSON.parse(JSON.stringify(x))), max: DECK.slides.map((s) => s._max) };
+    const semantic = ['w-cmp-values', 'w-cmp-better', 'w-venn-c'].map((id) => !!document.querySelector('#' + id + ' .m-error'));
+    return { semantic, seen, errs: DECK.componentErrors.map((x) => JSON.parse(JSON.stringify(x))), max: DECK.slides.map((s) => s._max) };
   });
   ok(errors.length === 0, 'no exception or console error while opening and seeking' + (errors.length ? ': ' + errors[0] : ''));
   ok(r.max.every((m) => Number.isFinite(m)), 'every slide has a finite number of steps');
@@ -88,6 +95,13 @@ try {
     ok(s && s.box && s.text.includes('<' + t + '>'), `${t}: shows the inline placeholder`);
     ok(e && e.phase === 'data', `${t}: reported in DECK.componentErrors before mount (${e && e.kind}${e && e.why ? ' ' + e.why : ''})`);
   }
+  // 形（static shape）では書けない中身の決まり：mount で例外を投げ、札を出す（値を黙って落とさない）
+  const sem = r.errs.filter((x) => x.slide === r.max.length - 3);
+  const semOk = (tag, re) => sem.some((x) => x.tag === tag && x.phase === 'mount' && x.kind === 'exception' && re.test(x.msg));
+  ok(r.semantic.every(Boolean) && sem.length === 3, 'content that fits the shape but not the rule: placeholder for each (' + sem.map((x) => x.msg).join(' | ') + ')');
+  ok(semOk('m-compare', /rows\[0\]\.values has 1 value/), 'm-compare: values not one per side is refused at mount');
+  ok(semOk('m-compare', /rows\[0\]\.better is 2/), 'm-compare: better outside the sides is refused at mount');
+  ok(semOk('m-venn', /regions AC need a third set/), 'm-venn: a region with C in a two-set diagram is refused at mount');
   const th = r.errs.find((x) => x.phase === 'mount' && x.slide === r.max.length - 2);
   ok(th && th.tag === 'm-curves' && th.kind === 'exception' && /SyntaxError/.test(th.msg) && r.seen.filter((x) => x.tag === 'm-curves').every((x) => x.box), 'mount exception: placeholder, recorded with the message only');
   // 算術の外の式（Egatari spec §6）：コードとして動かさず、札を出し、mount の段の SyntaxError として載る

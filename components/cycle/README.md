@@ -15,7 +15,7 @@ PDCA、水の循環、細胞周期、学習のサイクルなど、同じ順で�
 
 - `nodes`：段階（3〜8 個を想定）。配列の順に回る。12 時の位置から時計回りに置き、となりの段階へ円に沿った矢印を引く。最後から最初へ戻る矢印は自動で引く
   - `label`（`\n` で改行）か `tex`（KaTeX）、`note`（箱の中の 2 行目に小さく、`--muted`）、`tone`（`term`（既定）・`emph`・`muted`・`accent2`・`series-1..4`）、`step`、`at`、`id`
-- `center`：真ん中の名前（`{"label": "PDCA", "note": "…"}`）。最初の段階と一緒に出る（`center.step` で変えられる）
+- `center`：真ん中の名前（`{"label": "PDCA", "note": "…"}`）。最初の段階と一緒に出る（`center.step` で変えられる）。`center` はオブジェクト。`m-pie` の `center` は字（文字列）なので取り違えない
 - `edges`：ほかのつながり（`from` `to` は段階の `id`、`label` `tone` `dash` `step`）。箱の縁から縁への破線の矢印
 
 並べ方：

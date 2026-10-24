@@ -24,6 +24,12 @@ Versions follow [README.md § Releases and versions](README.md#releases-and-vers
 
 - `m-curves` and `m-quad`: series `common` (were `academic` and `business`). Only the catalogue and the AI pack's grouping change; tag names and drawing are unchanged
 
+### Fixed
+
+- `m-scatter`: a trend written as two points (`pts`) is drawn between exactly those points, so a vertical line (both x equal) is no longer collapsed to nothing; a trend line entirely outside the axes is no longer drawn (it was drawn unclipped beyond the plot) and gets no name above the figure (still a `console.warn`). `trend.pts` must be exactly two `[x, y]` number pairs (shape). The least-squares line draws the same pixels as before
+- `m-bars`: with `stack="true"` and `count="true"`, the step now lasts until the values inside the parts and the series names have faded in (0.35 s more), so the declared end of the step is the readable final state. Without `stack`, or without `count`, nothing changes (the demo's screenshots are byte-identical)
+- `m-compare`: a row whose `values` are not one per side, or whose `better` is not a side number, is refused at mount (placeholder with the reason) instead of silently dropping or ignoring values. `m-venn`: a region with `C` (`C`, `AC`, `BC`, `ABC`) in a two-set diagram is refused the same way instead of its items silently disappearing. Checked by `tools/test-shape.mjs`
+
 ## 1.1.0 - 2026-10-24
 
 ### Fixed
