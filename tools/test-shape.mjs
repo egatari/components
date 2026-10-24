@@ -17,6 +17,7 @@ const ok = (cond, msg) => { console.log((cond ? 'ok   ' : 'FAIL ') + msg); if (!
 const WRONG = {
   'm-bars': '<script type="application/json">{"group": [{"label": "1 年目", "value": 1}]}</script>',
   'm-codetree': '<script type="application/json">{"codes": [{"run": 2, "white": "0111"}], "bits": "0111"}</script>',
+  'm-compare': '<script type="application/json">{"sides": [{"label": "A 案"}], "rows": [{"values": ["3 日"]}]}</script>',
   'm-collect': '<script type="application/json">{"chips": [{"label": "表"}], "targets": [{"label": "表の数"}]}</script>',
   'm-curves': '<script type="application/json">{"xr": [0, 10], "series": [{"label": "需要", "fn": "10 - u"}]}</script>',
   'm-flow': '<script type="application/json">{"nodes": [{"id": "a", "label": "観測"}]}</script>',
@@ -27,6 +28,7 @@ const WRONG = {
   'm-gendai': '<script type="application/json">{"paragraphs": ["本文"]}</script>',
   'm-kanbun': '<script type="application/json">["学而時習之"]</script>',
   'm-kobun': '<script type="application/json">{"text": "春はあけぼの"}</script>',
+  'm-venn': '<script type="application/json">{"sets": [{"label": "哺乳類"}, {"label": "海の生き物"}], "regions": {"BA": ["クジラ"]}}</script>',
   'm-menu': '<script type="application/json">[{"href": "#s-x", "label": "目次"}]</script>',
 };
 const comps = componentNames().map((n) => 'm-' + n);

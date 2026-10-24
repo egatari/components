@@ -10,6 +10,8 @@ Versions follow [README.md § Releases and versions](README.md#releases-and-vers
 - `purposes.json`: the purposes a slide may want to say, with default step patterns. Every README declares `purposes:` (checked by `tools/lint.mjs`); CATALOG.md gains a purpose and variant column and a "by purpose" table; `manifest.json` carries `purposes` and each component's `purposes` and `variants` (the tarball is unchanged in layout)
 - `tools/variant.js`, copied into components with variants by `tools/variant-sync.mjs` (checked by `npm test`); `tools/test-variant.mjs` (the choice), `tools/test-seed0.mjs` (variant 0 is pixel-identical to the last release)
 - `m-kpi`: variants `count` (default, unchanged), `rise`, `flip`, `underline`, chosen by `variant`, `seed` or the lesson's `data-egatari-seed`. A lesson without a seed draws the same pixels as before. `count="false"` turns a counting variant into `rise` (with a `console.info`)
+- `m-compare` (series common, purpose `compare`): two or three things side by side in a table. A column per side with its heading, a row per criterion, and an optional difference per row (`diff` in a right-hand column, `better` framing the better value). Steps: one side, then the other, then the differences. Variants `fade` (default), `slide`, `reveal`
+- `m-venn` (series common, purpose `overlap`): a Venn diagram of two or three sets (fixed symmetric layout, not area-proportional), with items placed inside each region (`A`, `AB`, `ABC`, …). Steps: one set at a time, then the overlaps highlighted with their items (`overlaps="each"`: one overlap per step). Variants `fade` (default), `draw`
 
 ### Changed
 
