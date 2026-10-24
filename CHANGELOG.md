@@ -10,6 +10,8 @@ Versions follow [README.md § Releases and versions](README.md#releases-and-vers
 - `purposes.json`: the purposes a slide may want to say, with default step patterns. Every README declares `purposes:` (checked by `tools/lint.mjs`); CATALOG.md gains a purpose and variant column and a "by purpose" table; `manifest.json` carries `purposes` and each component's `purposes` and `variants` (the tarball is unchanged in layout)
 - `tools/variant.js`, copied into components with variants by `tools/variant-sync.mjs` (checked by `npm test`); `tools/test-variant.mjs` (the choice), `tools/test-seed0.mjs` (variant 0 is pixel-identical to the last release)
 - `m-kpi`: variants `count` (default, unchanged), `rise`, `flip`, `underline`, chosen by `variant`, `seed` or the lesson's `data-egatari-seed`. A lesson without a seed draws the same pixels as before. `count="false"` turns a counting variant into `rise` (with a `console.info`)
+- `m-tree` (series common, purpose `hierarchy`): a hierarchy or classification tree laid out from the data (no coordinates; parents centred over their children, subtrees packed by their per-level contours). `orient` down or right, `link` elbow or straight, steps `by="level"` (default) or `by="node"`, optional dashed `edges`; variants `fade`, `draw`, `grow`
+- `m-fishbone` (series common, purpose `cause-effect`): a cause-and-effect (Ishikawa) diagram laid out from the data: effect head on the right, main bones alternating above and below, causes and sub-causes as labelled ticks. Steps `order="causes-first"` (default; one main bone per step, the head last) or `order="effect-first"`; optional dashed `edges`; variants `fade`, `draw`, `grow`
 
 ### Changed
 
