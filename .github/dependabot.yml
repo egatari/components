@@ -1,0 +1,23 @@
+# Weekly version updates for the map tool's npm dependencies (tools/map: build-time only, never in the release tarball)
+# and for the actions used in .github/workflows. The repository root has no npm dependencies.
+# Cooldown (SECURITY.md#dependencies): a new release is proposed only after it has been public for 7 days (14 for a major
+# version), so that a hijacked release has time to be found and unpublished first. Security updates are not delayed.
+version: 2
+updates:
+  - package-ecosystem: npm
+    directory: /tools/map
+    schedule:
+      interval: weekly
+    open-pull-requests-limit: 2
+    cooldown:
+      default-days: 7
+      semver-major-days: 14
+      semver-minor-days: 7
+      semver-patch-days: 7
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly
+    open-pull-requests-limit: 2
+    cooldown:
+      default-days: 7

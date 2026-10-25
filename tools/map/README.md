@@ -4,7 +4,7 @@
 lines) from Natural Earth 5.1.1, 1:10m (public domain), following [docs/map-design.md](../../docs/map-design.md) §4.5 and §5.
 
 ```bash
-cd tools/map && npm ci && cd ../..           # mapshaper 0.6.102 and d3-geo 3.1.1 (pinned in package-lock.json)
+cd tools/map && npm ci --ignore-scripts && cd ../..   # mapshaper 0.6.102 and d3-geo 3.1.1 (pinned in package-lock.json); no install script is needed
 node tools/map/build-japan.mjs               # download (cached in tools/map/.cache/, sha256 checked), build, check, write
 node tools/map/build-japan.mjs --compare     # rebuild in memory; fail if it differs from the committed block
 node tools/map/build-japan.mjs --check       # what npm test runs: the block's sha256 equals japan.sha256 (no network)
