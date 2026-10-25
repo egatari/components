@@ -4,7 +4,8 @@
 //   2. no negative or NaN size (width, height, r, rx, ry, font-size, stroke-width) and no NaN in any attribute
 //   3. nothing drawn outside the element
 //   4. text ≥ 24 px (except text marked data-annot)
-//   5. the four territory names (竹島, 尖閣諸島, 沖ノ鳥島, 南鳥島) are written, or a warning names the missing one
+//   5. the territory names of the drawn islands (竹島, 尖閣諸島; 沖ノ鳥島 and 南鳥島 are drawn only with islands="all" or layout="true",
+//      tools/test-map-territory.mjs) are written, or a warning names the missing one
 // Also the m-bars of the nightly deck that logged "<rect> attribute height: A negative value" (2026-10-25, japan-population):
 // orient="h" with no height, so the element is 0 px high; it must warn instead and keep every size ≥ 0.
 //   node tools/test-map-small.mjs [work folder]
@@ -40,7 +41,7 @@ const src = path.join(work, 'map-small.html'), out = path.join(work, 'map-small.
 fs.writeFileSync(src, `<!DOCTYPE html>\n<html lang="ja" data-theme="default">\n<head>\n<meta charset="utf-8">\n<title>m-map-japan small</title>\n</head>\n<body>\n<div id="stage">\n${slides.map((s) => s.html).join('\n')}\n</div>\n</body>\n</html>\n`);
 S.build(src, out);
 
-const NAMES = ['竹島', '尖閣諸島', '沖ノ鳥島', '南鳥島'];
+const NAMES = ['竹島', '尖閣諸島'];
 const browser = await S.browser.launch();
 try {
   const page = await browser.newPage({ viewport: { width: 1280, height: 720 } });

@@ -29,7 +29,11 @@ export function flags(js) {
     || /addEventListener\(\s*["'](click|dblclick|pointer\w*|mouse\w*|touch\w*|key\w*|input|change)["']/.test(code)
     || /createElement\(\s*["'](a|button|input|select|textarea)["']/.test(code)
     || /static\s+shape\s*=\s*\{\s*links\s*:\s*true/.test(code);
-  return { interactive: /static\s+interactive\s*=\s*true\s*;/.test(code), viewerInput: /static\s+viewerInput\s*=\s*true\s*;/.test(code), clock: /static\s+clock\s*=\s*true\s*;/.test(code), operable };
+  const g = code.match(/static\s+group\s*=\s*"([a-z][a-z0-9-]*)"\s*;/), tm = code.match(/static\s+tile\s*=\s*(\{.*\})\s*;\s*$/m);
+  let tile = null, tileError = null;
+  if (tm) { try { tile = JSON.parse(tm[1]); } catch (e) { tileError = e.message; } }
+  return { interactive: /static\s+interactive\s*=\s*true\s*;/.test(code), viewerInput: /static\s+viewerInput\s*=\s*true\s*;/.test(code), clock: /static\s+clock\s*=\s*true\s*;/.test(code), operable,
+    group: g ? g[1] : null, tile, tileError, tileWritten: !!tm || /static\s+tile\s*=/.test(code) };
 }
 export const list = (s) => (s ? s.split(',').map((x) => x.trim()).filter(Boolean) : []);
 // purposes.json: id → entry
@@ -98,6 +102,10 @@ export function lint(root) {
     }
     const fl = flags(js);
     if (fl.operable && !fl.interactive) errs.push(`components/${name}/index.js: the viewer can operate it (an input() method, a click/pointer/key/input/change listener, a link or control, or links as data): declare static interactive = true;`);
+    // groups of parts the user chooses (docs/conventions.md §7): today only "tool"; a tool needs its own new-deck tile
+    if (fl.group !== null && fl.group !== 'tool') errs.push(`components/${name}/index.js: static group must be "tool" (the only group so far)`);
+    if (fl.tileWritten && !fl.tile) errs.push(`components/${name}/index.js: static tile must be one line of JSON ({"label": {"ja", "en"}, "examples": {"ja", "en"}, "icon"})${fl.tileError ? ': ' + fl.tileError : ''}`);
+    if (fl.group === 'tool' && !(fl.tile && fl.tile.label && fl.tile.label.ja && fl.tile.label.en && fl.tile.examples && fl.tile.examples.ja && fl.tile.examples.en && /^[a-z][a-z0-9-]*$/.test(fl.tile.icon || ''))) errs.push(`components/${name}/index.js: a tool (static group = "tool") needs static tile with label.{ja,en}, examples.{ja,en} and icon`);
     if (fl.viewerInput && !fl.interactive) errs.push(`components/${name}/index.js: static viewerInput = true needs static interactive = true`);
     for (const [k, s] of [['interactive', 'interactive'], ['viewer-input', 'viewerInput'], ['clock', 'clock']]) if (k in f) errs.push(`components/${name}/README.md: ${k} belongs in index.js (static ${s} = true), not in the README`);
     const sv = js.match(/static\s+variants\s*=\s*\[([^\]]*)\]/);

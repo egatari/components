@@ -60,7 +60,7 @@ export function release(version) {
     const fl = flags(fs.readFileSync(path.join(ROOT, 'components', name, 'index.js'), 'utf8'));
     const fm = frontmatter(fs.readFileSync(path.join(ROOT, 'components', name, 'README.md'), 'utf8'));
     const list = (s) => (s ? s.split(',').map((x) => x.trim()).filter(Boolean) : []);
-    components[name] = { tag: `m-${name}`, series: fm.series, purposes: list(fm.purposes), variants: list(fm.variants), ...(fl.interactive ? { interactive: true } : {}), ...(fl.viewerInput ? { viewerInput: true } : {}), ...(fl.clock ? { clock: true } : {}), sha256: sha(normalizeEol(fs.readFileSync(path.join(ROOT, 'components', name, 'index.js')))), files };
+    components[name] = { tag: `m-${name}`, series: fm.series, purposes: list(fm.purposes), variants: list(fm.variants), ...(fl.interactive ? { interactive: true } : {}), ...(fl.viewerInput ? { viewerInput: true } : {}), ...(fl.clock ? { clock: true } : {}), ...(fl.group ? { group: fl.group } : {}), ...(fl.tile ? { tile: fl.tile } : {}), sha256: sha(normalizeEol(fs.readFileSync(path.join(ROOT, 'components', name, 'index.js')))), files };
   }
   entries.sort((a, b) => (a[0] < b[0] ? -1 : a[0] > b[0] ? 1 : 0));
   const gz = writeTarGz(entries);

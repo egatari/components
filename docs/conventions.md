@@ -286,3 +286,11 @@ Components the viewer can press or type into are called "interactive parts" (操
 - **The flag lives in index.js**: `static interactive = true;` on the class. A part that takes viewer input (spec §8.4 "Viewer input") also has `static viewerInput = true;` (`m-predict` only). Not in the README frontmatter, which is shown to AI authors. A part whose content is elapsed time (`m-timer`) also has `static clock = true;`: under prefers-reduced-motion the player still gives it the real t and drops only decorative motion (spec §9.1). `tools/release.mjs` writes them to manifest.json as `components.<name>.interactive` / `.viewerInput` / `.clock` (only when true).
 - **Lint**: `tools/lint.mjs` checks index.js with a simple heuristic: an `input(…)` method, a click / pointer / key / input / change listener, creating `a` / `button` / `input` elements, or child links as data (`static shape = {links: true}`) without `static interactive = true` is an error; so is `viewerInput` without `interactive`.
 - **Marking (never by colour alone)**: CATALOG.md puts 「操作できる」 next to the part's name. In the gallery the part's intro slide gets a 「操作できる / Interactive」 badge and a dashed `--accent2` frame around the intro text. Each part's demo.html shows the 「操作できる」 badge (27 px, dashed frame) as the first element of its first slide's body, never in the heading (Studio uses the h2 text as the slide's title and key).
+
+## 7. Tools (parts used only when asked)
+
+In a new deck, standard parts are always in; subject part sets and "tools" are in only when the user chooses them (owner, 2026-10-25). A tool is a part used only when asked (such as `m-timer`), not a purpose.
+
+- **The flags live in index.js**: `static group = "tool";` and the tool's new-deck tile `static tile = {"label": {"ja", "en"}, "examples": {"ja", "en"}, "icon"};` (one line of JSON). Not in the README. `tools/release.mjs` writes `components.<name>.group` / `.tile` to manifest.json, and Studio builds the 「道具」 / "Tools" row from components with `group: "tool"`.
+- **Lint**: `tools/lint.mjs` fails on a `group` other than `"tool"`, and on a tool without a tile (`label`, `examples`, `icon`).
+- A tool's purpose (`timebox` for `m-timer`) has no purpose tile (`tile: "none"`), so that purpose tiles (which the user turns off) and tool tiles (which the user turns on) stay apart.

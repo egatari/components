@@ -286,3 +286,11 @@ purposes: change, compare
 - **印は index.js に書く**：部品のクラスに `static interactive = true;`。見る人の入力（仕様 §8.4「Viewer input」）を受け付ける部品は、さらに `static viewerInput = true;`（`m-predict` だけ）。README の frontmatter には書かない（AI への指示に入るので）。経った時間そのものを見せる部品（`m-timer`）は `static clock = true;`：動きを減らす設定でも、実行系は実時間の t で描く（飾りの動きだけを止める。仕様 §9.1）。`tools/release.mjs` が manifest.json の `components.<名前>.interactive`・`.viewerInput`・`.clock`（true のときだけ）にする。
 - **試験**：`tools/lint.mjs` が index.js を簡単に調べ、`input(…)` のメソッド、click・pointer・key・input・change などの受け取り、`a`・`button`・`input` の要素を作ること、子のリンクをデータにすること（`static shape = {links: true}`）のどれかがあって `static interactive = true` が無ければ誤りにする。`viewerInput` だけで `interactive` が無いのも誤り。
 - **見せ方（色だけに頼らない）**：CATALOG.md では部品の名前の横に「操作できる」。gallery の部品の説明の 1 枚では「操作できる / Interactive」の札と、説明の字を `--accent2` の破線の枠で囲む。各部品の demo.html の 1 枚目の本文の最初に「操作できる」の札（27 px、破線の枠）。見出し（h2）には入れない（Studio がスライドの題と鍵に使うので）。
+
+## 7. 道具（頼まれたときだけ使う部品）
+
+新規作成では、標準パーツはいつも入り、教科のパーツの組と「道具」は使う人が選んだときだけ入る（作者、2026-10-25）。道具は、伝えたいことではなく、頼まれたときだけ使う部品（`m-timer` など）。
+
+- **印は index.js に書く**：`static group = "tool";` と、新規作成の道具の札 `static tile = {"label": {"ja", "en"}, "examples": {"ja", "en"}, "icon"};`（1 行の JSON）。README には書かない。`tools/release.mjs` が manifest.json の `components.<名前>.group`・`.tile` にし、Studio は `group: "tool"` の部品から「道具」の札の段を作る。
+- **試験**：`tools/lint.mjs` は、`group` が `"tool"` 以外なら誤り、道具に札（`label`・`examples`・`icon`）が無ければ誤りにする。
+- 道具の伝えたいこと（`m-timer` の `timebox`）は、伝えたいことの札を持たない（`tile: "none"`）。伝えたいことの札（使う人が外す）と、道具の札（使う人が選ぶ）を混ぜないため。
