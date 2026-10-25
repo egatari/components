@@ -7,6 +7,8 @@
 //   - an author point with a label on a territory island replaces the built-in dot and name (one dot, one name; layout="true" with
 //     the four extremities, and islands="all" with a point on 南鳥島), and the readable layer has one entry per island
 //   - the readable layer lists exactly the territories that are drawn
+//   - labels and leader lines stay out of the inset frames and their captions (except a label of something inside that frame):
+//     every map above, the demo's 八地方区分 slide, and 八地方区分 with labels at 6 heights × 4 widths, also with islands="all"
 // Checked in the final state (every step at t = Infinity) and at step 0.
 //   node tools/test-map-territory.mjs [work folder]
 import fs from 'node:fs';
@@ -33,6 +35,10 @@ for (const [h, ws] of [[300, [420, 1184]], [380, [420, 1184]], [520, [420, 1184]
   cases.push({ kind: 'all', name: `islands="all", ${w}×${h}`, attrs: 'islands="all"', style: `width:${w}px;height:${h}px`, data: REGION, layout: 'inset' });
 for (const h of [300, 440, 520])
   cases.push({ kind: 'extremes', name: `layout="true" with the four extremities, ${h} px`, attrs: 'layout="true" labels="none"', style: `height:${h}px`, data: EXTREMES, layout: 'true' });
+const GROUPS = { regions: ['hokkaido', 'tohoku', 'kanto', 'chubu', 'kinki', 'chugoku', 'shikoku', 'kyushu'].map((g, i) => ({ group: g, tone: `series-${i % 4 + 1}`, step: i + 1 })) };
+cases.push({ kind: 'regions', name: 'the demo\'s 八地方区分 slide', attrs: 'aria-label="八地方区分の地図"', style: 'height:440px', data: GROUPS, layout: 'inset' });
+for (const h of [240, 300, 360, 440, 520, 600]) for (const w of [420, 640, 900, 1184]) for (const isl of ['main', 'all'])
+  cases.push({ kind: 'regions', name: `八地方区分, islands="${isl}", ${w}×${h}`, attrs: `islands="${isl}"`, style: `width:${w}px;height:${h}px`, data: GROUPS, layout: 'inset' });
 cases.push({ kind: 'author', name: 'islands="all" with a point on 南鳥島', attrs: 'islands="all" labels="none"', style: 'height:440px',
   data: { points: [{ lon: 153.9867, lat: 24.2831, label: '南鳥島（東端）', step: 1 }] }, layout: 'inset' });
 
@@ -82,8 +88,35 @@ try {
       const sN = state('final');
       const sr = [...el.querySelectorAll('.sr-only')].map((e) => e.textContent).join('；').split('；');
       const texts = [...el.querySelectorAll('text')].map((t) => t.textContent);
-      return { s0, sN, sr, texts, size: [el.clientWidth, el.clientHeight] };
+      // frames (rect, stroke-width 2, no fill), captions (--muted text), label chips (rect rx=6) and leader lines (stroke-width 1.5), final state
+      const svgR = el.querySelector('svg').getBoundingClientRect();
+      const box = (e) => { const b = e.getBoundingClientRect(); return { x: b.left - svgR.left, y: b.top - svgR.top, w: b.width, h: b.height }; };
+      const frames = [...el.querySelectorAll('rect[fill="none"][stroke-width="2"]')].map((e) => ({ x: +e.getAttribute('x'), y: +e.getAttribute('y'), w: +e.getAttribute('width'), h: +e.getAttribute('height') }));
+      const caps = [...el.querySelectorAll('text[fill="var(--muted)"]')].filter(shown).map((e) => ({ ...box(e), t: e.textContent }));
+      const hit = (b, q) => b.x < q.x + q.w && b.x + b.w > q.x && b.y < q.y + q.h && b.y + b.h > q.y;
+      const at = (p, q) => p[0] > q.x && p[0] < q.x + q.w && p[1] > q.y && p[1] < q.y + q.h;
+      const clash = [];
+      const IN_FRAME = ['尖閣諸島', '沖ノ鳥島', '南鳥島', '父島', '硫黄島'];
+      for (const r of el.querySelectorAll('rect[rx="6"]')) {
+        if (!shown(r)) continue;
+        const t = r.parentNode.querySelector('text')?.textContent || '', b = { x: +r.getAttribute('x'), y: +r.getAttribute('y'), w: +r.getAttribute('width'), h: +r.getAttribute('height') };
+        frames.forEach((f, j) => { if (hit(b, f) && !(IN_FRAME.includes(t) && b.x >= f.x && b.x + b.w <= f.x + f.w && b.y >= f.y && b.y + b.h <= f.y + f.h)) clash.push(`label "${t}" on inset frame ${j}`); });
+        caps.forEach((q) => { if (hit(b, q)) clash.push(`label "${t}" on the caption "${q.t}"`); });
+      }
+      for (const pth of el.querySelectorAll('path[stroke-width="1.5"]')) {
+        if (!shown(pth)) continue;
+        const n = (pth.getAttribute('d').match(/-?[\d.]+/g) || []).map(Number);
+        if (n.length !== 4) continue;
+        const a = [n[0], n[1]], b = [n[2], n[3]];
+        for (let u = 0; u <= 40; u++) {
+          const p = [a[0] + (b[0] - a[0]) * u / 40, a[1] + (b[1] - a[1]) * u / 40];
+          frames.forEach((f, j) => { if (!at(a, f) && at(p, f)) clash.push(`leader from (${a.map((v) => v.toFixed(0))}) into inset frame ${j}`); });
+          caps.forEach((q) => { if (at(p, q)) clash.push(`leader from (${a.map((v) => v.toFixed(0))}) across the caption "${q.t}"`); });
+        }
+      }
+      return { s0, sN, sr, texts, size: [el.clientWidth, el.clientHeight], clash: [...new Set(clash)] };
     }, i);
+    ok(r.clash.length === 0, `${c.name}: ${r.clash.join('; ')}`);
     const T = ['北方領土', '竹島', '尖閣諸島'], FAR = ['沖ノ鳥島', '南鳥島'], OGA = ['父島', '硫黄島'];
     for (const [when, s] of [['step 0', r.s0], ['final', r.sN]]) {
       ok(s.bad.length === 0, `${c.name}: ${s.bad.join('; ')}`);
@@ -124,11 +157,12 @@ try {
       }
     }
   }
+  console.log(`     labels left out for lack of room (warned): ${warnings.filter((w) => w.includes('no room for the label')).length}`);
   ok(errors.length === 0, 'console errors: ' + errors.slice(0, 3).join(' | '));
   await page.close();
 } finally {
   await browser.close();
 }
-console.log(`${cases.length} maps (${HEIGHTS.length} heights × ${WIDTHS.length} widths × 2 layouts × 2 label settings, and ${cases.length - HEIGHTS.length * WIDTHS.length * 4} others), ${oks} checks passed`);
+console.log(`${cases.length} maps (${HEIGHTS.length} heights × ${WIDTHS.length} widths × 2 layouts × 2 label settings, 49 八地方区分 maps, and ${cases.length - HEIGHTS.length * WIDTHS.length * 4 - 49} others), ${oks} checks passed`);
 if (fails) { console.log(`\n${fails} failure(s)`); process.exit(1); }
 console.log('OK: m-map-japan territories');
