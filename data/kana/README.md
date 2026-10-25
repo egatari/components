@@ -9,7 +9,9 @@ stroke-order component (`m-kakijun`). It is not a component yet.
 | `review-sheet.html` / `review-sheet.pdf` | A4 sheet for a 書写 teacher to check order, direction, とめ・はね・はらい and shape |
 | `../../tools/kana-sheet.mjs` | Rebuilds the sheet: `node tools/kana-sheet.mjs --pdf` (run `node tools/studio.mjs` once first for the browser) |
 | `../../tools/test-kana-data.mjs` | Validates `kana.json`: `node tools/test-kana-data.mjs` (not yet in `test-all`) |
-| `../../tools/kana-path.mjs` | Small SVG path reader shared by the two scripts |
+| `../../tools/kana-path.mjs` | Small SVG path reader shared by the scripts |
+| `proto.html` | Prototype of the stroke-by-stroke reveal over the font Klee One (あ〜ほ). Built by `node tools/kana-proto.mjs`; needs the font at `data/kana/font/KleeOne-SemiBold.ttf` (gitignored, not in the repository yet) or `?font=<url>` |
+| `../../tools/kana-proto-check.mjs` | Measures the reveal in headless Chrome (coverage, leaks onto later strokes) and renders frames: `node tools/kana-proto-check.mjs OUTDIR --frames` |
 
 ## Licence and provenance
 
@@ -18,6 +20,16 @@ Every stroke was drawn by hand as centreline coordinates on a 0–100 grid. No f
 traced or used as a template. Only facts were taken from outside: the number of strokes and their
 order. The shapes follow the proportions of 教科書体 handwriting (strokes separated where school
 handwriting separates them: き・さ・ふ・り・ゆ), not a decorative font.
+
+**Characters marked `"glyphFit": "Klee One 1.100"` (あ〜ほ, 30 characters).**
+線の順と向きのデータは独自に作ったもの。Klee One の字形に合うよう位置を合わせただけで、字形の輪郭は含まない。
+In English: the stroke order and direction data are our own. For these characters the existing hand-made
+centrelines were moved by eye (control points edited by hand while looking at the glyph rendered at 500 px
+with the lines on top) so that each runs along the middle of the corresponding stroke of Klee One; stroke
+counts and order were kept. No outline was extracted, skeletonised or traced, and no path point was computed
+from glyph pixels; rendered pixels were used only to measure how well a brush along the lines covers the glyph
+(`tools/kana-proto-check.mjs`). The 0–100 box is the font's em square: x 0–100 = 0–1000 units, and y 0 is the
+typo ascender (880), so the glyph is drawn with `<text x="0" y="88" font-size="100">` in a `0 0 100 100` box.
 
 ## Format
 
@@ -40,6 +52,7 @@ handwriting separates them: き・さ・ふ・り・ゆ), not a decorative font.
       ],
       "source": "school-hiragana",
       "verified": false,      // true once the order has been checked against a named textbook page / by a teacher
+      "glyphFit": "Klee One 1.100", // optional: the lines were positioned to run along this font's glyph
       "note": "…"             // optional: what is least certain about this character
     }
   }
@@ -64,6 +77,22 @@ handwriting separates them: き・さ・ふ・り・ゆ), not a decorative font.
 - `count === strokes.length`, and `count` equals the school stroke count listed in the test;
 - every `d` parses, every `end` is one of the three values, every sampled point stays inside `0..box`;
 - each `source` names an entry of `sources`.
+
+## Reveal prototype (`proto.html`, あ〜ほ)
+
+The visible glyph is Klee One (Fontworks, SIL OFL 1.1), drawn as SVG `<text>`, with a light-grey copy under it
+as a guide. It is shown through an SVG mask built only from our centrelines, in three layers:
+
+1. a **wide** round brush (13 units) along the drawn part of each stroke (`stroke-dasharray` / `pathLength="1"`),
+   wide enough to cover the glyph's stroke including its ends;
+2. a black **guard** (12 units) along the part of each stroke not yet drawn, so a wide brush passing over a later
+   stroke (a crossing, or a stroke close by) does not show it early;
+3. a **narrow** brush (9 units) along the drawn part again, on top of the guards, so a drawn stroke stays whole
+   where a guard crosses it.
+
+After the last stroke there are no guards, so the full glyph shows (checked: 100 % of the glyph's pixels for all 30).
+What still shows early is the ink two strokes share where they cross (e.g. あ, き, せ, ね, ぬ): a mask cannot split
+it. Per-character widths can be set in `proto-brush.json` (`{"あ": [13, 12, 13]}`); none is needed now.
 
 ## Sources for order and count
 

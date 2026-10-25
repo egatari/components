@@ -1,0 +1,133 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Kana reveal prototype</title>
+<style>
+  :root { --ink: #1d2a57; --guide: #d9dce3; --grid: #e9a0a0; --bg: #fff; }
+  html, body { margin: 0; background: var(--bg); color: #222; font: 14px/1.5 system-ui, sans-serif; }
+  main { padding: 16px; }
+  h1 { font-size: 18px; margin: 0 0 4px; }
+  p.note { margin: 0 0 12px; color: #555; max-width: 60em; }
+  .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 10px; }
+  figure { margin: 0; border: 1px solid #ccc; border-radius: 6px; padding: 6px; cursor: pointer; background: #fff; }
+  figcaption { font-size: 12px; color: #666; text-align: center; }
+  svg { display: block; width: 100%; height: auto; }
+  body.one main { padding: 0; }
+  body.one svg { width: 500px; height: 500px; }
+  body.one figure { border: 0; padding: 0; border-radius: 0; }
+</style>
+</head>
+<body>
+<main id="main"></main>
+<script>
+const CHARS = {"あ":{"s":["M21 28.5 Q45 27 69 22","M43.5 10 C40 35 39 62 44 80","M61 34 C56 50 42 70 27 78 C15 84 14 70 26 59 C40 46 62 40 76 47 C88 54 84 72 72 80 C64 86 52 90 44 93"],"e":["tome","tome","harai"]},"い":{"s":["M17 25 C16 48 20 66 34 78 L44 57","M67 32 C74 41 81 51 84 63"],"e":["hane","tome"]},"う":{"s":["M40 13.5 Q50 15 60 21.5","M27 42 C40 37 58 32 65 37 C71 42 70 64 62 75 C55 84 45 89 35 92"],"e":["tome","harai"]},"え":{"s":["M37 14 Q50 17 61 24","M24 44 L59.5 36.5 L20 86 L29 76 C35 68 41 63 45 67 C49 72 48 82 55 86 C62 89 72 86 82 85"],"e":["tome","harai"]},"お":{"s":["M17 40.5 Q36 37 57 34","M38 13 C38 40 38 70 38 84 C38 90 30 86 20 79 C28 70 45 60 62 57 C78 55 86 64 82 73 C79 83 62 85 47 80","M66 25 Q74 30 81 38"],"e":["tome","tome","tome"]},"か":{"s":["M13 43 C28 40 42 37 49 37.5 C54 38 53 46 52.5 55 C52 68 48 82 39 90.5 L27 76.5","M40 15 C35 35 28 54 21 70","M69.5 33.5 C78 43 85 52 89.5 63.5"],"e":["hane","tome","tome"]},"き":{"s":["M21.5 35 Q45 30 70.5 25.5","M31 50 Q50 47 72 41","M37 13.5 C44 28 56 46 66.5 62 L56 62","M25 66 C24 74 30 80 42 85 C50 88 56 89 60 90"],"e":["tome","tome","tome","tome"]},"く":{"s":["M63 14 L33 49 L64 91"],"e":["tome"]},"け":{"s":["M24 20 C22 45 22 70 25 82 L34 61","M41.5 39.5 Q62 37 83 33","M66 12 C67 35 68 55 66 68 C64 80 58 87 52 92"],"e":["hane","tome","harai"]},"こ":{"s":["M27.5 26 Q48 25.5 69 29 L51 40","M23.5 65 C25 74 31 79 42 81 C55 83 66 83.5 77.5 82.5"],"e":["hane","tome"]},"さ":{"s":["M17.5 39 Q48 35 79 28.5","M42 14 C50 30 60 46 67.5 58 L53 56","M26.5 64.5 C26 73 33 80 45 84 C54 87 60 88 65 88.5"],"e":["tome","tome","tome"]},"し":{"s":["M31 17 C31 40 31 62 33 74 C36 88 52 90 63 85 C71 81 77 76 83 70"],"e":["harai"]},"す":{"s":["M12.5 35 Q50 30 89 26.5","M54.5 11 L56 58 C54 65 44 65 40.5 58 C37 50 41 41 48 41 C55 41 58 47 58 56 C58 70 49 85 36 93"],"e":["tome","harai"]},"せ":{"s":["M8.5 47.5 Q50 42 89 37","M66 13.5 C66 32 66 50 61 65 L48.5 55.5","M33.5 22 C35 40 35 60 36.5 70 C38 80 46 83 58 83 L73 83.5"],"e":["tome","hane","tome"]},"そ":{"s":["M25.5 21 L60 15.5 L20 58 L76 43.5 C60 48 45 58 42.5 70 C41 82 54 87 66.5 89"],"e":["tome"]},"た":{"s":["M14 35 Q36 31 57 27.5","M38.5 12.5 C35 35 28 62 20 87","M51.5 46 Q66 43 80 42 L77 44","M48.5 70 C50 78 57 80 66 81.5 C73 82.5 78 83.5 82 84.5"],"e":["tome","tome","hane","tome"]},"ち":{"s":["M17 36 Q40 33 63 29","M38 12.5 C35.5 30 33 50 31.5 68 C40 60 52 55 63 55 C76 56 81 66 76 75 C70 85 55 89 41 91"],"e":["tome","harai"]},"つ":{"s":["M13 43 C30 35 50 30 64 31 C82 32 90 46 83 60 C75 72 56 76 39 79"],"e":["harai"]},"て":{"s":["M12.5 35.5 C35 29 58 24 78.5 21.5 C62 28 48 42 45 58 C43 72 53 82 74 86"],"e":["tome"]},"と":{"s":["M35.5 17 Q40 32 45.5 45","M73.5 35 C66 44 48 52 36 61 C24 71 25 82 40 85 C55 87 68 84 77 82"],"e":["tome","tome"]},"な":{"s":["M17.5 32 Q38 29 58 25.5","M41 13 C37 30 29 50 21.5 66","M66.5 28 Q76 34 83 41 L71.5 41","M60 46.5 C60 58 61 70 60 80 C59 87 46 90 39 86 C33 81 37 74 48 74 C60 74 72 80 81.5 87.5"],"e":["tome","tome","tome","harai"]},"に":{"s":["M24.5 19.5 C22 42 20 66 24 82 L32 61.5","M43.5 34 Q60 31 77 28 L74 30","M45.5 64 C47 72 54 76 63 77.5 L82 78"],"e":["hane","hane","tome"]},"ぬ":{"s":["M25.5 24.5 C30 45 36 63 42 77","M55.5 14 C55 35 44 58 23 77 C15 82 12 70 16 61 C24 46 44 35 62 33 C78 31 89 42 88 57 C88 64 82 74 72 79 C64 84 54 83 52 77 C51 71 60 69 68 70 C75 71 82 79 87.5 86.5"],"e":["tome","harai"]},"ね":{"s":["M32 13 L32 88","M14.5 42 L39.5 37 L15.5 80 C28 60 45 38 62 31 C76 26 83 40 82.5 55 C82 72 72 82 62 85 C54 87 48 83 48.5 78 C49 72 56 71 63 72 C72 73 82 80 88 86"],"e":["tome","harai"]},"の":{"s":["M48.5 26 C47 45 38 63 27.5 75 C21 81 16 68 16.5 55 C17 38 32 25 52 24 C72 23 85 36 84 52 C83 70 66 82 48.5 87"],"e":["harai"]},"は":{"s":["M24 18 C22 42 21 68 24 84 L33 62.5","M39.5 37.5 Q62 35 85.5 32","M64.5 14.5 C65.5 35 67.5 55 67.5 70 C60 69 45 68 41.5 75 C38 83 52 86 60 82 C65 79 68 75 72 76 C77 78 82 82 85.5 85"],"e":["hane","tome","harai"]},"ひ":{"s":["M17.5 27 L45 19.5 C35 32 22 50 22 68 C22 85 36 90 48 83 C58 75 64 50 68.5 26 C70 40 76 56 85 65"],"e":["harai"]},"ふ":{"s":["M46 18.5 C51 23 56 28 60.5 33 L50 38.5","M41.5 48 C50 56 58 64 58 74 C58 84 48 88 34 79.5","M13 68 L20 84 L31 73","M72.5 59.5 Q81 67 86 78.5"],"e":["tome","hane","hane","tome"]},"へ":{"s":["M12.5 59.5 C22 51 32 40 39 38.5 C42 38 46 41 50 45 C62 57 75 66 86.5 73"],"e":["harai"]},"ほ":{"s":["M23.5 18 C21.5 42 21 68 24 84 L32 62.5","M42 25 Q61 23 79.5 21","M43.5 43 Q62 41.5 80.5 40","M63.5 24.5 C65 42 67.5 58 67.5 70 C60 69 45 68 41.5 75 C38 83 52 86 60 82 C65 79 68 75 72 76 C77 78 82 82 85.5 85"],"e":["hane","tome","tome","harai"]}};
+const BRUSH = {"default":13,"narrow":9,"guard":12,"overrides":{}};
+const FIT = "Klee One 1.100";
+const q = new URLSearchParams(location.search);
+const FONT_URL = q.get('font') || 'font/KleeOne-SemiBold.ttf';
+const NS = 'http://www.w3.org/2000/svg';
+const el = (n, a = {}) => { const e = document.createElementNS(NS, n); for (const k in a) e.setAttribute(k, a[k]); return e; };
+const width = (ch, i) => { const o = BRUSH.overrides[ch]; return Array.isArray(o) ? (o[i] ?? BRUSH.default) : (o ?? BRUSH.default); };
+let uid = 0;
+
+// One character: guide (light grey glyph), then the glyph in ink seen through a mask of brushes.
+// One character: guide (light grey glyph), then the glyph in ink seen through a mask. The mask has three layers:
+//   1. wide brushes (W) along the drawn part of each stroke: cover the whole glyph stroke, ends included;
+//   2. black guards (G) along the NOT yet drawn part of each stroke: where a wide brush passes over a later
+//      stroke (a crossing, or a stroke running close by), the later stroke stays hidden;
+//   3. narrow brushes (N) along the drawn part again, on top of the guards: the drawn stroke stays visible
+//      where a guard crosses it.
+// All three follow our centrelines only (no outline data). After the last stroke there are no guards.
+function cell(ch, { guide = true, view = 'reveal', grid = true } = {}) {
+  const id = 'm' + (uid++);
+  const svg = el('svg', { viewBox: '0 0 100 100', role: 'img', 'aria-label': ch });
+  if (view === 'mask' || view === 'brush') svg.appendChild(el('rect', { width: 100, height: 100, fill: '#000' }));
+  else if (grid) {
+    svg.appendChild(el('rect', { x: 0.25, y: 0.25, width: 99.5, height: 99.5, fill: 'none', stroke: 'var(--grid)', 'stroke-width': 0.5 }));
+    svg.appendChild(el('path', { d: 'M50 0V100M0 50H100', stroke: 'var(--grid)', 'stroke-width': 0.4, 'stroke-dasharray': '1.5 1.5', fill: 'none' }));
+  }
+  const text = (fill) => { const t = el('text', { x: 0, y: 88, 'font-size': 100, 'font-family': 'KleeKana', fill }); t.textContent = ch; return t; };
+  if (guide && view === 'reveal') svg.appendChild(text('var(--guide)'));
+  const line = (d, w, color) => el('path', { d, fill: 'none', stroke: color, 'stroke-width': w, 'stroke-linecap': 'round', 'stroke-linejoin': 'round', pathLength: 1 });
+  const S = CHARS[ch].s;
+  const wide = S.map((d, i) => line(d, width(ch, i), '#fff'));
+  const guard = S.map((d) => line(d, BRUSH.guard, '#000'));
+  const narrow = S.map((d) => line(d, BRUSH.narrow, '#fff'));
+  const layers = el('g');
+  if (view === 'brush') wide.forEach((p) => layers.appendChild(p));
+  else [...wide, ...guard, ...narrow].forEach((p) => layers.appendChild(p));
+  if (view === 'mask' || view === 'brush') svg.appendChild(layers);
+  else {
+    const mask = el('mask', { id, maskUnits: 'userSpaceOnUse', x: 0, y: 0, width: 100, height: 100 });
+    mask.appendChild(layers);
+    const defs = el('defs'); defs.appendChild(mask); svg.appendChild(defs);
+    const ink = text('var(--ink)');
+    if (view !== 'glyph') ink.setAttribute('mask', 'url(#' + id + ')');
+    svg.appendChild(ink);
+  }
+  // drawn part [0, f] of a path / remaining part [f, 1]; a zero-length dash would still paint a round cap
+  const head = (p, f) => { p.setAttribute('stroke-dasharray', '1 1.01'); p.setAttribute('stroke-dashoffset', 1 - f); p.style.visibility = f > 0 ? 'visible' : 'hidden'; };
+  const tail = (p, f) => { p.setAttribute('stroke-dasharray', '1 1.01'); p.setAttribute('stroke-dashoffset', -f); p.style.visibility = f < 1 ? 'visible' : 'hidden'; };
+  // state: k strokes done (fractional = part of the next one); from: strokes before it are left out (view=brush)
+  const set = (k, from = 0) => S.forEach((_, i) => {
+    const f = i < from ? 0 : Math.max(0, Math.min(1, k - i));
+    head(wide[i], f); head(narrow[i], f); tail(guard[i], f);
+  });
+  return { svg, set, n: S.length };
+}
+
+function animate(c, ch) {
+  const tmp = el('svg'); document.body.appendChild(tmp);
+  const L = CHARS[ch].s.map((d) => { const p = el('path', { d }); tmp.appendChild(p); return p.getTotalLength(); });
+  tmp.remove();
+  const dur = L.map((l) => 350 + l * 9), gap = 250;
+  let t0 = null;
+  c.set(0);
+  const step = (t) => {
+    t0 ??= t; let e = t - t0, k = 0;
+    for (let i = 0; i < c.n; i++) {
+      if (e < dur[i]) { k = i + e / dur[i]; break; }
+      e -= dur[i]; k = i + 1;
+      if (e < gap) break; e -= gap;
+    }
+    c.set(k);
+    if (k < c.n) requestAnimationFrame(step);
+  };
+  requestAnimationFrame(step);
+}
+
+(async () => {
+  const face = new FontFace('KleeKana', 'url(' + JSON.stringify(FONT_URL) + ')');
+  document.fonts.add(face);
+  try { await face.load(); } catch (e) { document.getElementById('main').textContent = 'Klee One not found at ' + FONT_URL + ' (put KleeOne-SemiBold.ttf in data/kana/font/ or pass ?font=)'; return; }
+  const main = document.getElementById('main');
+  // single-character view; window.show() redraws without reloading the font (used by kana-proto-check.mjs)
+  window.show = (o) => {
+    main.innerHTML = '';
+    document.body.classList.add('one');
+    const ch = o.ch, view = o.view || 'reveal';
+    const c = cell(ch, { guide: String(o.guide) !== '0', view, grid: String(o.grid) !== '0' });
+    const fig = document.createElement('figure'); fig.appendChild(c.svg); main.appendChild(fig);
+    if (view === 'brush') c.set(+(o.to ?? c.n), +(o.from ?? 0));
+    else if (view === 'glyph') c.set(c.n);
+    else c.set(+(o.k ?? c.n));
+    window.cur = c;
+  };
+  if (q.has('ch')) { window.show(Object.fromEntries(q)); document.body.dataset.ready = '1'; return; }
+  main.innerHTML = '<h1>かなの筆順（Klee One の字形を、独自の中心線で順に見せる試作）</h1><p class="note">字形: Klee One (Fontworks, SIL OFL 1.1). 線の順と向き: data/kana/kana.json (MIT, ' + FIT + ' に位置合わせ). クリックで再生。</p>';
+  const grid = document.createElement('div'); grid.className = 'grid'; main.appendChild(grid);
+  for (const ch of Object.keys(CHARS)) {
+    const c = cell(ch);
+    const fig = document.createElement('figure'); fig.appendChild(c.svg);
+    const cap = document.createElement('figcaption'); cap.textContent = ch + ' ' + c.n + '画'; fig.appendChild(cap);
+    fig.addEventListener('click', () => animate(c, ch));
+    grid.appendChild(fig); c.set(c.n);
+    setTimeout(() => animate(c, ch), 300);
+  }
+  document.body.dataset.ready = '1';
+})();
+</script>
+</body>
+</html>

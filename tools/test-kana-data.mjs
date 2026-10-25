@@ -41,6 +41,7 @@ for (const [ch, c] of Object.entries(chars)) {
   if (ch in EXPECT && c.count !== EXPECT[ch]) fail(`${ch}: count ${c.count}, expected ${EXPECT[ch]}`);
   if (!c.source || !(c.source in (data.sources || {}))) fail(`${ch}: source "${c.source}" not in sources`);
   if (typeof c.verified !== 'boolean') fail(`${ch}: verified must be true or false`);
+  if (c.glyphFit !== undefined && (typeof c.glyphFit !== 'string' || !c.glyphFit)) fail(`${ch}: glyphFit must be a non-empty string when present`);
   c.strokes.forEach((s, i) => {
     strokes++;
     const at = `${ch} stroke ${i + 1}`;
