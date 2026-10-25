@@ -4,6 +4,10 @@ Versions follow [README.md § Releases and versions](README.md#releases-and-vers
 
 ## Unreleased
 
+### Fixed
+
+- `m-numberline` demo: the 2本の数直線 slide overflowed the slide body by 47 px in Egatari Studio's checker (the part needed 478 px with arcs on both lines). It now shows the ×2/3 arc on the price line only, at 440 px; the part is unchanged
+
 ### Later (candidates, not in this release)
 
 - `m-compare` `by="row"`; an "outside every set" region for `m-venn`; a project-plan demo for `m-timeline` lanes
