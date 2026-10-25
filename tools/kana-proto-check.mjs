@@ -30,7 +30,8 @@ const data = JSON.parse(fs.readFileSync(path.join(ROOT, 'data', 'kana', 'kana.js
 const chars = Object.entries(data.chars).filter(([ch, c]) => c.glyphFit && (!only || only.includes(ch)));
 const PROTO = fileUrl(path.join(ROOT, 'data', 'kana', 'proto.html'));
 const S = 500, U = S / 100;
-const LEAK_TOL = 4.5;   // units from a drawn centreline: closer than this, a later stroke's ink is shared ink (a crossing)
+const LEAK_TOL = 4.5;
+const CLEAR = 7;   // units: ink this close to another stroke's centreline is not used to measure a stroke's width   // units from a drawn centreline: closer than this, a later stroke's ink is shared ink (a crossing)
 
 const browser = await launch();
 const page = await browser.newPage({ viewport: { width: S, height: S }, deviceScaleFactor: 1 });
@@ -60,6 +61,18 @@ async function lum(png) {
   }, png.toString('base64'));
   return Buffer.from(b64, 'base64');
 }
+// distance from (x, y) to a polyline, and the arc length at the nearest point
+function distArc(pts, x, y) {
+  let best = Infinity, at = 0, acc = 0;
+  for (let i = 1; i < pts.length; i++) {
+    const [ax, ay] = pts[i - 1], [bx, by] = pts[i], dx = bx - ax, dy = by - ay, L = dx * dx + dy * dy, l = Math.sqrt(L);
+    const t = L ? Math.max(0, Math.min(1, ((x - ax) * dx + (y - ay) * dy) / L)) : 0;
+    const d = Math.hypot(x - ax - t * dx, y - ay - t * dy); if (d < best) { best = d; at = acc + t * l; }
+    acc += l;
+  }
+  return [best, at];
+}
+const arcLen = (pts) => { let a = 0; for (let i = 1; i < pts.length; i++) a += Math.hypot(pts[i][0] - pts[i - 1][0], pts[i][1] - pts[i - 1][1]); return a; };
 function distTo(pts, x, y) {
   let best = Infinity;
   for (let i = 1; i < pts.length; i++) {
@@ -81,12 +94,31 @@ for (const [ch, c] of chars) {
   const leak = Array(n).fill(0), leakOut = Array(n).fill(0), hidden = Array(n).fill(0);
   const needW = Array(n).fill(0), owned = Array(n).fill(0), missing = [];
   const dists = Array.from({ length: n }, () => []);
+  // ink width per stroke (owned ink area / centreline length) and per third of the stroke's length
+  const lens = pts.map(arcLen), area = Array(n).fill(0), area3 = Array.from({ length: n }, () => [0, 0, 0]);
+  // the same, away from other strokes (ink within CLEAR of another centreline and the centreline length there are
+  // left out), so a crossing does not make a stroke look thin
+  const areaX = Array.from({ length: n }, () => [0, 0, 0]), lenX = pts.map((q, i) => {
+    const out = [0, 0, 0];
+    let acc = 0;
+    for (let k = 1; k < q.length; k++) {
+      const l = Math.hypot(q[k][0] - q[k - 1][0], q[k][1] - q[k - 1][1]), mx = (q[k][0] + q[k - 1][0]) / 2, my = (q[k][1] + q[k - 1][1]) / 2;
+      const clear = pts.every((r, j) => j === i || distTo(r, mx, my) > CLEAR);
+      if (clear) out[Math.min(2, Math.floor(3 * (acc + l / 2) / lens[i]))] += l;
+      acc += l;
+    }
+    return out;
+  });
+  const inkPix = [], dist3 = Array.from({ length: n }, () => [[], [], []]);
   for (let p = 0; p < S * S; p++) {
     if (G[p] >= 128) continue;                       // not ink
     ink++;
     const x = ((p % S) + 0.5) / U, y = (Math.floor(p / S) + 0.5) / U;
-    const d = pts.map((q) => distTo(q, x, y));
+    const da = pts.map((q) => distArc(q, x, y)), d = da.map((v) => v[0]);
     const o = d.indexOf(Math.min(...d)); owned[o]++; dists[o].push(d[o]);
+    { const t = Math.min(2, Math.floor(3 * da[o][1] / lens[o])); area[o]++; area3[o][t]++; dist3[o][t].push(d[o]);
+      if (d.every((v, j) => j === o || v > CLEAR)) areaX[o][t]++; }
+    inkPix.push([p, o, d, da.map((v) => v[1])]);
     if (K[n - 1][p] >= 128) covered++; else missing.push([+x.toFixed(1), +y.toFixed(1)]);
     // after k strokes (k = 1..n-1)
     for (let k = 1; k < n; k++) {
@@ -97,6 +129,23 @@ for (const [ch, c] of chars) {
       }
       if (!vis && o < k) hidden[k]++;                                 // ink of a drawn stroke is not showing
     }
+  }
+  const wMeas = area.map((a, i) => +(a / (U * U) / lens[i]).toFixed(1));
+  // band width per third: twice the 95th percentile of the owned ink's distance to the centreline
+  const wBand3 = dist3.map((ts) => ts.map((a) => { if (!a.length) return 0; a.sort((u, v) => u - v); return +(2 * a[Math.floor(a.length * 0.95)]).toFixed(1); }));
+  // ink width per third from the median distance (uniform band of width w around its centreline: median = w / 4)
+  const wMed3 = dist3.map((ts) => ts.map((a) => { if (!a.length) return 0; return +(4 * a[Math.floor(a.length * 0.5)]).toFixed(1); }));
+  const w3x = areaX.map((t, i) => t.map((a, j) => (lenX[i][j] > 2 ? +(a / (U * U) / lenX[i][j]).toFixed(1) : null)));
+  const w3 = area3.map((t, i) => t.map((a) => +(a / (U * U) / (lens[i] / 3)).toFixed(1)));
+  // bleed after k strokes: ink of a later stroke that shows OUTSIDE the drawn strokes' own ink band (farther than
+  // half the local measured width + 0.4 from each drawn centreline)
+  const bleed = Array(n).fill(0);
+  const halfAt = (i, arc) => w3[i][Math.min(2, Math.floor(3 * arc / lens[i]))] / 2 + 0.4;
+  for (const [p, o, d, arcs] of inkPix) for (let k = 1; k < n; k++) {
+    if (o < k || K[k - 1][p] < 128) continue;
+    let inside = false;
+    for (let i = 0; i < k; i++) if (d[i] <= halfAt(i, arcs[i])) { inside = true; break; }
+    if (!inside) bleed[k]++;
   }
   for (let i = 0; i < n; i++) {
     const a = dists[i].sort((u, v) => u - v);
@@ -111,7 +160,7 @@ for (const [ch, c] of chars) {
     missingBox: missing.length ? [Math.min(...missing.map((m) => m[0])), Math.min(...missing.map((m) => m[1])), Math.max(...missing.map((m) => m[0])), Math.max(...missing.map((m) => m[1]))] : null,
     // per step k = 1..n-1 (pixels at 500 px; 25 px = 1 unit²)
     leakPx: leak.slice(1), leakOutsideCrossingPx: leakOut.slice(1), hiddenDrawnPx: hidden.slice(1),
-    needWidth: needW,
+    needWidth: needW, inkWidth: wMeas, inkWidth3: w3, bandWidth3: wBand3, medWidth3: wMed3, clearWidth3: w3x, bleedPx: bleed.slice(1),
   };
   const r = report[ch];
   // small kana: the rendered ink, through each placement, must lie inside its quarter
@@ -127,7 +176,7 @@ for (const [ch, c] of chars) {
       if (!inside) placeFail.push(`${ch} ${mode} ${JSON.stringify(box)}`);
     }
   }
-  console.log(`${ch}  cover ${r.coverage}%  missing ${r.missingPx}px ${r.missingPx ? JSON.stringify(r.missingAt) + ' box ' + JSON.stringify(r.missingBox) : ''}  leak ${JSON.stringify(r.leakPx)} outside-crossing ${JSON.stringify(r.leakOutsideCrossingPx)}  hidden ${JSON.stringify(r.hiddenDrawnPx)}  needW ${JSON.stringify(needW)}`);
+  console.log(`${ch}  cover ${r.coverage}%  missing ${r.missingPx}px ${r.missingPx ? JSON.stringify(r.missingAt) + ' box ' + JSON.stringify(r.missingBox) : ''}  leak ${JSON.stringify(r.leakPx)} outside-crossing ${JSON.stringify(r.leakOutsideCrossingPx)}  hidden ${JSON.stringify(r.hiddenDrawnPx)}  bleed ${JSON.stringify(r.bleedPx)}  w ${JSON.stringify(wMeas)}  needW ${JSON.stringify(needW)}`);
 }
 fs.writeFileSync(path.join(OUT, 'report.json'), JSON.stringify(report, null, 1));
 const nPlaced = Object.values(report).filter((r) => r.place).length;
