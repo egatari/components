@@ -76,88 +76,12 @@ document.addEventListener("DOMContentLoaded", function(){
   <h2>部品の一覧（25 個、83 枚）</h2>
   <div class="body">
     <p>部品ごとに、説明の 1 枚と見本のスライドが続きます。→ で段階を進めます。</p>
-    <p>m-predict（新しい）　m-timer（新しい）　m-bars（変わった）　m-kobun（変わった）　m-map-japan（変わった）　m-menu（変わった）　m-codetree　m-collect　m-compare　m-curves　m-cycle　m-fishbone　m-flow　m-gendai　m-kanbun　m-kpi　m-market　m-pie　m-quad　m-scatter　m-seq　m-sweep　m-timeline　m-tree　m-venn</p>
+    <p>m-bars（変わった）　m-map-japan（変わった）　m-codetree　m-collect　m-compare　m-curves　m-cycle　m-fishbone　m-flow　m-gendai　m-kanbun　m-kobun　m-kpi　m-market　m-menu　m-pie　m-predict　m-quad　m-scatter　m-seq　m-sweep　m-timeline　m-timer　m-tree　m-venn</p>
   </div>
 </section>
 
 <section class="slide">
-  <h2>m-predict（新しい、v1.7.0）</h2>
-  <div class="body">
-    <p style="margin:0 0 10px;line-height:1.3"><span style="display:inline-block;font-size:27px;font-weight:700;color:var(--fg);border:2px dashed var(--accent2);border-radius:8px;padding:0 12px">操作できる / Interactive</span></p>
-    <p style="border:3px dashed var(--accent2);border-radius:10px;padding:10px 16px">予想してから答えを開く。選択肢ごとの人数を棒で見せ、答えの段階で正解に枠（見る人が押して操作できる）</p>
-    <ul>
-      <li>伝えたいこと：予想してから確かめる</li>
-      <li>見せ方：fade・draw</li>
-      <li>系列：標準パーツ　見本のスライド：3 枚</li>
-    </ul>
-  </div>
-</section>
-
-<section class="slide">
-  <h2>予想してみよう：落ちる速さ</h2>
-  <div class="body">
-    <p class="ia-badge" style="margin:0 0 10px;line-height:1.3"><span style="display:inline-block;font-size:27px;font-weight:700;color:var(--fg);border:2px dashed var(--accent2);border-radius:8px;padding:0 12px">操作できる</span></p>
-    <m-predict unit="人" style="height:400px">
-      <script type="application/json">{
-        "question": "同じ高さから落とすと、重い球と軽い球のどちらが先に着く？",
-        "choices": [{"label": "重い球"}, {"label": "軽い球"}, {"label": "同時"}],
-        "answer": 2,
-        "counts": [17, 2, 11],
-        "note": "空気の抵抗が小さければ、重さによらず同時に着く（ガリレオ）"
-      }</script>
-    </m-predict>
-  </div>
-  <div class="concl"><span>→ 落ちる速さは重さで決まらない（人数は架空の例）</span></div>
-</section>
-
-<section class="slide">
-  <h2>予想してみよう：小数のかけ算</h2>
-  <div class="body">
-    <m-predict unit="人" poll="p1" style="height:450px">
-      <script type="application/json">{
-        "question": "0.1 × 0.1 はいくつ？",
-        "choices": [{"label": "0.1"}, {"label": "0.01"}, {"label": "0.2"}, {"label": "1"}],
-        "answer": 1,
-        "counts": [12, 10, 6, 2],
-        "note": "0.1 は 10 分の 1。10 分の 1 の 10 分の 1 は 100 分の 1"
-      }</script>
-    </m-predict>
-  </div>
-  <div class="concl"><span>→ 1 より小さい数をかけると、もとの数より小さくなる（人数は架空の例）</span></div>
-</section>
-
-<section class="slide">
-  <h2>見せ方の種類（variant）</h2>
-  <div class="body">
-    <div style="display:grid;grid-template-columns:190px 1fr;gap:20px 16px;align-items:center;font-size:27px">
-      <div>フェード<br>（fade）</div>
-      <m-predict variant="fade" unit="人" style="height:220px">
-        <script type="application/json">{"choices": [{"label": "A"}, {"label": "B"}], "answer": 0, "counts": [8, 5]}</script>
-      </m-predict>
-      <div>線を引く<br>（draw）</div>
-      <m-predict variant="draw" unit="人" style="height:220px">
-        <script type="application/json">{"choices": [{"label": "A"}, {"label": "B"}], "answer": 0, "counts": [8, 5]}</script>
-      </m-predict>
-    </div>
-  </div>
-  <div class="concl"><span>→ 資料のシード値（data-egatari-seed）で 1 つが選ばれる。人数は架空</span></div>
-</section>
-
-<section class="slide">
-  <h2>m-timer（新しい、v1.7.0）</h2>
-  <div class="body">
-    <p style="margin:0 0 10px;line-height:1.3"><span style="display:inline-block;font-size:27px;font-weight:700;color:var(--fg);border:2px dashed var(--accent2);border-radius:8px;padding:0 12px">操作できる / Interactive</span></p>
-    <p style="border:3px dashed var(--accent2);border-radius:10px;padding:10px 16px">グループワークの進行タイマー。区切りごとに残り時間を大きく数え、区切りの一覧で今の区切りを示す（見る人が押して操作できる）</p>
-    <ul>
-      <li>伝えたいこと：時間を区切る</li>
-      <li>見せ方：fade</li>
-      <li>系列：標準パーツ　見本のスライド：0 枚</li>
-    </ul>
-  </div>
-</section>
-
-<section class="slide">
-  <h2>m-bars（変わった、v1.7.0）</h2>
+  <h2>m-bars（変わった、v1.7.1）</h2>
   <div class="body">
     <p>棒を段階ごとに 0 から伸ばす（縦棒・横棒・組の棒・積み上げ棒）。値の軸の上限を段階で広げて「軸を突き抜ける伸び」も見せられる</p>
     <ul>
@@ -239,20 +163,7 @@ document.addEventListener("DOMContentLoaded", function(){
 </section>
 
 <section class="slide">
-  <h2>m-kobun（変わった、v1.7.0）</h2>
-  <div class="body">
-    <p style="margin:0 0 10px;line-height:1.3"><span style="display:inline-block;font-size:27px;font-weight:700;color:var(--fg);border:2px dashed var(--accent2);border-radius:8px;padding:0 12px">操作できる / Interactive</span></p>
-    <p style="border:3px dashed var(--accent2);border-radius:10px;padding:10px 16px">古文を語に切り（スラッシュ）、品詞で色を分けて 1 文ずつ見せ、最後に現代語訳と並べる。助動詞を押すと活用表と意味（見る人が押して操作できる）</p>
-    <ul>
-      <li>伝えたいこと：文章の構造</li>
-      <li>見せ方：1 種類</li>
-      <li>系列：国語　見本のスライド：0 枚</li>
-    </ul>
-  </div>
-</section>
-
-<section class="slide">
-  <h2>m-map-japan（変わった、v1.7.0）</h2>
+  <h2>m-map-japan（変わった、v1.7.1）</h2>
   <div class="body">
     <p>日本の 47 都道府県の地図。地域の強調、統計の塗り分け、点、矢印、経度・緯度の重ね描きを段階ごとに出す</p>
     <ul>
@@ -343,53 +254,6 @@ document.addEventListener("DOMContentLoaded", function(){
     </div>
   </div>
   <div class="concl"><span>→ 資料のシード値（data-egatari-seed）で 1 つが選ばれる</span></div>
-</section>
-
-<section class="slide">
-  <h2>m-menu（変わった、v1.7.0）</h2>
-  <div class="body">
-    <p style="margin:0 0 10px;line-height:1.3"><span style="display:inline-block;font-size:27px;font-weight:700;color:var(--fg);border:2px dashed var(--accent2);border-radius:8px;padding:0 12px">操作できる / Interactive</span></p>
-    <p style="border:3px dashed var(--accent2);border-radius:10px;padding:10px 16px">スライドへのリンクの札を格子に並べる（目次・単元の選び方）。札はふつうの &lt;a href="#&lt;スライドの id&gt;"&gt;、行ったスライドの札に「見た」の印（見る人が押して操作できる）</p>
-    <ul>
-      <li>伝えたいこと：目次</li>
-      <li>見せ方：1 種類</li>
-      <li>系列：標準パーツ　見本のスライド：3 枚</li>
-    </ul>
-  </div>
-</section>
-
-<section class="slide" id="s-part01">
-  <h2>問い</h2>
-  <div class="body">
-    <ul>
-      <li>短い復習は、次の週の小テストの点を上げるか</li>
-      <li>上がるなら、どのくらいか</li>
-    </ul>
-    <p><a href="#s-menu01">目次へ</a></p>
-  </div>
-  <div class="concl"><span>確かめたいのは、効果の有無と大きさ</span></div>
-</section>
-
-<section class="slide" id="s-part02">
-  <h2>方法</h2>
-  <div class="body">
-    <ul>
-      <li>2 つの組（各 30 人）で、片方だけ毎回 5 分の復習</li>
-      <li>4 週の小テストの平均を比べる</li>
-    </ul>
-  </div>
-  <div class="concl"><span>違いは復習の有無だけにそろえる</span></div>
-</section>
-
-<section class="slide" id="s-part03">
-  <h2>結果</h2>
-  <div class="body">
-    <ul>
-      <li>復習した組の平均は 72 点、しなかった組は 66 点</li>
-      <li>差は 6 点（数字は見本のための架空のもの）</li>
-    </ul>
-  </div>
-  <div class="concl"><span>短い復習でも、点に差が出た</span></div>
 </section>
 
 <section class="slide">
@@ -829,6 +693,19 @@ document.addEventListener("DOMContentLoaded", function(){
 </section>
 
 <section class="slide">
+  <h2>m-kobun</h2>
+  <div class="body">
+    <p style="margin:0 0 10px;line-height:1.3"><span style="display:inline-block;font-size:27px;font-weight:700;color:var(--fg);border:2px dashed var(--accent2);border-radius:8px;padding:0 12px">操作できる / Interactive</span></p>
+    <p style="border:3px dashed var(--accent2);border-radius:10px;padding:10px 16px">古文を語に切り（スラッシュ）、品詞で色を分けて 1 文ずつ見せ、最後に現代語訳と並べる。助動詞を押すと活用表と意味（見る人が押して操作できる）</p>
+    <ul>
+      <li>伝えたいこと：文章の構造</li>
+      <li>見せ方：1 種類</li>
+      <li>系列：国語　見本のスライド：0 枚</li>
+    </ul>
+  </div>
+</section>
+
+<section class="slide">
   <h2>m-kpi</h2>
   <div class="body">
     <p>大きな数字の札（KPI）を段階ごとに出す。数字は数え上げ、下に増減の矢印と一言</p>
@@ -939,6 +816,53 @@ document.addEventListener("DOMContentLoaded", function(){
 </section>
 
 <section class="slide">
+  <h2>m-menu</h2>
+  <div class="body">
+    <p style="margin:0 0 10px;line-height:1.3"><span style="display:inline-block;font-size:27px;font-weight:700;color:var(--fg);border:2px dashed var(--accent2);border-radius:8px;padding:0 12px">操作できる / Interactive</span></p>
+    <p style="border:3px dashed var(--accent2);border-radius:10px;padding:10px 16px">スライドへのリンクの札を格子に並べる（目次・単元の選び方）。札はふつうの &lt;a href="#&lt;スライドの id&gt;"&gt;、行ったスライドの札に「見た」の印（見る人が押して操作できる）</p>
+    <ul>
+      <li>伝えたいこと：目次</li>
+      <li>見せ方：1 種類</li>
+      <li>系列：標準パーツ　見本のスライド：3 枚</li>
+    </ul>
+  </div>
+</section>
+
+<section class="slide" id="s-part01">
+  <h2>問い</h2>
+  <div class="body">
+    <ul>
+      <li>短い復習は、次の週の小テストの点を上げるか</li>
+      <li>上がるなら、どのくらいか</li>
+    </ul>
+    <p><a href="#s-menu01">目次へ</a></p>
+  </div>
+  <div class="concl"><span>確かめたいのは、効果の有無と大きさ</span></div>
+</section>
+
+<section class="slide" id="s-part02">
+  <h2>方法</h2>
+  <div class="body">
+    <ul>
+      <li>2 つの組（各 30 人）で、片方だけ毎回 5 分の復習</li>
+      <li>4 週の小テストの平均を比べる</li>
+    </ul>
+  </div>
+  <div class="concl"><span>違いは復習の有無だけにそろえる</span></div>
+</section>
+
+<section class="slide" id="s-part03">
+  <h2>結果</h2>
+  <div class="body">
+    <ul>
+      <li>復習した組の平均は 72 点、しなかった組は 66 点</li>
+      <li>差は 6 点（数字は見本のための架空のもの）</li>
+    </ul>
+  </div>
+  <div class="concl"><span>短い復習でも、点に差が出た</span></div>
+</section>
+
+<section class="slide">
   <h2>m-pie</h2>
   <div class="body">
     <p>円グラフとドーナツグラフ。切れの名前と値・割合は、大きい切れなら中に、小さい切れなら外に引き出し線で書く</p>
@@ -1004,6 +928,69 @@ document.addEventListener("DOMContentLoaded", function(){
     </div>
   </div>
   <div class="concl"><span>→ 資料のシード値（data-egatari-seed）で 1 つが選ばれる。数字は架空</span></div>
+</section>
+
+<section class="slide">
+  <h2>m-predict</h2>
+  <div class="body">
+    <p style="margin:0 0 10px;line-height:1.3"><span style="display:inline-block;font-size:27px;font-weight:700;color:var(--fg);border:2px dashed var(--accent2);border-radius:8px;padding:0 12px">操作できる / Interactive</span></p>
+    <p style="border:3px dashed var(--accent2);border-radius:10px;padding:10px 16px">予想してから答えを開く。選択肢ごとの人数を棒で見せ、答えの段階で正解に枠（見る人が押して操作できる）</p>
+    <ul>
+      <li>伝えたいこと：予想してから確かめる</li>
+      <li>見せ方：fade・draw</li>
+      <li>系列：標準パーツ　見本のスライド：3 枚</li>
+    </ul>
+  </div>
+</section>
+
+<section class="slide">
+  <h2>予想してみよう：落ちる速さ</h2>
+  <div class="body">
+    <p class="ia-badge" style="margin:0 0 10px;line-height:1.3"><span style="display:inline-block;font-size:27px;font-weight:700;color:var(--fg);border:2px dashed var(--accent2);border-radius:8px;padding:0 12px">操作できる</span></p>
+    <m-predict unit="人" style="height:400px">
+      <script type="application/json">{
+        "question": "同じ高さから落とすと、重い球と軽い球のどちらが先に着く？",
+        "choices": [{"label": "重い球"}, {"label": "軽い球"}, {"label": "同時"}],
+        "answer": 2,
+        "counts": [17, 2, 11],
+        "note": "空気の抵抗が小さければ、重さによらず同時に着く（ガリレオ）"
+      }</script>
+    </m-predict>
+  </div>
+  <div class="concl"><span>→ 落ちる速さは重さで決まらない（人数は架空の例）</span></div>
+</section>
+
+<section class="slide">
+  <h2>予想してみよう：小数のかけ算</h2>
+  <div class="body">
+    <m-predict unit="人" poll="p1" style="height:450px">
+      <script type="application/json">{
+        "question": "0.1 × 0.1 はいくつ？",
+        "choices": [{"label": "0.1"}, {"label": "0.01"}, {"label": "0.2"}, {"label": "1"}],
+        "answer": 1,
+        "counts": [12, 10, 6, 2],
+        "note": "0.1 は 10 分の 1。10 分の 1 の 10 分の 1 は 100 分の 1"
+      }</script>
+    </m-predict>
+  </div>
+  <div class="concl"><span>→ 1 より小さい数をかけると、もとの数より小さくなる（人数は架空の例）</span></div>
+</section>
+
+<section class="slide">
+  <h2>見せ方の種類（variant）</h2>
+  <div class="body">
+    <div style="display:grid;grid-template-columns:190px 1fr;gap:20px 16px;align-items:center;font-size:27px">
+      <div>フェード<br>（fade）</div>
+      <m-predict variant="fade" unit="人" style="height:220px">
+        <script type="application/json">{"choices": [{"label": "A"}, {"label": "B"}], "answer": 0, "counts": [8, 5]}</script>
+      </m-predict>
+      <div>線を引く<br>（draw）</div>
+      <m-predict variant="draw" unit="人" style="height:220px">
+        <script type="application/json">{"choices": [{"label": "A"}, {"label": "B"}], "answer": 0, "counts": [8, 5]}</script>
+      </m-predict>
+    </div>
+  </div>
+  <div class="concl"><span>→ 資料のシード値（data-egatari-seed）で 1 つが選ばれる。人数は架空</span></div>
 </section>
 
 <section class="slide">
@@ -1244,6 +1231,19 @@ document.addEventListener("DOMContentLoaded", function(){
     </div>
   </div>
   <div class="concl"><span>→ 資料のシード値（data-egatari-seed）で 1 つが選ばれる</span></div>
+</section>
+
+<section class="slide">
+  <h2>m-timer</h2>
+  <div class="body">
+    <p style="margin:0 0 10px;line-height:1.3"><span style="display:inline-block;font-size:27px;font-weight:700;color:var(--fg);border:2px dashed var(--accent2);border-radius:8px;padding:0 12px">操作できる / Interactive</span></p>
+    <p style="border:3px dashed var(--accent2);border-radius:10px;padding:10px 16px">グループワークの進行タイマー。区切りごとに残り時間を大きく数え、区切りの一覧で今の区切りを示す（見る人が押して操作できる）</p>
+    <ul>
+      <li>伝えたいこと：時間を区切る</li>
+      <li>見せ方：fade</li>
+      <li>系列：標準パーツ　見本のスライド：0 枚</li>
+    </ul>
+  </div>
 </section>
 
 <section class="slide">
