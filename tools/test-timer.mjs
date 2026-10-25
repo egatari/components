@@ -86,7 +86,9 @@ try {
     const { page, errors } = await open(out);
     await page.evaluate(() => {
       window.__calls = []; window.__ev = [];
-      window.__X = { mode: 'talk', extend: (s) => { __calls.push(s); } };
+      // a fake player as Studio implements it: it keeps the step's total extension and returns it; ctx.extend(0) only reads it
+      window.__tot = 0;
+      window.__X = { mode: 'talk', extend: (s) => { if (s) __calls.push(s); __tot += s; return __tot; } };
       __c(0).addEventListener('egatari-input', (e) => __ev.push(e.detail.extend));
       DECK.go(0, 1, false); __c(0).render(1, 10, __X);
     });
@@ -110,8 +112,8 @@ try {
       const c = __c(0), o = { clock: c.clock.textContent };
       DECK.go(0, 2, false); DECK.go(0, 1, false); c.render(1, 10, __X); o.back = c.clock.textContent;
       DECK.autoplay(true); DECK.autoplay(false); DECK.go(0, 1, false); c.render(1, 10, __X); o.auto = c.clock.textContent;
-      c.render(1, 10, { mode: 'talk', extend: __X.extend, reset: true }); o.reset = c.clock.textContent;
-      c.render(1, 10, __X); c.extend(60); DECK.go(1, 0, false); DECK.go(0, 1, false); c.render(1, 10, __X); o.otherSlide = c.clock.textContent;
+      __tot = 0; c.render(1, 10, { mode: 'talk', extend: __X.extend, reset: true }); o.reset = c.clock.textContent;   // the player resets its total when it passes ctx.reset
+      c.render(1, 10, __X); c.extend(60); DECK.go(1, 0, false); __tot = 0; DECK.go(0, 1, false); c.render(1, 10, __X); o.otherSlide = c.clock.textContent;
       c.render(1, 80, __X); c.extend(-60); o.stop = c.clock.textContent; o.stopCall = __calls[__calls.length - 1];
       c.render(1, 10, { mode: 'talk', reset: true });
       c.render(1, 10, { mode: 'talk', extend: () => 30 }); c.extend(60); o.returned = c.clock.textContent;
@@ -126,7 +128,7 @@ try {
     ok(r.returned === '1:50', 'a total returned by ctx.extend is used (30 s: 90 + 30 − 10)');
     ok(errors.length === 0, 'no console error' + (errors.length ? ': ' + errors[0] : ''));
     // print: buttons hidden, the author's seconds; the screen keeps the extension afterwards
-    await page.evaluate(() => { const c = __c(0); c.render(1, 10, { mode: 'talk', reset: true }); c.render(1, 10, __X); c.extend(60); });
+    await page.evaluate(() => { const c = __c(0); __tot = 0; c.render(1, 10, { mode: 'talk', reset: true }); c.render(1, 10, __X); c.extend(60); });
     await page.evaluate(() => window.dispatchEvent(new Event('beforeprint')));
     await page.emulateMedia({ media: 'print' });
     r = await page.evaluate(() => { const c = __c(0); c.render(1, 10, __X); return { vis: [...document.querySelectorAll('m-timer button')].filter((e) => e.getBoundingClientRect().width > 0).length, clock: c.clock.textContent }; });

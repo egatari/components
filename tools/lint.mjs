@@ -29,7 +29,7 @@ export function flags(js) {
     || /addEventListener\(\s*["'](click|dblclick|pointer\w*|mouse\w*|touch\w*|key\w*|input|change)["']/.test(code)
     || /createElement\(\s*["'](a|button|input|select|textarea)["']/.test(code)
     || /static\s+shape\s*=\s*\{\s*links\s*:\s*true/.test(code);
-  return { interactive: /static\s+interactive\s*=\s*true\s*;/.test(code), viewerInput: /static\s+viewerInput\s*=\s*true\s*;/.test(code), operable };
+  return { interactive: /static\s+interactive\s*=\s*true\s*;/.test(code), viewerInput: /static\s+viewerInput\s*=\s*true\s*;/.test(code), clock: /static\s+clock\s*=\s*true\s*;/.test(code), operable };
 }
 export const list = (s) => (s ? s.split(',').map((x) => x.trim()).filter(Boolean) : []);
 // purposes.json: id → entry
@@ -99,7 +99,7 @@ export function lint(root) {
     const fl = flags(js);
     if (fl.operable && !fl.interactive) errs.push(`components/${name}/index.js: the viewer can operate it (an input() method, a click/pointer/key/input/change listener, a link or control, or links as data): declare static interactive = true;`);
     if (fl.viewerInput && !fl.interactive) errs.push(`components/${name}/index.js: static viewerInput = true needs static interactive = true`);
-    for (const k of ['interactive', 'viewer-input']) if (k in f) errs.push(`components/${name}/README.md: ${k} belongs in index.js (static ${k === 'interactive' ? 'interactive' : 'viewerInput'} = true), not in the README`);
+    for (const [k, s] of [['interactive', 'interactive'], ['viewer-input', 'viewerInput'], ['clock', 'clock']]) if (k in f) errs.push(`components/${name}/README.md: ${k} belongs in index.js (static ${s} = true), not in the README`);
     const sv = js.match(/static\s+variants\s*=\s*\[([^\]]*)\]/);
     const declared = sv ? [...sv[1].matchAll(/["']([^"']+)["']/g)].map((x) => x[1]) : [];
     if (declared.join() !== list(f.variants).join()) errs.push(`components/${name}/README.md: variants (${f.variants || 'none'}) differ from static variants in index.js (${declared.join(', ') || 'none'})`);

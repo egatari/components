@@ -13,6 +13,7 @@
 DECK.define("m-timer", class extends DECK.MotionElement {
   static variants = ["fade"];
   static interactive = true;   // 操作できるパーツ（docs/conventions.md §6）
+  static clock = true;         // 経った時間そのものが中身：動きを減らす設定でも実時間の t で描く（仕様 §9.1）
   static viewerInput = true;   // 見る人の入力（区切りの時間を延ばす・縮める。仕様 §8.4）
   // データの形（kit/shape.js）
   static shape = {
@@ -167,6 +168,8 @@ DECK.define("m-timer", class extends DECK.MotionElement {
     var hasExt = !this.video && ctx && typeof ctx.extend === "function";
     if (hasExt) this.buttons();
     if (this.btns) this.btns.style.display = hasExt && run ? "" : "none";
+    // 延ばした合計は実行系が持つ（ctx.extend(0) は変えずに読むだけ。仕様 §8.4）。発表者の画面で延ばした分もこれでそろう
+    if (hasExt && run){ var r0 = ctx.extend(0); if (typeof r0 === "number" && isFinite(r0)) this._ext[k] = r0; }
     var sec = run ? P[k - 1].sec : 0, end = sec + (run ? this.ext(k) : 0);
     var el = !run ? 0 : t === Infinity ? end : Math.min(Math.max(0, t), end);
     var rem = run ? end - el : this.total, finished = run && el >= end, warn = run && rem <= 60;
