@@ -7,6 +7,8 @@
 // （JSON の終わり）</m-map-japan>
 // 地図のデータは Natural Earth 5.1.1（パブリックドメイン）を加工したもので、作り方は tools/map/build-japan.mjs（docs/map-design.md）。
 // 領土は日本政府の立場のとおり（北方領土は北海道、竹島は島根県、尖閣諸島は沖縄県）。データに固定した性質で、切り替えはない。
+// 島（docs/map-design.md §5.3）：北方領土・竹島・尖閣諸島はいつも描く。沖ノ鳥島・南鳥島は小笠原諸島の枠（islands="all"）か layout="true" のときに描き、
+// そのときはいつも名前を書く。読める層には描いた島を挙げる
 // 段階：地図そのもの（陸地・枠・枠の名前）は段階 0 から出ている（見出しや軸と同じ）。項目は step（既定 1）で出る
 // 見せ方（docs/conventions.md §1）：fade（フェードして現れる、既定）・sweep（同じ段階の中で西から東へ順に現れる）・
 // draw（地域と重ね描きは輪郭を引いてから塗る）。どれも動かない（位置は変わらない）。段階の数・長さ・最後の中身は同じ
@@ -193,7 +195,8 @@ DECK.define("m-map-japan", class extends DECK.MotionElement {
            ja: "都道府県は regions[].id に JIS の番号 \"01\"〜\"47\"（\"JP-13\"・\"東京都\" も可）、八地方区分は regions[].group（hokkaido・tohoku・kanto・chubu・kinki・chugoku・shikoku・kyushu）。values は {番号: 数} のオブジェクト、classes は階級の下限（既定は 4 階級、5 つまで）。points・shapes・flows[].via は経度・緯度（度）"},
   };
   static props = {
-    layout: {type: "string", default: "inset", doc: "inset（南西諸島と小笠原諸島を枠に入れて描く）か true（本当の位置。日本が小さくなる）"},
+    layout: {type: "string", default: "inset", doc: "inset（南西諸島を枠に入れて描く）か true（本当の位置。日本が小さくなる）"},
+    islands: {type: "string", default: "main", doc: "main か all（inset で小笠原諸島の枠も描く）"},
     labels: {type: "string", default: "focus", doc: "地域の名前：focus（regions に書いた地域だけ）・all（名前が中に入る都道府県すべて）・none"},
     show:   {type: "string", default: "none", doc: "塗り分けた地域の上に値を書くか：none（書かない、既定）・value（中に入る地域だけ値を書く）"},
     unit:   {type: "string", default: "", doc: "値の単位（凡例の見出しに書く）"},
@@ -223,12 +226,16 @@ DECK.define("m-map-japan", class extends DECK.MotionElement {
     if (!c) throw new Error(what + ": " + JSON.stringify(v) + " is not a prefecture (write the JIS code \"01\"–\"47\", \"JP-13\" or the name)");
     return c;
   }
-  mount(){
+  // retry：小笠原諸島の枠の島の名前が入らなかったので、枠なしで描き直す（mount を 1 度だけ呼び直す。初めの知らせは繰り返さない）
+  mount(ctx, retry){
     var P = this.props, D = DECK, self = this, d = this.data || {}, pl = this.plan();
     this.variant = VARIANT.of(this);
     this.style.display = "block"; this.style.position = "relative";
     var W = this.clientWidth, H = this.clientHeight, lay = P.layout === "true" ? "true" : "inset";
-    if (P.layout !== "inset" && P.layout !== "true") console.warn('m-map-japan: layout="' + P.layout + '" is not inset or true (inset is used)');
+    if (P.layout !== "inset" && P.layout !== "true" && !retry) console.warn('m-map-japan: layout="' + P.layout + '" is not inset or true (inset is used)');
+    if (P.islands !== "main" && P.islands !== "all" && !retry) console.warn('m-map-japan: islands="' + P.islands + '" is not main or all (main is used)');
+    // 小笠原諸島の枠（沖ノ鳥島・南鳥島・父島・硫黄島・鳥島）は islands="all" のときだけ。南西諸島の枠（沖縄県・尖閣諸島）はいつも
+    var ogas = lay === "inset" && P.islands === "all" && !retry;
     var svg = D.el("svg", {viewBox: "0 0 " + W + " " + H, width: W, height: H, style: "display:block;overflow:visible"}, this);
     var tone = function(t, def){ return "var(--" + (TONES.test(t || "") ? t : def) + ")"; };
     // ---- 塗り分けの階級（classes は階級の下限。書かなければ 4 階級を値の 4 分位から。v < classes[0] は描かずに知らせる）
@@ -240,17 +247,17 @@ DECK.define("m-map-japan", class extends DECK.MotionElement {
       for (var q = 0; q < 4; q++){ var b0 = nice(vals[Math.floor(q * vals.length / 4)]); if (!classes.length || b0 > classes[classes.length - 1]) classes.push(b0); }
     }
     for (var c = 1; c < classes.length; c++) if (!(classes[c] > classes[c - 1])) throw new Error("classes must increase (" + JSON.stringify(classes) + ")");
-    if (classes.length > 5) console.warn("m-map-japan: " + classes.length + " classes are hard to tell apart (5 at most is recommended)");
+    if (classes.length > 5 && !retry) console.warn("m-map-japan: " + classes.length + " classes are hard to tell apart (5 at most is recommended)");
     Object.keys(values).forEach(function(k){
       var code = self.code(k, "values"), v = +values[k];
       if (!isFinite(v)) throw new Error("values[" + JSON.stringify(k) + "] is not a number");
       var ci = -1;
       classes.forEach(function(b, j){ if (v >= b) ci = j; });
-      if (ci < 0) console.warn("m-map-japan: values[" + k + "] = " + v + " is below the first class (" + classes[0] + ") and is not drawn");
+      if (ci < 0 && !retry) console.warn("m-map-japan: values[" + k + "] = " + v + " is below the first class (" + classes[0] + ") and is not drawn");
       else vcodes.push({code: code, v: v, ci: ci});
     });
     vcodes.sort(function(a, b){ return a.code < b.code ? -1 : 1; });
-    var classFill = this.classColors(classes.length);
+    var classFill = this.classColors(classes.length, retry);
     // ---- 凡例の大きさ
     var LS = 24, legendW = 0, legendH = 0, legendRows = [], title = "";
     if (vcodes.length){
@@ -276,19 +283,20 @@ DECK.define("m-map-japan", class extends DECK.MotionElement {
         M = BT;
         if (legendW) legendXY = [ox + BT[2] * sc + GAP, oy + BT[3] * sc - legendH];
       } else {
-        var I = MAP.insets, R = I[0], O = I[1];
+        var I = ogas ? MAP.insets : MAP.insets.slice(0, 1), R = I[0], O = I[1];
         var beside = function(s, caps){
           // 南西諸島：枠は島の範囲にぴったり（余白 PADR）。高さは本図の 0.42 倍で、島が枠を満たす縮尺にする。本図の左下に置く
           var mh0 = M[3] * s, rk = (mh0 * 0.42 - 2 * PADR) / R.cb[3];
-          var rw = R.cb[2] * rk + 2 * PADR, rh = R.cb[3] * rk + 2 * PADR, ow = O.cb[2] * O.s * s + 2 * PADI, oh = O.cb[3] * O.s * s + 2 * PADI;
+          var rw = R.cb[2] * rk + 2 * PADR, rh = R.cb[3] * rk + 2 * PADR, ow = O ? O.cb[2] * O.s * s + 2 * PADI : 0, oh = O ? O.cb[3] * O.s * s + 2 * PADI : 0;
           if (!(rk > 0)) return null;
-          var rc = caps ? capsOf(R, rk / s) : [], oc = caps ? capsOf(O, O.s) : [];
-          var lw = Math.max(rw, capW(rc)), rg = Math.max(ow, capW(oc), legendW), mw = M[2] * s, mh = M[3] * s, tw = lw + GAP + mw + GAP + rg;
-          if (tw > W || mh > H || rh + rc.length * CAPL > H || oh + oc.length * CAPL + (legendH ? legendH + 16 : 0) > H) return null;
+          var rc = caps ? capsOf(R, rk / s) : [], oc = caps && O ? capsOf(O, O.s) : [];
+          // 右の列（凡例と小笠原諸島の枠）。どちらもなければ列も間もない
+          var lw = Math.max(rw, capW(rc)), rg = Math.max(ow, capW(oc), legendW), mw = M[2] * s, mh = M[3] * s, tw = lw + GAP + mw + (rg ? GAP + rg : 0);
+          if (tw > W || mh > H || rh + rc.length * CAPL > H || (O ? oh + oc.length * CAPL : 0) + (legendH ? legendH + 16 : 0) > H) return null;
           var x0 = (W - tw) / 2, xr = x0 + lw + GAP + mw + GAP, ry = (H + mh) / 2 - rh;
-          return {sc: s, ox: x0 + lw + GAP, oy: (H - mh) / 2, legend: legendW ? [xr, 0] : null, frames: [
-            {x: x0 + lw - rw, y: ry, w: rw, h: rh, k: rk, cx: x0 + lw - rw + PADR, cy: ry + PADR, cb: R.cb, cap: rc, capAbove: true},
-            {x: xr, y: H - oh, w: ow, h: oh, k: O.s * s, cx: xr + PADI, cy: H - oh + PADI, cb: O.cb, cap: oc, capAbove: true}]};
+          var fr = [{x: x0 + lw - rw, y: ry, w: rw, h: rh, k: rk, cx: x0 + lw - rw + PADR, cy: ry + PADR, cb: R.cb, cap: rc, capAbove: true}];
+          if (O) fr.push({x: xr, y: H - oh, w: ow, h: oh, k: O.s * s, cx: xr + PADI, cy: H - oh + PADI, cb: O.cb, cap: oc, capAbove: true});
+          return {sc: s, ox: x0 + lw + GAP, oy: (H - mh) / 2, legend: legendW ? [xr, 0] : null, frames: fr};
         };
         var find = function(caps){ for (var s = H / M[3]; s > 0.005; s *= 0.97){ var r = beside(s, caps); if (r) return r; } return null; };
         var bc = find(true), bn = find(false), bs = bc && bn && bc.sc >= 0.85 * bn.sc ? bc : bn;
@@ -342,16 +350,19 @@ DECK.define("m-map-japan", class extends DECK.MotionElement {
       for (var i = 0; i < MAP.insets.length; i++){ var b = MAP.insets[i].box; if (lon >= b[0] && lon <= b[2] && lat >= b[1] && lat <= b[3]) return i; }
       return -1;
     };
-    var ll = this.ll = function(lon, lat){ var q = LCC(lon, lat); return scr(q[0], q[1], insetOf(lon, lat)); };
+    // 描かない枠（islands="main" の小笠原諸島）の範囲に作り手の点があれば知らせる（本当の位置では要素の外になる）
+    var offInset = false;
+    var ll = this.ll = function(lon, lat){ var q = LCC(lon, lat), i = insetOf(lon, lat); if (i >= 0 && !frames[i]) offInset = true; return scr(q[0], q[1], i); };
     // ---- 都道府県の形（画面の座標）
-    var parts = FEATS.map(function(f){
+    var parts = FEATS.filter(function(f){ return f.inset < 0 || lay === "true" || frames[f.inset]; }).map(function(f){
       var polys = f.polys.map(function(p){ return p.map(function(r){ return r.map(function(q){ return scr(q[0], q[1], f.inset); }); }); });
       var dstr = polys.map(function(p){ return p.map(function(r){ return "M" + r.map(function(q){ return q[0].toFixed(1) + "," + q[1].toFixed(1); }).join("L") + "Z"; }).join(""); }).join("");
       return {code: f.code, inset: f.inset, polys: polys, d: dstr};
     });
     var byCode = {};
     parts.forEach(function(p){ (byCode[p.code] = byCode[p.code] || []).push(p); });
-    var fixedPts = MAP.fixed.map(function(f){ return {name: f[0], code: f[3], p: ll(f[1], f[2]), i: insetOf(f[1], f[2])}; });
+    var fixedPts = MAP.fixed.map(function(f){ var i = insetOf(f[1], f[2]), q = LCC(f[1], f[2]); return {name: f[0], code: f[3], p: scr(q[0], q[1], i), i: i}; })
+      .filter(function(f){ return f.i < 0 || frames[f.i]; });
     var anchorOf = function(code){ var a = MAP.anchors[code]; return scr(a[0], a[1], a[2]); };
     // ---- 陸の格子（字の置き場所を探すため。4 px ごとに、どの都道府県の上か）
     var G = 4, gw = Math.ceil(W / G), gh = Math.ceil(H / G), grid = new Int8Array(gw * gh), codes = Object.keys(byCode).sort();
@@ -386,7 +397,7 @@ DECK.define("m-map-japan", class extends DECK.MotionElement {
     // ---- 描く層：陸 → 塗り分け → 強調 → 枠 → 重ね描き → 矢印 → 点 → 字
     var gBase = D.el("g", {}, svg), gVal = D.el("g", {}, svg), gReg = D.el("g", {}, svg), gFrame = D.el("g", {}, svg);
     var gShape = D.el("g", {}, svg), gFlow = D.el("g", {}, svg), gPt = D.el("g", {}, svg), gTxt = D.el("g", {}, svg);
-    this.base = gBase; this.frames = gFrame;
+    this.base = gBase; this.frames = gFrame; this.fixedPts = fixedPts;
     var LAND = "color-mix(in oklab, var(--line) 55%, var(--bg))";
     parts.forEach(function(p){
       var main = p.inset < 0 || !byCode[p.code].some(function(q){ return q.inset < 0; });
@@ -394,8 +405,13 @@ DECK.define("m-map-japan", class extends DECK.MotionElement {
       if (main) a["data-mark"] = "JP-" + p.code;
       D.el("path", a, gBase);
     });
-    // 小さくて形が消える島（竹島・魚釣島・沖ノ鳥島・南鳥島）は点で描く
-    fixedPts.forEach(function(f){ D.el("circle", {cx: f.p[0].toFixed(1), cy: f.p[1].toFixed(1), r: 3.5, fill: LAND, stroke: "var(--muted)", "stroke-width": 1.5}, gBase); });
+    // 小さくて形が消える島（竹島・魚釣島・沖ノ鳥島・南鳥島・父島・硫黄島）は点で描く。領土の端の島には data-territory（名前）
+    var ISLAND = {"竹島": "竹島", "魚釣島": "尖閣諸島", "沖ノ鳥島": "沖ノ鳥島", "南鳥島": "南鳥島"};
+    fixedPts.forEach(function(f){
+      var a = {cx: f.p[0].toFixed(1), cy: f.p[1].toFixed(1), r: 3.5, fill: LAND, stroke: "var(--muted)", "stroke-width": 1.5};
+      if (ISLAND[f.name]) a["data-territory"] = ISLAND[f.name];
+      f.el = D.el("circle", a, gBase);
+    });
     // 枠と枠の名前（beside：枠の上の外。corner：枠の中の左上に入って島に掛からなければ）
     var frameNames = [];
     var clear = function(q){
@@ -469,27 +485,34 @@ DECK.define("m-map-japan", class extends DECK.MotionElement {
       D.el("circle", {cx: from[0].toFixed(1), cy: from[1].toFixed(1), r: 3, fill: "var(--fg)"}, g);
       return g;
     };
-    // 領土の端の島の名前（竹島・尖閣諸島・沖ノ鳥島・南鳥島）は地図と一緒にいつも書く。点のまわりの入る所に（枠の中の島は枠の中に）。
-    // 小さい要素で入らなければ書かない
-    // 作り手の点（経度・緯度で書いたもの）の位置：小さい要素で島の名前を離して置くとき、それに掛けない
-    var userPts = (d.points || []).filter(function(o){ return o && isFinite(+o.lon) && isFinite(+o.lat); }).map(function(o){ return ll(+o.lon, +o.lat); });
-    var ISLAND = {"竹島": "竹島", "魚釣島": "尖閣諸島", "沖ノ鳥島": "沖ノ鳥島", "南鳥島": "南鳥島"};
+    // 領土の端の島の名前（竹島・尖閣諸島・沖ノ鳥島・南鳥島）は地図と一緒に書く。点のまわりの入る所に（枠の中の島は枠の中に）。
+    // 入らなければ、小さい要素（small）と、いつも名前を書く島（layout="true" のすべてと小笠原諸島の枠の中）では少し離れた海に引き出し線を付けて書く。
+    // 小笠原諸島の枠の島の名前がそれでも入らなければ、枠ごと描かない（名前のない枠は出さない）
+    // 作り手の点（経度・緯度で書いたもの）の位置：島の名前を離して置くとき、それに掛けない
+    var userPts = (d.points || []).filter(function(o){ return o && isFinite(+o.lon) && isFinite(+o.lat); }).map(function(o, j){ return {p: ll(+o.lon, +o.lat), o: o}; });
+    // 名前のある作り手の点が島の点から 15 px 以内なら、その島は作り手の点と名前で示す：組み込みの点と名前は、作り手の点が現れるのと
+    // 入れ替わりに消える（render。最後の状態では点も名前も 1 つ）
+    var noOgas = false;
     fixedPts.forEach(function(f){
       var name = ISLAND[f.name];
       if (!name) return;
+      f.by = userPts.filter(function(u){ return u.o.label && Math.hypot(u.p[0] - f.p[0], u.p[1] - f.p[1]) <= 15; })[0];
       var s = chipSize(name, 24), p = f.p, spots = [[p[0] + 7, p[1] - s.h / 2], [p[0] - 7 - s.w, p[1] - s.h / 2], [p[0] - s.w / 2, p[1] - 7 - s.h], [p[0] - s.w / 2, p[1] + 7],
         [p[0] + 4, p[1] - 5 - s.h], [p[0] - 4 - s.w, p[1] - 5 - s.h], [p[0] + 4, p[1] + 5], [p[0] - 4 - s.w, p[1] + 5]];
       for (var n = 0; n < spots.length; n++){
         var b = {x: spots[n][0], y: spots[n][1], w: s.w, h: s.h};
         var where = f.i >= 0 && frames[f.i] ? inFrame(b) : !crossFrame(b);
         if (inside(b) && !boxes(b) && where && !probe(b, null).land && !fixedPts.some(function(o){ return o !== f && o.p[0] > b.x - 5 && o.p[0] < b.x + b.w + 5 && o.p[1] > b.y - 5 && o.p[1] < b.y + b.h + 5; })){
-          placed.push(b);
-          chip(gFrame, b, name, 24, 400).setAttribute("opacity", 1);
+          // 作り手の点に替わる島の名前は、作り手の名前の置き場所を妨げない（入れ替わりに消えるので）
+          if (!f.by) placed.push(b);
+          (f.nameEl = chip(gFrame, b, name, 24, 400)).setAttribute("opacity", 1);
           return;
         }
       }
-      // 小さい要素（small）：点のまわりに入らなければ、少し離れた海（枠の外でもよい）に置いて引き出し線を引く。それでも入らなければ知らせる
-      if (!small) return;
+      // 小さい要素（small）と、いつも名前を書く島：点のまわりに入らなければ、少し離れた海（枠の外でもよい）に置いて引き出し線を引く。
+      // それでも入らなければ知らせる（小笠原諸島の枠の島なら枠ごと描き直す）
+      var must = lay === "true" || f.i === 1;
+      if (!small && !must) return;
       var hitFrame = function(q){ return frames.some(function(fr){ return q.x < fr.x + fr.w + 3 && q.x + q.w > fr.x - 3 && q.y < fr.y + fr.h + 3 && q.y + q.h > fr.y - 3; }); };
       // 近い所を先に。引き出し線が陸を横切るほど遠いとみなす
       var best = null, bc = Infinity;
@@ -497,19 +520,25 @@ DECK.define("m-map-japan", class extends DECK.MotionElement {
         var a = k / 16 * Math.PI * 2, q = {x: p[0] + Math.cos(a) * (r + s.w / 2) - s.w / 2, y: p[1] + Math.sin(a) * (r + s.h / 2) - s.h / 2, w: s.w, h: s.h};
         var ok = f.i >= 0 && frames[f.i] && inFrame(q) || !hitFrame(q);
         if (ok && inside(q) && !boxes(q) && !probe(q, null).land && !fixedPts.some(function(o){ return o !== f && o.p[0] > q.x - 5 && o.p[0] < q.x + q.w + 5 && o.p[1] > q.y - 5 && o.p[1] < q.y + q.h + 5; })
-          && !userPts.some(function(u){ return u[0] > q.x - 10 && u[0] < q.x + q.w + 10 && u[1] > q.y - 10 && u[1] < q.y + q.h + 10; })){
+          && !userPts.some(function(u){ return u.p[0] > q.x - 10 && u.p[0] < q.x + q.w + 10 && u.p[1] > q.y - 10 && u.p[1] < q.y + q.h + 10; })){
           var lx = Math.max(q.x, Math.min(q.x + q.w, p[0])), ly = Math.max(q.y, Math.min(q.y + q.h, p[1])), cross = 0;
           for (var u = 1; u < 10; u++) if (at(p[0] + (lx - p[0]) * u / 10, p[1] + (ly - p[1]) * u / 10) > 0) cross++;
           var cost = Math.hypot(lx - p[0], ly - p[1]) + 40 * cross;
           if (cost < bc){ bc = cost; best = {q: q, lx: lx, ly: ly}; }
         }
       }
-      if (!best){ dropped.push("the name " + name); return; }
+      if (!best){ if (f.i === 1) noOgas = true; else dropped.push("the name " + name); return; }
       var q = best.q, lx = best.lx, ly = best.ly, ld = Math.hypot(lx - p[0], ly - p[1]) || 1;
-      placed.push(q);
-      if (ld > 6) D.el("path", {d: "M" + (p[0] + (lx - p[0]) * 5 / ld).toFixed(1) + "," + (p[1] + (ly - p[1]) * 5 / ld).toFixed(1) + "L" + lx.toFixed(1) + "," + ly.toFixed(1), fill: "none", stroke: "var(--muted)", "stroke-width": 1.5}, gFrame);
-      chip(gFrame, q, name, 24, 400).setAttribute("opacity", 1);
+      if (!f.by) placed.push(q);
+      var ng = f.nameEl = D.el("g", {}, gFrame);
+      if (ld > 6) D.el("path", {d: "M" + (p[0] + (lx - p[0]) * 5 / ld).toFixed(1) + "," + (p[1] + (ly - p[1]) * 5 / ld).toFixed(1) + "L" + lx.toFixed(1) + "," + ly.toFixed(1), fill: "none", stroke: "var(--muted)", "stroke-width": 1.5}, ng);
+      chip(ng, q, name, 24, 400).setAttribute("opacity", 1);
     });
+    if (noOgas){
+      console.warn("m-map-japan: the element (" + W + "×" + H + " px) has no room for the names of 沖ノ鳥島 and 南鳥島 in the 小笠原諸島 inset; the inset is not drawn");
+      svg.remove();
+      return this.mount(ctx, true);
+    }
     // ほかの字は島の点に掛けない
     fixedPts.forEach(function(f){ placed.push({x: f.p[0] - 5, y: f.p[1] - 5, w: 10, h: 10}); });
     // ---- 項目
@@ -635,8 +664,11 @@ DECK.define("m-map-japan", class extends DECK.MotionElement {
     pl.items.forEach(function(x){
       if (x.kind !== "point") return;
       var col = tone(x.o.tone, "fg"), g = D.el("g", {opacity: 0}, gPt);
-      D.el("circle", {cx: x.p[0].toFixed(1), cy: x.p[1].toFixed(1), r: 8, fill: col, stroke: "var(--bg)", "stroke-width": 2.5}, g);
-      items.push({x: x, els: [{g: g, cx: x.p[0]}], txt: [], c: x.p});
+      var dot = D.el("circle", {cx: x.p[0].toFixed(1), cy: x.p[1].toFixed(1), r: 8, fill: col, stroke: "var(--bg)", "stroke-width": 2.5}, g);
+      var it = {x: x, els: [{g: g, cx: x.p[0]}], txt: [], c: x.p};
+      // 領土の端の島に置いた点は、その島の点の代わり（render が島の点を作り手の点と入れ替える）
+      fixedPts.forEach(function(f){ if (f.by && f.by.o === x.o){ dot.setAttribute("data-territory", ISLAND[f.name]); f.byIt = it; } });
+      items.push(it);
     });
     // ---- 字（強調の名前 → 点の名前 → 矢印・重ね描きの名前 → 値 → すべての名前）
     var byItem = function(x){ return items.filter(function(it){ return it.x === x; })[0]; };
@@ -660,8 +692,12 @@ DECK.define("m-map-japan", class extends DECK.MotionElement {
       var b = null, rs = [13, 22, 32];
       for (var m = 0; m < rs.length && !b; m++) for (var n = 0; n < order.length && !b; n++){ var q = spot(order[n], rs[m]); q.w = s.w; q.h = s.h; if (inside(q) && !boxes(q) && !crossFrame(q)) b = q; }
       for (var dd = 0; dd < 4 && !b; dd++){ var q2 = {x: dd % 2 ? p[0] + 8 : p[0] - 8 - s.w, y: dd < 2 ? p[1] - 8 - s.h : p[1] + 8, w: s.w, h: s.h}; if (inside(q2) && !boxes(q2) && !crossFrame(q2)) b = q2; }
+      // 点のそばに入らなければ（要素の縁の近く、枠の中の点）、少し離れた所に置いて引き出し線を引く
+      var lead = null;
+      if (!b){ var pos = placeLabel(x.o.label, 24, p, null, true); if (pos){ b = pos.b; lead = leader(gTxt, p, b); } }
       if (!b){ b = spot(want, 13); b.w = s.w; b.h = s.h; console.warn("m-map-japan: the label \"" + x.o.label + "\" overlaps another"); }
       placed.push(b);
+      if (lead) it.txt.push(lead);
       it.txt.push(chip(gTxt, b, x.o.label, 24, 400));
     });
     items.forEach(function(it){
@@ -742,6 +778,10 @@ DECK.define("m-map-japan", class extends DECK.MotionElement {
       if (x.kind === "point" && x.o.label) lines.push(x.o.label);
       if ((x.kind === "flow" || x.kind === "shape") && x.o.label) lines.push(x.o.label);
     });
+    // 描いた領土（北方領土はいつも。島の点は描いたものだけ。作り手の点を置いた島はその名前が上にある）
+    lines.push("北方領土（択捉島・国後島・色丹島・歯舞群島、北海道）");
+    fixedPts.forEach(function(f){ if (ISLAND[f.name] && !f.by) lines.push(ISLAND[f.name] + "（" + NAME[f.code] + "）"); });
+    if (offInset) console.warn('m-map-japan: a point, arrow or shape is in the 小笠原諸島 area, which is drawn only with islands="all" or layout="true"');
     if (lines.length){
       // 1 つの段落（項目ごとの要素にしない）：Studio の配置の検査が、隠した子の箱まで測ってはみ出しと数えるため（v1.5.0）
       var sr = document.createElement("p");
@@ -756,7 +796,7 @@ DECK.define("m-map-japan", class extends DECK.MotionElement {
   // 塗り分けの色：var(--term) を var(--bg) と（濃い側は var(--fg) と）color-mix で混ぜる。OKLab の明るさ L を、いちばん薄い階級
   // （L = 地の L − 0.08）から濃い階級（L = 0.32 か --fg の L + 0.06）まで等しい間隔に。割合はテーマの色から計算する
   // （color-mix の oklab の混ぜは L について線形）。読めなければ決まった割合。n は 1 以上（6 以上は mount が知らせる）
-  classColors(n){
+  classColors(n, quiet){
     var cs = getComputedStyle(this), get = function(v){ return rgbOf(cs.getPropertyValue(v).trim()); };
     var bg = get("--bg"), term = get("--term"), fg = get("--fg"), out = [];
     if (n <= 1) return ["var(--term)"];
@@ -766,7 +806,7 @@ DECK.define("m-map-japan", class extends DECK.MotionElement {
     }
     var Lb = oklab(bg)[0], Lt = oklab(term)[0], Lf = oklab(fg)[0];
     var hi = Lb - 0.08, lo = Math.max(0.32, Lf + 0.06);
-    if ((hi - lo) / (n - 1) < 0.08) console.warn("m-map-japan: the theme's colours give less than 0.08 lightness between " + n + " classes");
+    if ((hi - lo) / (n - 1) < 0.08 && !quiet) console.warn("m-map-japan: the theme's colours give less than 0.08 lightness between " + n + " classes");
     for (var i = 0; i < n; i++){
       var L = hi - (hi - lo) * i / (n - 1);
       if (L >= Lt) out.push("color-mix(in oklab, var(--term) " + (100 * (Lb - L) / (Lb - Lt)).toFixed(1) + "%, var(--bg))");
@@ -835,6 +875,13 @@ DECK.define("m-map-japan", class extends DECK.MotionElement {
       if (x.kind === "values") legendO = lo;
     });
     if (this.legendG) this.legendG.setAttribute("opacity", legendO.toFixed(3));
+    // 作り手の点が置かれた島：島の点は作り手の点が現れるのと入れ替わりに消える（点は 1 つ）
+    this.fixedPts.forEach(function(f){
+      if (!f.byIt) return;
+      var o = (1 - (+f.byIt.els[0].g.getAttribute("opacity") || 0)).toFixed(3);
+      f.el.setAttribute("opacity", o);
+      if (f.nameEl) f.nameEl.setAttribute("opacity", o);
+    });
   }
 });
 })();

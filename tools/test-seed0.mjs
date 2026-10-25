@@ -4,6 +4,9 @@
 // (the runtime's interface hidden, and the anti-aliasing tolerance of tools/shot-helpers.mjs).
 // Deliberate exception approved by the owner (v1.2.0, issue #1): m-flow's edge labels and muted-box text became --fg, so
 // lessons using m-flow look different when rebuilt; m-flow has no variants and is not compared here.
+// Deliberate exception approved by the owner (v1.8.0): m-map-japan's default drawing changed (no 小笠原諸島 inset unless
+// islands="all"; territory names and the readable layer per docs/map-design.md §5.3), so it is not compared with a baseline
+// older than v1.8.0 (CHANGED_IN). Pinned lessons keep the drawing of the version they pin.
 //   node tools/test-seed0.mjs [shots dir]      baseline: the release before package.json's version (tools/baseline.mjs)
 import fs from 'node:fs';
 import os from 'node:os';
@@ -21,7 +24,10 @@ const shotsRoot = path.resolve(process.argv[2] || fs.mkdtempSync(path.join(os.tm
 const S = await studio();
 const b = await S.browser.launch(LAUNCH);
 let fail = 0, n = 0;
+const CHANGED_IN = { 'map-japan': '1.8.0' };
+const older = (a, b) => { const x = a.split('.').map(Number), y = b.split('.').map(Number); for (let i = 0; i < 3; i++) if (x[i] !== y[i]) return x[i] < y[i]; return false; };
 for (const name of USERS) {
+  if (CHANGED_IN[name] && older(base.slice(1), CHANGED_IN[name])) { console.log(`-- ${name}: changed on purpose in v${CHANGED_IN[name]} (owner's decision), not compared with ${base}`); continue; }
   let oldJs, demo;
   try { oldJs = git('show', `${base}:components/${name}/index.js`); demo = git('show', `${base}:components/${name}/demo.html`); }
   catch { console.log(`-- ${name}: not in ${base} (new component, nothing to compare)`); continue; }
