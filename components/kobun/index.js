@@ -126,6 +126,7 @@ var CSS = [
   "@media print{m-kobun .kb-pop{display:none!important}}",
 ].join("\n");
 D.define("m-kobun", class extends D.MotionElement {
+  static interactive = true;   // 操作できるパーツ（助動詞を押すと札。docs/conventions.md §6）
   // データの形（kit/shape.js）：JSON ではなく、要素の中に 1 行 1 文の字（語を / で切り [品詞]）
   static shape = {text: true, example: "春[名]/は[係助]/あけぼの[名]。\n= 春は明け方（がよい）。"};
   static props = {

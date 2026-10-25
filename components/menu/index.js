@@ -35,6 +35,7 @@ var EXT = '<svg class="mm-ext" viewBox="0 0 20 20" aria-hidden="true"><path d="M
 function cards(el){ return [].filter.call(el.children, function(x){ return x.localName === "a" && x.hasAttribute("href"); }); }
 
 D.define("m-menu", class extends D.MotionElement {
+  static interactive = true;   // 操作できるパーツ（札はリンク。docs/conventions.md §6）
   // データの形（kit/shape.js）：JSON ではなく、子のリンク <a href="#<スライドの id>">題</a>
   static shape = {links: true, example: '<a href="#s-abc123" data-sub="副題">題</a>'};
   static props = {

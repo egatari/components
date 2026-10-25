@@ -6,7 +6,7 @@
 // （JSON の終わり）</m-predict>
 // 段階：0 = 問いと選択肢（と目盛り）。1 = 数の棒。answer-step（既定 2）= 答え（正しい選択肢に枠と ✓、ほかは薄く、note）
 // 見る人の入力（仕様 §8.4「Viewer input」、Studio の約束事 §3）：選択肢ごとの −1・＋1 と数の欄（発表者が数える）、選択肢の名前を押すと「自分の予想」。
-//   入力は (i, k, t) の外：段階に入ると（同じ段階に入り直しても、ctx.reset でも）作者の counts に戻る。render(k, t) が描くのは作者の値。
+//   入力は (i, k, t) の外で、同じスライドにいるあいだは（段階を進めても戻っても）残る。ほかのスライドから入ったとき・飛んだとき（ctx.reset）に作者の counts に戻る。
 //   動画（?mode=video）では操作を作らず、input() も受け付けない。印刷では操作を隠し、作者の数を字で出す
 // live（拡張 live §2.5）：poll="p1" と書き、ctx.live があれば ctx.live.poll("p1") の数（number[] | null）を棒に出す。
 //   見せてよいか（先生が見せると決めたか、3 人以上か）は実行系が決める。部品は配列が来たときだけ出し、動画・印刷では出さない
@@ -73,6 +73,8 @@ var VARIANT = (function(){
 // ---- END egatari-variant ----
 DECK.define("m-predict", class extends DECK.MotionElement {
   static variants = ["fade", "draw"];
+  static interactive = true;   // 操作できるパーツ（docs/conventions.md §6）
+  static viewerInput = true;   // 見る人の入力を受け付ける（仕様 §8.4）
   // データの形（kit/shape.js）
   static shape = {
     schema: {type: "object", additionalProperties: false, required: ["choices", "answer"], properties: {
@@ -199,9 +201,17 @@ DECK.define("m-predict", class extends DECK.MotionElement {
         ctl.appendChild(bt("+1", 1, "1 増やす"));
       });
       // 古い実行系（段階に入るときに ctx.reset を渡さないもの）でも、段階に入り直すと戻るように。印刷の前にも戻す
-      this._onPos = function(){ if (self.reset()) self.redraw(); };
+      // ctx.reset を渡さない実行系（Studio v0.4.x）のための代わり：ほかのスライドからこのスライドに入ったときだけ戻す。
+      // 自動再生の切り替え・発表者の画面とのつながり・同じスライドの中の段階の移りでは戻さない
+      var slide = this.closest("section"), mine = function(){ return DECK.slides ? [].indexOf.call(DECK.slides, slide) : -1; };
+      this._onPos = function(e){
+        var i = e.detail && e.detail.i, was = self._posI;
+        self._posI = i;
+        if (i === mine() && was !== i && self.reset()) self.redraw();
+      };
       document.addEventListener("deck:pos", this._onPos);
-      window.addEventListener("beforeprint", function(){ self._printing = true; self.reset(); self.redraw(); });
+      // 印刷は作者の値で描く（画面の数は消さない。afterprint で戻す）
+      window.addEventListener("beforeprint", function(){ self._printing = true; self.redraw(); });
       window.addEventListener("afterprint", function(){ self._printing = false; self.redraw(); });
     }
     function tone(t){ return /^(term|emph|muted|accent2|fg|series-[1-4])$/.test(t || "") ? "var(--" + t + ")" : "var(--term)"; }
@@ -225,7 +235,7 @@ DECK.define("m-predict", class extends DECK.MotionElement {
     v = Math.max(0, Math.min(9999, v));
     var c = this.counts();
     if (c[i] === v) return;
-    c[i] = v; this._vc = c; this._vk = this._k;
+    c[i] = v; this._vc = c;
     this.redraw();
     this.say.textContent = this.data.choices[i].label + "：" + v + this.props.unit;
     this.emit();
@@ -234,7 +244,7 @@ DECK.define("m-predict", class extends DECK.MotionElement {
   choose(i){
     if (this.video) return;
     var d = this.data;
-    this._pick = this._pick === i ? null : i; this._vk = this._k;
+    this._pick = this._pick === i ? null : i;
     this.redraw();
     var lab = d.choices[i].label;
     this.say.textContent = this._pick === null ? "予想を外しました" : this.revealed() ? (i === d.answer ? "当たり：" + lab : "はずれ。答えは " + d.choices[d.answer].label) : "あなたの予想：" + lab;
@@ -254,7 +264,7 @@ DECK.define("m-predict", class extends DECK.MotionElement {
   reset(){
     var had = !!this._vc;
     if (!had && this._pick == null) return false;
-    this._vc = null; this._pick = null; this._vk = undefined;
+    this._vc = null; this._pick = null;
     if (had) this.emit();
     return true;
   }
@@ -268,8 +278,8 @@ DECK.define("m-predict", class extends DECK.MotionElement {
   render(k, t, ctx){
     var self = this, P = this.props, D = DECK, G = this.g, dd = this.data, n = this.rows.length, vr = this.variant;
     var lecture = ctx && ctx.mode === "lecture", a = this.aStep;
-    // 段階が変わったとき、同じ段階に入り直したとき（ctx.reset）は、見る人の状態を捨てる
-    if (this._vk !== undefined && (k !== this._vk || (ctx && ctx.reset))) this.reset();
+    // ほかのスライドから入ったとき・飛んだとき（ctx.reset）は、見る人の状態を捨てる。同じスライドの中の段階の移りでは残す
+    if (ctx && ctx.reset) this.reset();
     this._k = k; this._t = t; this._ctx = ctx ? {mode: ctx.mode, live: ctx.live} : undefined;
     // 数：live の集計（実行系が見せてよいと渡したときだけ）→ 見る人の数 → 作者の数
     var live = null;
@@ -277,7 +287,7 @@ DECK.define("m-predict", class extends DECK.MotionElement {
       var lv = ctx.live.poll(P.poll);
       if (Array.isArray(lv)) live = Array.from({length: n}, function(_, i){ var v = +lv[i]; return isFinite(v) && v > 0 ? Math.round(v) : 0; });
     }
-    var c = live || this.counts();
+    var c = live || (this._printing ? this.author : this.counts()), pick = this._printing ? null : this._pick;
     // 段階 1 の棒（draw は上から順に、同じ長さの中で）、答えの段階
     var e1 = k > 1 ? 1 : k < 1 ? (lecture ? 0.45 : 0) : null;
     var at1 = 0, ea = k > a ? 1 : k < a ? 0 : D.prog(t, a === 1 ? 0.6 : 0, 0.6);
@@ -308,7 +318,7 @@ DECK.define("m-predict", class extends DECK.MotionElement {
       r.val.style.fill = txt; r.label.style.fill = txt;
       r.label.setAttribute("font-weight", isA && shown ? 700 : 400);
       if (r.ok){ r.ok.setAttribute("x", (X(c[j]) + 10 + est(self.fmt(c[j]), 26) + 14).toFixed(1)); r.ok.setAttribute("opacity", ea.toFixed(3)); }
-      if (r.dot){ r.dot.setAttribute("opacity", self._pick === j ? 1 : 0); r.pick.setAttribute("aria-pressed", self._pick === j ? "true" : "false"); }
+      if (r.dot){ r.dot.setAttribute("opacity", pick === j ? 1 : 0); r.pick.setAttribute("aria-pressed", pick === j ? "true" : "false"); }
       if (r.ctl){
         r.ctl.style.display = k >= 1 && !live ? "" : "none";
         if (document.activeElement !== r.field) r.field.value = String(c[j]);
@@ -320,7 +330,7 @@ DECK.define("m-predict", class extends DECK.MotionElement {
     if (vr === "draw" && ea > 0 && ea < 1){ this.frame.setAttribute("stroke-dasharray", this.frameLen.toFixed(0)); this.frame.setAttribute("stroke-dashoffset", (this.frameLen * (1 - ea)).toFixed(1)); this.frame.setAttribute("opacity", 1); }
     else { this.frame.removeAttribute("stroke-dasharray"); this.frame.removeAttribute("stroke-dashoffset"); this.frame.setAttribute("opacity", ea.toFixed(3)); }
     // 注と、予想の当たり外れ
-    var pk = this._pick, st = pk != null && k >= a ? (pk === dd.answer ? "予想は当たり。" : "予想ははずれ。") : "";
+    var pk = pick, st = pk != null && k >= a ? (pk === dd.answer ? "予想は当たり。" : "予想ははずれ。") : "";
     this.noteEl.textContent = (k >= a ? st : "") + this.noteText;
     this.noteEl.setAttribute("opacity", ea.toFixed(3));
     this.liveEl.setAttribute("opacity", live && k >= 1 ? 1 : 0);

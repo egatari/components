@@ -76,14 +76,14 @@ document.addEventListener("DOMContentLoaded", function(){
   <h2>部品の一覧（24 個、82 枚）</h2>
   <div class="body">
     <p>部品ごとに、説明の 1 枚と見本のスライドが続きます。→ で段階を進めます。</p>
-    <p>m-predict（新しい）　m-bars　m-codetree　m-collect　m-compare　m-curves　m-cycle　m-fishbone　m-flow　m-gendai　m-kanbun　m-kobun　m-kpi　m-map-japan　m-market　m-menu　m-pie　m-quad　m-scatter　m-seq　m-sweep　m-timeline　m-tree　m-venn</p>
+    <p>m-predict（新しい）　m-kobun（変わった）　m-menu（変わった）　m-bars　m-codetree　m-collect　m-compare　m-curves　m-cycle　m-fishbone　m-flow　m-gendai　m-kanbun　m-kpi　m-map-japan　m-market　m-pie　m-quad　m-scatter　m-seq　m-sweep　m-timeline　m-tree　m-venn</p>
   </div>
 </section>
 
 <section class="slide">
-  <h2>m-predict（新しい、v1.6.0）</h2>
+  <h2>m-predict（新しい、v1.6.0） <span style="font-size:27px;font-weight:700;color:var(--fg);border:2px dashed var(--accent2);border-radius:8px;padding:2px 12px;margin-left:12px;vertical-align:middle">操作できる / Interactive</span></h2>
   <div class="body">
-    <p>予想してから答えを開く。選択肢ごとの人数を棒で見せ、答えの段階で正解に枠</p>
+    <p style="border:3px dashed var(--accent2);border-radius:10px;padding:10px 16px">予想してから答えを開く。選択肢ごとの人数を棒で見せ、答えの段階で正解に枠（見る人が押して操作できる）</p>
     <ul>
       <li>伝えたいこと：予想してから確かめる</li>
       <li>見せ方：fade・draw</li>
@@ -93,7 +93,7 @@ document.addEventListener("DOMContentLoaded", function(){
 </section>
 
 <section class="slide">
-  <h2>予想してみよう：落ちる速さ</h2>
+  <h2>予想してみよう：落ちる速さ <span class="ia-badge" style="font-size:27px;font-weight:700;color:var(--fg);border:2px dashed var(--accent2);border-radius:8px;padding:2px 12px;margin-left:12px;vertical-align:middle">操作できる</span></h2>
   <div class="body">
     <m-predict unit="人" style="height:450px">
       <script type="application/json">{
@@ -139,6 +139,64 @@ document.addEventListener("DOMContentLoaded", function(){
     </div>
   </div>
   <div class="concl"><span>→ 資料のシード値（data-egatari-seed）で 1 つが選ばれる。人数は架空</span></div>
+</section>
+
+<section class="slide">
+  <h2>m-kobun（変わった、v1.6.0） <span style="font-size:27px;font-weight:700;color:var(--fg);border:2px dashed var(--accent2);border-radius:8px;padding:2px 12px;margin-left:12px;vertical-align:middle">操作できる / Interactive</span></h2>
+  <div class="body">
+    <p style="border:3px dashed var(--accent2);border-radius:10px;padding:10px 16px">古文を語に切り（スラッシュ）、品詞で色を分けて 1 文ずつ見せ、最後に現代語訳と並べる。助動詞を押すと活用表と意味（見る人が押して操作できる）</p>
+    <ul>
+      <li>伝えたいこと：文章の構造</li>
+      <li>見せ方：1 種類</li>
+      <li>系列：国語　見本のスライド：0 枚</li>
+    </ul>
+  </div>
+</section>
+
+<section class="slide">
+  <h2>m-menu（変わった、v1.6.0） <span style="font-size:27px;font-weight:700;color:var(--fg);border:2px dashed var(--accent2);border-radius:8px;padding:2px 12px;margin-left:12px;vertical-align:middle">操作できる / Interactive</span></h2>
+  <div class="body">
+    <p style="border:3px dashed var(--accent2);border-radius:10px;padding:10px 16px">スライドへのリンクの札を格子に並べる（目次・単元の選び方）。札はふつうの &lt;a href="#&lt;スライドの id&gt;"&gt;、行ったスライドの札に「見た」の印（見る人が押して操作できる）</p>
+    <ul>
+      <li>伝えたいこと：目次</li>
+      <li>見せ方：1 種類</li>
+      <li>系列：標準パーツ　見本のスライド：3 枚</li>
+    </ul>
+  </div>
+</section>
+
+<section class="slide" id="s-part01">
+  <h2>問い</h2>
+  <div class="body">
+    <ul>
+      <li>短い復習は、次の週の小テストの点を上げるか</li>
+      <li>上がるなら、どのくらいか</li>
+    </ul>
+    <p><a href="#s-menu01">目次へ</a></p>
+  </div>
+  <div class="concl"><span>確かめたいのは、効果の有無と大きさ</span></div>
+</section>
+
+<section class="slide" id="s-part02">
+  <h2>方法</h2>
+  <div class="body">
+    <ul>
+      <li>2 つの組（各 30 人）で、片方だけ毎回 5 分の復習</li>
+      <li>4 週の小テストの平均を比べる</li>
+    </ul>
+  </div>
+  <div class="concl"><span>違いは復習の有無だけにそろえる</span></div>
+</section>
+
+<section class="slide" id="s-part03">
+  <h2>結果</h2>
+  <div class="body">
+    <ul>
+      <li>復習した組の平均は 72 点、しなかった組は 66 点</li>
+      <li>差は 6 点（数字は見本のための架空のもの）</li>
+    </ul>
+  </div>
+  <div class="concl"><span>短い復習でも、点に差が出た</span></div>
 </section>
 
 <section class="slide">
@@ -660,18 +718,6 @@ document.addEventListener("DOMContentLoaded", function(){
 </section>
 
 <section class="slide">
-  <h2>m-kobun</h2>
-  <div class="body">
-    <p>古文を語に切り（スラッシュ）、品詞で色を分けて 1 文ずつ見せ、最後に現代語訳と並べる。助動詞を押すと活用表と意味</p>
-    <ul>
-      <li>伝えたいこと：文章の構造</li>
-      <li>見せ方：1 種類</li>
-      <li>系列：国語　見本のスライド：0 枚</li>
-    </ul>
-  </div>
-</section>
-
-<section class="slide">
   <h2>m-kpi</h2>
   <div class="body">
     <p>大きな数字の札（KPI）を段階ごとに出す。数字は数え上げ、下に増減の矢印と一言</p>
@@ -873,52 +919,6 @@ document.addEventListener("DOMContentLoaded", function(){
     </m-market>
   </div>
   <div class="concl"><span>→ 面積で見ると最初の一歩は小さい</span></div>
-</section>
-
-<section class="slide">
-  <h2>m-menu</h2>
-  <div class="body">
-    <p>スライドへのリンクの札を格子に並べる（目次・単元の選び方）。札はふつうの &lt;a href="#&lt;スライドの id&gt;"&gt;、行ったスライドの札に「見た」の印</p>
-    <ul>
-      <li>伝えたいこと：目次</li>
-      <li>見せ方：1 種類</li>
-      <li>系列：標準パーツ　見本のスライド：3 枚</li>
-    </ul>
-  </div>
-</section>
-
-<section class="slide" id="s-part01">
-  <h2>問い</h2>
-  <div class="body">
-    <ul>
-      <li>短い復習は、次の週の小テストの点を上げるか</li>
-      <li>上がるなら、どのくらいか</li>
-    </ul>
-    <p><a href="#s-menu01">目次へ</a></p>
-  </div>
-  <div class="concl"><span>確かめたいのは、効果の有無と大きさ</span></div>
-</section>
-
-<section class="slide" id="s-part02">
-  <h2>方法</h2>
-  <div class="body">
-    <ul>
-      <li>2 つの組（各 30 人）で、片方だけ毎回 5 分の復習</li>
-      <li>4 週の小テストの平均を比べる</li>
-    </ul>
-  </div>
-  <div class="concl"><span>違いは復習の有無だけにそろえる</span></div>
-</section>
-
-<section class="slide" id="s-part03">
-  <h2>結果</h2>
-  <div class="body">
-    <ul>
-      <li>復習した組の平均は 72 点、しなかった組は 66 点</li>
-      <li>差は 6 点（数字は見本のための架空のもの）</li>
-    </ul>
-  </div>
-  <div class="concl"><span>短い復習でも、点に差が出た</span></div>
 </section>
 
 <section class="slide">

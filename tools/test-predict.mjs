@@ -1,9 +1,10 @@
 // m-predict: viewer input (Egatari spec §8.4 "Viewer input", Studio contract §3), built with the pinned Egatari Studio.
 //   1. +1 / −1 / a typed number / input(choice, count) change the counts and the bars at once; never below 0; bad input() ignored
-//   2. entering the step again (DECK.go, a different k, ctx.reset) restores the author's counts and says so (egatari-input)
+//   2. the counts persist while the viewer stays on the slide (spec §8.4, 241770f): forward to the answer step and back; an autoplay
+//      toggle or deck:pos on the same slide keep them; entering from another slide or ctx.reset restores the author's (egatari-input)
 //   3. ?mode=video: no buttons or fields, input() and clicks change nothing
-//   4. print (media emulation): no buttons shown, the author's counts as text; beforeprint drops the viewer's counts
-//   5. the learner's own prediction: marked, told right or wrong at the answer step, reset on step entry
+//   4. print (media emulation): no buttons shown, the author's counts as text; afterwards the screen keeps the viewer's counts
+//   5. the learner's own prediction: marked, kept into the answer step and told right or wrong there, reset on entering the slide
 //   6. live (a fake ctx.live passed to render): counts shown only when poll(id) gives an array; never in video
 //   7. keyboard: + − and the arrows on a focused counter change the count, the slide does not move
 //   8. digits typed into the field do not move slides (Studio #69): skipped until the pinned Studio is v0.5.0 or later
@@ -81,34 +82,42 @@ try {
     await page.close();
   }
 
-  // ---- 2. step entry restores the author's counts
+  // ---- 2. the counts persist within the slide (spec §8.4, 241770f); entering from another slide or ctx.reset restores the author's
   {
     const { page } = await open();
-    const r = await page.evaluate(async () => {
+    const r = await page.evaluate(() => {
       const c = DECK.slides[0]._comps[0], o = {};
       DECK.go(0, 1, false); c.input(0, 30); c.input(1, 9);
       __ev.length = 0;
-      DECK.go(0, 1, false);   // the same step again (keys, presenter's goto, links go through DECK.go)
-      o.goSame = c.counts().join(); o.goShown = __shown(c).join(); o.goEv = __ev.map((x) => x.join());
+      DECK.go(0, 2, false); o.answer = c.counts().join(); o.answerShown = __shown(c).join();
+      DECK.go(0, 1, false); o.back = c.counts().join();
+      DECK.go(0, 1, false); o.same = c.counts().join();
+      DECK.go(0, 3, false); DECK.go(0, 2, false); o.fwd = c.counts().join();
+      c.render(2, 0.3, { mode: 'talk' }); o.frame = c.counts().join();
+      o.evSameSlide = __ev.length;
+      // autoplay toggled on and off, the presenter view connecting: deck:pos on the same slide
+      document.dispatchEvent(new CustomEvent('deck:pos', { detail: { i: 0, k: 2 } }));
+      document.dispatchEvent(new CustomEvent('deck:pos', { detail: { i: 0, k: 2, auto: true } }));
+      DECK.autoplay(true); DECK.autoplay(false); DECK.go(0, 2, false);
+      o.auto = c.counts().join(); o.evAuto = __ev.length;
+      // another slide and back
+      DECK.go(1, 0, false); DECK.go(0, 2, false);
+      o.otherSlide = c.counts().join(); o.otherShown = __shown(c).join(); o.otherEv = __ev.map((x) => x.join());
       __ev.length = 0;
-      DECK.go(0, 1, false); o.noDirtyEv = __ev.length;   // nothing changed: no event
+      DECK.go(1, 0, false); DECK.go(0, 1, false); o.noDirtyEv = __ev.length;   // nothing changed: no event
       c.input(0, 30); __ev.length = 0;
-      c.render(1, Infinity, { mode: 'talk', reset: true }); o.ctxReset = c.counts().join(); o.ctxEv = __ev.length;
-      c.input(0, 30); c.render(1, Infinity, { mode: 'talk' }); o.sameFrameKeeps = c.counts()[0];
-      c.render(1, 0.3); o.frameKeeps = c.counts()[0];
-      DECK.seek(0, 2, Infinity); o.otherK = c.counts().join();
-      c.input(0, 30); DECK.seek(0, 2, Infinity); o.seekSame = c.counts()[0];
+      c.render(1, Infinity, { mode: 'talk', reset: true }); o.ctxReset = c.counts().join(); o.ctxEv = __ev.map((x) => x.join());
       return o;
     });
-    ok(r.goSame === AUTHOR.join() && r.goShown === '17人,2人,11人', 'DECK.go to the same step restores the author\'s counts');
-    ok(r.goEv.length === 1 && r.goEv[0] === AUTHOR.join(), 'the reset dispatches egatari-input with the author\'s counts');
-    ok(r.noDirtyEv === 0, 'entering a step without viewer changes dispatches nothing');
-    ok(r.ctxReset === AUTHOR.join() && r.ctxEv === 1, 'render(k, t, {reset: true}) restores the author\'s counts');
-    ok(r.sameFrameKeeps === 30 && r.frameKeeps === 30, 'later frames of the same step (no reset) keep the viewer\'s counts');
-    ok(r.otherK === AUTHOR.join(), 'a different step restores the author\'s counts');
-    // DECK.seek to the same step: the runtime resets touched components (contract §3) only in Studio releases that have it
-    if (r.seekSame === AUTHOR[0]) ok(true, 'DECK.seek to the same step restores the author\'s counts (runtime passes ctx.reset)');
-    else skip(`DECK.seek to the same step: Studio ${PIN.tag} does not pass ctx.reset to touched components yet (contract §3); DECK.go and ctx.reset are tested above`);
+    const V = '30,9,11';
+    ok(r.answer === V && r.answerShown === '30人,9人,11人', 'counts set at step 1 are shown at the answer step');
+    ok(r.back === V && r.same === V && r.fwd === V && r.frame === V, 'they survive going back to step 1, the same step again, and forward again');
+    ok(r.evSameSlide === 0, 'step changes within the slide dispatch nothing');
+    ok(r.auto === V && r.evAuto === 0, 'an autoplay toggle and deck:pos on the same slide do not reset');
+    ok(r.otherSlide === AUTHOR.join() && r.otherShown === '17人,2人,11人', 'entering the slide from another slide restores the author\'s counts');
+    ok(r.otherEv.length === 1 && r.otherEv[0] === AUTHOR.join(), 'that reset dispatches egatari-input with the author\'s counts');
+    ok(r.noDirtyEv === 0, 'entering the slide without viewer changes dispatches nothing');
+    ok(r.ctxReset === AUTHOR.join() && r.ctxEv.length === 1 && r.ctxEv[0] === AUTHOR.join(), 'render(k, t, {reset: true}) restores the author\'s counts and dispatches egatari-input');
     await page.close();
   }
 
@@ -128,21 +137,24 @@ try {
     await page.close();
   }
 
-  // ---- 4. print
+  // ---- 4. print: the author's counts; the screen keeps the viewer's
   {
     const { page } = await open();
-    await page.evaluate(() => { DECK.go(0, 2, false); DECK.slides[0]._comps[0].input(0, 30); });
+    await page.evaluate(() => { DECK.go(0, 2, false); const c = DECK.slides[0]._comps[0]; c.input(0, 30); c.choose(1); });
     await page.evaluate(() => { window.dispatchEvent(new Event('beforeprint')); });
     await page.emulateMedia({ media: 'print' });
-    const r = await page.evaluate(() => {
+    let r = await page.evaluate(() => {
       const c = DECK.slides[0]._comps[0];
       const vis = [...document.querySelectorAll('m-predict button, m-predict input, m-predict .pd-mark')].filter((e) => getComputedStyle(e).display !== 'none' && e.getBoundingClientRect().width > 0);
-      return { vis: vis.length, counts: c.counts().join(), shown: __shown(c).join(), op: c.rows.map((x) => +x.val.getAttribute('opacity')) };
+      return { vis: vis.length, shown: __shown(c).join(), op: c.rows.map((x) => +x.val.getAttribute('opacity')), note: c.noteEl.textContent };
     });
     ok(r.vis === 0, 'print: no buttons, fields or prediction marks are shown');
-    ok(r.counts === AUTHOR.join() && r.shown === '17人,2人,11人' && r.op.every((o) => o === 1), 'print: the author\'s counts as text (beforeprint dropped the viewer\'s)');
+    ok(r.shown === '17人,2人,11人' && r.op.every((o) => o === 1), 'print: the author\'s counts as text');
+    ok(!/^予想/.test(r.note), 'print: no learner\'s result in the note');
     await page.emulateMedia({ media: 'screen' });
     await page.evaluate(() => window.dispatchEvent(new Event('afterprint')));
+    r = await page.evaluate(() => { const c = DECK.slides[0]._comps[0]; return { counts: c.counts().join(), shown: __shown(c).join(), pick: c.rows[1].dot.getAttribute('opacity') }; });
+    ok(r.counts === '30,2,11' && r.shown === '30人,2人,11人' && r.pick === '1', 'after printing, the screen keeps the viewer\'s counts and prediction');
     await page.close();
   }
 
@@ -154,16 +166,15 @@ try {
     await comp.locator('.pd-pick').nth(0).click();
     let r = await page.evaluate(() => { const c = DECK.slides[0]._comps[0]; return { dot: c.rows.map((x) => x.dot.getAttribute('opacity')).join(), pressed: c.rows[0].pick.getAttribute('aria-pressed'), say: c.say.textContent }; });
     ok(r.dot === '1,0,0' && r.pressed === 'true' && /重い球/.test(r.say), 'a click on a choice marks it as my prediction (and announces it)');
-    await page.evaluate(() => DECK.go(0, 1, false));
-    r = await page.evaluate(() => DECK.slides[0]._comps[0].rows.map((x) => x.dot.getAttribute('opacity')).join());
-    ok(r === '0,0,0', 'the prediction is dropped on entering the step again');
     await page.evaluate(() => DECK.go(0, 2, false));
+    r = await page.evaluate(() => { const c = DECK.slides[0]._comps[0]; return { dot: c.rows.map((x) => x.dot.getAttribute('opacity')).join(), note: c.noteEl.textContent }; });
+    ok(r.dot === '1,0,0' && /^予想ははずれ/.test(r.note), 'the prediction made at step 1 is kept and told wrong at the answer step');
     await comp.locator('.pd-pick').nth(2).click();
     r = await page.evaluate(() => { const c = DECK.slides[0]._comps[0]; return { note: c.noteEl.textContent, say: c.say.textContent }; });
-    ok(/^予想は当たり/.test(r.note) && /当たり/.test(r.say), 'at the answer step, a right prediction is told right');
-    await comp.locator('.pd-pick').nth(0).click();
-    r = await page.evaluate(() => DECK.slides[0]._comps[0].noteEl.textContent);
-    ok(/^予想ははずれ/.test(r), 'a wrong prediction is told wrong');
+    ok(/^予想は当たり/.test(r.note) && /当たり/.test(r.say), 'a right prediction is told right');
+    await page.evaluate(() => { DECK.go(1, 0, false); DECK.go(0, 2, false); });
+    r = await page.evaluate(() => { const c = DECK.slides[0]._comps[0]; return { dot: c.rows.map((x) => x.dot.getAttribute('opacity')).join(), note: c.noteEl.textContent }; });
+    ok(r.dot === '0,0,0' && !/^予想/.test(r.note), 'the prediction is dropped on entering the slide from another slide');
     await page.close();
   }
 
