@@ -21,6 +21,21 @@
 </style>
 </head>
 <body>
+<script>/* m-collect */
+(function(){
+// 見本の数値：8 回のコイン投げ（表なら 1）から、一様な事前分布 Beta(1,1) のもとでの事後平均と事後分散を計算する
+document.addEventListener("DOMContentLoaded", function(){
+  var ans = [1, 1, 0, 1, 1, 0, 1, 1], s = ans.reduce(function(a, b){ return a + b; }, 0), n = ans.length;
+  var al = 1 + s, be = 1 + n - s, mean = al / (al + be), v = al * be / (Math.pow(al + be, 2) * (al + be + 1));
+  document.getElementById("ans-data").textContent = JSON.stringify({
+    cols: 4,
+    chips: ans.map(function(x, i){ return {label: "試行 " + (i + 1) + "：" + (x ? "表" : "裏"), to: [0, 1]}; }),
+    targets: [{label: "事後平均", tex: "\\mathrm{E}[\\theta\\mid D]", value: mean.toFixed(3)},
+              {label: "事後分散", tex: "\\mathrm{Var}[\\theta\\mid D]", value: v.toFixed(4)}]
+  });
+});
+})();
+</script>
 <script>/* m-curves */
 (function(){
 // 見本の数値：対数正規の予測分布 LN(0, 0.6^2) の平均・中央値・90% 分位点を計算して、縦線の点列にする
@@ -34,21 +49,6 @@ document.addEventListener("DOMContentLoaded", function(){
     {label: "平均", pts: v(mean), color: "emph", anchor: "start", ly: 0.04},
     {label: "90% 分位点", pts: v(q90), color: "accent2", dash: true, anchor: "start", dx: -4}
   ]);
-});
-})();
-</script>
-<script>/* m-collect */
-(function(){
-// 見本の数値：8 回のコイン投げ（表なら 1）から、一様な事前分布 Beta(1,1) のもとでの事後平均と事後分散を計算する
-document.addEventListener("DOMContentLoaded", function(){
-  var ans = [1, 1, 0, 1, 1, 0, 1, 1], s = ans.reduce(function(a, b){ return a + b; }, 0), n = ans.length;
-  var al = 1 + s, be = 1 + n - s, mean = al / (al + be), v = al * be / (Math.pow(al + be, 2) * (al + be + 1));
-  document.getElementById("ans-data").textContent = JSON.stringify({
-    cols: 4,
-    chips: ans.map(function(x, i){ return {label: "試行 " + (i + 1) + "：" + (x ? "表" : "裏"), to: [0, 1]}; }),
-    targets: [{label: "事後平均", tex: "\\mathrm{E}[\\theta\\mid D]", value: mean.toFixed(3)},
-              {label: "事後分散", tex: "\\mathrm{Var}[\\theta\\mid D]", value: v.toFixed(4)}]
-  });
 });
 })();
 </script>
@@ -76,64 +76,12 @@ document.addEventListener("DOMContentLoaded", function(){
   <h2>部品の一覧（22 個、73 枚）</h2>
   <div class="body">
     <p>部品ごとに、説明の 1 枚と見本のスライドが続きます。→ で段階を進めます。</p>
-    <p>m-curves（変わった）　m-kanbun（変わった）　m-kobun（変わった）　m-scatter（変わった）　m-bars　m-codetree　m-collect　m-compare　m-cycle　m-fishbone　m-flow　m-gendai　m-kpi　m-market　m-menu　m-pie　m-quad　m-seq　m-sweep　m-timeline　m-tree　m-venn</p>
+    <p>m-kanbun（変わった）　m-bars　m-codetree　m-collect　m-compare　m-curves　m-cycle　m-fishbone　m-flow　m-gendai　m-kobun　m-kpi　m-market　m-menu　m-pie　m-quad　m-scatter　m-seq　m-sweep　m-timeline　m-tree　m-venn</p>
   </div>
 </section>
 
 <section class="slide">
-  <h2>m-curves（変わった、v1.3.0）</h2>
-  <div class="body">
-    <p>同じ座標軸に線を 1 本ずつ引く（線の名前は凡例でなく線の端に直接書く）</p>
-    <ul>
-      <li>言いたいこと：時間での変化</li>
-      <li>見せ方：1 種類</li>
-      <li>系列：標準パーツ　見本のスライド：3 枚</li>
-    </ul>
-  </div>
-</section>
-
-<section class="slide">
-  <h2>予測分布と代表値</h2>
-  <div class="body">
-    <m-curves xr="[0,4]" yr="[0,0.8]" xt="[0,1,2,3,4]" yt="[0,0.2,0.4,0.6,0.8]" yf="1" xl="需要 *y*" yl="密度" style="height:420px">
-      <script type="application/json" id="pred-data">[]</script>
-    </m-curves>
-  </div>
-  <div class="concl"><span>→ 右に裾が長いと，平均は中央値より右に来る</span></div>
-</section>
-
-<section class="slide">
-  <h2>損失関数の形</h2>
-  <div class="body">
-    <m-curves xr="[-2,2]" yr="[0,4]" xt="[-2,-1,0,1,2]" yt="[0,1,2,3,4]" xl="誤差 *u* = *y* − *a*" yl="損失" style="height:420px">
-      <script type="application/json">[
-        {"label": "二乗 *u*^2", "f": "x*x", "at": 1.6, "anchor": "end", "dx": -14},
-        {"label": "絶対値 |*u*|", "f": "abs(x)", "at": -2, "anchor": "start", "ly": 1.1},
-        {"label": "分位点（*τ* = 0.9）", "f": "x >= 0 ? 0.9*x : -0.1*x", "at": -2, "anchor": "start", "dy": -6}
-      ]</script>
-    </m-curves>
-  </div>
-  <div class="concl"><span>→ どの損失を使うかで，最適な決定 <i>a</i> が変わる</span></div>
-</section>
-
-<section class="slide">
-  <h2>需要が増えると（架空の例）</h2>
-  <div class="body">
-    <m-curves xr="[0,10]" yr="[0,12]" xt="[0,2,4,6,8,10]" yt="[0,3,6,9,12]" xl="数量 *Q*" yl="価格 *P*" style="height:420px">
-      <script type="application/json">[
-        {"label": "需要 D", "f": "10 - x", "tone": "term", "step": 1, "labelAt": 1.5, "anchor": "below"},
-        {"label": "供給 S", "f": "2 + x", "tone": "accent2", "step": 1, "labelAt": 8.5, "anchor": "left"},
-        {"label": "増えた需要 D′", "f": "13 - x", "tone": "emph", "step": 2, "labelAt": 2, "anchor": "right"},
-        {"label": "均衡", "pts": [[4, 0], [4, 6]], "tone": "muted", "dash": true, "step": 3, "anchor": "left", "ly": 1},
-        {"label": "新しい均衡", "pts": [[5.5, 0], [5.5, 7.5]], "tone": "emph", "dash": true, "step": 3, "anchor": "right", "ly": 1}
-      ]</script>
-    </m-curves>
-  </div>
-  <div class="concl"><span>→ 需要が増えると，価格も取引量も上がる</span></div>
-</section>
-
-<section class="slide">
-  <h2>m-kanbun（変わった、v1.3.0）</h2>
+  <h2>m-kanbun（変わった、v1.4.1）</h2>
   <div class="body">
     <p>白文に返り点・送り仮名を付け、訓読の順に字をたどり（返り点で上へ戻るところに弧）、書き下し文にする（縦書き）</p>
     <ul>
@@ -178,80 +126,6 @@ document.addEventListener("DOMContentLoaded", function(){
     </m-kanbun>
   </div>
   <div class="concl"><span>再読文字は二度読み、置き字は読まない</span></div>
-</section>
-
-<section class="slide">
-  <h2>m-kobun（変わった、v1.3.0）</h2>
-  <div class="body">
-    <p>古文を語に切り（スラッシュ）、品詞で色を分けて 1 文ずつ見せ、最後に現代語訳と並べる。助動詞を押すと活用表と意味</p>
-    <ul>
-      <li>言いたいこと：文章の構造</li>
-      <li>見せ方：1 種類</li>
-      <li>系列：国語　見本のスライド：0 枚</li>
-    </ul>
-  </div>
-</section>
-
-<section class="slide">
-  <h2>m-scatter（変わった、v1.3.0）</h2>
-  <div class="body">
-    <p>散布図。点の組（系列）を段階ごとに出し、そのあと傾向の線（最小二乗の直線か、書いた 2 点）を引く</p>
-    <ul>
-      <li>言いたいこと：2 つの量の関係</li>
-      <li>見せ方：fade・sweep・grow</li>
-      <li>系列：標準パーツ　見本のスライド：3 枚</li>
-    </ul>
-  </div>
-</section>
-
-<section class="slide">
-  <h2>最高気温とアイスの売上：平日と休日（架空）</h2>
-  <div class="body">
-    <m-scatter xr="[20,36]" yr="[0,600]" xt="[20,24,28,32,36]" yt="[0,200,400,600]" xl="最高気温（℃）" yl="売上（個）" style="height:430px">
-      <script type="application/json">{
-        "series": [
-          {"label": "平日", "points": [[21.2, 53], [22.6, 8], [22.9, 144], [27.5, 180], [27.6, 188], [29.0, 268], [29.7, 230], [31.4, 279], [31.7, 316], [33.8, 355], [34.2, 261], [34.2, 281]]},
-          {"label": "休日", "points": [[23.0, 257], [23.3, 269], [23.9, 270], [23.9, 303], [25.1, 321], [29.4, 380], [29.6, 373], [30.5, 379], [33.2, 452], [33.2, 561], [33.5, 446], [34.5, 457]]}
-        ],
-        "trend": [{"fit": "linear", "series": 0, "tone": "series-1", "dash": true}, {"fit": "linear", "series": 1, "tone": "series-2", "dash": true}]
-      }</script>
-    </m-scatter>
-  </div>
-  <div class="concl"><span>→ 休日はどの気温でも平日より多く売れる</span></div>
-</section>
-
-<section class="slide">
-  <h2>傾向の強さと外れた日（架空）</h2>
-  <div class="body">
-    <m-scatter xr="[20,36]" yr="[0,500]" xt="[20,24,28,32,36]" yt="[0,100,200,300,400,500]" xl="最高気温（℃）" yl="売上（個）" style="height:430px">
-      <script type="application/json">{
-        "series": [{"points": [[23.1, 176], [24.0, 206], [24.3, 159], [24.6, 223], [25.2, 314], [26.5, 277], [27.6, 310],
-          {"x": 27.6, "y": 440, "label": "花火大会の日", "anchor": "left"},
-          [29.3, 370], [29.5, 334], [29.8, 361], [29.9, 394], [30.4, 441], [31.1, 442], [31.4, 359], [32.7, 372], [32.7, 439],
-          [33.3, 472], [33.9, 420], [34.1, 428]]}],
-        "trend": {"fit": "linear", "label": "傾向（r = {r}）", "tone": "emph"}
-      }</script>
-    </m-scatter>
-  </div>
-  <div class="concl"><span>→ 暑い日ほど売れる。1 ℃ 上がると約 23 個増える</span></div>
-</section>
-
-<section class="slide">
-  <h2>見せ方の種類（variant）</h2>
-  <div class="body">
-    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:0 28px">
-      <m-scatter variant="fade" xr="[0,10]" yr="[0,10]" xt="[0,5,10]" yt="[0,5,10]" style="height:400px">
-        <script type="application/json">{"series": [{"label": "フェード（fade、既定）", "points": [[1, 2.2], [2, 2.1], [3, 3.9], [4, 3.6], [5, 5.4], [6, 5.1], [7, 7.2], [8, 6.6], [9, 8.4]]}], "trend": "linear"}</script>
-      </m-scatter>
-      <m-scatter variant="sweep" xr="[0,10]" yr="[0,10]" xt="[0,5,10]" yt="[0,5,10]" style="height:400px">
-        <script type="application/json">{"series": [{"label": "左から（sweep）", "points": [[1, 2.2], [2, 2.1], [3, 3.9], [4, 3.6], [5, 5.4], [6, 5.1], [7, 7.2], [8, 6.6], [9, 8.4]]}], "trend": "linear"}</script>
-      </m-scatter>
-      <m-scatter variant="grow" xr="[0,10]" yr="[0,10]" xt="[0,5,10]" yt="[0,5,10]" style="height:400px">
-        <script type="application/json">{"series": [{"label": "大きくなる（grow）", "points": [[1, 2.2], [2, 2.1], [3, 3.9], [4, 3.6], [5, 5.4], [6, 5.1], [7, 7.2], [8, 6.6], [9, 8.4]]}], "trend": "linear"}</script>
-      </m-scatter>
-    </div>
-  </div>
-  <div class="concl"><span>→ 資料のシード値（data-egatari-seed）で 1 つが選ばれる。数字は架空</span></div>
 </section>
 
 <section class="slide">
@@ -441,6 +315,58 @@ document.addEventListener("DOMContentLoaded", function(){
     </div>
   </div>
   <div class="concl"><span>→ 資料のシード値（data-egatari-seed）で 1 つが選ばれる。数字は架空</span></div>
+</section>
+
+<section class="slide">
+  <h2>m-curves</h2>
+  <div class="body">
+    <p>同じ座標軸に線を 1 本ずつ引く（線の名前は凡例でなく線の端に直接書く）</p>
+    <ul>
+      <li>言いたいこと：時間での変化</li>
+      <li>見せ方：1 種類</li>
+      <li>系列：標準パーツ　見本のスライド：3 枚</li>
+    </ul>
+  </div>
+</section>
+
+<section class="slide">
+  <h2>予測分布と代表値</h2>
+  <div class="body">
+    <m-curves xr="[0,4]" yr="[0,0.8]" xt="[0,1,2,3,4]" yt="[0,0.2,0.4,0.6,0.8]" yf="1" xl="需要 *y*" yl="密度" style="height:420px">
+      <script type="application/json" id="pred-data">[]</script>
+    </m-curves>
+  </div>
+  <div class="concl"><span>→ 右に裾が長いと，平均は中央値より右に来る</span></div>
+</section>
+
+<section class="slide">
+  <h2>損失関数の形</h2>
+  <div class="body">
+    <m-curves xr="[-2,2]" yr="[0,4]" xt="[-2,-1,0,1,2]" yt="[0,1,2,3,4]" xl="誤差 *u* = *y* − *a*" yl="損失" style="height:420px">
+      <script type="application/json">[
+        {"label": "二乗 *u*^2", "f": "x*x", "at": 1.6, "anchor": "end", "dx": -14},
+        {"label": "絶対値 |*u*|", "f": "abs(x)", "at": -2, "anchor": "start", "ly": 1.1},
+        {"label": "分位点（*τ* = 0.9）", "f": "x >= 0 ? 0.9*x : -0.1*x", "at": -2, "anchor": "start", "dy": -6}
+      ]</script>
+    </m-curves>
+  </div>
+  <div class="concl"><span>→ どの損失を使うかで，最適な決定 <i>a</i> が変わる</span></div>
+</section>
+
+<section class="slide">
+  <h2>需要が増えると（架空の例）</h2>
+  <div class="body">
+    <m-curves xr="[0,10]" yr="[0,12]" xt="[0,2,4,6,8,10]" yt="[0,3,6,9,12]" xl="数量 *Q*" yl="価格 *P*" style="height:420px">
+      <script type="application/json">[
+        {"label": "需要 D", "f": "10 - x", "tone": "term", "step": 1, "labelAt": 1.5, "anchor": "below"},
+        {"label": "供給 S", "f": "2 + x", "tone": "accent2", "step": 1, "labelAt": 8.5, "anchor": "left"},
+        {"label": "増えた需要 D′", "f": "13 - x", "tone": "emph", "step": 2, "labelAt": 2, "anchor": "right"},
+        {"label": "均衡", "pts": [[4, 0], [4, 6]], "tone": "muted", "dash": true, "step": 3, "anchor": "left", "ly": 1},
+        {"label": "新しい均衡", "pts": [[5.5, 0], [5.5, 7.5]], "tone": "emph", "dash": true, "step": 3, "anchor": "right", "ly": 1}
+      ]</script>
+    </m-curves>
+  </div>
+  <div class="concl"><span>→ 需要が増えると，価格も取引量も上がる</span></div>
 </section>
 
 <section class="slide">
@@ -664,6 +590,18 @@ document.addEventListener("DOMContentLoaded", function(){
   <h2>m-gendai</h2>
   <div class="body">
     <p>現代文の読解の図：傍線・二重傍線を引き、指示語から指す内容へ矢印、段落を役割（主張・具体例・対比）の枠で囲んで線でつなぐ</p>
+    <ul>
+      <li>言いたいこと：文章の構造</li>
+      <li>見せ方：1 種類</li>
+      <li>系列：国語　見本のスライド：0 枚</li>
+    </ul>
+  </div>
+</section>
+
+<section class="slide">
+  <h2>m-kobun</h2>
+  <div class="body">
+    <p>古文を語に切り（スラッシュ）、品詞で色を分けて 1 文ずつ見せ、最後に現代語訳と並べる。助動詞を押すと活用表と意味</p>
     <ul>
       <li>言いたいこと：文章の構造</li>
       <li>見せ方：1 種類</li>
@@ -946,6 +884,68 @@ document.addEventListener("DOMContentLoaded", function(){
     </m-quad>
   </div>
   <div class="concl"><span>→ 現場の知見を伸びる需要に向ける</span></div>
+</section>
+
+<section class="slide">
+  <h2>m-scatter</h2>
+  <div class="body">
+    <p>散布図。点の組（系列）を段階ごとに出し、そのあと傾向の線（最小二乗の直線か、書いた 2 点）を引く</p>
+    <ul>
+      <li>言いたいこと：2 つの量の関係</li>
+      <li>見せ方：fade・sweep・grow</li>
+      <li>系列：標準パーツ　見本のスライド：3 枚</li>
+    </ul>
+  </div>
+</section>
+
+<section class="slide">
+  <h2>最高気温とアイスの売上：平日と休日（架空）</h2>
+  <div class="body">
+    <m-scatter xr="[20,36]" yr="[0,600]" xt="[20,24,28,32,36]" yt="[0,200,400,600]" xl="最高気温（℃）" yl="売上（個）" style="height:430px">
+      <script type="application/json">{
+        "series": [
+          {"label": "平日", "points": [[21.2, 53], [22.6, 8], [22.9, 144], [27.5, 180], [27.6, 188], [29.0, 268], [29.7, 230], [31.4, 279], [31.7, 316], [33.8, 355], [34.2, 261], [34.2, 281]]},
+          {"label": "休日", "points": [[23.0, 257], [23.3, 269], [23.9, 270], [23.9, 303], [25.1, 321], [29.4, 380], [29.6, 373], [30.5, 379], [33.2, 452], [33.2, 561], [33.5, 446], [34.5, 457]]}
+        ],
+        "trend": [{"fit": "linear", "series": 0, "tone": "series-1", "dash": true}, {"fit": "linear", "series": 1, "tone": "series-2", "dash": true}]
+      }</script>
+    </m-scatter>
+  </div>
+  <div class="concl"><span>→ 休日はどの気温でも平日より多く売れる</span></div>
+</section>
+
+<section class="slide">
+  <h2>傾向の強さと外れた日（架空）</h2>
+  <div class="body">
+    <m-scatter xr="[20,36]" yr="[0,500]" xt="[20,24,28,32,36]" yt="[0,100,200,300,400,500]" xl="最高気温（℃）" yl="売上（個）" style="height:430px">
+      <script type="application/json">{
+        "series": [{"points": [[23.1, 176], [24.0, 206], [24.3, 159], [24.6, 223], [25.2, 314], [26.5, 277], [27.6, 310],
+          {"x": 27.6, "y": 440, "label": "花火大会の日", "anchor": "left"},
+          [29.3, 370], [29.5, 334], [29.8, 361], [29.9, 394], [30.4, 441], [31.1, 442], [31.4, 359], [32.7, 372], [32.7, 439],
+          [33.3, 472], [33.9, 420], [34.1, 428]]}],
+        "trend": {"fit": "linear", "label": "傾向（r = {r}）", "tone": "emph"}
+      }</script>
+    </m-scatter>
+  </div>
+  <div class="concl"><span>→ 暑い日ほど売れる。1 ℃ 上がると約 23 個増える</span></div>
+</section>
+
+<section class="slide">
+  <h2>見せ方の種類（variant）</h2>
+  <div class="body">
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:0 28px">
+      <m-scatter variant="fade" xr="[0,10]" yr="[0,10]" xt="[0,5,10]" yt="[0,5,10]" style="height:400px">
+        <script type="application/json">{"series": [{"label": "フェード（fade、既定）", "points": [[1, 2.2], [2, 2.1], [3, 3.9], [4, 3.6], [5, 5.4], [6, 5.1], [7, 7.2], [8, 6.6], [9, 8.4]]}], "trend": "linear"}</script>
+      </m-scatter>
+      <m-scatter variant="sweep" xr="[0,10]" yr="[0,10]" xt="[0,5,10]" yt="[0,5,10]" style="height:400px">
+        <script type="application/json">{"series": [{"label": "左から（sweep）", "points": [[1, 2.2], [2, 2.1], [3, 3.9], [4, 3.6], [5, 5.4], [6, 5.1], [7, 7.2], [8, 6.6], [9, 8.4]]}], "trend": "linear"}</script>
+      </m-scatter>
+      <m-scatter variant="grow" xr="[0,10]" yr="[0,10]" xt="[0,5,10]" yt="[0,5,10]" style="height:400px">
+        <script type="application/json">{"series": [{"label": "大きくなる（grow）", "points": [[1, 2.2], [2, 2.1], [3, 3.9], [4, 3.6], [5, 5.4], [6, 5.1], [7, 7.2], [8, 6.6], [9, 8.4]]}], "trend": "linear"}</script>
+      </m-scatter>
+    </div>
+  </div>
+  <div class="concl"><span>→ 資料のシード値（data-egatari-seed）で 1 つが選ばれる。数字は架空</span></div>
 </section>
 
 <section class="slide">
