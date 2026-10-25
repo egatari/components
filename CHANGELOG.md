@@ -4,6 +4,12 @@ Versions follow [README.md § Releases and versions](README.md#releases-and-vers
 
 ## Unreleased
 
+### Later (candidates, not in this release)
+
+- `m-compare` `by="row"`; an "outside every set" region for `m-venn`; a project-plan demo for `m-timeline` lanes
+
+## 1.10.0 - 2026-10-26
+
 ### Added
 
 - `m-numberline` (series academic 数理・統計, purpose `compare`; not in the free pack for now): number line. `lines` (1 or 2; `from`, `to`, `step`, `sub`, `label`, `unit`, `labels: "all" | "ends" | "none" | [values]`; by default both line ends are always labelled and only the generated labels between them are thinned, never a label the author named); values are numbers or fractions written `"1/3"`, computed exactly and drawn as stacked fractions (numerator and denominator 24 px), negative numbers with the minus sign (−). `marks` (`dot`, `open`, `box` = □), `jumps` (arcs with arrowheads, either direction; nested arcs are raised above the inner arc and its label), `ranges` (`incl: [bool, bool]`, a missing end runs to the edge with an arrow; overlapping ranges at stacked heights, the shared part drawn thick on the line and shaded), two lines aligned at 0 (比例数直線) with `link` (dashed correspondence lines, or an arrow with a label such as 「×3」), `magnify` (an interval grows into a longer line drawn below, with funnel lines; 10 subdivisions by default; a second entry magnifies the first, 0.1 → 0.01; the motion is a part effect, the same in both variants). `build` orders the kinds (default `ticks,marks,links,jumps,ranges,magnify`, one item per step) or `whole`; an item's `show` sets its step. `arrow="on"`. Variants `fade`, `draw`. The draft name `zoom` became `magnify` (m-bars already has `zoom`)
@@ -23,10 +29,6 @@ Versions follow [README.md § Releases and versions](README.md#releases-and-vers
 ### Fixed
 
 - Demos flagged by Egatari Studio's checker (Studio 77588a4, `kit/check.mjs`): `m-boxplot`'s first conclusion line was 36.5 units long (limit 35, R-concl), now 「→ 小さい順に並べ、中央値と前半・後半の中央値（四分位数）で箱にする」 (34.5); `m-predict`'s body ran 9, 7 and 17 px past the conclusion line on its three slides (R-fit), the elements are now 390, 440 and 2 × 210 px high (were 400, 450, 2 × 220); `m-timer`'s 「時間です」 (above); `m-timer`'s second demo slide sets `labels` in plain style, 「合図で始める」 and 「そこまで。次へ進む」 (were 「合図で始めます」 and 「そこまで。次へ進みます」; the checker only sees the final state, so it did not flag them)
-
-### Later (candidates, not in this release)
-
-- `m-compare` `by="row"`; an "outside every set" region for `m-venn`; a project-plan demo for `m-timeline` lanes
 
 ## 1.9.1 - 2026-10-25
 
