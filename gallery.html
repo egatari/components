@@ -76,7 +76,7 @@ document.addEventListener("DOMContentLoaded", function(){
   <h2>部品の一覧（25 個、83 枚）</h2>
   <div class="body">
     <p>部品ごとに、説明の 1 枚と見本のスライドが続きます。→ で段階を進めます。</p>
-    <p>m-predict（新しい）　m-timer（新しい）　m-kobun（変わった）　m-map-japan（変わった）　m-menu（変わった）　m-bars　m-codetree　m-collect　m-compare　m-curves　m-cycle　m-fishbone　m-flow　m-gendai　m-kanbun　m-kpi　m-market　m-pie　m-quad　m-scatter　m-seq　m-sweep　m-timeline　m-tree　m-venn</p>
+    <p>m-predict（新しい）　m-timer（新しい）　m-bars（変わった）　m-kobun（変わった）　m-map-japan（変わった）　m-menu（変わった）　m-codetree　m-collect　m-compare　m-curves　m-cycle　m-fishbone　m-flow　m-gendai　m-kanbun　m-kpi　m-market　m-pie　m-quad　m-scatter　m-seq　m-sweep　m-timeline　m-tree　m-venn</p>
   </div>
 </section>
 
@@ -154,6 +154,88 @@ document.addEventListener("DOMContentLoaded", function(){
       <li>系列：標準パーツ　見本のスライド：0 枚</li>
     </ul>
   </div>
+</section>
+
+<section class="slide">
+  <h2>m-bars（変わった、v1.7.0）</h2>
+  <div class="body">
+    <p>棒を段階ごとに 0 から伸ばす（縦棒・横棒・組の棒・積み上げ棒）。値の軸の上限を段階で広げて「軸を突き抜ける伸び」も見せられる</p>
+    <ul>
+      <li>伝えたいこと：比べる（量・特徴）・順位・時間での変化・全体と内訳</li>
+      <li>見せ方：1 種類</li>
+      <li>系列：標準パーツ　見本のスライド：4 枚</li>
+    </ul>
+  </div>
+</section>
+
+<section class="slide">
+  <h2>年ごとの売上（架空）</h2>
+  <div class="body">
+    <m-bars unit="億円" digits="1" al="売上" style="height:400px">
+      <script type="application/json">{
+        "groups": [
+          {"label": "1 年目", "value": 0.4},
+          {"label": "2 年目", "value": 1.1},
+          {"label": "3 年目", "value": 2.6},
+          {"label": "4 年目", "value": 7.9, "tone": "emph", "step": 4}
+        ],
+        "scale": [{"step": 4, "max": 9, "at": 0.6}]
+      }</script>
+    </m-bars>
+  </div>
+  <div class="concl"><span>→ 4 年目は前の軸に収まらない伸び</span></div>
+</section>
+
+<section class="slide">
+  <h2>聞き取りで多かった不満（架空）</h2>
+  <div class="body">
+    <m-bars orient="h" unit="人" per-step="0" ticks="false" style="height:400px">
+      <script type="application/json">{
+        "groups": [
+          {"label": "書く時間が足りない", "value": 23, "tone": "emph"},
+          {"label": "数字の転記の誤り", "value": 17},
+          {"label": "書式がそろわない", "value": 12},
+          {"label": "承認が遅い", "value": 7}
+        ]
+      }</script>
+    </m-bars>
+  </div>
+  <div class="concl"><span>→ 一番の不満は書く時間</span></div>
+</section>
+
+<section class="slide">
+  <h2>2 つの系列を並べる（架空）</h2>
+  <div class="body">
+    <m-bars unit="%" style="height:400px">
+      <script type="application/json">{
+        "series": [{"label": "導入前"}, {"label": "導入後"}],
+        "groups": [
+          {"label": "A 部門", "values": [42, 18]},
+          {"label": "B 部門", "values": [35, 15]},
+          {"label": "C 部門", "values": [51, 20]}
+        ]
+      }</script>
+    </m-bars>
+  </div>
+  <div class="concl"><span>→ どの部門でも残業の割合が下がった</span></div>
+</section>
+
+<section class="slide">
+  <h2>売上の内訳を積み上げる（stack。架空）</h2>
+  <div class="body">
+    <m-bars stack="true" unit="億円" digits="1" al="売上" style="height:420px">
+      <script type="application/json">{
+        "series": [{"label": "店頭"}, {"label": "通販"}, {"label": "卸"}],
+        "groups": [
+          {"label": "1 年目", "values": [2.4, 0.6, 1.0]},
+          {"label": "2 年目", "values": [2.5, 1.4, 1.1]},
+          {"label": "3 年目", "values": [2.3, 2.6, 1.2]},
+          {"label": "4 年目", "values": [2.2, 3.9, 1.2], "tone": "emph"}
+        ]
+      }</script>
+    </m-bars>
+  </div>
+  <div class="concl"><span>→ 伸びたのは通販。店頭はほぼ横ばい</span></div>
 </section>
 
 <section class="slide">
@@ -308,88 +390,6 @@ document.addEventListener("DOMContentLoaded", function(){
     </ul>
   </div>
   <div class="concl"><span>短い復習でも、点に差が出た</span></div>
-</section>
-
-<section class="slide">
-  <h2>m-bars</h2>
-  <div class="body">
-    <p>棒を段階ごとに 0 から伸ばす（縦棒・横棒・組の棒・積み上げ棒）。値の軸の上限を段階で広げて「軸を突き抜ける伸び」も見せられる</p>
-    <ul>
-      <li>伝えたいこと：比べる（量・特徴）・順位・時間での変化・全体と内訳</li>
-      <li>見せ方：1 種類</li>
-      <li>系列：標準パーツ　見本のスライド：4 枚</li>
-    </ul>
-  </div>
-</section>
-
-<section class="slide">
-  <h2>年ごとの売上（架空）</h2>
-  <div class="body">
-    <m-bars unit="億円" digits="1" al="売上" style="height:400px">
-      <script type="application/json">{
-        "groups": [
-          {"label": "1 年目", "value": 0.4},
-          {"label": "2 年目", "value": 1.1},
-          {"label": "3 年目", "value": 2.6},
-          {"label": "4 年目", "value": 7.9, "tone": "emph", "step": 4}
-        ],
-        "scale": [{"step": 4, "max": 9, "at": 0.6}]
-      }</script>
-    </m-bars>
-  </div>
-  <div class="concl"><span>→ 4 年目は前の軸に収まらない伸び</span></div>
-</section>
-
-<section class="slide">
-  <h2>聞き取りで多かった不満（架空）</h2>
-  <div class="body">
-    <m-bars orient="h" unit="人" per-step="0" ticks="false" style="height:400px">
-      <script type="application/json">{
-        "groups": [
-          {"label": "書く時間が足りない", "value": 23, "tone": "emph"},
-          {"label": "数字の転記の誤り", "value": 17},
-          {"label": "書式がそろわない", "value": 12},
-          {"label": "承認が遅い", "value": 7}
-        ]
-      }</script>
-    </m-bars>
-  </div>
-  <div class="concl"><span>→ 一番の不満は書く時間</span></div>
-</section>
-
-<section class="slide">
-  <h2>2 つの系列を並べる（架空）</h2>
-  <div class="body">
-    <m-bars unit="%" style="height:400px">
-      <script type="application/json">{
-        "series": [{"label": "導入前"}, {"label": "導入後"}],
-        "groups": [
-          {"label": "A 部門", "values": [42, 18]},
-          {"label": "B 部門", "values": [35, 15]},
-          {"label": "C 部門", "values": [51, 20]}
-        ]
-      }</script>
-    </m-bars>
-  </div>
-  <div class="concl"><span>→ どの部門でも残業の割合が下がった</span></div>
-</section>
-
-<section class="slide">
-  <h2>売上の内訳を積み上げる（stack。架空）</h2>
-  <div class="body">
-    <m-bars stack="true" unit="億円" digits="1" al="売上" style="height:420px">
-      <script type="application/json">{
-        "series": [{"label": "店頭"}, {"label": "通販"}, {"label": "卸"}],
-        "groups": [
-          {"label": "1 年目", "values": [2.4, 0.6, 1.0]},
-          {"label": "2 年目", "values": [2.5, 1.4, 1.1]},
-          {"label": "3 年目", "values": [2.3, 2.6, 1.2]},
-          {"label": "4 年目", "values": [2.2, 3.9, 1.2], "tone": "emph"}
-        ]
-      }</script>
-    </m-bars>
-  </div>
-  <div class="concl"><span>→ 伸びたのは通販。店頭はほぼ横ばい</span></div>
 </section>
 
 <section class="slide">

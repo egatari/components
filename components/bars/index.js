@@ -84,6 +84,11 @@ DECK.define("m-bars", class extends DECK.MotionElement {
     if (st && hor && ns > 1) m.t = Math.max(m.t, P.al ? 40 : 36);
     if (st && !hor){ m.t = 44; if (ns > 1 && serW) m.r = serW + 30; }
     this.x0 = m.l; this.x1 = W - m.r; this.y0 = m.t; this.y1 = H - m.b;
+    // 要素が小さすぎる（高さを書き忘れて 0 px など）：大きさが負にならないように、枠を 0 にして知らせる
+    if (this.x1 < this.x0 || this.y1 < this.y0){
+      console.warn("m-bars: the element (" + W + "×" + H + " px) is too small for the bars; give it a size, e.g. style=\"height:380px\"");
+      this.x1 = Math.max(this.x0, this.x1); this.y1 = Math.max(this.y0, this.y1);
+    }
     this.len = hor ? this.x1 - this.x0 : this.y1 - this.y0;
     // 前の上限までの範囲（上限を動かす間だけ）
     this.band = D.el("rect", {fill: "var(--term-tint)", opacity: 0}, svg);
