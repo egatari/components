@@ -43,6 +43,12 @@ export function lint(root) {
     if (!/^[a-z][a-z-]*$/.test(p.id || '') || seen.has(p.id)) errs.push(`purposes.json: id ${JSON.stringify(p.id)} is not a unique lower-case id`);
     seen.add(p.id);
     if (!p.ja || !p.en || !p.steps || !p.steps.ja || !p.steps.en) errs.push(`purposes.json: ${p.id} needs ja, en and steps.{ja,en}`);
+    // the new-deck tile (Studio builds its tiles from these): reserved ids have none; the others say own, none or {into: <an own tile>}
+    const tile = p.tile, owns = new Set(pj.purposes.filter((q) => q.tile === 'own').map((q) => q.id));
+    if (p.reserved) { if (tile !== undefined) errs.push(`purposes.json: ${p.id} is reserved and must not have a tile yet`); }
+    else if (tile === 'own') { if (!p.label || !p.label.ja || !p.label.en || !p.examples || !p.examples.ja || !p.examples.en) errs.push(`purposes.json: ${p.id} has its own tile and needs label.{ja,en} and examples.{ja,en}`); }
+    else if (tile !== 'none' && !(tile && typeof tile === 'object' && owns.has(tile.into))) errs.push(`purposes.json: ${p.id}: tile must be "own", "none" or {"into": <an id with its own tile>}`);
+    if (!p.reserved && (typeof p.icon !== 'string' || !/^[a-z][a-z0-9-]*$/.test(p.icon))) errs.push(`purposes.json: ${p.id} needs an icon key`);
   }
   for (const d of fs.readdirSync(base, { withFileTypes: true })) {
     const name = d.name, dir = path.join(base, name);

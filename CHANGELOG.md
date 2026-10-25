@@ -4,6 +4,14 @@ Versions follow [README.md § Releases and versions](README.md#releases-and-vers
 
 ## Unreleased
 
+### Added
+
+- `purposes.json`: `tile` (`"own"`, `{"into": id}` or `"none"`), `label`, `icon` and `examples` for each purpose, so that Egatari Studio builds its new-deck tiles from the manifest instead of its own list. 15 tiles: the 14 of 2026-10-24 and `spatial` (場所・地図). `ranking` folds into `compare`; `grouping`, `text-structure` and `parameter` have no tile. Checked by `tools/lint.mjs`
+
+### Changed
+
+- People-facing text calls the purposes 「伝えたいこと」 / "What to convey" (was 言いたいこと); the ids are unchanged
+
 ### Later (candidates, not in this release)
 
 - `m-compare` `by="row"`; an "outside every set" region for `m-venn`; a project-plan demo for `m-timeline` lanes

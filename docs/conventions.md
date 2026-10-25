@@ -201,7 +201,7 @@ The total motion of `draw` and `grow` stays within `fade`'s duration and travel 
 
 ### 4.1 The list of purposes
 
-The purposes a component can serve are listed in one file in this repository (`purposes.json`), taken from the tables in sections 8 and 10 of the parts map. Each entry has an `id`, Japanese and English names, and the default step pattern in words.
+The purposes a component can serve (shown to people as 「伝えたいこと」 / "What to convey") are listed in one file in this repository (`purposes.json`), which is also the single source of Studio's new-deck tiles: `tile` is `"own"`, `{"into": id}` (folded into that tile) or `"none"` (arrives through a subject's part set); `label` is the tile's short name, `icon` an icon key, `examples` the tile's small text. A reserved id has no tile until a component serves it; it then comes with a proposed `tile`, reviewed at release (by the owner if it adds a tile), taken from the tables in sections 8 and 10 of the parts map. Each entry has an `id`, Japanese and English names, and the default step pattern in words.
 
 | id | Purpose | Default steps |
 |---|---|---|

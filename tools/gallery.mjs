@@ -40,7 +40,7 @@ for (const { name, st: mark } of order) {
   <div class="body">
     <p>${esc(f.summary)}</p>
     <ul>
-      <li>言いたいこと：${esc(purposes)}</li>
+      <li>伝えたいこと：${esc(purposes)}</li>
       <li>見せ方：${variants.length ? esc(variants.join('・')) : '1 種類'}</li>
       <li>系列：${esc(SERIES_LABEL[f.series] || f.series)}　見本のスライド：${secs.length} 枚</li>
     </ul>
