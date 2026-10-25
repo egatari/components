@@ -21,18 +21,6 @@
   <div class="concl"><span>→ 平均値・中央値・最頻値は、同じ記録でも違う値になる</span></div>
 </section>
 
-<section class="slide">
-  <h2>50 m 走の記録の度数分布（架空の 40 人）</h2>
-  <div class="body">
-    <m-hist polygon="on" marks="mean,mode" xl="記録（秒）" yl="人数（人）" unit=" 秒" style="height:430px">
-      <script type="application/json">{"table": [
-        {"from": 7.0, "to": 7.5, "count": 2}, {"from": 7.5, "to": 8.0, "count": 5}, {"from": 8.0, "to": 8.5, "count": 9},
-        {"from": 8.5, "to": 9.0, "count": 12}, {"from": 9.0, "to": 9.5, "count": 7}, {"from": 9.5, "to": 10.0, "count": 4},
-        {"from": 10.0, "to": 10.5, "count": 1}]}</script>
-    </m-hist>
-  </div>
-  <div class="concl"><span>→ 度数折れ線は、両端に度数 0 の階級を足して階級値を結ぶ</span></div>
-</section>
 
 <section class="slide">
   <h2>度数を数える：通学時間（架空の 12 人）</h2>
@@ -45,18 +33,18 @@
 </section>
 
 <section class="slide">
-  <h2>見せ方の種類（variant）</h2>
+  <h2>見せ方の種類（variant）：2 組の 50 m 走</h2>
   <div class="body">
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:0 36px">
-      <m-hist variant="fade" polygon="on" xl="フェード（fade、既定）" style="height:400px">
-        <script type="application/json">{"table": [{"from": 0, "to": 10, "count": 3}, {"from": 10, "to": 20, "count": 7}, {"from": 20, "to": 30, "count": 10}, {"from": 30, "to": 40, "count": 6}, {"from": 40, "to": 50, "count": 2}]}</script>
+      <m-hist variant="fade" polygon="on" xl="フェード（fade、既定）" yl="人数（人）" style="height:420px">
+        <script type="application/json">{"series": [{"label": "1 組", "table": [{"from": 7.0, "to": 7.5, "count": 2}, {"from": 7.5, "to": 8.0, "count": 5}, {"from": 8.0, "to": 8.5, "count": 9}, {"from": 8.5, "to": 9.0, "count": 12}, {"from": 9.0, "to": 9.5, "count": 7}, {"from": 9.5, "to": 10.0, "count": 4}, {"from": 10.0, "to": 10.5, "count": 1}]}, {"label": "2 組", "table": [{"from": 7.0, "to": 7.5, "count": 0}, {"from": 7.5, "to": 8.0, "count": 2}, {"from": 8.0, "to": 8.5, "count": 6}, {"from": 8.5, "to": 9.0, "count": 10}, {"from": 9.0, "to": 9.5, "count": 11}, {"from": 9.5, "to": 10.0, "count": 7}, {"from": 10.0, "to": 10.5, "count": 4}]}]}</script>
       </m-hist>
-      <m-hist variant="grow" polygon="on" xl="下から伸びる（grow）" style="height:400px">
-        <script type="application/json">{"table": [{"from": 0, "to": 10, "count": 3}, {"from": 10, "to": 20, "count": 7}, {"from": 20, "to": 30, "count": 10}, {"from": 30, "to": 40, "count": 6}, {"from": 40, "to": 50, "count": 2}]}</script>
+      <m-hist variant="grow" polygon="on" xl="下から伸びる（grow）" yl="人数（人）" style="height:420px">
+        <script type="application/json">{"series": [{"label": "1 組", "table": [{"from": 7.0, "to": 7.5, "count": 2}, {"from": 7.5, "to": 8.0, "count": 5}, {"from": 8.0, "to": 8.5, "count": 9}, {"from": 8.5, "to": 9.0, "count": 12}, {"from": 9.0, "to": 9.5, "count": 7}, {"from": 9.5, "to": 10.0, "count": 4}, {"from": 10.0, "to": 10.5, "count": 1}]}, {"label": "2 組", "table": [{"from": 7.0, "to": 7.5, "count": 0}, {"from": 7.5, "to": 8.0, "count": 2}, {"from": 8.0, "to": 8.5, "count": 6}, {"from": 8.5, "to": 9.0, "count": 10}, {"from": 9.0, "to": 9.5, "count": 11}, {"from": 9.5, "to": 10.0, "count": 7}, {"from": 10.0, "to": 10.5, "count": 4}]}]}</script>
       </m-hist>
     </div>
   </div>
-  <div class="concl"><span>→ 資料のシード値（data-egatari-seed）で 1 つが選ばれる。度数は架空</span></div>
+  <div class="concl"><span>→ 2 組は重ねて比べる（架空の各 40 人）。見せ方はシード値で選ばれる</span></div>
 </section>
 
 

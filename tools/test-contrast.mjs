@@ -1,6 +1,8 @@
 // Text contrast (docs/conventions.md §2.3): in the final state of every demo slide, every SVG text of a component reaches
 // at least 4.5:1 against what is under it (its fill and accumulated opacity, over the filled shapes drawn before it,
-// over --bg), in each of Egatari Studio's themes (the demo is built once per theme).
+// over --bg), in each of Egatari Studio's themes (the demo is built once per theme). Shapes a component marks with
+// class="outline" (graphical outlines that carry meaning, e.g. m-hist's second group drawn dashed over the first) reach 3:1
+// against what is around them (WCAG 1.4.11).
 //   node tools/test-contrast.mjs [name …]
 import fs from 'node:fs';
 import path from 'node:path';
@@ -55,17 +57,42 @@ for (const name of names) for (const theme of THEMES) {
         const fill = rgb(getComputedStyle(e).fill), eff = fill.map((v, j) => v * op + bg[j] * (1 - op));
         const tokens = {}; for (const k of ['--emph', '--term', '--fg', '--muted']) tokens[k] = rgb(getComputedStyle(document.documentElement).getPropertyValue(k).trim()).join();
         const token = Object.keys(tokens).find((k) => tokens[k] === fill.join()) || '';
-        out.push({ slide: i, txt: txt.slice(0, 24), fill: getComputedStyle(e).fill, token, op: +op.toFixed(2), cr: +cr(eff, bg).toFixed(2) });
+        out.push({ slide: i, txt: txt.slice(0, 24), fill: getComputedStyle(e).fill, token, op: +op.toFixed(2), cr: +cr(eff, bg).toFixed(2), min: 4.5 });
+      }
+      // Outlines a component marks with class="outline" (e.g. m-hist's bars, the second group dashed over the first):
+      // the stroke on its top edge (30 % from the left) reaches 3:1 (WCAG 1.4.11) against what is around it there, i.e. --bg and
+      // the filled shapes drawn before it, with the translucent fills drawn after it laid over both
+      for (const c of s._comps) for (const sh of c.querySelectorAll('.outline')) {
+        const op = opa(sh, c), q0 = sh.getBoundingClientRect();
+        if (op < 0.05 || q0.width < 2 || q0.height < 2) continue;
+        const cx = q0.left + q0.width * 0.3, cy = q0.top + 1;   // off the middle, where a marker (a polygon vertex) may sit
+        let under = rgb(getComputedStyle(document.documentElement).getPropertyValue('--bg').trim() || '#fff');
+        const over = [];
+        for (const o of c.querySelectorAll('rect, circle, ellipse, path')) {
+          if (o === sh) continue;
+          const cs = getComputedStyle(o); if (cs.fill === 'none' || cs.fill === 'transparent') continue;
+          const q = o.getBoundingClientRect(); if (!(cx > q.left && cx < q.right && cy > q.top && cy < q.bottom)) continue;
+          if (o.tagName !== 'rect') { const pt = o.ownerSVGElement.createSVGPoint(); pt.x = cx; pt.y = cy; if (!o.isPointInFill(pt.matrixTransform(o.getScreenCTM().inverse()))) continue; }
+          const a = +cs.fillOpacity * opa(o, c); if (a <= 0) continue;
+          const f = rgb(cs.fill);
+          if (sh.compareDocumentPosition(o) & Node.DOCUMENT_POSITION_PRECEDING) under = f.map((v, j) => v * a + under[j] * (1 - a));
+          else over.push([f, a]);
+        }
+        const st = rgb(getComputedStyle(sh).stroke);
+        let line = st.map((v, j) => v * op + under[j] * (1 - op)), around = under;
+        for (const [f, a] of over) { line = f.map((v, j) => v * a + line[j] * (1 - a)); around = f.map((v, j) => v * a + around[j] * (1 - a)); }
+        out.push({ slide: i, txt: 'outline (' + sh.tagName + (sh.getAttribute('stroke-dasharray') ? ', dashed' : '') + ')', fill: getComputedStyle(sh).stroke, token: '', op: +op.toFixed(2), cr: +cr(line, around).toFixed(2), min: 3 });
       }
     }
     return out;
   });
   await p.close();
-  const below = res.filter((x) => x.cr < MIN), known = (THEME_KNOWN[theme] || []);
+  const below = res.filter((x) => x.cr < x.min), known = (THEME_KNOWN[theme] || []);
   const themeLow = below.filter((x) => known.includes(x.token)), low = below.filter((x) => !known.includes(x.token));
   if (themeLow.length) console.log(`theme ${name} (${theme}): ${themeLow.length} text(s) in ${known.join(', ')} below ${MIN}:1 (theme issue, not counted): ${[...new Set(themeLow.map((x) => x.cr))].join(', ')}:1`);
-  if (low.length) { fail++; console.log(`FAIL ${name} (${theme}): ${low.length} of ${res.length} texts below ${MIN}:1`); for (const x of low) console.log(`   s${x.slide} "${x.txt}" ${x.fill} opacity ${x.op} → ${x.cr}:1`); }
-  else console.log(`ok   ${name} (${theme}): ${res.length} texts`);
+  const nOut = res.filter((x) => x.min === 3).length, nText = res.length - nOut;
+  if (low.length) { fail++; console.log(`FAIL ${name} (${theme}): ${low.length} of ${res.length} texts / outlines below ${MIN}:1 (texts) or 3:1 (outlines)`); for (const x of low) console.log(`   s${x.slide} "${x.txt}" ${x.fill} opacity ${x.op} → ${x.cr}:1`); }
+  else console.log(`ok   ${name} (${theme}): ${nText} texts${nOut ? `, ${nOut} outlines (3:1)` : ''}`);
 }
 await b.close();
 console.log(fail ? `\n${fail} demo build(s) with text below ${MIN}:1` : 'test-contrast: ok');

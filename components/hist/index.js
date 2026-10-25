@@ -309,7 +309,11 @@ DECK.define("m-hist", class extends DECK.MotionElement {
       if (bins){
         // 階級の境（度数折れ線のために足した両端の階級には目盛りの数を書かない）
         var ed = bins.edges.filter(function(v){ return v >= xr[0] - 1e-9 && v <= xr[1] + 1e-9; });
-        var every = Math.ceil(ed.length / 13); xt = ed.filter(function(x, j){ return j % every === 0; });
+        // 目盛りの数が重ならないように間引く（目盛りの数の幅＋12 px が、境の間隔の何個分か）
+        var dd0 = Math.max.apply(null, ed.map(function(x){ var mm = String(x).match(/\.(\d+)$/); return mm ? mm[1].length : 0; }).concat([0]));
+        var lw0 = Math.max.apply(null, ed.map(function(x){ return est(x.toFixed(dd0), 24); })) + 12;
+        var pxBin = (W - (dots ? 56 : 130)) * bins.width / (xr[1] - xr[0]);
+        var every = Math.max(Math.ceil(ed.length / 13), Math.ceil(lw0 / Math.max(1, pxBin))); xt = ed.filter(function(x, j){ return j % every === 0; });
       } else { var st1 = dotStep(xr[1] - xr[0]); xt = []; for (var u = Math.ceil(xr[0] / st1 - 1e-9) * st1; u <= xr[1] + st1 * 1e-6; u += st1) xt.push(S.clean(u)); }
     }
     var xf = P.xf !== undefined ? P.xf : Math.max.apply(null, xt.map(function(x){ var m = String(x).match(/\.(\d+)$/); return m ? m[1].length : 0; }).concat([0]));
@@ -325,7 +329,9 @@ DECK.define("m-hist", class extends DECK.MotionElement {
     var yw = Math.max.apply(null, yt.map(function(v){ return est(v.toFixed(yf), 24); }).concat([0]));
     var m = {l: dots ? 28 : Math.max(64, yw + 22 + (yl ? 40 : 0)), r: 28, t: 16, b: P.xl ? 70 : 44};
     // 系列の名前（2 つのとき）：図の上に右寄せで、印と一緒に
-    var legendH = two && pl.ser.some(function(s){ return s.label; }) ? 46 : 0;
+    // 2 組の名前はいつも出す（label が無ければ「1 組目」「2 組目」にして知らせる）
+    if (two) pl.ser.forEach(function(s, i){ if (!s.label){ s.label = ja ? (i + 1) + " 組目" : "Group " + (i + 1); console.warn("m-hist: series " + (i + 1) + " has no label; write \"label\" for the legend"); } });
+    var legendH = two ? 46 : 0;
     // 代表値の名前：図の上の行に、印の線の頭の右か左に置く（ほかの名前と線に重ならない行へ）
     var px0 = m.l, px1 = W - m.r, X = function(v){ return px0 + (v - xr[0]) / (xr[1] - xr[0]) * (px1 - px0); };
     var NAMES = ja ? {mean: "平均値", median: "中央値", mode: "最頻値"} : {mean: "Mean", median: "Median", mode: "Mode"};
@@ -357,7 +363,7 @@ DECK.define("m-hist", class extends DECK.MotionElement {
         s.H = heights(s.counts, s.n);
         s.rects = bins.mids.map(function(mid, b){
           var r = D.el("rect", {x: p.x(bins.edges[b]).toFixed(1), width: Math.max(0, p.x(bins.edges[b + 1]) - p.x(bins.edges[b])).toFixed(1), y: y1, height: 0,
-            fill: s.col, "fill-opacity": two ? 0.16 : 0.26, stroke: s.col, "stroke-width": two ? 3 : 2.5, opacity: 0}, gB);
+            fill: s.col, "fill-opacity": two ? 0.16 : 0.26, stroke: s.col, "stroke-width": two ? 3 : 2.5, opacity: 0, class: "outline"}, gB);
           if (two && si === 1) r.setAttribute("stroke-dasharray", "10 6");
           return r;
         });
@@ -435,7 +441,7 @@ DECK.define("m-hist", class extends DECK.MotionElement {
     // 系列の名前（2 つのとき）
     var lx = W - m.r;
     pl.ser.slice().reverse().forEach(function(s, ri){
-      if (!legendH || !s.label) return;
+      if (!legendH) return;
       var si = pl.ser.length - 1 - ri, w = est(s.label, 24), sx = lx - w - 12 - 30;
       var g = D.el("g", {opacity: 0}, gT);
       if (dots) D.el("path", {d: si ? "M-10,-10H10V10H-10Z" : "M12,0A12,12 0 1,1 -12,0A12,12 0 1,1 12,0Z", fill: s.col, transform: "translate(" + (sx + 15) + " 24)"}, g);

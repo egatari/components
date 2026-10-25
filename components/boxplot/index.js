@@ -241,7 +241,8 @@ DECK.define("m-boxplot", class extends DECK.MotionElement {
         g.stack = 0;
         if (!g.values) return;
         var placed = [];
-        g.dots = S.sorted(g.values).map(function(v){
+        // 外れ値は点の列に置かず、箱の線の上の白抜きの丸だけで示す（同じ値が 2 つの印に見えないように）
+        g.dots = S.sorted(g.values).filter(function(v){ return g.f.out.indexOf(v) < 0; }).map(function(v){
           var x = Vpx(v), lv = 0;
           while (placed.some(function(o){ return o.lv === lv && Math.abs(o.x - x) < 2 * R + 1; })) lv++;
           placed.push({x: x, lv: lv}); g.stack = Math.max(g.stack, lv + 1);
@@ -283,10 +284,13 @@ DECK.define("m-boxplot", class extends DECK.MotionElement {
       o.push({k: "q3", v: q.q3, text: name("q3", q.q3), st: st.q});
       o.push({k: "min", v: f.wlo, text: f.wlo === q.min ? name("min", q.min) : self.fmt(f.wlo) + self.props.unit, st: st.whisk});
       o.push({k: "max", v: f.whi, text: f.whi === q.max ? name("max", q.max) : self.fmt(f.whi) + self.props.unit, st: st.whisk});
-      if (f.out.length && f.out.length <= 3) f.out.forEach(function(v){ o.push({k: "out", v: v, text: N.out + " " + self.fmt(v) + self.props.unit, st: st.whisk}); });
       o.forEach(function(x){ x.w = est(x.text, 24); x.x = X ? X(x.v) : 0; });
       return o;
     };
+    // 外れ値の名前（3 つまで）：どの build でも、白抜きの丸のすぐ横に
+    G.forEach(function(g){
+      g.outLab = g.f.out.length && g.f.out.length <= 3 ? g.f.out.map(function(v){ var t = N.out + " " + self.fmt(v) + self.props.unit; return {v: v, text: t, w: est(t, 24)}; }) : [];
+    });
     var gLabW = labeled ? Math.max.apply(null, G.map(function(g){ return est(g.label, 26); })) : 0;
     var m, p, X, Y;
     var bands = [];
@@ -326,7 +330,8 @@ DECK.define("m-boxplot", class extends DECK.MotionElement {
       var slot = (W - m.l - m.r) / G.length;
       G.forEach(function(g, i){
         g.flags = flagsOf(g, null);
-        var lw = g.flags.length ? Math.max.apply(null, g.flags.map(function(f){ return f.w; })) + 30 : 0;
+        var lw = Math.max(g.flags.length ? Math.max.apply(null, g.flags.map(function(f){ return f.w; })) + 30 : 0,
+                          g.outLab.length ? Math.max.apply(null, g.outLab.map(function(o){ return o.w; })) + 20 : 0);
         var dw = showDots(g) ? g.stack * (2 * R + 3) + 10 : 0;
         var bw = Math.max(36, Math.min(80, slot - lw - dw - 24));
         if (lw + dw + bw + 12 > slot) console.warn("m-boxplot: the groups are too narrow for the names; give the element more width");
@@ -396,11 +401,22 @@ DECK.define("m-boxplot", class extends DECK.MotionElement {
         var xy = pt(v, c);
         add2(D.el("circle", {cx: xy[0].toFixed(1), cy: xy[1].toFixed(1), r: 8, fill: "var(--bg)", stroke: g.col, "stroke-width": 3, opacity: 0}, gB), {st: a("whisk"), at: dur * 0.4, len: dur * 0.4, kind: "fade"});
       });
+      // 外れ値の名前：横向きは丸の外側（小さい外れ値は左、大きい外れ値は右）、縦向きは丸の右
+      g.outLab.forEach(function(o){
+        var xy = pt(o.v, c), x, an;
+        if (hor){
+          var right = o.v > q.q3;
+          x = right ? xy[0] + 18 : xy[0] - 18; an = right ? "start" : "end";
+          if (right && x + o.w > W - 2){ x = xy[0] - 18; an = "end"; }
+          if (!right && x - o.w < 2){ x = xy[0] + 18; an = "start"; }
+        } else { x = xy[0] + 18; an = "start"; }
+        add2(D.mtext(gT, x, xy[1] + 8, o.text, {"text-anchor": an, "font-size": 24, fill: "var(--fg)", opacity: 0}), {st: a("whisk"), at: dur * 0.5, len: dur * 0.3, kind: "fade"});
+      });
       // 書き出す値：h は箱の上の行に、v は箱の右に。細い線で値の位置とつなぐ
       g.flags.forEach(function(fl){
-        var edge = fl.k === "min" || fl.k === "max" ? h * 0.28 : fl.k === "out" ? 10 : h / 2;
+        var edge = fl.k === "min" || fl.k === "max" ? h * 0.28 : h / 2;
         if (hor){
-          var base = c - h / 2 - 14 - fl.row * 34 - (fl.k === "min" || fl.k === "max" || fl.k === "out" ? 0 : 0), tip = base - 9, xv = X(fl.v);
+          var base = c - h / 2 - 14 - fl.row * 34, tip = base - 9, xv = X(fl.v);
           add2(line(gL, [xv, c - edge - 3], [xv, tip], {stroke: "var(--muted)", "stroke-width": 1.5, "stroke-dasharray": "4 4", opacity: 0}), {st: fl.st, at: dur * 0.3, len: dur * 0.4, kind: "fade"});
           add2(D.mtext(gT, fl.a === "start" ? xv + 8 : xv - 8, base, fl.text, {"text-anchor": fl.a, "font-size": 24, fill: "var(--fg)", opacity: 0}), {st: fl.st, at: dur * 0.3, len: dur * 0.4, kind: "fade"});
         } else {
