@@ -2,7 +2,10 @@
 // data/kana/kana.json that carry "glyphFit" (fitted to Klee One).
 //   node tools/kana-proto.mjs
 // The visible glyph is the font Klee One (Fontworks, SIL OFL 1.1). The font is NOT in the repository yet:
-// the page loads it from data/kana/font/KleeOne-SemiBold.ttf (gitignored) or from ?font=<url>.
+// the page loads the kana subset "Klee One Egatari Kana" (derived from Klee One, renamed; see data/kana/README.md)
+// from data/kana/font/KleeOne-SemiBold-kana-egatari.woff2 (gitignored) or from ?font=<url>.
+// Small kana carry "place": {yoko, tate} (SVG matrices); the glyph and our lines are drawn through the same matrix.
+//   &place=yoko|tate|none   placement of small kana (default yoko)
 // For each stroke, a thick round brush runs along OUR centreline (stroke-dasharray) inside an SVG mask,
 // so the glyph appears stroke by stroke in our order and direction. No outline data is stored.
 //
@@ -19,7 +22,7 @@ import { ROOT } from './studio.mjs';
 const DIR = path.join(ROOT, 'data', 'kana');
 const data = JSON.parse(fs.readFileSync(path.join(DIR, 'kana.json'), 'utf8'));
 const chars = Object.fromEntries(Object.entries(data.chars).filter(([, c]) => c.glyphFit)
-  .map(([ch, c]) => [ch, { s: c.strokes.map((s) => s.d), e: c.strokes.map((s) => s.end) }]));
+  .map(([ch, c]) => [ch, { s: c.strokes.map((s) => s.d), e: c.strokes.map((s) => s.end), ...(c.place ? { p: c.place } : {}) }]));
 const fit = [...new Set(Object.values(data.chars).map((c) => c.glyphFit).filter(Boolean))].join(', ');
 
 // Brush widths (0–100 units): wide brush per stroke (default; a number or an array per character in
@@ -56,7 +59,8 @@ const CHARS = ${JSON.stringify(chars)};
 const BRUSH = ${JSON.stringify(BRUSH)};
 const FIT = ${JSON.stringify(fit)};
 const q = new URLSearchParams(location.search);
-const FONT_URL = q.get('font') || 'font/KleeOne-SemiBold.ttf';
+const FONT_URL = q.get('font') || 'font/KleeOne-SemiBold-kana-egatari.woff2';
+const FAMILY = 'Klee One Egatari Kana';
 const NS = 'http://www.w3.org/2000/svg';
 const el = (n, a = {}) => { const e = document.createElementNS(NS, n); for (const k in a) e.setAttribute(k, a[k]); return e; };
 const width = (ch, i) => { const o = BRUSH.overrides[ch]; return Array.isArray(o) ? (o[i] ?? BRUSH.default) : (o ?? BRUSH.default); };
@@ -70,7 +74,9 @@ let uid = 0;
 //   3. narrow brushes (N) along the drawn part again, on top of the guards: the drawn stroke stays visible
 //      where a guard crosses it.
 // All three follow our centrelines only (no outline data). After the last stroke there are no guards.
-function cell(ch, { guide = true, view = 'reveal', grid = true } = {}) {
+function cell(ch, { guide = true, view = 'reveal', grid = true, place = 'yoko' } = {}) {
+  const P = CHARS[ch].p && place !== 'none' ? CHARS[ch].p[place] : null;
+  const g = (child, extra = {}) => { const e = el('g', { ...(P ? { transform: 'matrix(' + P.join(' ') + ')' } : {}), ...extra }); e.appendChild(child); return e; };
   const id = 'm' + (uid++);
   const svg = el('svg', { viewBox: '0 0 100 100', role: 'img', 'aria-label': ch });
   if (view === 'mask' || view === 'brush') svg.appendChild(el('rect', { width: 100, height: 100, fill: '#000' }));
@@ -78,8 +84,8 @@ function cell(ch, { guide = true, view = 'reveal', grid = true } = {}) {
     svg.appendChild(el('rect', { x: 0.25, y: 0.25, width: 99.5, height: 99.5, fill: 'none', stroke: 'var(--grid)', 'stroke-width': 0.5 }));
     svg.appendChild(el('path', { d: 'M50 0V100M0 50H100', stroke: 'var(--grid)', 'stroke-width': 0.4, 'stroke-dasharray': '1.5 1.5', fill: 'none' }));
   }
-  const text = (fill) => { const t = el('text', { x: 0, y: 88, 'font-size': 100, 'font-family': 'KleeKana', fill }); t.textContent = ch; return t; };
-  if (guide && view === 'reveal') svg.appendChild(text('var(--guide)'));
+  const text = (fill) => { const t = el('text', { x: 0, y: 88, 'font-size': 100, 'font-family': FAMILY, fill }); t.textContent = ch; return t; };
+  if (guide && view === 'reveal') svg.appendChild(g(text('var(--guide)')));
   const line = (d, w, color) => el('path', { d, fill: 'none', stroke: color, 'stroke-width': w, 'stroke-linecap': 'round', 'stroke-linejoin': 'round', pathLength: 1 });
   const S = CHARS[ch].s;
   const wide = S.map((d, i) => line(d, width(ch, i), '#fff'));
@@ -88,14 +94,13 @@ function cell(ch, { guide = true, view = 'reveal', grid = true } = {}) {
   const layers = el('g');
   if (view === 'brush') wide.forEach((p) => layers.appendChild(p));
   else [...wide, ...guard, ...narrow].forEach((p) => layers.appendChild(p));
-  if (view === 'mask' || view === 'brush') svg.appendChild(layers);
+  if (view === 'mask' || view === 'brush') svg.appendChild(g(layers));
   else {
     const mask = el('mask', { id, maskUnits: 'userSpaceOnUse', x: 0, y: 0, width: 100, height: 100 });
     mask.appendChild(layers);
     const defs = el('defs'); defs.appendChild(mask); svg.appendChild(defs);
-    const ink = text('var(--ink)');
-    if (view !== 'glyph') ink.setAttribute('mask', 'url(#' + id + ')');
-    svg.appendChild(ink);
+    // the mask is in the glyph's own coordinates: it is referenced by the transformed group
+    svg.appendChild(g(text('var(--ink)'), view !== 'glyph' ? { mask: 'url(#' + id + ')' } : {}));
   }
   // drawn part [0, f] of a path / remaining part [f, 1]; a zero-length dash would still paint a round cap
   const head = (p, f) => { p.setAttribute('stroke-dasharray', '1 1.01'); p.setAttribute('stroke-dashoffset', 1 - f); p.style.visibility = f > 0 ? 'visible' : 'hidden'; };
@@ -129,16 +134,16 @@ function animate(c, ch) {
 }
 
 (async () => {
-  const face = new FontFace('KleeKana', 'url(' + JSON.stringify(FONT_URL) + ')');
+  const face = new FontFace(FAMILY, 'url(' + JSON.stringify(FONT_URL) + ')');
   document.fonts.add(face);
-  try { await face.load(); } catch (e) { document.getElementById('main').textContent = 'Klee One not found at ' + FONT_URL + ' (put KleeOne-SemiBold.ttf in data/kana/font/ or pass ?font=)'; return; }
+  try { await face.load(); } catch (e) { document.getElementById('main').textContent = FAMILY + ' not found at ' + FONT_URL + ' (put KleeOne-SemiBold-kana-egatari.woff2 in data/kana/font/ or pass ?font=)'; return; }
   const main = document.getElementById('main');
   // single-character view; window.show() redraws without reloading the font (used by kana-proto-check.mjs)
   window.show = (o) => {
     main.innerHTML = '';
     document.body.classList.add('one');
     const ch = o.ch, view = o.view || 'reveal';
-    const c = cell(ch, { guide: String(o.guide) !== '0', view, grid: String(o.grid) !== '0' });
+    const c = cell(ch, { guide: String(o.guide) !== '0', view, grid: String(o.grid) !== '0', place: o.place || 'yoko' });
     const fig = document.createElement('figure'); fig.appendChild(c.svg); main.appendChild(fig);
     if (view === 'brush') c.set(+(o.to ?? c.n), +(o.from ?? 0));
     else if (view === 'glyph') c.set(c.n);
@@ -146,10 +151,10 @@ function animate(c, ch) {
     window.cur = c;
   };
   if (q.has('ch')) { window.show(Object.fromEntries(q)); document.body.dataset.ready = '1'; return; }
-  main.innerHTML = '<h1>かなの筆順（Klee One の字形を、独自の中心線で順に見せる試作）</h1><p class="note">字形: Klee One (Fontworks, SIL OFL 1.1). 線の順と向き: data/kana/kana.json (MIT, ' + FIT + ' に位置合わせ). クリックで再生。</p>';
+  main.innerHTML = '<h1>かなの筆順（Klee One の字形を、独自の中心線で順に見せる試作）</h1><p class="note">字形: Klee One Egatari Kana（Klee One (Fontworks, SIL OFL 1.1) のかなだけを取り出し、名前を変えたもの）. 線の順と向き: data/kana/kana.json (MIT, ' + FIT + ' に位置合わせ). クリックで再生。</p>';
   const grid = document.createElement('div'); grid.className = 'grid'; main.appendChild(grid);
   for (const ch of Object.keys(CHARS)) {
-    const c = cell(ch);
+    const c = cell(ch, { place: q.get('place') || 'yoko' });
     const fig = document.createElement('figure'); fig.appendChild(c.svg);
     const cap = document.createElement('figcaption'); cap.textContent = ch + ' ' + c.n + '画'; fig.appendChild(cap);
     fig.addEventListener('click', () => animate(c, ch));

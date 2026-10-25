@@ -17,7 +17,7 @@ Not included: ゐ ゑ ヰ ヱ (historical kana), the vertical-writing form of �
 | `../../tools/kana-sheet.mjs` | Rebuilds the sheet: `node tools/kana-sheet.mjs --pdf` (run `node tools/studio.mjs` once first for the browser) |
 | `../../tools/test-kana-data.mjs` | Validates `kana.json`: `node tools/test-kana-data.mjs` (not yet in `test-all`) |
 | `../../tools/kana-path.mjs` | Small SVG path reader shared by the scripts |
-| `proto.html` | Prototype of the stroke-by-stroke reveal over the font Klee One (all 166 characters). Built by `node tools/kana-proto.mjs`; needs the font at `data/kana/font/KleeOne-SemiBold.ttf` (gitignored, not in the repository yet) or `?font=<url>` |
+| `proto.html` | Prototype of the stroke-by-stroke reveal over the font Klee One (all 166 characters). Built by `node tools/kana-proto.mjs`; needs the font subset at `data/kana/font/KleeOne-SemiBold-kana-egatari.woff2` (gitignored, not in the repository yet; see "The font") or `?font=<url>`; `?place=tate` shows small kana in vertical-writing placement |
 | `../../tools/kana-proto-check.mjs` | Measures the reveal in headless Chrome (coverage, leaks onto later strokes) and renders frames: `node tools/kana-proto-check.mjs OUTDIR --frames` |
 
 ## Licence and provenance
@@ -96,6 +96,20 @@ How the derived characters were made (our data only; the glyph was looked at, ne
     The path starts and ends at the bottom point.
   - Not in the set, recorded for later: ○ (丸, the symbol) also starts at the bottom and goes clockwise;
     〇 (零, the kanji numeral) starts at the **top** and goes **anticlockwise**.
+- **`loop`** (optional, `true`) marks a stroke with a 結び (a small loop the stroke closes by crossing itself):
+  す・な・ぬ・ね・は・ほ・ま・み・む・よ and their derived forms (ず・ば・ぱ・ぼ・ぽ・ょ). Every 結び turns **clockwise on
+  screen** (y down), the same way as な's, which the owner checked: in よ・は・ほ・ま the vertical comes down through
+  the crossing, turns left along the bottom of the loop, comes up, and crosses to the right along its top into the
+  final stroke. (Before 2026-10-26, よ・は・ほ・ま and their derived forms turned anticlockwise; fixed.)
+- **`place`** (small kana only): `{"yoko": [a, b, c, d, e, f], "tate": [...]}`, two SVG matrices
+  (`matrix(a b c d e f)`, here a uniform scale and a move) that put the small kana in the square: in horizontal
+  writing (**yoko**) inside the **lower-left quarter**, in vertical writing (**tate**) inside the **upper-right
+  quarter**, each with a 3-unit margin. The glyph and our lines are drawn through the **same** matrix, so the stroke
+  data itself stays in glyph coordinates. `tate` is `yoko` moved by (+50, −50): translation only. Klee One has
+  `vert` alternates for all 22 small kana, and they are the horizontal outlines moved (by about +12 to +16 across
+  and −7 to −14 down; ゃ also has 6 of its 125 points moved slightly), so they carry nothing that translation does not;
+  a component does not need the `vert` feature. The scale fits the union of the glyph's outline box (read from the
+  font's metrics) and our lines widened by 4 units into the 44-unit quarter, centred.
 
 ### Validation (`tools/test-kana-data.mjs`)
 
@@ -104,11 +118,14 @@ How the derived characters were made (our data only; the glyph was looked at, ne
   半濁音 = base + 1, small kana = base, ー = 1);
 - derived characters name the right `base`, and a 濁音・半濁音 without `refit` starts with exactly its base's strokes;
 - every `d` parses, every `end` is one of the three values, every sampled point stays inside `0..box`;
-- each `source` names an entry of `sources`.
+- each `source` names an entry of `sources`;
+- every small kana has `place`; tate = yoko moved by (+50, −50); our lines (widened by 4 units) lie inside the right
+  quarter in both modes (the rendered ink is checked in the browser by `kana-proto-check.mjs`, see below);
+- every `loop` stroke crosses itself and every loop it closes turns clockwise on screen, like な.
 
 ## Reveal prototype (`proto.html`)
 
-The visible glyph is Klee One (Fontworks, SIL OFL 1.1), drawn as SVG `<text>`, with a light-grey copy under it
+The visible glyph is **Klee One Egatari Kana**, a font derived from Klee One (see "The font" below), drawn as SVG `<text>`, with a light-grey copy under it
 as a guide. It is shown through an SVG mask built only from our centrelines, in three layers:
 
 1. a **wide** round brush (13 units) along the drawn part of each stroke (`stroke-dasharray` / `pathLength="1"`),
@@ -121,6 +138,35 @@ as a guide. It is shown through an SVG mask built only from our centrelines, in 
 After the last stroke there are no guards, so the full glyph shows (checked: 100 % of the glyph's pixels for all 166).
 What still shows early is the ink two strokes share where they cross (e.g. あ, き, せ, ね, ぬ): a mask cannot split
 it. Per-character widths can be set in `proto-brush.json` (`{"あ": [13, 12, 13]}`); none is needed now.
+
+`kana-proto-check.mjs` also renders each small kana through `place.yoko` and `place.tate` and checks that its ink
+lies inside the right quarter (all 22 pass).
+
+## The font: Klee One Egatari Kana (derived from Klee One)
+
+The part shows the glyphs of a font **derived from Klee One** (Fontworks Inc., SIL Open Font License 1.1, version
+1.100, from github.com/google/fonts `ofl/kleeone`, commit 130fcfb0ff422fec96b335616b2ca99f91914792). It is not in the
+repository yet; the prototype loads it from `data/kana/font/` (gitignored).
+
+- Family **Klee One Egatari Kana**, PostScript name `KleeOneEgatariKana-SemiBold` (file
+  `KleeOne-SemiBold-kana-egatari.woff2`), so it cannot shadow or collide with an unmodified Klee One on the same
+  page; use this family name in CSS `@font-face`. Name IDs 1, 3, 4, 6, 16 and 17 changed; the copyright line
+  (ID 0: "Copyright 2020 The Klee Project Authors (https://github.com/fontworks-fonts/Klee)") and the licence
+  (IDs 13, 14) are kept. Ship it with Klee One's `OFL.txt`. Klee One declares no Reserved Font Name.
+- Note: name ID 7 says "Klee is a trademark of Fontworks Inc."; the family name still contains "Klee".
+
+### FONTLOG
+
+- 2026-10-26 — Subset of Klee One SemiBold 1.100 to the 166 characters of `kana.json` plus `、。・「」` and the
+  full-width space (202 glyphs, with their `vert` alternates), WOFF2; family renamed as above.
+  **No glyph outline was changed.** Reviewed by the owner (round 2):
+  - と: the owner asked for strokes 1 and 2 to touch. In Klee One they already touch: と is a single contour
+    in which stroke 1 runs into stroke 2. What looked separate was our animation (stroke 1's line stopped short
+    of stroke 2); stroke 1's centreline now runs into stroke 2 (と, ど). No font change.
+  - ク・タ: the owner asked for stroke 1 to overshoot stroke 2 less (now about 5.0 units in ク and 4.6 in タ above
+    the top edge of stroke 2's bar). In Klee One, strokes 1 and 2 of ク and タ (and グ, ダ) are **one merged
+    contour**, so they cannot be moved or shortened as whole contours; per the review rule the outline was not
+    edited point by point. Left unchanged pending a decision.
 
 ## Sources for order and count
 

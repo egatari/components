@@ -69,7 +69,7 @@ function distTo(pts, x, y) {
   return best;
 }
 
-const report = {};
+const report = {}, placeFail = [];
 for (const [ch, c] of chars) {
   const n = c.strokes.length, pts = c.strokes.map((s) => samplePath(s.d, 48));
   const G = await lum(await shot({ ch, view: 'glyph', guide: 0, grid: 0 }));
@@ -113,16 +113,31 @@ for (const [ch, c] of chars) {
     needWidth: needW,
   };
   const r = report[ch];
+  // small kana: the rendered ink, through each placement, must lie inside its quarter
+  if (c.place) {
+    r.place = {};
+    for (const [mode, qx, qy] of [['yoko', 0, 50], ['tate', 50, 0]]) {
+      const P = await lum(await shot({ ch, view: 'glyph', guide: 0, grid: 0, place: mode }));
+      let x0 = S, y0 = S, x1 = -1, y1 = -1;
+      for (let p = 0; p < S * S; p++) if (P[p] < 200) { const x = p % S, y = Math.floor(p / S); x0 = Math.min(x0, x); x1 = Math.max(x1, x); y0 = Math.min(y0, y); y1 = Math.max(y1, y); }
+      const box = [x0 / U, y0 / U, (x1 + 1) / U, (y1 + 1) / U].map((v) => +v.toFixed(1));
+      const inside = box[0] >= qx && box[2] <= qx + 50 && box[1] >= qy && box[3] <= qy + 50;
+      r.place[mode] = { inkBox: box, inside };
+      if (!inside) placeFail.push(`${ch} ${mode} ${JSON.stringify(box)}`);
+    }
+  }
   console.log(`${ch}  cover ${r.coverage}%  missing ${r.missingPx}px ${r.missingPx ? JSON.stringify(r.missingAt) + ' box ' + JSON.stringify(r.missingBox) : ''}  leak ${JSON.stringify(r.leakPx)} outside-crossing ${JSON.stringify(r.leakOutsideCrossingPx)}  hidden ${JSON.stringify(r.hiddenDrawnPx)}  needW ${JSON.stringify(needW)}`);
 }
 fs.writeFileSync(path.join(OUT, 'report.json'), JSON.stringify(report, null, 1));
+const nPlaced = Object.values(report).filter((r) => r.place).length;
+if (nPlaced) console.log(placeFail.length ? `placement: ${placeFail.length} outside their quarter: ${placeFail.join('; ')}` : `placement: all ${nPlaced} small kana inside their quarter (yoko lower-left, tate upper-right)`);
 
 if (FRAMES) {
   const fdir = path.join(OUT, 'frames'); fs.mkdirSync(fdir, { recursive: true });
   const small = await browser.newPage({ viewport: { width: 240, height: 240 } });
   await open(small);
   await small.addStyleTag({ content: 'body.one svg { width: 240px !important; height: 240px !important; }' });
-  const rows = [];
+  const rows = [], tateRows = [];
   for (const [ch, c] of chars) {
     const n = c.strokes.length, files = [];
     for (let k = 1; k <= n; k++) {
@@ -130,6 +145,11 @@ if (FRAMES) {
       await show(page, { ch, k }, f); files.push(f);
     }
     rows.push([ch, n, files]);
+    if (c.place) {
+      const tf = [];
+      for (let k = 1; k <= n; k++) { const f = path.join(fdir, `${ch}-tate-${k}.png`); await show(page, { ch, k, place: 'tate' }, f); tf.push(f); }
+      tateRows.push([ch, n, tf]);
+    }
     // animation frames -> GIF
     const ff = (() => { try { execFileSync('ffmpeg', ['-version'], { stdio: 'ignore' }); return true; } catch { return false; } })();
     if (ff) {
@@ -161,6 +181,7 @@ if (FRAMES) {
   }
   const rest = rows.filter(([ch]) => !done.has(ch));
   if (rest.length) pages.push(['other', rest]);
+  if (tateRows.length) pages.push(['small-tate', tateRows]);
   const sheet = await browser.newPage({ viewport: { width: 1200, height: 800 } });
   for (const [name, rs] of pages) {
     const body = rs.map(([ch, n, files]) => `<div class="r"><b>${ch}</b>${files.map((f, k) =>

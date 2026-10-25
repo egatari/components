@@ -53,6 +53,11 @@ function cell(ch, c) {
       + `<circle cx="${f1(x)}" cy="${f1(y)}" r="5.2" fill="${s.color}" stroke="#fff" stroke-width="0.8"/>`
       + `<text x="${f1(x)}" y="${f1(y + 2.5)}" text-anchor="middle" font-size="7.2" font-weight="700" fill="#fff">${s.i + 1}</text>`;
   }
+  // small kana: drawn through their horizontal-writing placement (lower-left quarter), like the part shows them
+  if (c.place) {
+    const grid = svg.indexOf('/>', svg.indexOf('M50 0V100')) + 2;   // after the frame and the centre lines
+    svg = svg.slice(0, grid) + `<g transform="matrix(${c.place.yoko.join(' ')})">` + svg.slice(grid) + '</g>';
+  }
   const ends = strokes.map((s) => `${CIRC[s.i]}${END[s.end]}`).join(' ');
   const src = data.sources[c.source]?.label ?? c.source;
   return `<div class="cell${c.verified ? '' : ' unv'}">
