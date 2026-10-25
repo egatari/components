@@ -10,6 +10,7 @@
 //   字-字        竪点（続けて読む熟語。返り点はまとまり全体に効く）    、。        句読点（白文では出さない）
 // 段階（phases の順。既定は kunten order kaki）：段階 0 は白文 → kunten 訓点（返り点・送り仮名）→ order 読む順（目が字を順にたどり、
 // 返り点で上へ戻るところに弧を描く）→ kaki 書き下し文（左に縦書きで）。読む順の計算は DECK.kanbun.order（試験は tools/test-kokugo.mjs）
+// order は既定（order-by="col"）で列（句）ごとに 1 段階：読む順の字を、字の列が変わるところで切る。order-by="all" で全体を 1 段階（v1.3.0 まで）
 (function(){
 "use strict";
 var D = window.DECK;
@@ -163,8 +164,18 @@ function kakikudashi(chars, o){
   });
   return lines.filter(function(l){ return l.length; });
 }
+// 読む順の段階の分け方：stepGroups(chars, ce, by) → [{a, b}]（字の事柄 ce の範囲 [a, b)）。by = "col"（既定）は、字の列が
+// 変わるところで切る（続けて同じ列を読む間が 1 段階。返り点・再読文字で前の列へ戻れば、そこからまた別の段階）。"all" は全体で 1 つ
+function stepGroups(chars, ce, by){
+  var groups = [];
+  if (String(by).trim() !== "all") ce.forEach(function(ev, m){
+    if (!groups.length || chars[ev.c].col !== chars[ce[m - 1].c].col) groups.push({a: m, b: m + 1});
+    else groups[groups.length - 1].b = m + 1;
+  });
+  return groups.length ? groups : [{a: 0, b: ce.length}];
+}
 var plain = function(line){ return line.map(function(s){ return s.t; }).join(""); };
-D.kanbun = {parse: parse, order: order, kakikudashi: kakikudashi, charEvents: charEvents, hira: hira,
+D.kanbun = {parse: parse, order: order, kakikudashi: kakikudashi, charEvents: charEvents, hira: hira, stepGroups: stepGroups,
   // 文字列から書き下し文の文字列（行は改行でつなぐ）
   yomi: function(src){ var p = parse(src), o = order(p.chars); return kakikudashi(p.chars, o).map(plain).join("\n"); }};
 if (!D.MotionElement) return;   // 試験（Node）では読み取りと順だけ
@@ -188,20 +199,35 @@ D.define("m-kanbun", class extends D.MotionElement {
     phases: {type: "string", default: "kunten order kaki", doc: "段階の並び（kunten 訓点・order 読む順・kaki 書き下し文から選ぶ）"},
     kaki:   {type: "number", default: 36, doc: "書き下し文の字の大きさ（px）"},
     nums:   {type: "bool", default: true, doc: "読む順の番号を字の左上に出す"},
+    "order-by": {type: "string", default: "col", doc: "読む順の段階の分け方：col は列（句）ごとに 1 段階、all は読む順の全体で 1 段階（v1.3.0 まで）"},
   };
   get phaseList(){
     var a = String(this.props.phases || "").split(/[\s,]+/).filter(function(x){ return PH.indexOf(x) >= 0; });
     return a.length ? a : PH.slice();
   }
-  get steps(){ return this.getAttribute("steps") !== null ? +this.getAttribute("steps") : this.phaseList.length; }
-  // 段階 name の番号（1 から）。phases になければ 0
-  phaseStep(name){ return this.phaseList.indexOf(name) + 1; }
+  // 読み取りと読む順（段階の数を決めるので mount の前にも読む）。groups：読む順の段階ごとの字の事柄の範囲（stepGroups）
+  get kd(){
+    if (!this._kd){
+      var p = parse(this._src !== undefined ? this._src : this.textContent), o = order(p.chars), ce = charEvents(o);
+      this._kd = {p: p, o: o, ce: ce, groups: stepGroups(p.chars, ce, this.props["order-by"])};
+    }
+    return this._kd;
+  }
+  // 段階の並び：phases の各段階。order は groups の数だけ（{name, g}）
+  get stepList(){
+    var G = this.kd.groups;
+    return this.phaseList.reduce(function(a, name){ return a.concat(name === "order" ? G.map(function(g){ return {name: name, g: g}; }) : [{name: name}]); }, []);
+  }
+  get steps(){ return this.getAttribute("steps") !== null ? +this.getAttribute("steps") : this.stepList.length; }
+  // 段階 name の（最初の）番号（1 から）。phases になければ 0
+  phaseStep(name){ var L = this.stepList; for (var i = 0; i < L.length; i++) if (L[i].name === name) return i + 1; return 0; }
   mount(){
-    var self = this, P = this.props, src = this.textContent;
+    var self = this, P = this.props;
+    this._src = this.textContent;
     var S = P.size, F = Math.max(24, Math.round(S * 0.42));
-    var p = parse(src), o = order(p.chars), kaki = kakikudashi(p.chars, o);
+    var kd = this.kd, p = kd.p, o = kd.o, kaki = kakikudashi(p.chars, o);
     p.warnings.concat(o.warnings).forEach(function(w){ console.warn("m-kanbun: " + w); });
-    this.k = {p: p, o: o, ce: charEvents(o), kaki: kaki};
+    this.k = {p: p, o: o, ce: kd.ce, kaki: kaki, groups: kd.groups};
     this.textContent = "";
     this.classList.add("plot", "kanbun");
     this.style.display = "block"; this.style.position = "relative";
@@ -352,17 +378,19 @@ D.define("m-kanbun", class extends D.MotionElement {
     });
   }
   duration(k){
-    var name = this.phaseList[k - 1], n = this.k ? this.k.ce.length : 0;
+    var st = this.stepList[k - 1], name = st && st.name;
     if (name === "kunten") return 0.9;
-    if (name === "order") return n * this.props.slot + 0.3;
+    if (name === "order") return (st.g.b - st.g.a) * this.props.slot + 0.3;
     if (name === "kaki") return (this.kakiLines ? this.kakiLines.length : 1) * 0.3 + 0.45;
     return 0;
   }
-  // 読む順の段階：列が変わる字（2 列目からの各列の読み始め）の時刻。口述原稿の {cue} を句ごとに置ける
+  // 読む順の段階：その段階の中で列が変わる字（order-by="all" では 2 列目からの各列の読み始め）の時刻。
+  // order-by="col" では列が変わるところで段階が分かれるので、段階の中に合図はない
   cues(k){
-    if (this.phaseList[k - 1] !== "order" || !this.k) return null;
-    var ce = this.k.ce, ch = this.k.p.chars, slot = this.props.slot, out = [];
-    for (var m = 1; m < ce.length; m++) if (ch[ce[m].c].col !== ch[ce[m - 1].c].col) out.push(+(m * slot).toFixed(4));
+    var st = this.stepList[k - 1];
+    if (!st || st.name !== "order") return null;
+    var ce = this.kd.ce, ch = this.kd.p.chars, slot = this.props.slot, a = st.g.a, out = [];
+    for (var m = a + 1; m < st.g.b; m++) if (ch[ce[m].c].col !== ch[ce[m - 1].c].col) out.push(+((m - a) * slot).toFixed(4));
     return out.length ? out : null;
   }
   render(k, t){
@@ -370,7 +398,11 @@ D.define("m-kanbun", class extends D.MotionElement {
     // 段階 name の進み：まだなら -1、済んだら Infinity、今なら t。phases になければ、訓点は初めから済み、ほかは来ない
     var at = function(name){ var s = self.phaseStep(name); if (!s) return name === "kunten" ? Infinity : -1; return k > s ? Infinity : k < s ? -1 : t; };
     var pr = function(tt, a, d){ return tt < 0 ? 0 : D.prog(tt, a, d); };
-    var tk = at("kunten"), to = at("order"), tw = at("kaki");
+    var tk = at("kunten"), tw = at("kaki");
+    // 読む順の段階は groups の数だけ続く（first から last）。今の段階の範囲 [a, a + len) と、その中の時刻 to
+    var first = this.phaseStep("order"), G = this.k.groups, last = first ? first + G.length - 1 : 0;
+    var started = first > 0 && k >= first, done = started && k > last, a = 0, len = 0, to = -1;
+    if (started && !done){ a = G[k - first].a; len = G[k - first].b - a; to = t; }
     var eK = pr(tk, 0, 0.4), eO = pr(tk, 0.3, 0.45), eP = pr(tk, 0.45, 0.3);
     this.cells.forEach(function(e){
       e.kaeri.forEach(function(x){ x.style.opacity = eK.toFixed(3); });
@@ -379,35 +411,38 @@ D.define("m-kanbun", class extends D.MotionElement {
       if (e.join) e.join.style.opacity = eK.toFixed(3);
       e.bg.style.opacity = 0;
       // 置き字は読む順の段階から薄くする（読まない字）
-      e.ch.style.color = e.c.oki && to !== -1 ? "var(--muted)" : "";
+      e.ch.style.color = e.c.oki && started ? "var(--muted)" : "";
     });
     // 読む順：事柄 m は m * slot 秒に始まる。今の事柄 j
-    var ce = this.k.ce, n = ce.length, j = -1, done = to === Infinity;
+    // 段階の終わりの 0.3 秒（tail）で、今の字の印（目の枠・朱の字）を消し、弧を読み終えた濃さにする：段階の長さの時点で最後の状態と同じ
+    var ce = this.k.ce, n = ce.length, j = -1, tail = done ? 1 : to >= 0 ? pr(to - len * slot, 0, 0.25) : 0;
     if (done) j = n;
-    else if (to >= 0) j = Math.max(0, Math.min(n - 1, Math.floor(to / slot)));
+    else if (to >= 0) j = a + Math.max(0, Math.min(len - 1, Math.floor(to / slot)));
+    // 事柄 m の始まりからの時刻
+    var lt = function(m){ return to - (m - a) * slot; };
     var seen = {}, numFade = 1 - 0.6 * pr(tw, 0, 0.45);   // 書き下し文が出るときに番号を薄くする
     ce.forEach(function(ev, m){
-      var e = self.cells[ev.c], v = m < j ? 1 : m === j ? pr(to - m * slot, 0.12 * slot, 0.3 * slot) : 0;
+      var e = self.cells[ev.c], v = m < j ? 1 : m === j ? pr(lt(m), 0.12 * slot, 0.3 * slot) : 0;
       if (v > 0) seen[ev.c] = Math.max(seen[ev.c] || 0, v);
       ev.num.style.opacity = self.props.nums ? (v * numFade).toFixed(3) : 0;
     });
     Object.keys(seen).forEach(function(c){ self.cells[c].bg.style.opacity = (seen[c] * 0.9).toFixed(3); });
     var fade = 1 - pr(tw, 0, 0.45);   // 書き下し文が出るときに弧を薄くする
     this.jumps.forEach(function(J){
-      var d = J.m < j ? 1 : J.m === j ? pr(to - J.m * slot, 0, 0.35 * slot) : 0;
+      var d = J.m < j ? 1 : J.m === j ? pr(lt(J.m), 0, 0.35 * slot) : 0;
       J.path.setAttribute("stroke-dashoffset", (1 - d).toFixed(4));
       J.head.setAttribute("opacity", d >= 0.98 ? 1 : 0);
-      J.g.setAttribute("opacity", d <= 0 ? 0 : ((J.m === j && !done ? 1 : 0.55) * fade).toFixed(3));
+      J.g.setAttribute("opacity", d <= 0 ? 0 : ((J.m === j && !done ? 1 - 0.45 * tail : 0.55) * fade).toFixed(3));
     });
     // 目：前の字から今の字へ 0.35 slot で動く。読み終えたら消える
-    if (j >= 0 && j < n && !done){
+    if (j >= 0 && j < n && !done && tail < 1){
       var cur = this.cells[ce[j].c], prev = j > 0 ? this.cells[ce[j - 1].c] : cur;
       // 同じ列の中では滑らせ、列が変わるとき（次の句へ）は今の字で現れる
-      var e2 = pr(to - j * slot, 0, 0.35 * slot), hop = prev.c.col !== cur.c.col;
+      var e2 = pr(lt(j), 0, 0.35 * slot), hop = prev.c.col !== cur.c.col;
       var x = hop ? cur.x : D.lerp(prev.x, cur.x, e2), y = hop ? cur.y : D.lerp(prev.y, cur.y, e2);
       this.eye.style.left = (x - 8).toFixed(2) + "px"; this.eye.style.top = (y - 8).toFixed(2) + "px";
-      this.eye.style.opacity = (j === 0 ? pr(to, 0, 0.15) : hop ? e2 : 1).toFixed(3);
-      cur.ch.style.color = "var(--emph)";
+      this.eye.style.opacity = ((j === 0 ? pr(to, 0, 0.15) : hop ? e2 : 1) * (1 - tail)).toFixed(3);
+      cur.ch.style.color = tail > 0 ? "color-mix(in srgb, var(--emph) " + (100 * (1 - tail)).toFixed(1) + "%, var(--fg))" : "var(--emph)";
     } else this.eye.style.opacity = 0;
     // 書き下し文：行ごとに 0.3 秒ずつ遅らせて出す
     this.kakiLines.forEach(function(d, L){ d.style.opacity = pr(tw, L * 0.3, 0.45).toFixed(3); });

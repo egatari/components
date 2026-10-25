@@ -6,8 +6,19 @@ Versions follow [README.md § Releases and versions](README.md#releases-and-vers
 
 ### Later (candidates, not in this release)
 
-- `m-kanbun`, `m-kobun`: some steps are not complete at their declared length (`tools/test-duration.mjs` lists them as known; they may hold their last frame on purpose; check before changing)
 - `m-compare` `by="row"`; an "outside every set" region for `m-venn`; a project-plan demo for `m-timeline` lanes
+
+## 1.4.0 - 2026-10-25
+
+### Changed
+
+- `m-kanbun`: **the number of steps changes.** The reading-order phase (`order`) is now one step per line (column, one 句 of a poem) instead of one step for the whole text: the default `phases="kunten order kaki"` gives kunten 1 + one step per column read + kaki 1. A new step starts wherever the reading moves to another column (where `cues(k)` used to fire; a return to an earlier column by 返り点 or a 再読文字 starts a step of its own). Each step lasts (characters read in it) × `slot` + 0.3 s; `slot` is unchanged and earlier columns stay marked. **Lessons moving to this version must re-align their narration `[n]` (one `[n]` per 句).** `order-by="all"` keeps the old single step, with the same drawing and timing as 1.3.0. The README says it in one pack-visible sentence; the demo's first and third slides show per-line steps, the second keeps `order-by="all"`. `DECK.kanbun.stepGroups` gives the grouping (tested in `tools/test-kokugo.mjs`)
+
+### Fixed
+
+- `m-kanbun` (issue #2): at the end of a reading-order step, the current-character highlight (red frame and red glyph) and the bright arc fade out during the step's last 0.3 s, so the picture at the step's declared length equals its final state (before, they stayed until the next step)
+- `m-kobun`: the translation step (0.6 s) staggered its lines by 0.12 s each, so with more than two sentences the last lines were still fading in after the step ended; the stagger is now shortened to fit the step (unchanged for one or two sentences)
+- `tools/test-duration.mjs`: no component is listed as known any more (`m-kanbun` and `m-kobun` pass)
 
 ## 1.3.0 - 2026-10-25
 
