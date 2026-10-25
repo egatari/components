@@ -223,7 +223,7 @@ var EN = {ready: "Ready?", total: "Total", remaining: "Remaining", done: "Time's
 var CSS = [
   "m-timer .tm-say{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}",
   "m-timer .tm-ctl{position:absolute;display:flex;gap:12px}",
-  "m-timer .tm-btn{min-width:112px;height:52px;padding:0 14px;font:700 26px/1 var(--font-cap,var(--font-sans,sans-serif));color:var(--fg);background:var(--bg);border:2px solid var(--term);border-radius:8px;cursor:pointer;touch-action:manipulation}",
+  "m-timer .tm-btn{min-width:112px;height:52px;padding:0 14px;font:700 27px/1 var(--font-cap,var(--font-sans,sans-serif));color:var(--fg);background:var(--bg);border:2px solid var(--term);border-radius:8px;cursor:pointer;touch-action:manipulation}",
   "m-timer .tm-btn:active{background:var(--term-tint)}",
   "m-timer .tm-btn:focus-visible{outline:3px solid var(--emph);outline-offset:2px}",
   "@media print{m-timer .tm-ctl{display:none!important}}",
