@@ -377,10 +377,14 @@ var CALC = (function(){
         M.add({t: "focus", r0: rQ, r1: rQ, p0: c2, p1: c2, g: gk});
         while (x !== q){
           var big = x > q, tryItems = [dig], kd = digitsOf(x * d), kl = c2 + kd.length - 1;
-          var gk2 = M.ph(grp, "kari-mul");
-          kd.forEach(function(v, i){ tryItems.push(M.add({t: "d", r: R.rowP, p: kl - i, s: String(v), g: gk2})); });
-          M.cap(R.rowP, gk2, "かける：" + d + "×" + x + "＝" + x * d);
-          M.add({t: "focus", r0: R.rowP, r1: R.rowP, p0: kl, p1: c2, g: gk2});
+          // 積が わられる部分 より左にはみ出す（99÷14 の 126）：列には書かず、言葉だけで言う（図の幅を変えない）
+          var wide = big && kl > Math.max(partialLeft, c2);
+          if (!wide){
+            var gk2 = M.ph(grp, "kari-mul");
+            kd.forEach(function(v, i){ tryItems.push(M.add({t: "d", r: R.rowP, p: kl - i, s: String(v), g: gk2})); });
+            M.cap(R.rowP, gk2, "かける：" + d + "×" + x + "＝" + x * d);
+            M.add({t: "focus", r0: R.rowP, r1: R.rowP, p0: kl, p1: c2, g: gk2});
+          }
           var rr = P - x * d, kleft = Math.max(partialLeft, kl);
           if (!big){
             var gk3 = M.ph(grp, "kari-sub"), rdg = digitsOf(rr);
@@ -391,14 +395,14 @@ var CALC = (function(){
           }
           var gfix = M.ph(grp, "fix"), nx = big ? x - 1 : x + 1;
           tryItems.push(M.add({t: "slash", r: rQ, p: c2, g: gfix, l: 0.25}));
-          tryItems.push(M.add({t: "xline", r: R.rowP, p0: kl, p1: c2, g: gfix, l: 0.25}));
+          if (!wide) tryItems.push(M.add({t: "xline", r: R.rowP, p0: kl, p1: c2, g: gfix, l: 0.25}));
           if (!big) tryItems.push(M.add({t: "xline", r: R.rowR, p0: c2 + digitsOf(rr).length - 1, p1: c2, g: gfix, l: 0.25}));
           tryItems.forEach(function(it){ it.end = gfix; it.endo = 0.5; it.kari = true; });
           dig = M.add({t: "d", r: rQ, p: c2, s: String(nx), g: gfix, o: 0.6, l: 0.35});
-          M.cap(rQ, gfix, big ? x * d + " は " + P + " より大きくてひけないので、1 小さくする（" + nx + "）"
+          M.cap(rQ, gfix, big ? (wide ? d + "×" + x + "＝" : "") + x * d + " は " + P + " より大きくてひけないので、1 小さくする（" + nx + "）"
                               : "あまりが " + d + (rr === d ? " と同じなので" : " より大きいので") + "、1 大きくする（" + nx + "）");
-          M.add({t: "focus", r0: rQ, r1: big ? R.rowP : R.rowR, p0: Math.max(kl, partialLeft), p1: c2, g: gfix});
-          R.tries.push({q: x, prod: x * d, r: big ? null : rr, big: big});
+          M.add({t: "focus", r0: rQ, r1: wide ? rQ : big ? R.rowP : R.rowR, p0: wide ? c2 : Math.max(kl, partialLeft), p1: c2, g: gfix});
+          R.tries.push({q: x, prod: x * d, r: big ? null : rr, big: big, wide: wide});
           x = nx;
         }
         has[rQ + ":" + c2] = true;

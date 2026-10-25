@@ -215,6 +215,8 @@ function checkDiv(e, o = {}) {
     ok(under && Math.abs(L.X(under.p) - L.X(q.p)) < 1e-9, `${name}: quotient digit ${q && q.s} above the dividend digit of col ${R.c}`);
   }
   ok(L.Yb(I.qRow) < L.Yt(I.dRow), `${name}: quotient above the dividend`);
+  // the dividend starts right after the bracket: no column of the figure lies left of its first digit (in every step)
+  ok(L.G.hi === I.cL, `${name}: the dividend starts right after 「）」 (leftmost col ${L.G.hi}, dividend col ${I.cL})`);
   return M;
 }
 
@@ -288,7 +290,17 @@ function checkKari(e, want) {
 }
 // too big by 1 (23→20: 80÷20 = 4, 23×4 = 92 > 85 → 3) and by 2 (14→10: 90÷10 = 9 → 8 → 7)
 checkKari('851÷23', { c: 1, e: 4, q: 3, tries: [4], quotient: 37, names: 'kari kari-mul fix kake hiku orosu' });
-checkKari('99÷14', { c: 0, e: 9, q: 7, tries: [9, 8], quotient: 7, names: 'kari kari-mul fix kari-mul fix kake hiku' });
+// 99÷14: 14×9 = 126 and 14×8 = 112 are wider than 99, so those tries are only said in words (no product in the columns)
+checkKari('99÷14', { c: 0, e: 9, q: 7, tries: [9, 8], quotient: 7, names: 'kari fix fix kake hiku' });
+{
+  const M = C.build('99÷14', { kari: true }), R = M.info.rounds[0];
+  ok(R.tries[0].wide && R.tries[1].wide, '99÷14 kari: the 126 and 112 tries are words only');
+  const N = C.build('851÷23', { kari: true });
+  ok(!N.info.rounds[0].tries[0].wide && N.items.some((it) => it.t === 'd' && it.kari && it.r === N.info.rounds[0].rowP), '851÷23 kari: 92 fits under 85 and is written, then crossed out');
+  ok(!M.items.some((it) => it.t === 'd' && it.p > M.info.cL), '99÷14 kari: no digit left of the dividend in any step');
+  const w = M.items.find((it) => it.t === 'cap' && M.phases[it.g].name === 'fix');
+  ok(w && w.s === '14×9＝126 は 99 より大きくてひけないので、1 小さくする（8）', '99÷14 kari: the words carry the multiplication (' + (w && w.s) + ')');
+}
 // too small by 1 (27→30: 190÷30 = 6, 195 − 162 = 33 ≥ 27 → 7) and by 2 (16→20: 90÷20 = 4 → 5 → 6)
 checkKari('195÷27', { c: 0, e: 6, q: 7, tries: [6], quotient: 7, names: 'kari kari-mul kari-sub fix kake hiku' });
 checkKari('96÷16', { c: 0, e: 4, q: 6, tries: [4, 5], quotient: 6, names: 'kari kari-mul kari-sub fix kari-mul kari-sub fix kake hiku' });
