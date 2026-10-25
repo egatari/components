@@ -39,6 +39,8 @@ const WRONG = {
   'm-map-japan': '<script type="application/json">{"regions": [{"code": "13", "tone": "emph"}]}</script>',
   'm-timer': '<script type="application/json">{"phases": [{"title": "付箋に書く", "sec": "3分"}]}</script>',
   'm-predict': '<script type="application/json">{"choices": ["重い球", "軽い球"], "answer": 0}</script>',
+  'm-hist': '<script type="application/json">{"value": [23, 31, 27], "bins": {"start": 15, "width": 5}}</script>',
+  'm-boxplot': '<script type="application/json">{"groups": [{"label": "1 組", "data": [3, 5, 6, 7]}]}</script>',
 };
 const comps = componentNames().map((n) => 'm-' + n);
 ok(comps.every((t) => WRONG[t] || t === 'm-sweep'), 'every component has a wrong-shape example in this test');

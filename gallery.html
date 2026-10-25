@@ -73,11 +73,121 @@ document.addEventListener("DOMContentLoaded", function(){
 <div id="stage">
 
 <section class="slide">
-  <h2>部品の一覧（25 個、84 枚）</h2>
+  <h2>部品の一覧（27 個、93 枚）</h2>
   <div class="body">
     <p>部品ごとに、説明の 1 枚と見本のスライドが続きます。→ で段階を進めます。</p>
-    <p>m-map-japan（変わった）　m-timer（変わった）　m-bars　m-codetree　m-collect　m-compare　m-curves　m-cycle　m-fishbone　m-flow　m-gendai　m-kanbun　m-kobun　m-kpi　m-market　m-menu　m-pie　m-predict　m-quad　m-scatter　m-seq　m-sweep　m-timeline　m-tree　m-venn</p>
+    <p>m-boxplot（新しい）　m-hist（新しい）　m-map-japan（変わった）　m-timer（変わった）　m-bars　m-codetree　m-collect　m-compare　m-curves　m-cycle　m-fishbone　m-flow　m-gendai　m-kanbun　m-kobun　m-kpi　m-market　m-menu　m-pie　m-predict　m-quad　m-scatter　m-seq　m-sweep　m-timeline　m-tree　m-venn</p>
   </div>
+</section>
+
+<section class="slide">
+  <h2>m-boxplot（新しい、v1.8.0）</h2>
+  <div class="body">
+    <p>箱ひげ図。値を並べ、中央値・四分位数を求める手順のとおりに組み立てる。群を並べて比べる</p>
+    <ul>
+      <li>伝えたいこと：ばらつき・比べる（量・特徴）</li>
+      <li>見せ方：fade・draw</li>
+      <li>系列：数理・統計　見本のスライド：3 枚</li>
+    </ul>
+  </div>
+</section>
+
+<section class="slide">
+  <h2>箱ひげ図のかき方：1 か月に読んだ本（架空の 11 人）</h2>
+  <div class="body">
+    <m-boxplot xl="冊数（冊）" xr="[0,20]" xt="[0,2,4,6,8,10,12,14,16,18,20]" style="height:440px">
+      <script type="application/json">{"groups": [{"values": [12, 5, 9, 18, 7, 3, 13, 8, 15, 6, 10]}]}</script>
+    </m-boxplot>
+  </div>
+  <div class="concl"><span>→ 小さい順に並べ、中央値、前半と後半の中央値（四分位数）を求めて箱にする</span></div>
+</section>
+
+<section class="slide">
+  <h2>3 つの組の数学の得点（架空の各 15 人）</h2>
+  <div class="body">
+    <m-boxplot orient="v" build="whole" dots="on" outliers="on" yl="得点（点）" yr="[30,100]" yt="[30,40,50,60,70,80,90,100]" style="height:440px">
+      <script type="application/json">{"groups": [
+        {"label": "A 組", "values": [42, 48, 51, 55, 57, 58, 60, 61, 63, 64, 66, 68, 70, 72, 75]},
+        {"label": "B 組", "values": [50, 56, 60, 62, 65, 67, 68, 70, 71, 73, 74, 76, 79, 82, 99]},
+        {"label": "C 組", "values": [35, 45, 52, 54, 58, 60, 61, 62, 64, 66, 67, 69, 71, 73, 80]}]}</script>
+    </m-boxplot>
+  </div>
+  <div class="concl"><span>→ B 組は箱が高い。99 点は 1.5 × 四分位範囲より外の外れ値</span></div>
+</section>
+
+<section class="slide">
+  <h2>見せ方の種類（variant）</h2>
+  <div class="body">
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:0 36px">
+      <m-boxplot variant="fade" build="whole" dots="on" xl="フェード（fade、既定）" xr="[0,20]" style="height:400px">
+        <script type="application/json">{"groups": [{"label": "前", "values": [3, 5, 6, 7, 8, 9, 10, 12, 13, 15, 18]}, {"label": "後", "values": [6, 8, 9, 10, 11, 12, 12, 13, 14, 16, 17]}]}</script>
+      </m-boxplot>
+      <m-boxplot variant="draw" build="whole" dots="on" xl="線を引く（draw）" xr="[0,20]" style="height:400px">
+        <script type="application/json">{"groups": [{"label": "前", "values": [3, 5, 6, 7, 8, 9, 10, 12, 13, 15, 18]}, {"label": "後", "values": [6, 8, 9, 10, 11, 12, 12, 13, 14, 16, 17]}]}</script>
+      </m-boxplot>
+    </div>
+  </div>
+  <div class="concl"><span>→ 資料のシード値（data-egatari-seed）で 1 つが選ばれる。値は架空</span></div>
+</section>
+
+<section class="slide">
+  <h2>m-hist（新しい、v1.8.0）</h2>
+  <div class="body">
+    <p>ヒストグラム・度数折れ線・ドットプロット。平均値・中央値・最頻値の線も</p>
+    <ul>
+      <li>伝えたいこと：ばらつき</li>
+      <li>見せ方：fade・grow</li>
+      <li>系列：数理・統計　見本のスライド：4 枚</li>
+    </ul>
+  </div>
+</section>
+
+<section class="slide">
+  <h2>ソフトボール投げの記録（架空の 20 人）</h2>
+  <div class="body">
+    <m-hist kind="dots" marks="mean,median,mode" xl="記録（m）" unit=" m" style="height:430px">
+      <script type="application/json">{"values": [25, 31, 22, 38, 25, 16, 29, 42, 27, 25, 33, 19, 24, 36, 22, 28, 34, 25, 21, 30]}</script>
+    </m-hist>
+  </div>
+  <div class="concl"><span>→ 平均値・中央値・最頻値は、同じ記録でも違う値になる</span></div>
+</section>
+
+<section class="slide">
+  <h2>50 m 走の記録の度数分布（架空の 40 人）</h2>
+  <div class="body">
+    <m-hist polygon="on" marks="mean,mode" xl="記録（秒）" yl="人数（人）" unit=" 秒" style="height:430px">
+      <script type="application/json">{"table": [
+        {"from": 7.0, "to": 7.5, "count": 2}, {"from": 7.5, "to": 8.0, "count": 5}, {"from": 8.0, "to": 8.5, "count": 9},
+        {"from": 8.5, "to": 9.0, "count": 12}, {"from": 9.0, "to": 9.5, "count": 7}, {"from": 9.5, "to": 10.0, "count": 4},
+        {"from": 10.0, "to": 10.5, "count": 1}]}</script>
+    </m-hist>
+  </div>
+  <div class="concl"><span>→ 度数折れ線は、両端に度数 0 の階級を足して階級値を結ぶ</span></div>
+</section>
+
+<section class="slide">
+  <h2>度数を数える：通学時間（架空の 12 人）</h2>
+  <div class="body">
+    <m-hist build="values" xl="通学時間（分）" yl="人数（人）" style="height:430px">
+      <script type="application/json">{"values": [12, 25, 8, 17, 21, 14, 9, 28, 16, 19, 23, 15], "bins": {"start": 5, "width": 5}}</script>
+    </m-hist>
+  </div>
+  <div class="concl"><span>→ 1 人ずつ、記録の入る階級に積む（5 分以上 10 分未満、…）</span></div>
+</section>
+
+<section class="slide">
+  <h2>見せ方の種類（variant）</h2>
+  <div class="body">
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:0 36px">
+      <m-hist variant="fade" polygon="on" xl="フェード（fade、既定）" style="height:400px">
+        <script type="application/json">{"table": [{"from": 0, "to": 10, "count": 3}, {"from": 10, "to": 20, "count": 7}, {"from": 20, "to": 30, "count": 10}, {"from": 30, "to": 40, "count": 6}, {"from": 40, "to": 50, "count": 2}]}</script>
+      </m-hist>
+      <m-hist variant="grow" polygon="on" xl="下から伸びる（grow）" style="height:400px">
+        <script type="application/json">{"table": [{"from": 0, "to": 10, "count": 3}, {"from": 10, "to": 20, "count": 7}, {"from": 20, "to": 30, "count": 10}, {"from": 30, "to": 40, "count": 6}, {"from": 40, "to": 50, "count": 2}]}</script>
+      </m-hist>
+    </div>
+  </div>
+  <div class="concl"><span>→ 資料のシード値（data-egatari-seed）で 1 つが選ばれる。度数は架空</span></div>
 </section>
 
 <section class="slide">

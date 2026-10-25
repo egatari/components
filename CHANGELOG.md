@@ -4,6 +4,13 @@ Versions follow [README.md § Releases and versions](README.md#releases-and-vers
 
 ## Unreleased
 
+### Added
+
+- `m-hist` (series academic 数理・統計, purpose `spread`): histogram (柱状グラフ), frequency polygon (度数折れ線) and dot plot (ドットプロット). Data: raw `values` with `bins: {start, width}` (the part counts; classes are 以上・未満) or a frequency `table: [{from, to, count}]`; up to 2 `series`, drawn overlaid (solid and dashed outlines). Attributes: axes as `m-curves` (`xr yr xt yt xf yf xl yl`), `unit`, `digits`, `polygon` / `relative` / `cumulative` (`"on"`), `kind="bars" | "dots"`, `marks="mean,median,mode"` (labelled vertical lines, one step each), `build="whole" | "values" | "bins"` (`values`: the values drop into their classes one at a time, the step kept to about 3 s). Variants `fade`, `grow`. Mean, median and mode are computed exactly from the values (from a table: Σ class mark × count ÷ n, the median class, the modal class mark)
+- `m-boxplot` (series academic, purposes `spread`, `compare`): box plot built like the textbook procedure (`build="steps"`: sorted values → 中央値 → 第1・第3四分位数 → box → whiskers 最小値・最大値, with the values printed and, for one group, the sorted row with the positions framed), or `build="whole"` (one group per step). `groups: [{label, tone, values | five}]`; `orient` `h | v`; `method="jp"` (default: the median of each half, leaving out the median when n is odd; 中2・数学Ⅰ), `inc`, `exc` (spreadsheet QUARTILE.INC / QUARTILE.EXC; the README notes compare them on a worked example); `outliers="on"` (1.5 × IQR fences); `dots="on"`. Variants `fade`, `draw`
+- `tools/test-stats.mjs` (in `tools/test-all.mjs`): the statistics of both parts on textbook examples (odd and even n, several modes, no mode, classes at boundaries, the frequency-table mean / mode / median class, quartiles by jp / inc / exc, fences)
+- `purposes.json`: the `spread` tile's examples are now 「ヒストグラム・箱ひげ図・ドットプロット」 / "histogram, box plot, dot plot"
+
 ### Later (candidates, not in this release)
 
 - `m-compare` `by="row"`; an "outside every set" region for `m-venn`; a project-plan demo for `m-timeline` lanes
