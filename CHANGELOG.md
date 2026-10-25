@@ -4,13 +4,25 @@ Versions follow [README.md § Releases and versions](README.md#releases-and-vers
 
 ## Unreleased
 
-### Security
-
-- `tools/map` (build-time only, not in the release): adm-zip 0.6.1 through an npm `overrides` entry (Dependabot alerts on mapshaper's dependency); the rebuilt map data is unchanged. `.github/dependabot.yml` with a 7-day cooldown (14 for majors); the tool is installed with `npm ci --ignore-scripts`; SECURITY.md § Dependencies
-
 ### Later (candidates, not in this release)
 
 - `m-compare` `by="row"`; an "outside every set" region for `m-venn`; a project-plan demo for `m-timeline` lanes
+
+## 1.7.0 - 2026-10-25
+
+### Added
+
+- `m-predict` (series `common`): predict, then reveal. A question and 2–6 choices (step 0), the class's counts as horizontal bars in the `m-bars` look (step 1), and the answer at `answer-step` (default 2): the right choice framed with 「✓ 正解」 and the `note`, the others dimmed but readable. The first component that takes viewer input (spec §8.4 "Viewer input", docs/input-components.ja.md): the presenter counts a show of hands with −1/+1 buttons (48 px high) or by typing into a field, on the stage or (through Studio) from the presenter's view with `input(choice, count)`; `counts()` and an `egatari-input` event let Studio follow; a learner clicks a choice to mark their own prediction. Input is viewer state (spec §8.4, egatari-spec 241770f): the counts and the learner's prediction stay while the viewer is on the slide, forward to the answer step and back, so the reveal shows the class's counts and whether the prediction was right; they go back to the author's `counts` on `ctx.reset` (Studio v0.5.0: entering from another slide, a jump) and, for earlier Studio, when `deck:pos` says the slide was entered from another slide. Never in video (`?mode=video` builds no controls); print shows the author's counts with the controls hidden, and the screen keeps the viewer's afterwards. `static viewerInput = true` in index.js, carried into manifest.json as `components.predict.viewerInput` (CATALOG marks it 「入力あり」). Optional `poll="p1"`: the live poll's counts from `ctx.live.poll(id)` when the player allows them (live §2.5). Variants `fade`, `draw`. `tools/test-predict.mjs` (in `tools/test-all.mjs`); the digits-in-the-field case waits for Studio v0.5.0 (#69) and is skipped with the pinned v0.4.3
+- Interactive parts (操作できるパーツ, docs/conventions.md §6): `static interactive = true` in the index.js of `m-predict`, `m-kobun` and `m-menu` (one line each; their drawing and READMEs are unchanged), written to manifest.json as `components.<name>.interactive` (and `viewerInput` for `m-predict`) by `tools/release.mjs`. `tools/lint.mjs` fails a part whose index.js has an `input()` method, click/pointer/key/input/change listeners, creates links or controls, or takes links as data without the flag, and `viewerInput` without `interactive`. Marked by text and a dashed frame, not colour alone: 「操作できる」 next to the name in CATALOG.md, a 「操作できる / Interactive」 badge (first in the body) and a dashed `--accent2` frame on the part's intro slide in the gallery, and a 「操作できる」 badge as the first element of the body of each part's first demo slide (not in the h2, which Studio uses as the slide's title and key)
+- `m-timer` (series `common`): a group-work timer, from 雲居玄道's deck-local component for a training session. Step 0 is the ready screen with the total; step k counts down phase k (`duration(k)` = its `sec`, so the clock is a pure function of (k, t)): title, two lines of text, a big clock, a progress bar, the phase list on the right (current phase framed, finished ones `--muted`, still ≥ 4.5:1), the last minute in `--emph` and the clock blinking each second in the last 10 s (not in video or the final state). Strings come from built-in Japanese and English tables (`<html lang>`) and can be overridden with `labels`; the old `"done"` member still works. +1 min / −1 min buttons call `ctx.extend(±60)` (spec §8.4, egatari-spec 485ae54) and appear only when the player passes `ctx.extend` (not in the pinned Studio v0.4.3, never in video, hidden in print); the extension is viewer state that persists within the slide like m-predict's counts. `static interactive` / `static viewerInput`. Variant `fade` only. `tools/test-timer.mjs` (in `tools/test-all.mjs`) It declares `static clock = true` (manifest `clock`): under prefers-reduced-motion the player keeps real time for it (spec §9.1). The ±1 min total comes from the player: `ctx.extend(0)` reads it on every render
+- `purposes.json`: `timebox` (時間を区切る / Time-boxing; no tile)
+- `purposes.json`: `predict` (予想してから確かめる / Predict, then check). It adds a new-deck tile (approved by the owner, 2026-10-25) (`tile: "own"`, label 予想して確かめる / Predict, then check, icon `predict`, examples 手を挙げて数える・答えを開く / show of hands, then the answer)
+### Fixed
+- `m-map-japan` demo: the population slide's conclusion is within Egatari Studio's 35-character limit (the source moved to the heading)
+
+### Security
+
+- `tools/map` (build-time only, not in the release): adm-zip 0.6.1 through an npm `overrides` entry (Dependabot alerts on mapshaper's dependency); the rebuilt map data is unchanged. `.github/dependabot.yml` with a 7-day cooldown (14 for majors); the tool is installed with `npm ci --ignore-scripts`; SECURITY.md § Dependencies
 
 ## 1.6.0 - 2026-10-25
 

@@ -3,6 +3,12 @@
 //   components/<name>/README.md    frontmatter: name (m-<name>), series, summary, steps, purposes (ids in purposes.json), props,
 //                                  and variants when index.js declares `static variants` (the same names in the same order)
 //   components/<name>/demo.html    a 1–2 slide sample deck (required for new components; m-sweep predates the rule)
+// Interactive parts (操作できるパーツ, docs/conventions.md §6): index.js declares `static interactive = true;` when the viewer can
+// operate the part, and `static viewerInput = true;` when it also takes viewer input (spec §8.4). The flags stay out of the README
+// (its frontmatter is shown to AI authors). A simple heuristic on index.js (comments ignored) finds parts that must say interactive:
+//   a method input(…), addEventListener for click / dblclick / pointer* / mouse* / touch* / key* / input / change,
+//   createElement of a / button / input / select / textarea, or child links as its data (static shape = {links: true, …}).
+// It fails when such a part lacks `static interactive = true`, and when viewerInput is set without interactive.
 // <name> is a registry name: ^[a-z][a-z0-9-]{0,63}$ (Egatari spec §6). Only regular files; no symbolic links, no out/ in git.
 //   node tools/lint.mjs
 import fs from 'node:fs';
@@ -16,6 +22,15 @@ export const SERIES_LABEL = { common: '標準パーツ', academic: '数理・統
 // Components released before demo.html was required (do not add to this list)
 const NO_DEMO = new Set([]);
 
+// The flags declared in a component's index.js, and whether the heuristic above says it is operable by the viewer
+export function flags(js) {
+  const code = js.replace(/\/\*[\s\S]*?\*\//g, '').replace(/(^|[^:"'\\])\/\/.*$/gm, '$1');
+  const operable = /^\s+input\s*\(/m.test(code)
+    || /addEventListener\(\s*["'](click|dblclick|pointer\w*|mouse\w*|touch\w*|key\w*|input|change)["']/.test(code)
+    || /createElement\(\s*["'](a|button|input|select|textarea)["']/.test(code)
+    || /static\s+shape\s*=\s*\{\s*links\s*:\s*true/.test(code);
+  return { interactive: /static\s+interactive\s*=\s*true\s*;/.test(code), viewerInput: /static\s+viewerInput\s*=\s*true\s*;/.test(code), clock: /static\s+clock\s*=\s*true\s*;/.test(code), operable };
+}
 export const list = (s) => (s ? s.split(',').map((x) => x.trim()).filter(Boolean) : []);
 // purposes.json: id → entry
 export function purposeIds(root) {
@@ -81,6 +96,10 @@ export function lint(root) {
       if (!ids.has(p)) errs.push(`components/${name}/README.md: purpose ${p} is not in purposes.json`);
       else if (ids.get(p).reserved) errs.push(`components/${name}/README.md: purpose ${p} is reserved in purposes.json (remove "reserved" there when a component serves it)`);
     }
+    const fl = flags(js);
+    if (fl.operable && !fl.interactive) errs.push(`components/${name}/index.js: the viewer can operate it (an input() method, a click/pointer/key/input/change listener, a link or control, or links as data): declare static interactive = true;`);
+    if (fl.viewerInput && !fl.interactive) errs.push(`components/${name}/index.js: static viewerInput = true needs static interactive = true`);
+    for (const [k, s] of [['interactive', 'interactive'], ['viewer-input', 'viewerInput'], ['clock', 'clock']]) if (k in f) errs.push(`components/${name}/README.md: ${k} belongs in index.js (static ${s} = true), not in the README`);
     const sv = js.match(/static\s+variants\s*=\s*\[([^\]]*)\]/);
     const declared = sv ? [...sv[1].matchAll(/["']([^"']+)["']/g)].map((x) => x[1]) : [];
     if (declared.join() !== list(f.variants).join()) errs.push(`components/${name}/README.md: variants (${f.variants || 'none'}) differ from static variants in index.js (${declared.join(', ') || 'none'})`);

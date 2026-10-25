@@ -9,7 +9,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { ROOT, componentNames } from './studio.mjs';
 import { baseline, git } from './baseline.mjs';
-import { frontmatter, list, purposeIds, SERIES_LABEL } from './lint.mjs';
+import { frontmatter, list, purposeIds, SERIES_LABEL, flags } from './lint.mjs';
 
 const esc = (s) => String(s ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
 const ids = purposeIds(ROOT);
@@ -34,11 +34,13 @@ for (const { name, st: mark } of order) {
   const secs = demo.match(/<section class="slide"[\s\S]*?<\/section>/g) || [];
   const purposes = list(f.purposes).map((p) => (ids.get(p) || {}).ja || p).join('・');
   const variants = list(f.variants);
+  // interactive parts: a badge and a dashed --accent2 frame around the intro (text and dash, not colour alone)
+  const ia = flags(fs.readFileSync(path.join(dir, 'index.js'), 'utf8')).interactive;
   index.push({ name: f.name, n: secs.length, mark });
   slides.push(`<section class="slide">
   <h2>${esc(f.name)}${mark ? `（${mark}${next ? `、${next}` : ''}）` : ''}</h2>
   <div class="body">
-    <p>${esc(f.summary)}</p>
+${ia ? '    <p style="margin:0 0 10px;line-height:1.3"><span style="display:inline-block;font-size:27px;font-weight:700;color:var(--fg);border:2px dashed var(--accent2);border-radius:8px;padding:0 12px">操作できる / Interactive</span></p>\n' : ''}    <p${ia ? ' style="border:3px dashed var(--accent2);border-radius:10px;padding:10px 16px"' : ''}>${esc(f.summary)}${ia ? '（見る人が押して操作できる）' : ''}</p>
     <ul>
       <li>伝えたいこと：${esc(purposes)}</li>
       <li>見せ方：${variants.length ? esc(variants.join('・')) : '1 種類'}</li>

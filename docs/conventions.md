@@ -13,6 +13,7 @@ Variants and the seed are defined in spec [§8.4](https://github.com/egatari/ega
 3. [Chart components](#3-chart-components)
 4. [Declaring purposes](#4-declaring-purposes)
 5. [Decided and deferred](#5-decided-and-deferred)
+6. [Interactive parts](#6-interactive-parts)
 
 ## 1. Variants and the seed
 
@@ -277,3 +278,11 @@ Decided in the standards review (2026-10-24):
 3. A base-class `this.variant` in Studio comes later, with dev. v1.2.0 uses `tools/variant.js` and `variant-sync`.
 4. This document does not rename the series (standards to dev, with #99).
 5. `purposes.json` lives in this repository (4.2).
+
+## 6. Interactive parts
+
+Components the viewer can press or type into are called "interactive parts" (操作できるパーツ; standards review and the owner, 2026-10-25). Today: `m-predict` (counting, marking a prediction), `m-kobun` (an auxiliary verb opens its card) and `m-menu` (its cards are links).
+
+- **The flag lives in index.js**: `static interactive = true;` on the class. A part that takes viewer input (spec §8.4 "Viewer input") also has `static viewerInput = true;` (`m-predict` only). Not in the README frontmatter, which is shown to AI authors. A part whose content is elapsed time (`m-timer`) also has `static clock = true;`: under prefers-reduced-motion the player still gives it the real t and drops only decorative motion (spec §9.1). `tools/release.mjs` writes them to manifest.json as `components.<name>.interactive` / `.viewerInput` / `.clock` (only when true).
+- **Lint**: `tools/lint.mjs` checks index.js with a simple heuristic: an `input(…)` method, a click / pointer / key / input / change listener, creating `a` / `button` / `input` elements, or child links as data (`static shape = {links: true}`) without `static interactive = true` is an error; so is `viewerInput` without `interactive`.
+- **Marking (never by colour alone)**: CATALOG.md puts 「操作できる」 next to the part's name. In the gallery the part's intro slide gets a 「操作できる / Interactive」 badge and a dashed `--accent2` frame around the intro text. Each part's demo.html shows the 「操作できる」 badge (27 px, dashed frame) as the first element of its first slide's body, never in the heading (Studio uses the h2 text as the slide's title and key).

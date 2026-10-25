@@ -4,7 +4,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { ROOT, componentNames } from './studio.mjs';
-import { frontmatter, list, purposeIds, SERIES_LABEL } from './lint.mjs';
+import { frontmatter, list, purposeIds, SERIES_LABEL, flags } from './lint.mjs';
 
 const cell = (s) => String(s ?? '').replace(/\|/g, '\\|').replace(/\n/g, ' ');
 const rows = [], byPurpose = new Map();
@@ -12,9 +12,10 @@ const ids = purposeIds(ROOT);
 for (const name of componentNames()) {
   const f = frontmatter(fs.readFileSync(path.join(ROOT, 'components', name, 'README.md'), 'utf8'));
   if (!f) { console.warn(`no frontmatter: components/${name}/README.md`); continue; }
+  const fl = flags(fs.readFileSync(path.join(ROOT, 'components', name, 'index.js'), 'utf8'));
   const demo = fs.existsSync(path.join(ROOT, 'components', name, 'demo.html')) ? `[demo](components/${name}/demo.html)` : '—';
   list(f.purposes).forEach((p, i) => { if (!byPurpose.has(p)) byPurpose.set(p, []); byPurpose.get(p).push(i === 0 ? `**\`<${f.name}>\`**` : `\`<${f.name}>\``); });
-  rows.push(`| [\`<${cell(f.name)}>\`](components/${name}/README.md) | ${cell(SERIES_LABEL[f.series] ? `${SERIES_LABEL[f.series]}（${f.series}）` : f.series)} | ${cell(f.summary)} | ${cell(f.steps)} | ${cell(list(f.purposes).join(', '))} | ${cell(list(f.variants).join(', ') || '—')} | ${cell(f.props)} | ${demo} |`);
+  rows.push(`| [\`<${cell(f.name)}>\`](components/${name}/README.md)${fl.interactive ? ' 「操作できる」' : ''} | ${cell(SERIES_LABEL[f.series] ? `${SERIES_LABEL[f.series]}（${f.series}）` : f.series)} | ${cell(f.summary)}${fl.viewerInput ? '（入力あり）' : ''} | ${cell(f.steps)} | ${cell(list(f.purposes).join(', '))} | ${cell(list(f.variants).join(', ') || '—')} | ${cell(f.props)} | ${demo} |`);
 }
 const md = `# Components / 部品の一覧
 
