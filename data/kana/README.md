@@ -161,6 +161,8 @@ repository yet; the prototype loads it from `data/kana/font/` (gitignored).
 
 Egatari Kana — Derived from Klee One (SIL OFL 1.1).
 
+- 2026-10-26 — OS/2 `achVendID` set to `NONE` (was `FWKS`, Fontworks' vendor code): a modified version does not
+  claim to come from Fontworks.
 - 2026-10-26 — Renamed "Egatari Kana" (was "Klee One Egatari Kana" for a few hours, not published); name ID 7
   removed.
 - 2026-10-26 — Subset of Klee One SemiBold 1.100 to the 166 characters of `kana.json` plus `、。・「」` and the

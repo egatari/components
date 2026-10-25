@@ -2,7 +2,8 @@
 //   node tools/kana-proto-check.mjs OUTDIR [--frames] [--chars あいう]
 // Needs `node tools/studio.mjs` once (for the browser) and the font at data/kana/font/ (see kana-proto.mjs).
 //
-// Pixels are used only to MEASURE: per character, the glyph (500 px, ink = dark pixels) and each stroke's
+// Pixels are used only to MEASURE (small kana are measured unplaced, in glyph coordinates; their placement is
+// checked separately): per character, the glyph (500 px, ink = dark pixels) and each stroke's
 // brush mask are rendered by Chrome; then
 //   coverage  = glyph ink inside the union of all brushes / glyph ink           (should be 100 %)
 //   owner(p)  = the stroke whose centreline is nearest to ink pixel p           (approximation)
@@ -72,10 +73,10 @@ function distTo(pts, x, y) {
 const report = {}, placeFail = [];
 for (const [ch, c] of chars) {
   const n = c.strokes.length, pts = c.strokes.map((s) => samplePath(s.d, 48));
-  const G = await lum(await shot({ ch, view: 'glyph', guide: 0, grid: 0 }));
+  const G = await lum(await shot({ ch, view: 'glyph', guide: 0, grid: 0, place: 'none' }));
   const M = [], K = [];
-  for (let i = 0; i < n; i++) M.push(await lum(await shot({ ch, view: 'brush', from: i, to: i + 1 })));
-  for (let k = 1; k <= n; k++) K.push(await lum(await shot({ ch, view: 'mask', k })));   // the real mask after k strokes
+  for (let i = 0; i < n; i++) M.push(await lum(await shot({ ch, view: 'brush', from: i, to: i + 1, place: 'none' })));
+  for (let k = 1; k <= n; k++) K.push(await lum(await shot({ ch, view: 'mask', k, place: 'none' })));   // the real mask after k strokes
   let ink = 0, covered = 0;
   const leak = Array(n).fill(0), leakOut = Array(n).fill(0), hidden = Array(n).fill(0);
   const needW = Array(n).fill(0), owned = Array(n).fill(0), missing = [];
