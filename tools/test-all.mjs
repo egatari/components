@@ -21,6 +21,7 @@
 //  14. duration        every step is complete when its declared length ends (tools/test-duration.mjs)
 //  15. contrast        every component text ≥ 4.5:1 in the default, kokugo and business themes (tools/test-contrast.mjs)
 //  16. classes         choropleth classes evenly spaced in lightness (adjacent ΔL ≥ 0.08), lightest outlined, boundaries drawn (tools/test-classes.mjs)
+//      map-small      m-map-japan at 300 / 240 px high and 420 px wide, and m-bars at 0 px: no console error, sizes ≥ 0, inside, text ≥ 24 px, territory names or a warning (tools/test-map-small.mjs)
 //      map-data        m-map-japan's generated map block matches the sha256 recorded by tools/map/build-japan.mjs (no network)
 //   node tools/test-all.mjs [--only name,name]
 import os from 'node:os';
@@ -57,6 +58,7 @@ const TESTS = [
   ['test-duration', ['tools/test-duration.mjs']],
   ['test-contrast', ['tools/test-contrast.mjs']],
   ['test-classes', ['tools/test-classes.mjs']],
+  ['test-map-small', ['tools/test-map-small.mjs', path.join(tmp, 'map-small')]],
 ];
 const oi = process.argv.indexOf('--only');
 const only = oi >= 0 ? new Set(process.argv[oi + 1].split(',')) : null;

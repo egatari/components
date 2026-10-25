@@ -12,6 +12,13 @@ Versions follow [README.md § Releases and versions](README.md#releases-and-vers
 
 - `m-compare` `by="row"`; an "outside every set" region for `m-venn`; a project-plan demo for `m-timeline` lanes
 
+## 1.7.1 - 2026-10-25
+
+### Fixed
+
+- `m-bars`: an element with no height (0 px high, as in a nightly-evaluation deck with `orient="h"` and no `style="height:…"`) gave negative `<rect>` heights ("-52", "-3.3"), logged by the browser as console errors; the plot area is now clamped at 0 and the component warns that the element is too small. Unchanged at every size that worked before (demo screenshots byte-identical)
+- `m-map-japan` in small elements (below 360 px high or 340 px wide): the territory names 竹島・尖閣諸島・沖ノ鳥島・南鳥島 that did not fit next to their dot were silently left out; they are now placed in the nearby sea with a leader line (outside the inset frame if needed), and a name, frame caption or legend that still cannot be drawn is reported in one `console.warn` per element. The legend is laid out again with a wider estimate when the estimated digits would run past the right edge (they did by 17 px at 420 px wide), and is left out (warned; the values stay in the readable layer) when it is taller than the element or would leave the map under 120 px wide. Computed sizes are clamped at ≥ 0 (scale, inset frames, chips). Larger elements, including every demo slide, are unchanged (screenshots byte-identical). `tools/test-map-small.mjs` (in `tools/test-all.mjs`) renders 300 px and 240 px high and 420 px wide maps with points, a choropleth and legend, and `labels="none"`, plus the 0 px m-bars, at every step
+
 ## 1.7.0 - 2026-10-25
 
 ### Added
