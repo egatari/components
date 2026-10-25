@@ -277,10 +277,10 @@ DECK.define("m-predict", class extends DECK.MotionElement {
   }
   render(k, t, ctx){
     var self = this, P = this.props, D = DECK, G = this.g, dd = this.data, n = this.rows.length, vr = this.variant;
-    var lecture = ctx && ctx.mode === "lecture", a = this.aStep;
+    var lecture = ctx && (ctx.preview || ctx.mode === "lecture"), a = this.aStep;
     // ほかのスライドから入ったとき・飛んだとき（ctx.reset）は、見る人の状態を捨てる。同じスライドの中の段階の移りでは残す
     if (ctx && ctx.reset) this.reset();
-    this._k = k; this._t = t; this._ctx = ctx ? {mode: ctx.mode, live: ctx.live} : undefined;
+    this._k = k; this._t = t; this._ctx = ctx ? {mode: ctx.mode, preview: ctx.preview, live: ctx.live} : undefined;
     // 数：live の集計（実行系が見せてよいと渡したときだけ）→ 見る人の数 → 作者の数
     var live = null;
     if (P.poll && ctx && ctx.live && typeof ctx.live.poll === "function" && !this.video && !this._printing){
@@ -349,9 +349,9 @@ var CSS = [
   "m-predict .pd-pick{position:absolute;background:transparent;border:0;border-radius:10px;cursor:pointer;padding:0;margin:0}",
   "m-predict .pd-pick:focus-visible,m-predict .pd-btn:focus-visible,m-predict .pd-num:focus-visible{outline:3px solid var(--emph);outline-offset:2px}",
   "m-predict .pd-ctl{position:absolute;display:flex;gap:8px;align-items:center;height:48px}",
-  "m-predict .pd-btn{width:60px;height:48px;font:700 26px/1 var(--font-cap,var(--font-sans,sans-serif));color:var(--fg);background:var(--bg);border:2px solid var(--term);border-radius:8px;cursor:pointer;padding:0;touch-action:manipulation}",
+  "m-predict .pd-btn{width:60px;height:48px;font:700 27px/1 var(--font-cap,var(--font-sans,sans-serif));color:var(--fg);background:var(--bg);border:2px solid var(--term);border-radius:8px;cursor:pointer;padding:0;touch-action:manipulation}",
   "m-predict .pd-btn:active{background:var(--term-tint)}",
-  "m-predict .pd-num{width:80px;height:48px;box-sizing:border-box;font:700 26px/1 var(--font-cap,var(--font-sans,sans-serif));font-variant-numeric:tabular-nums;text-align:center;color:var(--fg);background:var(--bg);border:2px solid var(--muted);border-radius:8px;padding:0}",
+  "m-predict .pd-num{width:80px;height:48px;box-sizing:border-box;font:700 27px/1 var(--font-cap,var(--font-sans,sans-serif));font-variant-numeric:tabular-nums;text-align:center;color:var(--fg);background:var(--bg);border:2px solid var(--muted);border-radius:8px;padding:0}",
   "@media print{m-predict .pd-ctl,m-predict .pd-pick,m-predict .pd-mark,m-predict .pd-live{display:none!important}}",
 ].join("\n");
 })();

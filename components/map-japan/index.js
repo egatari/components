@@ -851,7 +851,7 @@ DECK.define("m-map-japan", class extends DECK.MotionElement {
     return m;
   }
   render(k, t, ctx){
-    var P = this.props, D = DECK, dur = P.dur, vr = this.variant, lecture = !!(ctx && ctx.mode === "lecture"), pl = this.plan();
+    var P = this.props, D = DECK, dur = P.dur, vr = this.variant, lecture = !!(ctx && (ctx.preview || ctx.mode === "lecture")), pl = this.plan();
     // 地図そのもの（陸・枠・枠の名前・すべての名前）は段階 0 から出ている（見出しや軸と同じ）
     this.allNames.forEach(function(g){ g.setAttribute("opacity", 1); });
     var legendO = 0;

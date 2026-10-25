@@ -260,7 +260,7 @@ DECK.define("m-cycle", class extends DECK.MotionElement {
   }
   render(k, t, ctx){
     var D = DECK, self = this, vr = this.variant, T = this.props.dur, L = this.L;
-    var lecture = !!(ctx && ctx.mode === "lecture");
+    var lecture = !!(ctx && (ctx.preview || ctx.mode === "lecture"));
     var pr = function(s, start, len){ return s < k ? 1 : s > k ? 0 : D.prog(t, start, len); };
     // 授業の表示：後の段階は最後の形を薄く（0.45）、今の段階は 0.45 から濃くなる。形は動かさない（どの見せ方でも同じ）
     var faint = function(s, start, len){ return s < k ? 1 : s > k ? 0.45 : 0.45 + 0.55 * D.prog(t, start, len); };

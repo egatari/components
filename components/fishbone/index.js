@@ -360,7 +360,7 @@ DECK.define("m-fishbone", class extends DECK.MotionElement {
     return d;
   }
   render(k, t, ctx){
-    var P = this.props, D = DECK, self = this, vr = this.variant, lect = ctx && ctx.mode === "lecture", S = this.span(), FAINT = 0.45;
+    var P = this.props, D = DECK, self = this, vr = this.variant, lect = ctx && (ctx.preview || ctx.mode === "lecture"), S = this.span(), FAINT = 0.45;
     var tOf = function(step){ return step < k ? Infinity : step > k ? -1 : t; };
     var pr = function(tt, at, dur){ return tt < 0 ? 0 : D.prog(tt, at, dur); };
     // 授業の表示：後の段階は薄く（0.45）、今の段階は薄い状態から濃くなる。位置は動かさない（どの見せ方でも同じ）

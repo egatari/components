@@ -4,6 +4,17 @@ Versions follow [README.md § Releases and versions](README.md#releases-and-vers
 
 ## Unreleased
 
+### Changed
+
+- Previewing later steps (egatari-spec §8.4): it is now a flag, `ctx.preview === true`, and `ctx.mode` is "talk" | "learn" | "video". The 13 components that showed later steps faintly when `ctx.mode === "lecture"` (`m-boxplot` `m-compare` `m-cycle` `m-fishbone` `m-hist` `m-map-japan` `m-menu` `m-pie` `m-predict` `m-scatter` `m-timeline` `m-tree` `m-venn`) now test `ctx.preview || ctx.mode === "lecture"`, so they work with the current bundled player and the next one (`m-predict` also keeps `preview` in the context it re-renders with after input). Drawing is unchanged in every mode the pinned Studio v0.4.3 passes. READMEs, docs/conventions(.ja).md and docs/input-components.ja.md say `ctx.preview` instead of `?mode=lecture` / `lecture`. Pack-visible README text: `m-cycle` `m-fishbone` `m-pie` `m-scatter` `m-timeline` `m-tree` −2 bytes each; the other changed lines are in `llm: omit` blocks (pack-visible bytes unchanged)
+- `m-timer`: **visible change.** The built-in Japanese label at the end of a phase is now 「時間」 (was 「時間です」): slides are written in plain style, and Egatari Studio's checker flagged it (R-style). Lessons that set `labels.done` (or the old `done`) are unchanged; lessons pinned to an earlier version keep 「時間です」. English unchanged. `m-timer` has no variants, so `tools/test-seed0.mjs` does not compare it
+- `m-predict`: **visible change.** The −1 / +1 buttons and the count field use 27 px text (was 26 px). Egatari Studio's checker requires at least 26.6 px for HTML text outside tables and figures (`smallText`, R-fit) and flagged the buttons on every slide. Buttons and field keep their size (60 × 48 and 80 × 48 px). `tools/test-seed0.mjs` compares `m-predict` with releases before 1.10.0 with its controls hidden (the drawing must still be pixel-identical)
+- `m-timer`: the +1 min / −1 min buttons use 27 px text (was 26 px), for the same checker rule. They appear only when the player passes `ctx.extend` (not in the pinned Studio v0.4.3), so no demo or test screenshot changes; button size unchanged (at least 112 × 52 px)
+
+### Fixed
+
+- Demos flagged by Egatari Studio's checker (Studio 77588a4, `kit/check.mjs`): `m-boxplot`'s first conclusion line was 36.5 units long (limit 35, R-concl), now 「→ 小さい順に並べ、中央値と前半・後半の中央値（四分位数）で箱にする」 (34.5); `m-predict`'s body ran 9, 7 and 17 px past the conclusion line on its three slides (R-fit), the elements are now 390, 440 and 2 × 210 px high (were 400, 450, 2 × 220); `m-timer`'s 「時間です」 (above); `m-timer`'s second demo slide sets `labels` in plain style, 「合図で始める」 and 「そこまで。次へ進む」 (were 「合図で始めます」 and 「そこまで。次へ進みます」; the checker only sees the final state, so it did not flag them)
+
 ### Later (candidates, not in this release)
 
 - `m-compare` `by="row"`; an "outside every set" region for `m-venn`; a project-plan demo for `m-timeline` lanes

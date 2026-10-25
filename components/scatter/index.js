@@ -274,7 +274,7 @@ DECK.define("m-scatter", class extends DECK.MotionElement {
     return c.length ? c.sort(function(a, b){ return a - b; }) : null;
   }
   render(k, t, ctx){
-    var P = this.props, D = DECK, vr = this.variant, dur = P.dur, lecture = ctx && ctx.mode === "lecture";
+    var P = this.props, D = DECK, vr = this.variant, dur = P.dur, lecture = ctx && (ctx.preview || ctx.mode === "lecture");
     // この部品の段階の中の時刻（-1 = まだ。授業の表示では先の段階を薄く見せる）
     var local = function(o){ return o.step < k ? Infinity : o.step > k ? -1 : t - o.at; };
     var faint = function(o){ return lecture && o.step > k; };
