@@ -20,6 +20,7 @@
     {"id": "contents", "ja": "目次", "en": "Contents", "steps": {"ja": "一度に全部", "en": "Whole at once"}, "tile": "own", "icon": "menu", "label": {"ja": "目次", "en": "Contents"}, "examples": {"ja": "札の格子", "en": "grid of cards"}},
     {"id": "parameter", "ja": "パラメータを動かす", "en": "Varying a parameter", "steps": {"ja": "値を 1 つずつ", "en": "One value at a time"}, "tile": "none", "icon": "sweep"},
     {"id": "predict", "ja": "予想してから確かめる", "en": "Predict, then check", "steps": {"ja": "問いと選択肢、それから答え", "en": "The question and choices, then the answer"}, "tile": "own", "icon": "predict", "label": {"ja": "予想して確かめる", "en": "Predict, then check"}, "examples": {"ja": "手を挙げて数える・答えを開く", "en": "show of hands, then the answer"}},
+    {"id": "timebox", "ja": "時間を区切る", "en": "Time-boxing", "steps": {"ja": "区切りを 1 つずつ（残り時間）", "en": "One phase at a time (time remaining)"}, "tile": "none", "icon": "timer"},
     {"id": "spatial", "ja": "場所・地図", "en": "Place / map", "steps": {"ja": "地図、それから地域・点・矢印を 1 つずつ", "en": "The map, then regions, points and arrows one at a time"}, "tile": "own", "icon": "map", "label": {"ja": "場所・地図", "en": "Place / map"}, "examples": {"ja": "日本地図・塗り分け・地点と矢印", "en": "map of Japan, choropleth, points and arrows"}},
     {"id": "deviation", "ja": "差・増減", "en": "Deviation, increase and decrease", "steps": {"ja": "基準、それから差", "en": "The baseline, then the differences"}, "reserved": true},
     {"id": "concept-links", "ja": "概念のつながり", "en": "Concept links", "steps": {"ja": "中心から外へ", "en": "From the centre outwards"}, "reserved": true}
