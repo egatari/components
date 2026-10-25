@@ -73,11 +73,72 @@ document.addEventListener("DOMContentLoaded", function(){
 <div id="stage">
 
 <section class="slide">
-  <h2>部品の一覧（23 個、78 枚）</h2>
+  <h2>部品の一覧（24 個、82 枚）</h2>
   <div class="body">
     <p>部品ごとに、説明の 1 枚と見本のスライドが続きます。→ で段階を進めます。</p>
-    <p>m-bars　m-codetree　m-collect　m-compare　m-curves　m-cycle　m-fishbone　m-flow　m-gendai　m-kanbun　m-kobun　m-kpi　m-map-japan　m-market　m-menu　m-pie　m-quad　m-scatter　m-seq　m-sweep　m-timeline　m-tree　m-venn</p>
+    <p>m-predict（新しい）　m-bars　m-codetree　m-collect　m-compare　m-curves　m-cycle　m-fishbone　m-flow　m-gendai　m-kanbun　m-kobun　m-kpi　m-map-japan　m-market　m-menu　m-pie　m-quad　m-scatter　m-seq　m-sweep　m-timeline　m-tree　m-venn</p>
   </div>
+</section>
+
+<section class="slide">
+  <h2>m-predict（新しい、v1.6.0）</h2>
+  <div class="body">
+    <p>予想してから答えを開く。選択肢ごとの人数を棒で見せ、答えの段階で正解に枠</p>
+    <ul>
+      <li>伝えたいこと：予想してから確かめる</li>
+      <li>見せ方：fade・draw</li>
+      <li>系列：標準パーツ　見本のスライド：3 枚</li>
+    </ul>
+  </div>
+</section>
+
+<section class="slide">
+  <h2>予想してみよう：落ちる速さ</h2>
+  <div class="body">
+    <m-predict unit="人" style="height:450px">
+      <script type="application/json">{
+        "question": "同じ高さから落とすと、重い球と軽い球のどちらが先に着く？",
+        "choices": [{"label": "重い球"}, {"label": "軽い球"}, {"label": "同時"}],
+        "answer": 2,
+        "counts": [17, 2, 11],
+        "note": "空気の抵抗が小さければ、重さによらず同時に着く（ガリレオ）"
+      }</script>
+    </m-predict>
+  </div>
+  <div class="concl"><span>→ 落ちる速さは重さで決まらない（人数は架空の例）</span></div>
+</section>
+
+<section class="slide">
+  <h2>予想してみよう：小数のかけ算</h2>
+  <div class="body">
+    <m-predict unit="人" poll="p1" style="height:450px">
+      <script type="application/json">{
+        "question": "0.1 × 0.1 はいくつ？",
+        "choices": [{"label": "0.1"}, {"label": "0.01"}, {"label": "0.2"}, {"label": "1"}],
+        "answer": 1,
+        "counts": [12, 10, 6, 2],
+        "note": "0.1 は 10 分の 1。10 分の 1 の 10 分の 1 は 100 分の 1"
+      }</script>
+    </m-predict>
+  </div>
+  <div class="concl"><span>→ 1 より小さい数をかけると、もとの数より小さくなる（人数は架空の例）</span></div>
+</section>
+
+<section class="slide">
+  <h2>見せ方の種類（variant）</h2>
+  <div class="body">
+    <div style="display:grid;grid-template-columns:190px 1fr;gap:20px 16px;align-items:center;font-size:27px">
+      <div>フェード<br>（fade）</div>
+      <m-predict variant="fade" unit="人" style="height:220px">
+        <script type="application/json">{"choices": [{"label": "A"}, {"label": "B"}], "answer": 0, "counts": [8, 5]}</script>
+      </m-predict>
+      <div>線を引く<br>（draw）</div>
+      <m-predict variant="draw" unit="人" style="height:220px">
+        <script type="application/json">{"choices": [{"label": "A"}, {"label": "B"}], "answer": 0, "counts": [8, 5]}</script>
+      </m-predict>
+    </div>
+  </div>
+  <div class="concl"><span>→ 資料のシード値（data-egatari-seed）で 1 つが選ばれる。人数は架空</span></div>
 </section>
 
 <section class="slide">

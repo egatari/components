@@ -37,6 +37,7 @@ const WRONG = {
   'm-timeline': '<script type="application/json">{"nodes": [{"label": "明治維新", "when": true}]}</script>',
   'm-cycle': '<script type="application/json">{"stages": [{"label": "計画"}, {"label": "実行"}]}</script>',
   'm-map-japan': '<script type="application/json">{"regions": [{"code": "13", "tone": "emph"}]}</script>',
+  'm-predict': '<script type="application/json">{"choices": ["重い球", "軽い球"], "answer": 0}</script>',
 };
 const comps = componentNames().map((n) => 'm-' + n);
 ok(comps.every((t) => WRONG[t] || t === 'm-sweep'), 'every component has a wrong-shape example in this test');

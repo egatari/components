@@ -4,6 +4,11 @@ Versions follow [README.md § Releases and versions](README.md#releases-and-vers
 
 ## Unreleased
 
+### Added
+
+- `m-predict` (series `common`): predict, then reveal. A question and 2–6 choices (step 0), the class's counts as horizontal bars in the `m-bars` look (step 1), and the answer at `answer-step` (default 2): the right choice framed with 「✓ 正解」 and the `note`, the others dimmed but readable. The first component that takes viewer input (spec §8.4 "Viewer input", docs/input-components.ja.md): the presenter counts a show of hands with −1/+1 buttons (48 px high) or by typing into a field, on the stage or (through Studio) from the presenter's view with `input(choice, count)`; `counts()` and an `egatari-input` event let Studio follow; a learner clicks a choice to mark their own prediction. Input is viewer state: it goes back to the author's `counts` on entering any step (also on `ctx.reset`, and on `deck:pos` for runtimes without it), never in video (`?mode=video` builds no controls), print hides the controls and shows the author's counts. Optional `poll="p1"`: the live poll's counts from `ctx.live.poll(id)` when the player allows them (live §2.5). Variants `fade`, `draw`. `tools/test-predict.mjs` (in `tools/test-all.mjs`); the digits-in-the-field case waits for Studio v0.5.0 (#69) and is skipped with the pinned v0.4.3
+- `purposes.json`: `predict` (予想してから確かめる / Predict, then check). **Proposal, needs the owner's review:** it adds a new-deck tile (`tile: "own"`, label 予想して確かめる / Predict, then check, icon `predict`, examples 手を挙げて数える・答えを開く / show of hands, then the answer)
+
 ### Security
 
 - `tools/map` (build-time only, not in the release): adm-zip 0.6.1 through an npm `overrides` entry (Dependabot alerts on mapshaper's dependency); the rebuilt map data is unchanged. `.github/dependabot.yml` with a 7-day cooldown (14 for majors); the tool is installed with `npm ci --ignore-scripts`; SECURITY.md § Dependencies

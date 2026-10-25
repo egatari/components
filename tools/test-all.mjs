@@ -13,6 +13,7 @@
 //   9. kanbun-num      m-kanbun's two-digit reading-order numbers stay inside their box and off the character boxes; one-digit numbers unchanged (tools/test-kanbun-num.mjs)
 //      kanbun-fit     m-kanbun fits its columns to the element's height and width (size down to 42, kana ≥ 24 px, no overlap) and warns when it cannot (tools/test-kanbun-fit.mjs)
 //  10. kobun-reset     m-kobun's open conjugation card closes on ctx.reset (tools/test-kobun-reset.mjs)
+//      predict        m-predict's viewer input: ±1, typed counts, input(), reset on step entry, video, print, live, keys (tools/test-predict.mjs)
 //  11. codetree-dom    m-codetree's DOM and pixels do not depend on the order of render calls (tools/test-codetree-dom.mjs)
 //  12. shape            wrong-shaped data and refused expressions: inline placeholder and DECK.componentErrors, no exception (tools/test-shape.mjs)
 //  13. seed0           variant 0 of every component with variants is pixel-identical to the last release (tools/test-seed0.mjs)
@@ -47,6 +48,7 @@ const TESTS = [
   ['test-kanbun-num', ['tools/test-kanbun-num.mjs', path.join(tmp, 'kanbun-num')]],
   ['test-kanbun-fit', ['tools/test-kanbun-fit.mjs', path.join(tmp, 'kanbun-fit')]],
   ['test-kobun-reset', ['tools/test-kobun-reset.mjs', path.join(tmp, 'kobun-reset')]],
+  ['test-predict', ['tools/test-predict.mjs', path.join(tmp, 'predict')]],
   ['test-codetree-dom', ['tools/test-codetree-dom.mjs', path.join(tmp, 'codetree-dom')]],
   ['test-shape', ['tools/test-shape.mjs', path.join(tmp, 'shape')]],
   ['test-seed0', ['tools/test-seed0.mjs', path.join(tmp, 'seed0')]],
