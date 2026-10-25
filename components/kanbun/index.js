@@ -185,6 +185,11 @@ var PH = ["kunten", "order", "kaki"];
 // 長い送り仮名を詰める：fit は自然の長さ（字数 × 字の大きさ）に対する割合。まず字間を詰め（1 字につき字の大きさの 0.12 まで）、
 // 残りを縦に縮める（transform。字の大きさ・字の幅は変えない）。OK_MIN より詰めない（それより長ければ次の字を下げる）
 var OK_MIN = 0.78, OK_TRACK = 0.12, GAP_OK = 8, OK_DELAY = 0.36;
+// 要素に収めるときの字の大きさの下限（px）。振り仮名・送り仮名・返り点は 24px のままなので、これより小さいと
+// 返り点が隣の列の送り仮名に 4px より近づく（列の間 1.3 字 = 返り点と送り仮名 2 つ分の 48px ＋ 3px ＋ 4px）
+var FIT_MIN = 42;
+// 高さは要素を FIT_SLACK px まで超えてよい（最後の仮名の字の枠の下の余白。見本の『史記』は size=56 で 4.4px 超えていて、これまでどおりに描く）
+var FIT_SLACK = 6;
 function okSquash(n, F, fit){
   if (!(fit < 0.999) || !n) return "";
   var ls = Math.max(-OK_TRACK * F, (fit - 1) * F), sy = fit * F / (F + ls);
@@ -224,7 +229,6 @@ D.define("m-kanbun", class extends D.MotionElement {
   mount(){
     var self = this, P = this.props;
     this._src = this.textContent;
-    var S = P.size, F = Math.max(24, Math.round(S * 0.42));
     var kd = this.kd, p = kd.p, o = kd.o, kaki = kakikudashi(p.chars, o);
     p.warnings.concat(o.warnings).forEach(function(w){ console.warn("m-kanbun: " + w); });
     this.k = {p: p, o: o, ce: kd.ce, kaki: kaki, groups: kd.groups};
@@ -234,77 +238,108 @@ D.define("m-kanbun", class extends D.MotionElement {
     this.setAttribute("role", "img");
     this.setAttribute("aria-label", p.chars.map(function(c){ return c.ch; }).join("") + "。書き下し文：" + kaki.map(plain).join(""));
     // ---- 配置：列は右から左へ。列の中は 左の欄（返り点・再読の左の送り仮名）・漢字・右の欄（振り仮名・送り仮名）
-    var L = Math.round(S * 0.5), R = Math.round(S * 0.5), G = Math.round(S * 0.3), PITCH = L + S + R + G;
-    var cols = [], H = 0;
-    p.chars.forEach(function(c, n){
-      var col = cols[c.col] = cols[c.col] || {y: 0, rEnd: 0, lEnd: 0, list: [], prevOk: null};
-      // 前の字の右と左の欄の終わりにぶつからないところまで下げる
-      var rStart = c.ruby ? 0 : S * 0.52, lStart = S * 0.5;
-      // 番号（左上）を出すときは、前の字の左の欄（一レ点・再読文字の左の送り仮名）の下から始める
-      var y = Math.max(col.y, col.lEnd - (P.nums ? 0 : lStart) + 2);
-      // 右の欄：前の字の送り仮名は、この字を下げずに収まるように詰める（印刷の組み方：字間を詰め、それでも長ければ縦に縮める。
-      // 字の大きさは変えない）。この字に振り仮名も送り仮名もなければ、この字の右の欄の 0.8 まではみ出してよい。
-      // 振り仮名は前の字の送り仮名から少し離す（続けて読まないように）。縮めきっても入らないときだけ下げる
-      var pk = col.prevOk;
-      if (pk){
-        // 次の字の送り仮名は下で OK_DELAY まで下げうるので、ここではそれを見込む（足りなければ下で後ろの字をまとめて下げる）
-        var room = c.ruby ? -10 : c.okuri ? rStart - GAP_OK + S * OK_DELAY : S * 0.8;
-        var need = pk.len * OK_MIN;
-        y = Math.max(y, pk.top + need - room);
-        pk.c.okFit = Math.min(1, (y + room - pk.top) / pk.len);
-      } else y = Math.max(y, col.rEnd - rStart + (c.ruby ? 10 : 6));
-      c.y = y; c.n = n;
-      var rr = y + (c.ruby ? 0 : S * 0.52);
-      if (c.ruby){ c.rubyY = y + Math.max(0, (S * 0.52 - Array.from(c.ruby).length * F) / 2); rr = Math.max(y + S * 0.52, c.rubyY + Array.from(c.ruby).length * F); }
-      c.okY = rr; c.okFit = 1;
-      var okLen = Array.from(c.okuri).length * F;
-      col.rEnd = rr + okLen; col.prevOk = okLen ? {c: c, top: rr, len: okLen} : null;
-      var ll = y + S * 0.5, leftKana = c.second ? (c.second.match(/[ァ-ヶー]/g) || []).join("") : "";
-      c.leftKana = leftKana; c.lkY = ll; ll += Array.from(leftKana).length * F;
-      // 返り点は左下：字の下端をまたぐところ（天を字の 0.72 の高さに）
-      c.kaeriY = Math.max(ll, y + S * 0.72); c.kaeriN = (c.mark ? 1 : 0) + (c.re ? 1 : 0);
-      col.lEnd = c.kaeriN ? c.kaeriY + c.kaeriN * F * 0.92 : ll;
-      col.y = y + S * 1.2 + (c.punct ? S * 0.42 : 0) + (c.join ? S * 0.22 : 0);
-      col.list.push(n);
-      H = Math.max(H, col.y, col.rEnd, col.lEnd);
-    });
-    // 右の欄の送り仮名を列ごとに置き直す（字の位置は上で決まったまま）。送り仮名は字の下半分から始め、長ければ詰める。
-    // 次の字の送り仮名がその次の字までに楽に収まるなら、次の字の送り仮名を字の 0.36（OK_DELAY）まで下げて、前の長い送り仮名に場所を譲る
-    var okLen = function(c){ return Array.from(c.okuri).length * F; };
-    cols.forEach(function(col){
-      var L2 = col.list.map(function(n){ return p.chars[n]; }), prevEnd = -Infinity;
-      // 字 i の送り仮名の終わりの上限（次の字の振り仮名・送り仮名・字そのもの）。delay：次の字の送り仮名を下げる量
-      var limitOf = function(i, delay){
-        var d = L2[i + 1];
-        if (!d) return Infinity;
-        return d.ruby ? d.rubyY - 10 : d.okuri ? d.okY + delay - GAP_OK : d.y + S * 0.8;
-      };
-      L2.forEach(function(c, i){
-        if (!c.okuri) return;
-        var top = Math.max(c.okY, prevEnd + GAP_OK), len = okLen(c), d = L2[i + 1], delay = 0;
-        if (d && d.okuri && !d.ruby){
-          var slack = limitOf(i + 1, 0) - (d.okY + okLen(d));
-          delay = Math.max(0, Math.min(S * OK_DELAY, slack, top + len + GAP_OK - d.okY));
-        }
-        var lim = limitOf(i, delay);
-        // 縮めきっても入らなければ、この列の後ろの字をまとめて下げる（字どうしの間は変えない）
-        var short = top + len * OK_MIN - lim;
-        if (short > 0) L2.slice(i + 1).forEach(function(e){
-          e.y += short; e.okY += short; e.lkY += short; e.kaeriY += short; if (e.ruby) e.rubyY += short;
-          H = Math.max(H, e.y + S * 1.2 + (e.punct ? S * 0.42 : 0), e.kaeriY + e.kaeriN * F * 0.92, e.lkY + Array.from(e.leftKana).length * F);
-        });
-        if (short > 0) lim += short;
-        c.okY = top; c.okFit = Math.max(OK_MIN, Math.min(1, (lim - top) / len));
-        prevEnd = top + len * c.okFit;
-        H = Math.max(H, prevEnd);
+    // lay(S)：字の大きさ S で並べる（字の位置を p.chars に書き、寸法を返す）。B は字の下端（振り仮名・送り仮名・返り点・句読点を含む）
+    var S, F, L, R, G, PITCH, cols, H, XR;
+    var lay = function(S0){
+      S = S0; F = Math.max(24, Math.round(S * 0.42));
+      L = Math.round(S * 0.5); R = Math.round(S * 0.5); G = Math.round(S * 0.3); PITCH = L + S + R + G;
+      cols = []; H = 0;
+      p.chars.forEach(function(c, n){
+        var col = cols[c.col] = cols[c.col] || {y: 0, rEnd: 0, lEnd: 0, list: [], prevOk: null};
+        // 前の字の右と左の欄の終わりにぶつからないところまで下げる
+        var rStart = c.ruby ? 0 : S * 0.52, lStart = S * 0.5;
+        // 番号（左上）を出すときは、前の字の左の欄（一レ点・再読文字の左の送り仮名）の下から始める
+        var y = Math.max(col.y, col.lEnd - (P.nums ? 0 : lStart) + 2);
+        // 右の欄：前の字の送り仮名は、この字を下げずに収まるように詰める（印刷の組み方：字間を詰め、それでも長ければ縦に縮める。
+        // 字の大きさは変えない）。この字に振り仮名も送り仮名もなければ、この字の右の欄の 0.8 まではみ出してよい。
+        // 振り仮名は前の字の送り仮名から少し離す（続けて読まないように）。縮めきっても入らないときだけ下げる
+        var pk = col.prevOk;
+        if (pk){
+          // 次の字の送り仮名は下で OK_DELAY まで下げうるので、ここではそれを見込む（足りなければ下で後ろの字をまとめて下げる）
+          var room = c.ruby ? -10 : c.okuri ? rStart - GAP_OK + S * OK_DELAY : S * 0.8;
+          var need = pk.len * OK_MIN;
+          y = Math.max(y, pk.top + need - room);
+          pk.c.okFit = Math.min(1, (y + room - pk.top) / pk.len);
+        } else y = Math.max(y, col.rEnd - rStart + (c.ruby ? 10 : 6));
+        c.y = y; c.n = n;
+        var rr = y + (c.ruby ? 0 : S * 0.52);
+        if (c.ruby){ c.rubyY = y + Math.max(0, (S * 0.52 - Array.from(c.ruby).length * F) / 2); rr = Math.max(y + S * 0.52, c.rubyY + Array.from(c.ruby).length * F); }
+        c.okY = rr; c.okFit = 1;
+        var okLen = Array.from(c.okuri).length * F;
+        col.rEnd = rr + okLen; col.prevOk = okLen ? {c: c, top: rr, len: okLen} : null;
+        var ll = y + S * 0.5, leftKana = c.second ? (c.second.match(/[ァ-ヶー]/g) || []).join("") : "";
+        c.leftKana = leftKana; c.lkY = ll; ll += Array.from(leftKana).length * F;
+        // 返り点は左下：字の下端をまたぐところ（天を字の 0.72 の高さに）
+        c.kaeriY = Math.max(ll, y + S * 0.72); c.kaeriN = (c.mark ? 1 : 0) + (c.re ? 1 : 0);
+        col.lEnd = c.kaeriN ? c.kaeriY + c.kaeriN * F * 0.92 : ll;
+        col.y = y + S * 1.2 + (c.punct ? S * 0.42 : 0) + (c.join ? S * 0.22 : 0);
+        col.list.push(n);
+        H = Math.max(H, col.y, col.rEnd, col.lEnd);
       });
-    });
+      // 右の欄の送り仮名を列ごとに置き直す（字の位置は上で決まったまま）。送り仮名は字の下半分から始め、長ければ詰める。
+      // 次の字の送り仮名がその次の字までに楽に収まるなら、次の字の送り仮名を字の 0.36（OK_DELAY）まで下げて、前の長い送り仮名に場所を譲る
+      var okLen = function(c){ return Array.from(c.okuri).length * F; };
+      cols.forEach(function(col){
+        var L2 = col.list.map(function(n){ return p.chars[n]; }), prevEnd = -Infinity;
+        // 字 i の送り仮名の終わりの上限（次の字の振り仮名・送り仮名・字そのもの）。delay：次の字の送り仮名を下げる量
+        var limitOf = function(i, delay){
+          var d = L2[i + 1];
+          if (!d) return Infinity;
+          return d.ruby ? d.rubyY - 10 : d.okuri ? d.okY + delay - GAP_OK : d.y + S * 0.8;
+        };
+        L2.forEach(function(c, i){
+          if (!c.okuri) return;
+          var top = Math.max(c.okY, prevEnd + GAP_OK), len = okLen(c), d = L2[i + 1], delay = 0;
+          if (d && d.okuri && !d.ruby){
+            var slack = limitOf(i + 1, 0) - (d.okY + okLen(d));
+            delay = Math.max(0, Math.min(S * OK_DELAY, slack, top + len + GAP_OK - d.okY));
+          }
+          var lim = limitOf(i, delay);
+          // 縮めきっても入らなければ、この列の後ろの字をまとめて下げる（字どうしの間は変えない）
+          var short = top + len * OK_MIN - lim;
+          if (short > 0) L2.slice(i + 1).forEach(function(e){
+            e.y += short; e.okY += short; e.lkY += short; e.kaeriY += short; if (e.ruby) e.rubyY += short;
+            H = Math.max(H, e.y + S * 1.2 + (e.punct ? S * 0.42 : 0), e.kaeriY + e.kaeriN * F * 0.92, e.lkY + Array.from(e.leftKana).length * F);
+          });
+          if (short > 0) lim += short;
+          c.okY = top; c.okFit = Math.max(OK_MIN, Math.min(1, (lim - top) / len));
+          prevEnd = top + len * c.okFit;
+          H = Math.max(H, prevEnd);
+        });
+      });
+      var B = 0;
+      p.chars.forEach(function(c){
+        B = Math.max(B, c.y + S, c.okY + Array.from(c.okuri).length * F * c.okFit, c.lkY + Array.from(c.leftKana).length * F);
+        if (c.ruby) B = Math.max(B, c.rubyY + Array.from(c.ruby).length * F);
+        if (c.kaeriN) B = Math.max(B, c.kaeriY + (c.kaeriN - 1) * F * 0.92 + F);
+        if (c.punct) B = Math.max(B, c.y + S * 1.02 + Math.round(S * 0.6));
+        if (c.join) B = Math.max(B, c.y + S * 1.06 + Math.round(S * 0.24));
+      });
+      // 幅：列と、書き下し文との間。字が小さいと右端の列の送り仮名（24px）が右の欄（字の 0.5）からはみ出すので、その分（XR）も
+      XR = Math.max(0, F + 1 - R);
+      return {S: S, B: B, W: cols.length * PITCH - G + Math.round(S * 0.9) + XR};
+    };
+    // 要素の高さと幅に収める：字の大きさ size で収まらなければ、字の大きさと字の送りを一緒に 1px ずつ下げる（FIT_MIN まで）。
+    // 収まるときは size のまま（配置は今までと同じ）。幅は列と書き下し文（字の大きさによらない）の合計
+    var KS = P.kaki, avH = this.clientHeight, HA0 = Math.max(KS * 4, avH), W = this.clientWidth || 1184;
+    var kakiW = function(HA){
+      var perCol = Math.max(1, Math.floor(HA / KS));
+      return kaki.reduce(function(a, line){ return a + Math.max(1, Math.ceil(Array.from(plain(line)).length / perCol)); }, 0) * KS * 1.9;
+    };
+    var over = function(g){ return {h: avH ? g.B - FIT_SLACK - avH : 0, w: g.W + kakiW(avH ? HA0 : Math.max(KS * 4, H)) - W}; };
+    var g = lay(P.size), o2 = over(g);
+    while ((o2.h > 0.5 || o2.w > 0.5) && S > FIT_MIN){ g = lay(Math.max(FIT_MIN, Math.ceil(S) - 1)); o2 = over(g); }
+    if (o2.h > 0.5 || o2.w > 0.5){
+      var at = S < P.size ? "字を size=" + S + " まで小さくしても" : "size=" + S + " では";
+      if (o2.h > 0.5) console.warn("m-kanbun: " + at + "要素の高さ " + avH + "px に " + Math.ceil(g.B - avH) + "px 足りない（いちばん長い列 " + Math.ceil(g.B) + "px）。" +
+        "高さを " + Math.ceil(g.B) + "px 以上にするか、1 行の字を減らす（長い文は句読点のところで行を分ける）");
+      if (o2.w > 0.5) console.warn("m-kanbun: " + at + "要素の幅 " + W + "px に " + Math.ceil(o2.w) + "px 足りない（" + cols.length + " 列と書き下し文）。" +
+        "詩を分けて 2 枚にする（1 枚に 2 句など）");
+    }
     var nc = cols.length, WK = nc * PITCH - G;
     // 書き下し文：部品の高さで折り返す。列の数は字数から見積もる（振り仮名は数えない）
-    var KS = P.kaki, HA = Math.max(KS * 4, this.clientHeight || H), perCol = Math.max(1, Math.floor(HA / KS));
-    var kcols = kaki.reduce(function(a, line){ return a + Math.max(1, Math.ceil(Array.from(plain(line)).length / perCol)); }, 0);
-    var KW = kcols * KS * 1.9, GAP = Math.round(S * 0.9);
-    var W = this.clientWidth || 1184, X0 = Math.max(0, Math.round((W - (WK + GAP + KW)) / 2));
+    var HA = Math.max(KS * 4, avH || H), KW = kakiW(HA), GAP = Math.round(S * 0.9);
+    var X0 = Math.max(0, Math.round((W - (WK + GAP + KW + XR)) / 2));
     this.geom = {S: S, F: F, L: L, PITCH: PITCH, WK: WK, H: H};
     var box = function(tag, cls, css, parent, text){
       var e = document.createElement(tag); e.className = cls; e.style.cssText = css; if (text !== undefined) e.textContent = text; (parent || self).appendChild(e); return e;
@@ -336,7 +371,8 @@ D.define("m-kanbun", class extends D.MotionElement {
     var ce = this.k.ce, NF = Math.max(24, Math.round(S * 0.4));
     ce.forEach(function(ev, m){
       var e = self.cells[ev.c], second = ev.kind === "second" && e.c.second !== null;
-      var nx = second && !e.c.ruby ? e.x + S + 1 : e.x - L, ny = second && e.c.ruby ? e.y - NF : e.y + 3;
+      // 右上の番号は、字が小さいとき（要素に収めたとき）に送り仮名と重ならないよう、送り仮名の上に上げる
+      var nx = second && !e.c.ruby ? e.x + S + 1 : e.x - L, ny = second && e.c.ruby ? e.y - NF : second && e.c.okuri ? Math.min(e.y + 3, e.c.okY - NF - 1) : e.y + 3;
       // 二桁以上は箱（幅 L）に収まるよう字の大きさだけを下げる（数字 1 つの幅を 0.75em と見て 2 px の余白を残す）。一桁は従来のまま
       var nd = String(m + 1).length, NS = nd > 1 ? Math.floor(Math.min(NF, (L - 2) / (nd * 0.75)) * 2) / 2 : NF;
       var nb = box("span", "kb-num", "position:absolute;left:" + nx + "px;top:" + ny + "px;width:" + L + "px;font-family:var(--font-sans);font-size:" + NS + "px;line-height:" + NF + "px;text-align:center;font-weight:700;color:var(--emph);font-variant-numeric:tabular-nums;opacity:0", kb, String(m + 1));
