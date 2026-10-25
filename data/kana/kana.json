@@ -1,0 +1,891 @@
+{
+ "version": "0.1.0",
+ "box": 100,
+ "license": "MIT",
+ "sources": {
+  "school-hiragana": {
+   "label": "小学校国語（1年）で一般に指導される平仮名の筆順",
+   "order": "現行の小学校国語・書写の教科書で一般に通用している筆順（作成者の知識による）。特定の教科書の頁とは一字ずつ照合していない（verified: false）。",
+   "count": "画数は公開の一覧（小学生コンパス「ひらがなの書き順 一覧」, https://eleschool-compass.com/contents/kakijun/hiragana.html）と全46字で一致を確認（き4画・さ3画・そ1画・ふ4画・り2画・ゆ2画は教科書の分け方）。"
+  },
+  "school-katakana": {
+   "label": "小学校国語（1年）で一般に指導される片仮名の筆順",
+   "order": "現行の小学校国語・書写の教科書で一般に通用している筆順（作成者の知識による）。特定の教科書の頁とは一字ずつ照合していない（verified: false）。",
+   "count": "画数は公開の一覧（小学生コンパス「カタカナの書き順 一覧」, https://eleschool-compass.com/contents/kakijun/katakana.html）と全46字で一致を確認。"
+  }
+ },
+ "references": [
+  "文部省『筆順指導の手びき』（1958）: 教育漢字881字の筆順を示したもの（文化遺産オンラインの解説）。仮名の筆順表は含まないと見られるが、原本の目次では未確認。漢字と共通の原則（上から下へ、左から右へ）の根拠として参照。",
+  "国際交流基金『日本語教育通信』45号「授業のヒント かなの書き方の指導」: 書き順は漢字と同じ原則による、印刷の字体と手書き（教科書体）では さ・ゆ・ふ・り などの形が違う、と説明。字形は教科書体の手書きに合わせた。"
+ ],
+ "chars": {
+  "あ": {
+   "count": 3,
+   "strokes": [
+    {"d": "M24 31 Q48 29 74 25", "end": "tome"},
+    {"d": "M45 14 C43 40 45 62 53 83", "end": "tome"},
+    {"d": "M66 41 C59 59 45 74 31 78 C22 80 21 68 32 60 C46 50 70 48 80 61 C88 72 80 85 61 88", "end": "harai"}
+   ],
+   "source": "school-hiragana",
+   "verified": false
+  },
+  "い": {
+   "count": 2,
+   "strokes": [
+    {"d": "M30 25 C25 46 27 64 36 77 L42 70", "end": "hane"},
+    {"d": "M66 34 C73 43 77 52 78 62", "end": "tome"}
+   ],
+   "source": "school-hiragana",
+   "verified": false
+  },
+  "う": {
+   "count": 2,
+   "strokes": [
+    {"d": "M40 14 Q52 16 61 22", "end": "tome"},
+    {"d": "M28 44 Q46 35 62 37 C80 40 77 63 62 75 Q53 82 40 88", "end": "harai"}
+   ],
+   "source": "school-hiragana",
+   "verified": false
+  },
+  "え": {
+   "count": 2,
+   "strokes": [
+    {"d": "M40 14 Q52 16 61 22", "end": "tome"},
+    {"d": "M30 39 L65 37 L25 82 Q37 67 45 67 Q53 67 55 76 Q59 85 81 83", "end": "harai"}
+   ],
+   "source": "school-hiragana",
+   "verified": false
+  },
+  "お": {
+   "count": 3,
+   "strokes": [
+    {"d": "M18 33 L58 30", "end": "tome"},
+    {"d": "M38 13 L38 68 Q38 81 29 81 Q20 81 21 71 Q22 57 49 53 Q77 50 78 67 Q79 83 57 87", "end": "tome"},
+    {"d": "M67 25 Q75 30 80 38", "end": "tome"}
+   ],
+   "source": "school-hiragana",
+   "verified": false
+  },
+  "か": {
+   "count": 3,
+   "strokes": [
+    {"d": "M18 43 Q38 37 54 35 C65 34 64 46 60 61 Q57 72 51 80 L45 75", "end": "hane"},
+    {"d": "M40 17 Q38 50 24 80", "end": "tome"},
+    {"d": "M71 31 Q80 40 84 52", "end": "tome"}
+   ],
+   "source": "school-hiragana",
+   "verified": false
+  },
+  "き": {
+   "count": 4,
+   "strokes": [
+    {"d": "M27 31 L68 27", "end": "tome"},
+    {"d": "M24 47 L73 43", "end": "tome"},
+    {"d": "M40 15 L65 65", "end": "tome"},
+    {"d": "M37 63 Q29 74 38 80 Q49 86 71 84", "end": "tome"}
+   ],
+   "source": "school-hiragana",
+   "verified": false
+  },
+  "く": {
+   "count": 1,
+   "strokes": [
+    {"d": "M63 15 Q47 35 32 49 Q47 64 64 85", "end": "tome"}
+   ],
+   "source": "school-hiragana",
+   "verified": false
+  },
+  "け": {
+   "count": 3,
+   "strokes": [
+    {"d": "M25 21 C21 44 23 64 30 78 L35 71", "end": "hane"},
+    {"d": "M43 41 L83 37", "end": "tome"},
+    {"d": "M66 16 C69 44 68 67 51 88", "end": "harai"}
+   ],
+   "source": "school-hiragana",
+   "verified": false
+  },
+  "こ": {
+   "count": 2,
+   "strokes": [
+    {"d": "M33 31 Q50 28 66 26 L59 33", "end": "hane"},
+    {"d": "M30 62 Q28 76 46 77 Q60 77 73 73", "end": "tome"}
+   ],
+   "source": "school-hiragana",
+   "verified": false
+  },
+  "さ": {
+   "count": 3,
+   "strokes": [
+    {"d": "M24 35 L73 29", "end": "tome"},
+    {"d": "M43 15 L65 58", "end": "tome"},
+    {"d": "M38 61 Q29 73 40 80 Q51 85 69 82", "end": "tome"}
+   ],
+   "source": "school-hiragana",
+   "verified": false
+  },
+  "し": {
+   "count": 1,
+   "strokes": [
+    {"d": "M36 15 L36 62 Q36 83 55 81 Q67 79 77 65", "end": "harai"}
+   ],
+   "source": "school-hiragana",
+   "verified": false
+  },
+  "す": {
+   "count": 2,
+   "strokes": [
+    {"d": "M17 32 L83 29", "end": "tome"},
+    {"d": "M53 12 L53 51 C53 64 40 66 38 56 C36 46 53 44 55 56 C57 68 51 79 42 89", "end": "harai"}
+   ],
+   "source": "school-hiragana",
+   "verified": false
+  },
+  "せ": {
+   "count": 3,
+   "strokes": [
+    {"d": "M15 47 L85 41", "end": "tome"},
+    {"d": "M67 20 L67 58 L61 53", "end": "hane"},
+    {"d": "M36 18 L36 72 Q36 84 52 84 L77 84", "end": "tome"}
+   ],
+   "source": "school-hiragana",
+   "verified": false
+  },
+  "そ": {
+   "count": 1,
+   "strokes": [
+    {"d": "M33 20 L64 16 L28 46 L78 42 Q50 52 46 66 Q44 80 63 86", "end": "tome"}
+   ],
+   "source": "school-hiragana",
+   "verified": false
+  },
+  "た": {
+   "count": 4,
+   "strokes": [
+    {"d": "M18 34 L58 30", "end": "tome"},
+    {"d": "M40 15 Q36 50 23 82", "end": "tome"},
+    {"d": "M55 50 Q67 48 79 46 L72 52", "end": "hane"},
+    {"d": "M55 66 Q52 78 64 79 L81 77", "end": "tome"}
+   ],
+   "source": "school-hiragana",
+   "verified": false
+  },
+  "ち": {
+   "count": 2,
+   "strokes": [
+    {"d": "M21 32 L75 28", "end": "tome"},
+    {"d": "M46 13 L37 58 Q56 44 72 53 Q85 63 75 78 Q65 88 42 87", "end": "harai"}
+   ],
+   "source": "school-hiragana",
+   "verified": false
+  },
+  "つ": {
+   "count": 1,
+   "strokes": [
+    {"d": "M17 43 Q50 30 70 35 Q87 41 81 60 Q73 76 46 83", "end": "harai"}
+   ],
+   "source": "school-hiragana",
+   "verified": false
+  },
+  "て": {
+   "count": 1,
+   "strokes": [
+    {"d": "M18 29 L76 22 Q48 36 43 56 Q40 76 65 85", "end": "tome"}
+   ],
+   "source": "school-hiragana",
+   "verified": false,
+   "note": "終わりを「とめ」とした。"
+  },
+  "と": {
+   "count": 2,
+   "strokes": [
+    {"d": "M40 17 L48 46", "end": "tome"},
+    {"d": "M68 33 Q42 49 35 63 Q30 80 51 82 L75 82", "end": "tome"}
+   ],
+   "source": "school-hiragana",
+   "verified": false
+  },
+  "な": {
+   "count": 4,
+   "strokes": [
+    {"d": "M17 34 L56 30", "end": "tome"},
+    {"d": "M38 15 Q34 50 21 78", "end": "tome"},
+    {"d": "M66 29 Q76 33 82 42", "end": "tome"},
+    {"d": "M61 46 Q63 62 61 76 Q59 86 50 84 Q41 82 46 74 Q53 66 67 76 Q73 80 81 86", "end": "harai"}
+   ],
+   "source": "school-hiragana",
+   "verified": false
+  },
+  "に": {
+   "count": 3,
+   "strokes": [
+    {"d": "M25 21 C21 44 23 64 30 78 L35 71", "end": "hane"},
+    {"d": "M48 34 Q62 32 73 31 L67 37", "end": "hane"},
+    {"d": "M48 65 Q47 77 61 77 L77 75", "end": "tome"}
+   ],
+   "source": "school-hiragana",
+   "verified": false
+  },
+  "ぬ": {
+   "count": 2,
+   "strokes": [
+    {"d": "M27 30 Q34 50 47 73", "end": "tome"},
+    {"d": "M57 19 Q51 50 31 78 Q22 85 20 74 Q20 54 50 40 Q79 34 80 60 Q82 79 66 84 Q55 86 54 78 Q54 70 66 72 Q76 74 85 84", "end": "harai"}
+   ],
+   "source": "school-hiragana",
+   "verified": false
+  },
+  "ね": {
+   "count": 2,
+   "strokes": [
+    {"d": "M32 13 L32 88", "end": "tome"},
+    {"d": "M17 38 L42 36 L18 76 Q40 46 62 44 Q82 44 80 64 Q78 84 64 84 Q54 84 56 76 Q58 70 68 72 Q76 74 85 84", "end": "harai"}
+   ],
+   "source": "school-hiragana",
+   "verified": false
+  },
+  "の": {
+   "count": 1,
+   "strokes": [
+    {"d": "M53 28 Q46 60 30 78 Q19 87 18 70 Q18 40 50 30 Q79 25 82 53 Q83 80 56 87", "end": "harai"}
+   ],
+   "source": "school-hiragana",
+   "verified": false
+  },
+  "は": {
+   "count": 3,
+   "strokes": [
+    {"d": "M24 17 C20 42 22 64 28 80 L33 73", "end": "hane"},
+    {"d": "M42 38 L81 34", "end": "tome"},
+    {"d": "M62 15 L62 66 Q62 78 52 78 Q42 78 44 70 Q48 62 62 68 Q71 72 83 82", "end": "harai"}
+   ],
+   "source": "school-hiragana",
+   "verified": false
+  },
+  "ひ": {
+   "count": 1,
+   "strokes": [
+    {"d": "M21 31 L44 28 Q21 54 28 72 Q36 87 52 80 Q66 72 70 39 Q73 56 87 65", "end": "harai"}
+   ],
+   "source": "school-hiragana",
+   "verified": false,
+   "note": "終わりを右下への「はらい」とした。"
+  },
+  "ふ": {
+   "count": 4,
+   "strokes": [
+    {"d": "M44 15 Q54 21 58 29", "end": "tome"},
+    {"d": "M50 36 Q63 50 60 64 Q58 74 48 78 L50 70", "end": "hane"},
+    {"d": "M28 57 Q23 67 17 77", "end": "tome"},
+    {"d": "M71 57 Q80 66 85 77", "end": "tome"}
+   ],
+   "source": "school-hiragana",
+   "verified": false,
+   "note": "3画目（左の点）の向きと終わり。"
+  },
+  "へ": {
+   "count": 1,
+   "strokes": [
+    {"d": "M13 61 Q27 43 35 36 Q42 31 50 40 Q66 58 87 72", "end": "harai"}
+   ],
+   "source": "school-hiragana",
+   "verified": false
+  },
+  "ほ": {
+   "count": 4,
+   "strokes": [
+    {"d": "M24 17 C20 42 22 64 28 80 L33 73", "end": "hane"},
+    {"d": "M44 25 L81 23", "end": "tome"},
+    {"d": "M46 44 L79 42", "end": "tome"},
+    {"d": "M62 24 L62 66 Q62 78 52 78 Q42 78 44 70 Q48 62 62 68 Q71 72 83 82", "end": "harai"}
+   ],
+   "source": "school-hiragana",
+   "verified": false
+  },
+  "ま": {
+   "count": 3,
+   "strokes": [
+    {"d": "M23 30 L77 27", "end": "tome"},
+    {"d": "M27 48 L73 46", "end": "tome"},
+    {"d": "M50 13 L50 66 Q50 78 40 78 Q32 78 34 70 Q38 62 52 68 Q63 72 77 82", "end": "harai"}
+   ],
+   "source": "school-hiragana",
+   "verified": false
+  },
+  "み": {
+   "count": 2,
+   "strokes": [
+    {"d": "M26 24 L55 21 Q42 52 30 74 Q24 84 18 76 Q16 62 40 60 Q62 58 83 66", "end": "tome"},
+    {"d": "M69 39 Q67 64 52 87", "end": "harai"}
+   ],
+   "source": "school-hiragana",
+   "verified": false
+  },
+  "む": {
+   "count": 3,
+   "strokes": [
+    {"d": "M17 32 L56 30", "end": "tome"},
+    {"d": "M38 13 L38 57 Q38 70 28 68 Q20 64 26 56 Q32 50 38 60 Q39 81 56 82 Q72 82 76 64", "end": "tome"},
+    {"d": "M69 25 Q77 31 81 40", "end": "tome"}
+   ],
+   "source": "school-hiragana",
+   "verified": false,
+   "note": "2画目の終わりを「とめ」とした。"
+  },
+  "め": {
+   "count": 2,
+   "strokes": [
+    {"d": "M28 28 Q34 50 48 72", "end": "tome"},
+    {"d": "M61 17 Q52 50 30 78 Q22 86 20 74 Q20 54 50 40 Q81 34 81 62 Q81 80 60 87", "end": "harai"}
+   ],
+   "source": "school-hiragana",
+   "verified": false
+  },
+  "も": {
+   "count": 3,
+   "strokes": [
+    {"d": "M43 13 Q35 50 35 64 Q35 86 53 84 Q67 80 73 62 L70 69", "end": "hane"},
+    {"d": "M21 35 L65 32", "end": "tome"},
+    {"d": "M19 55 L67 52", "end": "tome"}
+   ],
+   "source": "school-hiragana",
+   "verified": false,
+   "note": "1画目の終わりを上への「はね」とした。"
+  },
+  "や": {
+   "count": 3,
+   "strokes": [
+    {"d": "M21 45 Q49 33 68 32 Q83 33 81 48 Q79 56 68 60 L74 55", "end": "hane"},
+    {"d": "M42 22 Q47 28 51 36", "end": "tome"},
+    {"d": "M31 14 L56 87", "end": "tome"}
+   ],
+   "source": "school-hiragana",
+   "verified": false
+  },
+  "ゆ": {
+   "count": 2,
+   "strokes": [
+    {"d": "M28 23 Q21 50 26 72 Q28 80 31 70 Q35 40 56 34 Q81 31 81 56 Q81 72 61 77", "end": "harai"},
+    {"d": "M54 15 Q61 50 44 89", "end": "harai"}
+   ],
+   "source": "school-hiragana",
+   "verified": false,
+   "note": "1画目の折り返しの形。"
+  },
+  "よ": {
+   "count": 2,
+   "strokes": [
+    {"d": "M50 36 L75 34", "end": "tome"},
+    {"d": "M48 13 L48 64 Q48 78 38 78 Q28 78 30 70 Q34 62 50 68 Q62 72 77 82", "end": "harai"}
+   ],
+   "source": "school-hiragana",
+   "verified": false
+  },
+  "ら": {
+   "count": 2,
+   "strokes": [
+    {"d": "M41 13 Q49 19 56 26", "end": "tome"},
+    {"d": "M34 30 Q28 50 30 63 Q46 46 62 50 Q81 56 77 72 Q71 86 44 89", "end": "harai"}
+   ],
+   "source": "school-hiragana",
+   "verified": false
+  },
+  "り": {
+   "count": 2,
+   "strokes": [
+    {"d": "M33 22 Q27 44 33 62 L38 55", "end": "hane"},
+    {"d": "M64 17 Q73 46 65 66 Q58 80 43 89", "end": "harai"}
+   ],
+   "source": "school-hiragana",
+   "verified": false
+  },
+  "る": {
+   "count": 1,
+   "strokes": [
+    {"d": "M27 24 L68 22 L27 67 Q54 46 72 58 Q85 70 73 82 Q61 90 50 82 Q44 74 54 70 Q62 68 66 78", "end": "tome"}
+   ],
+   "source": "school-hiragana",
+   "verified": false
+  },
+  "れ": {
+   "count": 2,
+   "strokes": [
+    {"d": "M32 13 L32 88", "end": "tome"},
+    {"d": "M17 38 L42 36 L18 76 Q40 46 58 42 Q67 42 64 60 Q62 80 70 84 Q77 86 87 75", "end": "harai"}
+   ],
+   "source": "school-hiragana",
+   "verified": false
+  },
+  "ろ": {
+   "count": 1,
+   "strokes": [
+    {"d": "M27 24 L68 22 L27 67 Q54 46 72 58 Q85 70 73 82 Q61 90 44 87", "end": "harai"}
+   ],
+   "source": "school-hiragana",
+   "verified": false
+  },
+  "わ": {
+   "count": 2,
+   "strokes": [
+    {"d": "M32 13 L32 88", "end": "tome"},
+    {"d": "M17 38 L42 36 L18 76 Q40 46 62 44 Q83 44 81 64 Q79 82 56 87", "end": "harai"}
+   ],
+   "source": "school-hiragana",
+   "verified": false
+  },
+  "を": {
+   "count": 3,
+   "strokes": [
+    {"d": "M23 30 L69 26", "end": "tome"},
+    {"d": "M47 13 L32 50 Q46 40 58 44 Q66 48 62 60", "end": "tome"},
+    {"d": "M79 48 Q56 58 48 70 Q44 84 62 86 L81 86", "end": "tome"}
+   ],
+   "source": "school-hiragana",
+   "verified": false,
+   "note": "2画目の折れの形。"
+  },
+  "ん": {
+   "count": 1,
+   "strokes": [
+    {"d": "M53 13 L23 85 Q38 50 48 52 Q56 54 56 70 Q58 84 68 84 Q78 82 85 66", "end": "harai"}
+   ],
+   "source": "school-hiragana",
+   "verified": false
+  },
+  "ア": {
+   "count": 2,
+   "strokes": [
+    {"d": "M18 21 L82 21 Q73 39 57 48", "end": "harai"},
+    {"d": "M48 35 Q48 64 27 87", "end": "harai"}
+   ],
+   "source": "school-katakana",
+   "verified": false,
+   "note": "1画目の終わりを「はらい」とした。"
+  },
+  "イ": {
+   "count": 2,
+   "strokes": [
+    {"d": "M67 13 Q53 40 17 58", "end": "harai"},
+    {"d": "M50 37 L50 88", "end": "tome"}
+   ],
+   "source": "school-katakana",
+   "verified": false
+  },
+  "ウ": {
+   "count": 3,
+   "strokes": [
+    {"d": "M50 10 L50 24", "end": "tome"},
+    {"d": "M22 26 L22 46", "end": "tome"},
+    {"d": "M22 26 L78 26 Q76 60 44 87", "end": "harai"}
+   ],
+   "source": "school-katakana",
+   "verified": false
+  },
+  "エ": {
+   "count": 3,
+   "strokes": [
+    {"d": "M24 24 L76 24", "end": "tome"},
+    {"d": "M50 24 L50 78", "end": "tome"},
+    {"d": "M14 78 L86 78", "end": "tome"}
+   ],
+   "source": "school-katakana",
+   "verified": false
+  },
+  "オ": {
+   "count": 3,
+   "strokes": [
+    {"d": "M14 38 L86 38", "end": "tome"},
+    {"d": "M60 12 L60 83 L53 78", "end": "hane"},
+    {"d": "M58 40 Q42 66 17 80", "end": "harai"}
+   ],
+   "source": "school-katakana",
+   "verified": false
+  },
+  "カ": {
+   "count": 2,
+   "strokes": [
+    {"d": "M18 34 L74 34 Q74 70 63 84 L57 78", "end": "hane"},
+    {"d": "M44 12 Q42 60 17 87", "end": "harai"}
+   ],
+   "source": "school-katakana",
+   "verified": false
+  },
+  "キ": {
+   "count": 3,
+   "strokes": [
+    {"d": "M22 34 L74 30", "end": "tome"},
+    {"d": "M16 56 L84 52", "end": "tome"},
+    {"d": "M44 12 L54 88", "end": "tome"}
+   ],
+   "source": "school-katakana",
+   "verified": false
+  },
+  "ク": {
+   "count": 2,
+   "strokes": [
+    {"d": "M44 12 Q34 30 15 45", "end": "harai"},
+    {"d": "M38 24 L77 24 Q66 64 29 88", "end": "harai"}
+   ],
+   "source": "school-katakana",
+   "verified": false
+  },
+  "ケ": {
+   "count": 3,
+   "strokes": [
+    {"d": "M38 12 Q28 32 13 47", "end": "harai"},
+    {"d": "M30 34 L85 34", "end": "tome"},
+    {"d": "M58 34 Q56 64 31 88", "end": "harai"}
+   ],
+   "source": "school-katakana",
+   "verified": false
+  },
+  "コ": {
+   "count": 2,
+   "strokes": [
+    {"d": "M22 24 L76 24 L76 76", "end": "tome"},
+    {"d": "M22 76 L76 76", "end": "tome"}
+   ],
+   "source": "school-katakana",
+   "verified": false
+  },
+  "サ": {
+   "count": 3,
+   "strokes": [
+    {"d": "M14 38 L86 38", "end": "tome"},
+    {"d": "M34 16 L34 58", "end": "tome"},
+    {"d": "M66 14 L66 54 Q64 76 43 88", "end": "harai"}
+   ],
+   "source": "school-katakana",
+   "verified": false
+  },
+  "シ": {
+   "count": 3,
+   "strokes": [
+    {"d": "M22 21 L37 32", "end": "tome"},
+    {"d": "M16 44 L32 55", "end": "tome"},
+    {"d": "M23 85 Q52 70 81 29", "end": "harai"}
+   ],
+   "source": "school-katakana",
+   "verified": false
+  },
+  "ス": {
+   "count": 2,
+   "strokes": [
+    {"d": "M22 22 L75 22 Q62 58 17 87", "end": "harai"},
+    {"d": "M52 56 L81 83", "end": "tome"}
+   ],
+   "source": "school-katakana",
+   "verified": false
+  },
+  "セ": {
+   "count": 2,
+   "strokes": [
+    {"d": "M14 52 L84 42 L78 60 L70 57", "end": "hane"},
+    {"d": "M36 16 L36 76 Q36 86 48 86 L83 86", "end": "tome"}
+   ],
+   "source": "school-katakana",
+   "verified": false,
+   "note": "1画目の折れの終わりを「はね」とした。"
+  },
+  "ソ": {
+   "count": 2,
+   "strokes": [
+    {"d": "M24 27 L36 48", "end": "tome"},
+    {"d": "M79 21 Q66 64 29 88", "end": "harai"}
+   ],
+   "source": "school-katakana",
+   "verified": false
+  },
+  "タ": {
+   "count": 3,
+   "strokes": [
+    {"d": "M44 12 Q34 30 15 45", "end": "harai"},
+    {"d": "M38 24 L77 24 Q66 64 29 88", "end": "harai"},
+    {"d": "M33 47 L66 62", "end": "tome"}
+   ],
+   "source": "school-katakana",
+   "verified": false
+  },
+  "チ": {
+   "count": 3,
+   "strokes": [
+    {"d": "M71 13 Q48 24 25 27", "end": "harai"},
+    {"d": "M14 48 L86 46", "end": "tome"},
+    {"d": "M50 22 L50 60 Q48 78 29 89", "end": "harai"}
+   ],
+   "source": "school-katakana",
+   "verified": false
+  },
+  "ツ": {
+   "count": 3,
+   "strokes": [
+    {"d": "M17 30 L28 47", "end": "tome"},
+    {"d": "M40 26 L51 43", "end": "tome"},
+    {"d": "M81 21 Q68 66 31 89", "end": "harai"}
+   ],
+   "source": "school-katakana",
+   "verified": false
+  },
+  "テ": {
+   "count": 3,
+   "strokes": [
+    {"d": "M26 20 L74 20", "end": "tome"},
+    {"d": "M14 42 L86 42", "end": "tome"},
+    {"d": "M50 42 Q48 72 25 89", "end": "harai"}
+   ],
+   "source": "school-katakana",
+   "verified": false
+  },
+  "ト": {
+   "count": 2,
+   "strokes": [
+    {"d": "M38 12 L38 88", "end": "tome"},
+    {"d": "M40 42 L73 59", "end": "tome"}
+   ],
+   "source": "school-katakana",
+   "verified": false
+  },
+  "ナ": {
+   "count": 2,
+   "strokes": [
+    {"d": "M14 38 L86 38", "end": "tome"},
+    {"d": "M56 12 L56 54 Q52 76 27 89", "end": "harai"}
+   ],
+   "source": "school-katakana",
+   "verified": false
+  },
+  "ニ": {
+   "count": 2,
+   "strokes": [
+    {"d": "M24 30 L76 30", "end": "tome"},
+    {"d": "M14 72 L86 72", "end": "tome"}
+   ],
+   "source": "school-katakana",
+   "verified": false
+  },
+  "ヌ": {
+   "count": 2,
+   "strokes": [
+    {"d": "M20 22 L77 22 Q66 60 17 87", "end": "harai"},
+    {"d": "M34 46 L79 83", "end": "tome"}
+   ],
+   "source": "school-katakana",
+   "verified": false
+  },
+  "ネ": {
+   "count": 4,
+   "strokes": [
+    {"d": "M48 10 L55 22", "end": "tome"},
+    {"d": "M20 32 L77 32 L17 67", "end": "harai"},
+    {"d": "M50 50 L50 90", "end": "tome"},
+    {"d": "M62 56 L81 73", "end": "tome"}
+   ],
+   "source": "school-katakana",
+   "verified": false
+  },
+  "ノ": {
+   "count": 1,
+   "strokes": [
+    {"d": "M71 13 Q60 60 21 87", "end": "harai"}
+   ],
+   "source": "school-katakana",
+   "verified": false
+  },
+  "ハ": {
+   "count": 2,
+   "strokes": [
+    {"d": "M38 28 Q32 60 13 79", "end": "harai"},
+    {"d": "M60 28 Q72 56 87 78", "end": "tome"}
+   ],
+   "source": "school-katakana",
+   "verified": false
+  },
+  "ヒ": {
+   "count": 2,
+   "strokes": [
+    {"d": "M30 43 L75 32", "end": "tome"},
+    {"d": "M26 14 L26 76 Q26 86 40 86 L83 86", "end": "tome"}
+   ],
+   "source": "school-katakana",
+   "verified": false
+  },
+  "フ": {
+   "count": 1,
+   "strokes": [
+    {"d": "M18 22 L81 22 Q72 64 29 88", "end": "harai"}
+   ],
+   "source": "school-katakana",
+   "verified": false
+  },
+  "ヘ": {
+   "count": 1,
+   "strokes": [
+    {"d": "M11 61 L36 32 L89 77", "end": "harai"}
+   ],
+   "source": "school-katakana",
+   "verified": false
+  },
+  "ホ": {
+   "count": 4,
+   "strokes": [
+    {"d": "M14 36 L86 36", "end": "tome"},
+    {"d": "M50 12 L50 83 L43 78", "end": "hane"},
+    {"d": "M33 52 Q27 66 16 77", "end": "tome"},
+    {"d": "M66 54 L83 73", "end": "tome"}
+   ],
+   "source": "school-katakana",
+   "verified": false
+  },
+  "マ": {
+   "count": 2,
+   "strokes": [
+    {"d": "M16 26 L84 26 Q72 46 52 60", "end": "tome"},
+    {"d": "M42 46 L62 80", "end": "tome"}
+   ],
+   "source": "school-katakana",
+   "verified": false,
+   "note": "2画目と1画目の交わり方。"
+  },
+  "ミ": {
+   "count": 3,
+   "strokes": [
+    {"d": "M30 17 L68 30", "end": "tome"},
+    {"d": "M34 42 L66 53", "end": "tome"},
+    {"d": "M26 64 L77 83", "end": "tome"}
+   ],
+   "source": "school-katakana",
+   "verified": false
+  },
+  "ム": {
+   "count": 2,
+   "strokes": [
+    {"d": "M50 13 L22 74 L79 68", "end": "tome"},
+    {"d": "M62 48 L83 83", "end": "tome"}
+   ],
+   "source": "school-katakana",
+   "verified": false
+  },
+  "メ": {
+   "count": 2,
+   "strokes": [
+    {"d": "M71 13 Q58 56 17 87", "end": "harai"},
+    {"d": "M30 40 L81 79", "end": "tome"}
+   ],
+   "source": "school-katakana",
+   "verified": false
+  },
+  "モ": {
+   "count": 3,
+   "strokes": [
+    {"d": "M22 24 L78 24", "end": "tome"},
+    {"d": "M14 48 L86 48", "end": "tome"},
+    {"d": "M48 24 L48 76 Q48 86 60 86 L83 86", "end": "tome"}
+   ],
+   "source": "school-katakana",
+   "verified": false
+  },
+  "ヤ": {
+   "count": 2,
+   "strokes": [
+    {"d": "M12 48 L86 34 L81 51 L75 49", "end": "hane"},
+    {"d": "M37 12 L47 89", "end": "tome"}
+   ],
+   "source": "school-katakana",
+   "verified": false,
+   "note": "1画目の折れの終わりを「はね」とした。"
+  },
+  "ユ": {
+   "count": 2,
+   "strokes": [
+    {"d": "M24 30 L72 30 L72 74", "end": "tome"},
+    {"d": "M14 74 L86 74", "end": "tome"}
+   ],
+   "source": "school-katakana",
+   "verified": false
+  },
+  "ヨ": {
+   "count": 3,
+   "strokes": [
+    {"d": "M24 22 L76 22 L76 82", "end": "tome"},
+    {"d": "M28 52 L76 52", "end": "tome"},
+    {"d": "M24 82 L76 82", "end": "tome"}
+   ],
+   "source": "school-katakana",
+   "verified": false
+  },
+  "ラ": {
+   "count": 2,
+   "strokes": [
+    {"d": "M26 18 L74 18", "end": "tome"},
+    {"d": "M20 40 L79 40 Q72 70 33 89", "end": "harai"}
+   ],
+   "source": "school-katakana",
+   "verified": false
+  },
+  "リ": {
+   "count": 2,
+   "strokes": [
+    {"d": "M30 20 L30 62", "end": "tome"},
+    {"d": "M68 13 L68 54 Q66 76 39 89", "end": "harai"}
+   ],
+   "source": "school-katakana",
+   "verified": false
+  },
+  "ル": {
+   "count": 2,
+   "strokes": [
+    {"d": "M36 18 Q36 60 15 85", "end": "harai"},
+    {"d": "M58 14 L58 81 Q72 74 87 55", "end": "harai"}
+   ],
+   "source": "school-katakana",
+   "verified": false
+  },
+  "レ": {
+   "count": 1,
+   "strokes": [
+    {"d": "M28 14 L28 83 Q56 76 85 49", "end": "harai"}
+   ],
+   "source": "school-katakana",
+   "verified": false
+  },
+  "ロ": {
+   "count": 3,
+   "strokes": [
+    {"d": "M22 22 L22 82", "end": "tome"},
+    {"d": "M22 22 L78 22 L78 82", "end": "tome"},
+    {"d": "M22 82 L78 82", "end": "tome"}
+   ],
+   "source": "school-katakana",
+   "verified": false
+  },
+  "ワ": {
+   "count": 2,
+   "strokes": [
+    {"d": "M22 22 L22 52", "end": "tome"},
+    {"d": "M22 22 L80 22 Q74 66 35 89", "end": "harai"}
+   ],
+   "source": "school-katakana",
+   "verified": false
+  },
+  "ヲ": {
+   "count": 3,
+   "strokes": [
+    {"d": "M18 22 L80 22", "end": "tome"},
+    {"d": "M24 48 L76 48", "end": "tome"},
+    {"d": "M80 22 Q74 66 33 89", "end": "harai"}
+   ],
+   "source": "school-katakana",
+   "verified": false,
+   "note": "筆順（横・横・ノ）を特に確認してほしい字。"
+  },
+  "ン": {
+   "count": 2,
+   "strokes": [
+    {"d": "M19 27 L36 40", "end": "tome"},
+    {"d": "M23 85 Q52 70 81 29", "end": "harai"}
+   ],
+   "source": "school-katakana",
+   "verified": false
+  }
+ }
+}
