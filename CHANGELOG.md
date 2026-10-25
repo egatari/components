@@ -8,6 +8,16 @@ Versions follow [README.md § Releases and versions](README.md#releases-and-vers
 
 - `m-compare` `by="row"`; an "outside every set" region for `m-venn`; a project-plan demo for `m-timeline` lanes
 
+## 1.4.1 - 2026-10-25
+
+### Fixed
+
+- `m-kanbun` (issue #3): the columns now fit the element's height and width. Before, the layout came from `size` alone (60 px by default) and ignored the element's height, so a 五言 line (about 690 px with kunten) overflowed the slide whatever `style="height:…"` the author wrote; an AI author in the nightly evaluation changed the height three times without converging. When the longest column (with 振り仮名・送り仮名・返り点・句読点) exceeds the element's height by more than 6 px, or the columns and the 書き下し文 exceed its width, the character size and the column pitch go down together, 1 px at a time, to 42 px at the least (振り仮名・送り仮名・返り点 stay 24 px; below 42 a 返り点 comes closer than 4 px to the next column's 送り仮名). If it still does not fit, a `console.warn` gives the missing px and what to do. When the text fits at `size`, nothing changes (the demo is pixel-identical). A 再読文字's second-reading number moves above its 送り仮名 when the characters are small. The README says in one pack-visible sentence (+23 B) that the size follows the element and that a poem that still does not fit is split (2 句 per slide), not given another height. `tools/test-kanbun-fit.mjs` (in `tools/test-all.mjs`): a 五言 two-line text at 260 px fits (inside the slide and the element, text ≥ 24 px, no overlaps), and a 9-character line at 260 px stops at 42 and warns
+
+### Changed
+
+- CATALOG.md, the gallery and CONTRIBUTING name the `common` series 標準パーツ / Standard parts (the series id `common` and README frontmatter are unchanged)
+
 ## 1.4.0 - 2026-10-25
 
 ### Changed
