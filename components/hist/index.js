@@ -473,7 +473,7 @@ DECK.define("m-hist", class extends DECK.MotionElement {
     return d;
   }
   render(k, t, ctx){
-    var P = this.props, D = DECK, pl = this.plan(), self = this, vr = this.variant, lecture = ctx && ctx.mode === "lecture", p = this.p, g = this.geo, dur = P.dur;
+    var P = this.props, D = DECK, pl = this.plan(), self = this, vr = this.variant, lecture = ctx && (ctx.preview || ctx.mode === "lecture"), p = this.p, g = this.geo, dur = P.dur;
     // 段階 st の、時刻 at から len 秒の進み（授業の表示では先の段階を薄く：-1 を返す）
     var ph = function(st, at, len){ return st < k ? 1 : st > k ? (lecture ? -1 : 0) : D.prog(t, at, len); };
     var FAINT = 0.45;

@@ -428,7 +428,7 @@ DECK.define("m-timeline", class extends DECK.MotionElement {
   }
   render(k, t, ctx){
     var D = DECK, P = this.props, self = this, vr = this.variant, T = P.dur, hz = this.hz;
-    var lecture = !!(ctx && ctx.mode === "lecture"), pl = this.plan();
+    var lecture = !!(ctx && (ctx.preview || ctx.mode === "lecture")), pl = this.plan();
     // 段階 s の、start から len 秒の進み（前の段階なら 1、後の段階なら 0）
     var pr = function(s, start, len){ return s < k ? 1 : s > k ? 0 : D.prog(t, start, len); };
     // 授業の表示：後の段階は最後の形を薄く（0.45）、今の段階は 0.45 から濃くなる。形は動かさない（どの見せ方でも同じ）

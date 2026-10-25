@@ -259,7 +259,7 @@ DECK.define("m-pie", class extends DECK.MotionElement {
     return this.plan().some(function(o){ return o.step === k; }) ? this.props.dur : 0;
   }
   render(k, t, ctx){
-    var P = this.props, D = DECK, self = this, vr = this.variant, dur = P.dur, span = dur * 0.6, lecture = ctx && ctx.mode === "lecture";
+    var P = this.props, D = DECK, self = this, vr = this.variant, dur = P.dur, span = dur * 0.6, lecture = ctx && (ctx.preview || ctx.mode === "lecture");
     var TAU = Math.PI * 2, R = this.R, ri = this.ri;
     // 同じ段階の切れが占める角度の範囲（sweep はこの範囲を掃く）
     var rng = {};

@@ -216,7 +216,7 @@ DECK.define("m-timer", class extends DECK.MotionElement {
     if (this._said !== s && !this.video){ this._said = s; this.say.textContent = s; }
   }
 });
-var JA = {ready: "準備の確認", total: "合計", remaining: "残り", done: "時間です", start: "準備ができたら　→ キーでスタート", next: "終了　→ キーで次へ", end: "終了",
+var JA = {ready: "準備の確認", total: "合計", remaining: "残り", done: "時間", start: "準備ができたら　→ キーでスタート", next: "終了　→ キーで次へ", end: "終了",
           min: "分", sec: "秒", plus: "＋1 分", minus: "−1 分"};
 var EN = {ready: "Ready?", total: "Total", remaining: "Remaining", done: "Time's up", start: "When ready, press → to start", next: "Time's up. Press → for the next", end: "Time's up",
           min: " min", sec: " s", plus: "+1 min", minus: "−1 min"};
