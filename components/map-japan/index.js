@@ -183,10 +183,10 @@ DECK.define("m-map-japan", class extends DECK.MotionElement {
         anchor: {enum: ["right", "left", "above", "below"]}, step: {type: "integer"}, at: {type: "number"}}}},
       flows: {type: "array", items: {type: "object", additionalProperties: false, required: ["from", "to"], properties: {
         from: {type: ["string", "integer", "array"]}, to: {type: ["string", "integer", "array"]}, label: {type: "string"}, tone: {type: "string"},
-        value: {type: "number"}, bend: {type: "number"}, via: {type: "array", items: {type: "array"}}, step: {type: "integer"}, at: {type: "number"}}}},
+        value: {type: "number"}, bend: {type: "number"}, via: {type: "array", items: {type: "array"}}, labelAt: {type: "array"}, step: {type: "integer"}, at: {type: "number"}}}},
       shapes: {type: "array", items: {type: "object", additionalProperties: false, anyOf: [{required: ["polygon"]}, {required: ["line"]}], properties: {
         polygon: {type: "array", minItems: 3, items: {type: "array"}}, line: {type: "array", minItems: 2, items: {type: "array"}},
-        label: {type: "string"}, tone: {type: "string"}, dash: {type: "boolean"}, step: {type: "integer"}, at: {type: "number"}}}}}},
+        label: {type: "string"}, labelAt: {type: "array"}, tone: {type: "string"}, dash: {type: "boolean"}, step: {type: "integer"}, at: {type: "number"}}}}}},
     example: {regions: [{id: "13", tone: "emph", step: 1}, {group: "kinki", tone: "series-2", step: 2}],
       points: [{lon: 135.50, lat: 34.69, label: "大阪", step: 3}], flows: [{from: "13", to: "27", step: 4}]},
     note: {en: "prefectures by JIS code \"01\"–\"47\" (or \"JP-13\", \"東京都\") in regions[].id; the 8 regions (hokkaido, tohoku, kanto, chubu, kinki, chugoku, shikoku, kyushu) in regions[].group; values is an object {code: number}; classes are the lower bounds of the classes (default 4, at most 5); points, shapes and flows[].via use lon/lat in degrees",
@@ -195,7 +195,7 @@ DECK.define("m-map-japan", class extends DECK.MotionElement {
   static props = {
     layout: {type: "string", default: "inset", doc: "inset（南西諸島と小笠原諸島を枠に入れて描く）か true（本当の位置。日本が小さくなる）"},
     labels: {type: "string", default: "focus", doc: "地域の名前：focus（regions に書いた地域だけ）・all（名前が中に入る都道府県すべて）・none"},
-    show:   {type: "string", default: "value", doc: "塗り分けた地域の上に書くもの：value（値）・class（階級の番号）・none。中に入る地域だけ"},
+    show:   {type: "string", default: "none", doc: "塗り分けた地域の上に値を書くか：none（書かない、既定）・value（中に入る地域だけ値を書く）"},
     unit:   {type: "string", default: "", doc: "値の単位（凡例の見出しに書く）"},
     digits: {type: "number", default: 0, doc: "値の小数桁"},
     legend: {type: "string", default: "", doc: "凡例の見出し（例：人口）。unit があれば後ろに（単位）を足す"},
@@ -256,8 +256,7 @@ DECK.define("m-map-japan", class extends DECK.MotionElement {
     if (vcodes.length){
       title = (P.legend || "") + (P.unit ? "（" + P.unit + "）" : "");
       legendRows = classes.map(function(b, j){
-        var t = j < classes.length - 1 ? self.fmt(b) + "〜" + self.fmt(classes[j + 1]) + "未満" : self.fmt(b) + "以上";
-        return (P.show === "class" ? (j + 1) + "：" : "") + t;
+        return j < classes.length - 1 ? self.fmt(b) + "〜" + self.fmt(classes[j + 1]) + " 未満" : self.fmt(b) + " 以上";
       });
       legendW = Math.max(title ? est(title, LS) : 0, 40 + Math.max.apply(null, legendRows.map(function(t){ return est(t, LS); })));
       legendH = (legendRows.length + (title ? 1 : 0)) * 36;
@@ -265,9 +264,9 @@ DECK.define("m-map-japan", class extends DECK.MotionElement {
     this.legendTitle = title;
     // ---- 縮尺と位置。layout="inset" では、地図の高さいっぱいの本図の左に南西諸島、右に凡例と小笠原の枠を並べる（beside）。
     // 要素が小さくてそれでは本図が小さくなるときは、本図の空いた隅（左上・右下の海）に枠を置く（corner）
-    var GAP = 20, PADI = 10, CAPL = 30, M = MAP.bounds.main, frames = [], legendXY = null, sc, ox, oy, mode = lay;
+    var GAP = 20, PADI = 10, PADR = 6, CAPL = 30, M = MAP.bounds.main, frames = [], legendXY = null, sc, ox, oy, mode = lay;
     var capW = function(c){ return Math.max.apply(null, c.map(function(t){ return est(t, 24); }).concat([0])); };
-    var capsOf = function(s, k){ return Math.abs(k - 1) < 1e-9 ? [s.name] : [s.name, "（縮尺は本図と異なる）"]; };
+    var capsOf = function(s, k){ return Math.abs(k - 1) < 0.05 ? [s.name] : [s.name, "（縮尺は本図と異なる）"]; };
     if (lay === "true"){
       var BT = MAP.bounds["true"], lw0 = legendW ? legendW + GAP : 0;
       sc = Math.min((W - lw0) / BT[2], H / BT[3]); ox = (W - BT[2] * sc - lw0) / 2; oy = (H - BT[3] * sc) / 2;
@@ -276,19 +275,37 @@ DECK.define("m-map-japan", class extends DECK.MotionElement {
     } else {
       var I = MAP.insets, R = I[0], O = I[1];
       var beside = function(s, caps){
-        var rw = R.cb[2] * R.s * s + 2 * PADI, rh = R.cb[3] * R.s * s + 2 * PADI, ow = O.cb[2] * O.s * s + 2 * PADI, oh = O.cb[3] * O.s * s + 2 * PADI;
-        var rc = caps ? capsOf(R, R.s) : [], oc = caps ? capsOf(O, O.s) : [];
+        // 南西諸島：枠は島の範囲にぴったり（余白 PADR）。高さは本図の 0.42 倍で、島が枠を満たす縮尺にする。本図の左下に置く
+        var mh0 = M[3] * s, rk = (mh0 * 0.42 - 2 * PADR) / R.cb[3];
+        var rw = R.cb[2] * rk + 2 * PADR, rh = R.cb[3] * rk + 2 * PADR, ow = O.cb[2] * O.s * s + 2 * PADI, oh = O.cb[3] * O.s * s + 2 * PADI;
+        var rc = caps ? capsOf(R, rk / s) : [], oc = caps ? capsOf(O, O.s) : [];
         var lw = Math.max(rw, capW(rc)), rg = Math.max(ow, capW(oc), legendW), mw = M[2] * s, mh = M[3] * s, tw = lw + GAP + mw + GAP + rg;
         if (tw > W || mh > H || rh + rc.length * CAPL > H || oh + oc.length * CAPL + (legendH ? legendH + 16 : 0) > H) return null;
-        var x0 = (W - tw) / 2, xr = x0 + lw + GAP + mw + GAP;
+        var x0 = (W - tw) / 2, xr = x0 + lw + GAP + mw + GAP, ry = (H + mh) / 2 - rh;
         return {sc: s, ox: x0 + lw + GAP, oy: (H - mh) / 2, legend: legendW ? [xr, 0] : null, frames: [
-          {x: x0, y: rc.length * CAPL, w: rw, h: rh, k: R.s * s, cx: x0 + PADI, cy: rc.length * CAPL + PADI, cb: R.cb, cap: rc, capAbove: true},
+          {x: x0 + lw - rw, y: ry, w: rw, h: rh, k: rk, cx: x0 + lw - rw + PADR, cy: ry + PADR, cb: R.cb, cap: rc, capAbove: true},
           {x: xr, y: H - oh, w: ow, h: oh, k: O.s * s, cx: xr + PADI, cy: H - oh + PADI, cb: O.cb, cap: oc, capAbove: true}]};
       };
       var find = function(caps){ for (var s = H / M[3]; s > 0.005; s *= 0.97){ var r = beside(s, caps); if (r) return r; } return null; };
       var bc = find(true), bn = find(false), bs = bc && bn && bc.sc >= 0.85 * bn.sc ? bc : bn;
       var lw1 = legendW ? legendW + GAP : 0, cs = Math.min((W - lw1) / M[2], H / M[3]);
-      if (bs && bs.sc >= 0.95 * cs){ sc = bs.sc; ox = bs.ox; oy = bs.oy; frames = bs.frames; legendXY = bs.legend; mode = "beside"; }
+      if (bs && bs.sc >= 0.95 * cs){
+        sc = bs.sc; ox = bs.ox; oy = bs.oy; frames = bs.frames; legendXY = bs.legend; mode = "beside";
+        // 南西諸島の枠を、本図の陸に掛からないところまで右へ（九州の左下の海へ）寄せ、空いた幅の分だけ全体を真ん中に戻す
+        var mv = [];
+        FEATS.forEach(function(f){ if (f.inset < 0) f.polys.forEach(function(pp){ pp[0].forEach(function(q){ mv.push([ox + (q[0] - M[0]) * sc, oy + (q[1] - M[1]) * sc]); }); }); });
+        var F0 = frames[0], top0 = F0.y - F0.cap.length * CAPL, w0 = Math.max(F0.w, capW(F0.cap));
+        var hit = function(dx){ return mv.some(function(q){ return q[0] > F0.x + dx - 12 && q[0] < F0.x + dx + w0 + 12 && q[1] > top0 - 6 && q[1] < F0.y + F0.h + 12; }); };
+        var dx = 0;
+        while (dx + 4 <= ox - F0.x && !hit(dx + 4)) dx += 4;
+        F0.x += dx; F0.cx += dx;
+        var left = Math.min(F0.x, ox), right = ox + M[2] * sc;
+        frames.forEach(function(f){ right = Math.max(right, f.x + Math.max(f.w, capW(f.cap))); });
+        if (legendXY) right = Math.max(right, legendXY[0] + legendW);
+        var sh = (W - (right - left)) / 2 - left;
+        ox += sh; frames.forEach(function(f){ f.x += sh; f.cx += sh; });
+        if (legendXY) legendXY[0] += sh;
+      }
       else {
         sc = cs; ox = (W - M[2] * sc - lw1) / 2; oy = (H - M[3] * sc) / 2; mode = "corner";
         frames = I.map(function(s){
@@ -317,7 +334,7 @@ DECK.define("m-map-japan", class extends DECK.MotionElement {
     });
     var byCode = {};
     parts.forEach(function(p){ (byCode[p.code] = byCode[p.code] || []).push(p); });
-    var fixedPts = MAP.fixed.map(function(f){ return {name: f[0], code: f[3], p: ll(f[1], f[2])}; });
+    var fixedPts = MAP.fixed.map(function(f){ return {name: f[0], code: f[3], p: ll(f[1], f[2]), i: insetOf(f[1], f[2])}; });
     var anchorOf = function(code){ var a = MAP.anchors[code]; return scr(a[0], a[1], a[2]); };
     // ---- 陸の格子（字の置き場所を探すため。4 px ごとに、どの都道府県の上か）
     var G = 4, gw = Math.ceil(W / G), gh = Math.ceil(H / G), grid = new Int8Array(gw * gh), codes = Object.keys(byCode).sort();
@@ -398,7 +415,7 @@ DECK.define("m-map-japan", class extends DECK.MotionElement {
     var chipSize = function(t, size){ return {w: est(t, size) + 10, h: size + 8}; };
     var chip = function(parent, b, t, size, weight){
       var g = D.el("g", {opacity: 0}, parent);
-      D.el("rect", {x: b.x.toFixed(1), y: b.y.toFixed(1), width: b.w.toFixed(1), height: b.h.toFixed(1), rx: 6, fill: "var(--bg)", "fill-opacity": 0.9}, g);
+      D.el("rect", {x: b.x.toFixed(1), y: b.y.toFixed(1), width: b.w.toFixed(1), height: b.h.toFixed(1), rx: 6, fill: "var(--bg)"}, g);
       D.el("text", {x: (b.x + b.w / 2).toFixed(1), y: (b.y + b.h / 2 + size * 0.36).toFixed(1), "text-anchor": "middle", "font-size": size, "font-weight": weight || 400, fill: "var(--fg)"}, g).textContent = t;
       return g;
     };
@@ -434,20 +451,26 @@ DECK.define("m-map-japan", class extends DECK.MotionElement {
       D.el("circle", {cx: from[0].toFixed(1), cy: from[1].toFixed(1), r: 3, fill: "var(--fg)"}, g);
       return g;
     };
-    // 沖ノ鳥島・南鳥島の名前（地図と一緒に。点のまわりの入る所に。入らなければ書かない）
+    // 領土の端の島の名前（竹島・尖閣諸島・沖ノ鳥島・南鳥島）は地図と一緒にいつも書く。点のまわりの入る所に（枠の中の島は枠の中に）。
+    // 小さい要素で入らなければ書かない
+    var ISLAND = {"竹島": "竹島", "魚釣島": "尖閣諸島", "沖ノ鳥島": "沖ノ鳥島", "南鳥島": "南鳥島"};
     fixedPts.forEach(function(f){
-      if (f.name !== "沖ノ鳥島" && f.name !== "南鳥島") return;
-      var s = chipSize(f.name, 24), p = f.p, spots = [[p[0] + 7, p[1] - s.h / 2], [p[0] - 7 - s.w, p[1] - s.h / 2], [p[0] - s.w / 2, p[1] - 7 - s.h], [p[0] - s.w / 2, p[1] + 7],
+      var name = ISLAND[f.name];
+      if (!name) return;
+      var s = chipSize(name, 24), p = f.p, spots = [[p[0] + 7, p[1] - s.h / 2], [p[0] - 7 - s.w, p[1] - s.h / 2], [p[0] - s.w / 2, p[1] - 7 - s.h], [p[0] - s.w / 2, p[1] + 7],
         [p[0] + 4, p[1] - 5 - s.h], [p[0] - 4 - s.w, p[1] - 5 - s.h], [p[0] + 4, p[1] + 5], [p[0] - 4 - s.w, p[1] + 5]];
       for (var n = 0; n < spots.length; n++){
         var b = {x: spots[n][0], y: spots[n][1], w: s.w, h: s.h};
-        if (inside(b) && !boxes(b) && (lay === "true" ? true : inFrame(b)) && !probe(b, null).land && !fixedPts.some(function(o){ return o !== f && o.p[0] > b.x - 5 && o.p[0] < b.x + b.w + 5 && o.p[1] > b.y - 5 && o.p[1] < b.y + b.h + 5; })){
+        var where = f.i >= 0 && frames[f.i] ? inFrame(b) : !crossFrame(b);
+        if (inside(b) && !boxes(b) && where && !probe(b, null).land && !fixedPts.some(function(o){ return o !== f && o.p[0] > b.x - 5 && o.p[0] < b.x + b.w + 5 && o.p[1] > b.y - 5 && o.p[1] < b.y + b.h + 5; })){
           placed.push(b);
-          chip(gFrame, b, f.name, 24, 400).setAttribute("opacity", 1);
+          chip(gFrame, b, name, 24, 400).setAttribute("opacity", 1);
           return;
         }
       }
     });
+    // ほかの字は島の点に掛けない
+    fixedPts.forEach(function(f){ placed.push({x: f.p[0] - 5, y: f.p[1] - 5, w: 10, h: 10}); });
     // ---- 項目
     var items = this.items = [];
     var lab = /^(focus|all|none)$/.test(P.labels) ? P.labels : "focus";
@@ -519,11 +542,18 @@ DECK.define("m-map-japan", class extends DECK.MotionElement {
       var poly = [];
       if (o.via && o.via.length){
         var ps = [a].concat(o.via.map(function(q, j){ return ptOf(q, "flows[" + x.i + "].via[" + j + "]"); }), [b]);
+        // 求心的な Catmull-Rom（点の間隔がそろっていなくても行き過ぎて輪にならない。Barry–Goldman の形）
+        var ext = function(a0, b0){ return [2 * a0[0] - b0[0], 2 * a0[1] - b0[1]]; };
         for (var i = 0; i < ps.length - 1; i++){
-          var p0 = ps[i - 1] || ps[i], p1 = ps[i], p2 = ps[i + 1], p3 = ps[i + 2] || p2;
+          var p0 = ps[i - 1] || ext(ps[i], ps[i + 1]), p1 = ps[i], p2 = ps[i + 1], p3 = ps[i + 2] || ext(ps[i + 1], ps[i]);
+          var kt = function(a0, b0){ return Math.max(1e-6, Math.sqrt(Math.hypot(b0[0] - a0[0], b0[1] - a0[1]))); };
+          var t0 = 0, t1 = t0 + kt(p0, p1), t2 = t1 + kt(p1, p2), t3 = t2 + kt(p2, p3);
+          var mixp = function(a0, b0, ta, tb, t){ var w = (t - ta) / (tb - ta); return [a0[0] + (b0[0] - a0[0]) * w, a0[1] + (b0[1] - a0[1]) * w]; };
           for (var u = 0; u < 1; u += 1 / 16){
-            var u2 = u * u, u3 = u2 * u;
-            poly.push([0, 1].map(function(j){ return 0.5 * (2 * p1[j] + (p2[j] - p0[j]) * u + (2 * p0[j] - 5 * p1[j] + 4 * p2[j] - p3[j]) * u2 + (3 * p1[j] - p0[j] - 3 * p2[j] + p3[j]) * u3); }));
+            var t = t1 + (t2 - t1) * u;
+            var A1 = mixp(p0, p1, t0, t1, t), A2 = mixp(p1, p2, t1, t2, t), A3 = mixp(p2, p3, t2, t3, t);
+            var B1 = mixp(A1, A2, t0, t2, t), B2 = mixp(A2, A3, t1, t3, t);
+            poly.push(mixp(B1, B2, t1, t2, t));
           }
         }
         poly.push(b);
@@ -531,6 +561,10 @@ DECK.define("m-map-japan", class extends DECK.MotionElement {
         var dx = b[0] - a[0], dy = b[1] - a[1], bend = o.bend !== undefined ? +o.bend : 0.18, m = [(a[0] + b[0]) / 2 - dy * bend, (a[1] + b[1]) / 2 + dx * bend];
         for (var v = 0; v <= 1.0001; v += 1 / 32) poly.push([0, 1].map(function(j){ return (1 - v) * (1 - v) * a[j] + 2 * v * (1 - v) * m[j] + v * v * b[j]; }));
       }
+      // 始めは点の外（11 px）から引く（点の下から線の端がのぞかないように）
+      var cut = 11;
+      while (poly.length > 2 && Math.hypot(poly[1][0] - poly[0][0], poly[1][1] - poly[0][1]) <= cut){ cut -= Math.hypot(poly[1][0] - poly[0][0], poly[1][1] - poly[0][1]); poly.shift(); }
+      if (poly.length > 1){ var l0 = Math.hypot(poly[1][0] - poly[0][0], poly[1][1] - poly[0][1]) || 1; poly[0] = [poly[0][0] + (poly[1][0] - poly[0][0]) * cut / l0, poly[0][1] + (poly[1][1] - poly[0][1]) * cut / l0]; }
       // 終わりから d の所の点（折れ線に沿って）
       var back = function(d){
         for (var i = poly.length - 1; i > 0; i--){
@@ -540,8 +574,8 @@ DECK.define("m-map-japan", class extends DECK.MotionElement {
         }
         return {p: poly[0], i: 1};
       };
-      // 線は端の点の手前（点の半径＋矢じり）で止める
-      var hl = 10 + sw * 1.6, tipB = back(9), endB = back(9 + hl * 0.85), dirB = back(9 + hl);
+      // 矢じりの先は終わりの点の 4 px 手前（点の半径 8 ＋縁 ＋ 4）。線は矢じりの中で止める
+      var hl = 10 + sw * 1.6, TIP = 13, tipB = back(TIP), endB = back(TIP + hl * 0.85), dirB = back(TIP + hl);
       var tip = tipB.p, e = endB.p, ux = tip[0] - dirB.p[0], uy = tip[1] - dirB.p[1], ul = Math.hypot(ux, uy) || 1;
       var line = poly.slice(0, endB.i).concat([e]);
       var g = D.el("g", {}, gFlow);
@@ -552,6 +586,8 @@ DECK.define("m-map-japan", class extends DECK.MotionElement {
       var len = 0; for (var i2 = 1; i2 < line.length; i2++) len += Math.hypot(line[i2][0] - line[i2 - 1][0], line[i2][1] - line[i2 - 1][1]);
       var half = len / 2, mid = line[0];
       for (var i3 = 1; i3 < line.length; i3++){ var l3 = Math.hypot(line[i3][0] - line[i3 - 1][0], line[i3][1] - line[i3 - 1][1]); if (half <= l3){ mid = [line[i3 - 1][0] + (line[i3][0] - line[i3 - 1][0]) * half / l3, line[i3 - 1][1] + (line[i3][1] - line[i3 - 1][1]) * half / l3]; break; } half -= l3; }
+      // 名前の札を線と矢じりに掛けない
+      line.concat([tip]).forEach(function(q){ placed.push({x: q[0] - 1, y: q[1] - 1, w: 2, h: 2}); });
       items.push({x: x, flow: true, line: lineEl, head: head, len: lineEl.getTotalLength ? lineEl.getTotalLength() : len, els: [], txt: [], c: mid, a: a});
     });
     // 点
@@ -578,26 +614,35 @@ DECK.define("m-map-japan", class extends DECK.MotionElement {
       var it = byItem(x), s = chipSize(x.o.label, 24), p = x.p, order = ["right", "left", "above", "below"];
       var want = x.o.anchor || "right";
       order = [want].concat(order.filter(function(a){ return a !== want; }));
-      var spot = function(a){ return a === "right" ? {x: p[0] + 13, y: p[1] - s.h / 2} : a === "left" ? {x: p[0] - 13 - s.w, y: p[1] - s.h / 2} : a === "above" ? {x: p[0] - s.w / 2, y: p[1] - 13 - s.h} : {x: p[0] - s.w / 2, y: p[1] + 13}; };
-      var b = null;
-      for (var n = 0; n < order.length && !b; n++){ var q = spot(order[n]); q.w = s.w; q.h = s.h; if (inside(q) && !boxes(q)) b = q; }
-      if (!b){ b = spot(want); b.w = s.w; b.h = s.h; console.warn("m-map-japan: the label \"" + x.o.label + "\" overlaps another"); }
+      var spot = function(a, r){ return a === "right" ? {x: p[0] + r, y: p[1] - s.h / 2} : a === "left" ? {x: p[0] - r - s.w, y: p[1] - s.h / 2} : a === "above" ? {x: p[0] - s.w / 2, y: p[1] - r - s.h} : {x: p[0] - s.w / 2, y: p[1] + r}; };
+      // 書いた向きを先に、離す距離を少しずつ増やして、線・ほかの字に掛からない所。斜めも試す
+      var b = null, rs = [13, 22, 32];
+      for (var m = 0; m < rs.length && !b; m++) for (var n = 0; n < order.length && !b; n++){ var q = spot(order[n], rs[m]); q.w = s.w; q.h = s.h; if (inside(q) && !boxes(q) && !crossFrame(q)) b = q; }
+      for (var dd = 0; dd < 4 && !b; dd++){ var q2 = {x: dd % 2 ? p[0] + 8 : p[0] - 8 - s.w, y: dd < 2 ? p[1] - 8 - s.h : p[1] + 8, w: s.w, h: s.h}; if (inside(q2) && !boxes(q2) && !crossFrame(q2)) b = q2; }
+      if (!b){ b = spot(want, 13); b.w = s.w; b.h = s.h; console.warn("m-map-japan: the label \"" + x.o.label + "\" overlaps another"); }
       placed.push(b);
       it.txt.push(chip(gTxt, b, x.o.label, 24, 400));
     });
     items.forEach(function(it){
       if (!(it.x.kind === "flow" || it.x.kind === "shape") || !it.x.o.label) return;
-      var pos = placeLabel(it.x.o.label, 24, it.c, null, true);
+      // labelAt：名前を置く所（経度・緯度）。空いていればそこに、そうでなければまわりに
+      var pos = null;
+      if (it.x.o.labelAt){
+        var la = ptOf(it.x.o.labelAt, (it.x.kind === "flow" ? "flows[" : "shapes[") + it.x.i + "].labelAt"), s0 = chipSize(it.x.o.label, 24);
+        var b0 = {x: la[0] - s0.w / 2, y: la[1] - s0.h / 2, w: s0.w, h: s0.h};
+        pos = inside(b0) && !boxes(b0) && !crossFrame(b0) ? {b: b0} : placeLabel(it.x.o.label, 24, la, null, true);
+      } else pos = placeLabel(it.x.o.label, 24, it.c, null, true);
       if (!pos) return;
       placed.push(pos.b);
       it.txt.push(chip(gTxt, pos.b, it.x.o.label, 24, 400));
     });
     // 値（中に入る地域だけ）
-    var show = /^(value|class|none)$/.test(P.show) ? P.show : "value";
+    var show = P.show === "value" ? "value" : "none";
+    if (!/^(value|none)$/.test(P.show)) console.warn('m-map-japan: show="' + P.show + '" is not value or none (none is used)');
     items.forEach(function(it){
       if (it.x.kind !== "values" || show === "none") return;
       vcodes.forEach(function(v){
-        var t = show === "class" ? String(v.ci + 1) : self.fmt(v.v);
+        var t = self.fmt(v.v);
         var pos = placeLabel(t, 24, anchorOf(v.code), [v.code], false);
         if (!pos) return;
         placed.push(pos.b);
@@ -648,7 +693,7 @@ DECK.define("m-map-japan", class extends DECK.MotionElement {
     var lines = [];
     regs.forEach(function(r){ lines.push((r.x.o.label || (r.g ? r.g.name : NAME[r.cs[0]])) + (r.g ? "（" + r.g.codes.map(function(c){ return NAME[c]; }).join("・") + "）" : "")); });
     if (vcodes.length){
-      lines.push((title || "値") + "：" + legendRows.map(function(t, j){ return (P.show === "class" ? "" : (j + 1) + "：") + t; }).join("、"));
+      lines.push((title || "値") + "：" + legendRows.join("、"));
       vcodes.forEach(function(v){ lines.push(NAME[v.code] + " " + self.fmt(v.v) + (P.unit || "") + "（" + (v.ci + 1) + "）"); });
     }
     pl.items.forEach(function(x){
