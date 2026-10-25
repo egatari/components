@@ -439,13 +439,31 @@ DECK.define("m-map-japan", class extends DECK.MotionElement {
     if (legendXY) placed.push({x: legendXY[0] - 4, y: legendXY[1], w: legendW + 8, h: legendH});
     var boxes = function(b){ return placed.some(function(q){ return b.x < q.x + q.w + 6 && b.x + b.w + 6 > q.x && b.y < q.y + q.h + 4 && b.y + b.h + 4 > q.y; }); };
     var inside = function(b){ return b.x >= 2 && b.y >= 2 && b.x + b.w <= W - 2 && b.y + b.h <= H - 2; };
-    // 枠の線を横切る箱
-    var crossFrame = function(b){
-      return frames.some(function(f){
+    // 枠と枠の名前は、その枠の中のもの（home：字の元の点がある枠の番号。-1 は本図）の字のほかは避ける。
+    // crossFrame：箱が枠の線を横切るか、ほかの枠（本図の字なら、どの枠でも）に掛かる
+    var frameAt = function(p){ for (var i = 0; i < frames.length; i++){ var f = frames[i]; if (f && p[0] >= f.x && p[0] <= f.x + f.w && p[1] >= f.y && p[1] <= f.y + f.h) return i; } return -1; };
+    var crossFrame = function(b, home){
+      return frames.some(function(f, i){
         var ov = b.x < f.x + f.w + 2 && b.x + b.w > f.x - 2 && b.y < f.y + f.h + 2 && b.y + b.h > f.y - 2;
         var within = b.x >= f.x + 2 && b.x + b.w <= f.x + f.w - 2 && b.y >= f.y + 2 && b.y + b.h <= f.y + f.h - 2;
-        return ov && !within;
+        return ov && (i !== home || !within);
       });
+    };
+    // 引いた引き出し線（ほかの引き出し線と交わる置き場所は遠いとみなす）
+    var leaders = [];
+    var segX = function(p1, p2, p3, p4){
+      var d = function(a, b, c){ return (b[0] - a[0]) * (c[1] - a[1]) - (b[1] - a[1]) * (c[0] - a[0]); };
+      return d(p1, p2, p3) * d(p1, p2, p4) < 0 && d(p3, p4, p1) * d(p3, p4, p2) < 0;
+    };
+    // 引き出し線（from から箱のいちばん近い点まで）が、ほかの枠か枠の名前に入る
+    var leadCross = function(from, b, home){
+      var x = Math.max(b.x, Math.min(b.x + b.w, from[0])), y = Math.max(b.y, Math.min(b.y + b.h, from[1]));
+      for (var u = 0; u <= 20; u++){
+        var px = from[0] + (x - from[0]) * u / 20, py = from[1] + (y - from[1]) * u / 20;
+        if (frames.some(function(f, i){ return i !== home && px > f.x - 2 && px < f.x + f.w + 2 && py > f.y - 2 && py < f.y + f.h + 2; })) return true;
+        if (frameNames.some(function(q){ return px > q.x - 2 && px < q.x + q.w + 2 && py > q.y - 2 && py < q.y + q.h + 2; })) return true;
+      }
+      return false;
     };
     // 字の札（地の色の角丸の箱に --fg の字）。w, h は札の大きさ
     var chipSize = function(t, size){ return {w: est(t, size) + 10, h: size + 8}; };
@@ -458,23 +476,24 @@ DECK.define("m-map-japan", class extends DECK.MotionElement {
     // 名前の置き場所：中に入れば anchor に。入らなければまわりの海（陸と強調した地域を避ける）に置いて、引き出し線を引く
     // strict：中に置くのは札がすべて own の上に入るときだけ（名前。値は 6 割でよい）
     var placeLabel = function(t, size, anchor, own, mayOut, strict){
-      var s = chipSize(t, size), best = null, bc = Infinity;
+      var s = chipSize(t, size), best = null, bc = Infinity, home = frameAt(anchor);
       var ins = [[0, 0]];
       [6, 12, 18].forEach(function(r){ ins.push([0, -r], [0, r], [-r, 0], [r, 0], [-r, -r], [r, -r], [-r, r], [r, r]); });
       for (var n = 0; n < ins.length && own; n++){
         var b0 = {x: anchor[0] + ins[n][0] - s.w / 2, y: anchor[1] + ins[n][1] - s.h / 2, w: s.w, h: s.h};
         var pb = probe(b0, own);
-        if (inside(b0) && !boxes(b0) && !crossFrame(b0) && (strict ? pb.full : pb.inOwn)) return {b: b0, out: false};
+        if (inside(b0) && !boxes(b0) && !crossFrame(b0, home) && (strict ? pb.full : pb.inOwn)) return {b: b0, out: false};
       }
       if (!mayOut) return null;
       for (var r = 30; r <= 260; r += 20) for (var k = 0; k < 24; k++){
         var a = k / 24 * Math.PI * 2, cx = anchor[0] + Math.cos(a) * (r + s.w / 2 * Math.abs(Math.cos(a))), cy = anchor[1] + Math.sin(a) * (r * 0.8 + s.h / 2 * Math.abs(Math.sin(a)));
         var b = {x: cx - s.w / 2, y: cy - s.h / 2, w: s.w, h: s.h};
-        if (!inside(b) || boxes(b) || crossFrame(b)) continue;
+        if (!inside(b) || boxes(b) || crossFrame(b, home) || leadCross(anchor, b, home)) continue;
         // 引き出し線がほかの強調した地域を横切るのも避ける
         var lx = Math.max(b.x, Math.min(b.x + b.w, anchor[0])), ly = Math.max(b.y, Math.min(b.y + b.h, anchor[1])), cross = 0;
         for (var u = 1; u < 10; u++){ var v = at(anchor[0] + (lx - anchor[0]) * u / 10, anchor[1] + (ly - anchor[1]) * u / 10); if (v > 0 && hiCodes[codes[v - 1]] && !(own && own.indexOf(codes[v - 1]) >= 0)) cross++; }
-        var pr = probe(b, own), cost = r + 260 * pr.land + 900 * pr.hi + 120 * cross;
+        var lp = [lx, ly], lc = leaders.filter(function(l){ return segX(anchor, lp, l[0], l[1]); }).length;
+        var pr = probe(b, own), cost = r + 260 * pr.land + 900 * pr.hi + 120 * cross + 150 * lc;
         if (cost < bc){ bc = cost; best = b; }
       }
       if (!best) console.warn("m-map-japan: no room for the label \"" + t + "\"");
@@ -482,6 +501,7 @@ DECK.define("m-map-japan", class extends DECK.MotionElement {
     };
     var leader = function(parent, from, b){
       var x = Math.max(b.x, Math.min(b.x + b.w, from[0])), y = Math.max(b.y, Math.min(b.y + b.h, from[1]));
+      leaders.push([from, [x, y]]);
       var g = D.el("g", {opacity: 0}, parent);
       D.el("path", {d: "M" + from[0].toFixed(1) + "," + from[1].toFixed(1) + "L" + x.toFixed(1) + "," + y.toFixed(1), fill: "none", stroke: "var(--fg)", "stroke-width": 1.5}, g);
       D.el("circle", {cx: from[0].toFixed(1), cy: from[1].toFixed(1), r: 3, fill: "var(--fg)"}, g);
@@ -503,7 +523,7 @@ DECK.define("m-map-japan", class extends DECK.MotionElement {
         [p[0] + 4, p[1] - 5 - s.h], [p[0] - 4 - s.w, p[1] - 5 - s.h], [p[0] + 4, p[1] + 5], [p[0] - 4 - s.w, p[1] + 5]];
       for (var n = 0; n < spots.length; n++){
         var b = {x: spots[n][0], y: spots[n][1], w: s.w, h: s.h};
-        var where = f.i >= 0 && frames[f.i] ? inFrame(b) : !crossFrame(b);
+        var where = f.i >= 0 && frames[f.i] ? inFrame(b) : !crossFrame(b, -1);
         if (inside(b) && !boxes(b) && where && !probe(b, null).land && !fixedPts.some(function(o){ return o !== f && o.p[0] > b.x - 5 && o.p[0] < b.x + b.w + 5 && o.p[1] > b.y - 5 && o.p[1] < b.y + b.h + 5; })){
           // 作り手の点に替わる島の名前は、作り手の名前の置き場所を妨げない（入れ替わりに消えるので）
           if (!f.by) placed.push(b);
@@ -520,7 +540,7 @@ DECK.define("m-map-japan", class extends DECK.MotionElement {
       var best = null, bc = Infinity;
       for (var r = 10; r <= 200; r += 6) for (var k = 0; k < 16; k++){
         var a = k / 16 * Math.PI * 2, q = {x: p[0] + Math.cos(a) * (r + s.w / 2) - s.w / 2, y: p[1] + Math.sin(a) * (r + s.h / 2) - s.h / 2, w: s.w, h: s.h};
-        var ok = f.i >= 0 && frames[f.i] && inFrame(q) || !hitFrame(q);
+        var ok = (f.i >= 0 && frames[f.i] && inFrame(q) || !hitFrame(q)) && !leadCross(p, q, f.i >= 0 && frames[f.i] ? f.i : -1);
         if (ok && inside(q) && !boxes(q) && !probe(q, null).land && !fixedPts.some(function(o){ return o !== f && o.p[0] > q.x - 5 && o.p[0] < q.x + q.w + 5 && o.p[1] > q.y - 5 && o.p[1] < q.y + q.h + 5; })
           && !userPts.some(function(u){ return u.p[0] > q.x - 10 && u.p[0] < q.x + q.w + 10 && u.p[1] > q.y - 10 && u.p[1] < q.y + q.h + 10; })){
           var lx = Math.max(q.x, Math.min(q.x + q.w, p[0])), ly = Math.max(q.y, Math.min(q.y + q.h, p[1])), cross = 0;
@@ -674,10 +694,13 @@ DECK.define("m-map-japan", class extends DECK.MotionElement {
     });
     // ---- 字（強調の名前 → 点の名前 → 矢印・重ね描きの名前 → 値 → すべての名前）
     var byItem = function(x){ return items.filter(function(it){ return it.x === x; })[0]; };
-    regs.forEach(function(r){
+    // 枠の近く（150 px 以内）の地域の名前を先に置く（枠を避けると置き場所が少ないので、ほかの名前に取られないように）
+    var nearFrame = function(p){ return frames.some(function(f, i){ return i !== frameAt(p) && p[0] > f.x - 150 && p[0] < f.x + f.w + 150 && p[1] > f.y - 150 && p[1] < f.y + f.h + 150; }); };
+    var ancOf = function(r){ return r.g ? scr(r.g.anchor[0], r.g.anchor[1], -1) : anchorOf(r.cs[0]); };
+    regs.filter(function(r){ return nearFrame(ancOf(r)); }).concat(regs.filter(function(r){ return !nearFrame(ancOf(r)); })).forEach(function(r){
       var o = r.x.o, t = o.label !== undefined ? o.label : lab === "none" ? "" : r.g ? r.g.name : NAME[r.cs[0]];
       if (!t) return;
-      var anc = r.g ? scr(r.g.anchor[0], r.g.anchor[1], -1) : anchorOf(r.cs[0]);
+      var anc = ancOf(r);
       var pos = placeLabel(t, 24, anc, r.cs, true, true);
       if (!pos) return;
       placed.push(pos.b);
@@ -691,9 +714,9 @@ DECK.define("m-map-japan", class extends DECK.MotionElement {
       order = [want].concat(order.filter(function(a){ return a !== want; }));
       var spot = function(a, r){ return a === "right" ? {x: p[0] + r, y: p[1] - s.h / 2} : a === "left" ? {x: p[0] - r - s.w, y: p[1] - s.h / 2} : a === "above" ? {x: p[0] - s.w / 2, y: p[1] - r - s.h} : {x: p[0] - s.w / 2, y: p[1] + r}; };
       // 書いた向きを先に、離す距離を少しずつ増やして、線・ほかの字に掛からない所。斜めも試す
-      var b = null, rs = [13, 22, 32];
-      for (var m = 0; m < rs.length && !b; m++) for (var n = 0; n < order.length && !b; n++){ var q = spot(order[n], rs[m]); q.w = s.w; q.h = s.h; if (inside(q) && !boxes(q) && !crossFrame(q)) b = q; }
-      for (var dd = 0; dd < 4 && !b; dd++){ var q2 = {x: dd % 2 ? p[0] + 8 : p[0] - 8 - s.w, y: dd < 2 ? p[1] - 8 - s.h : p[1] + 8, w: s.w, h: s.h}; if (inside(q2) && !boxes(q2) && !crossFrame(q2)) b = q2; }
+      var b = null, rs = [13, 22, 32], ph = frameAt(p);
+      for (var m = 0; m < rs.length && !b; m++) for (var n = 0; n < order.length && !b; n++){ var q = spot(order[n], rs[m]); q.w = s.w; q.h = s.h; if (inside(q) && !boxes(q) && !crossFrame(q, ph)) b = q; }
+      for (var dd = 0; dd < 4 && !b; dd++){ var q2 = {x: dd % 2 ? p[0] + 8 : p[0] - 8 - s.w, y: dd < 2 ? p[1] - 8 - s.h : p[1] + 8, w: s.w, h: s.h}; if (inside(q2) && !boxes(q2) && !crossFrame(q2, ph)) b = q2; }
       // 点のそばに入らなければ（要素の縁の近く、枠の中の点）、少し離れた所に置いて引き出し線を引く
       var lead = null;
       if (!b){ var pos = placeLabel(x.o.label, 24, p, null, true); if (pos){ b = pos.b; lead = leader(gTxt, p, b); } }
@@ -709,7 +732,7 @@ DECK.define("m-map-japan", class extends DECK.MotionElement {
       if (it.x.o.labelAt){
         var la = ptOf(it.x.o.labelAt, (it.x.kind === "flow" ? "flows[" : "shapes[") + it.x.i + "].labelAt"), s0 = chipSize(it.x.o.label, 24);
         var b0 = {x: la[0] - s0.w / 2, y: la[1] - s0.h / 2, w: s0.w, h: s0.h};
-        pos = inside(b0) && !boxes(b0) && !crossFrame(b0) ? {b: b0} : placeLabel(it.x.o.label, 24, la, null, true);
+        pos = inside(b0) && !boxes(b0) && !crossFrame(b0, frameAt(la)) ? {b: b0} : placeLabel(it.x.o.label, 24, la, null, true);
       } else pos = placeLabel(it.x.o.label, 24, it.c, null, true);
       if (!pos) return;
       placed.push(pos.b);
