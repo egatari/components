@@ -216,14 +216,14 @@ DECK.define("m-timer", class extends DECK.MotionElement {
     if (this._said !== s && !this.video){ this._said = s; this.say.textContent = s; }
   }
 });
-var JA = {ready: "準備の確認", total: "合計", remaining: "残り", done: "時間です", start: "準備ができたら　→ キーでスタート", next: "終了　→ キーで次へ", end: "終了",
+var JA = {ready: "準備の確認", total: "合計", remaining: "残り", done: "時間", start: "準備ができたら　→ キーでスタート", next: "終了　→ キーで次へ", end: "終了",
           min: "分", sec: "秒", plus: "＋1 分", minus: "−1 分"};
 var EN = {ready: "Ready?", total: "Total", remaining: "Remaining", done: "Time's up", start: "When ready, press → to start", next: "Time's up. Press → for the next", end: "Time's up",
           min: " min", sec: " s", plus: "+1 min", minus: "−1 min"};
 var CSS = [
   "m-timer .tm-say{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}",
   "m-timer .tm-ctl{position:absolute;display:flex;gap:12px}",
-  "m-timer .tm-btn{min-width:112px;height:52px;padding:0 14px;font:700 26px/1 var(--font-cap,var(--font-sans,sans-serif));color:var(--fg);background:var(--bg);border:2px solid var(--term);border-radius:8px;cursor:pointer;touch-action:manipulation}",
+  "m-timer .tm-btn{min-width:112px;height:52px;padding:0 14px;font:700 27px/1 var(--font-cap,var(--font-sans,sans-serif));color:var(--fg);background:var(--bg);border:2px solid var(--term);border-radius:8px;cursor:pointer;touch-action:manipulation}",
   "m-timer .tm-btn:active{background:var(--term-tint)}",
   "m-timer .tm-btn:focus-visible{outline:3px solid var(--emph);outline-offset:2px}",
   "@media print{m-timer .tm-ctl{display:none!important}}",

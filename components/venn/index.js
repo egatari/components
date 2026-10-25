@@ -228,7 +228,7 @@ DECK.define("m-venn", class MVenn extends DECK.MotionElement {
   }
   cues(){ return null; }
   render(k, t, ctx){
-    var D = DECK, F = this.props.dur, draw = this.variant === "draw", lecture = ctx && ctx.mode === "lecture";
+    var D = DECK, F = this.props.dur, draw = this.variant === "draw", lecture = ctx && (ctx.preview || ctx.mode === "lecture");
     var dim = 0.5;
     if (lecture){ var dv = parseFloat(getComputedStyle(document.documentElement).getPropertyValue("--lecture-dim")); if (dv >= 0.45 && dv <= 0.5) dim = dv; }
     // 段階 s の中の進み具合（0〜1）：start から len 秒。授業の表示では先の段階を dim の濃さで見せる

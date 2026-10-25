@@ -37,7 +37,7 @@ Because steps, lengths and cues stay the same, the narration, video timing, capt
 
 - **Motion only guides attention.** No decorative motion (bouncing, spinning or wobbling that keeps going). Every variant finishes moving and stops within its step.
 - **Every variant honours `prefers-reduced-motion`.** With that setting the runtime draws at `t = Infinity` (`kit/deck.js`), so in every variant the final state must be readable on its own. A variant whose final state keeps an attention mark (an underline) may only use marks that make sense in a still picture (an underline saying "this number matters" is fine; a mark that only means something while moving is not).
-- **Lecture view** (`ctx.mode === "lecture"`): a component that shows later steps faintly uses the same faintness in every variant (0.45–0.5, backlog #86).
+- **Lecture view** (previewing later steps; since spec §8.4 a flag, `ctx.preview === true`, while `ctx.mode` is "talk" | "learn" | "video"): a component that shows later steps faintly uses the same faintness in every variant (0.45–0.5, backlog #86). Components test `ctx.preview || ctx.mode === "lecture"`, so they work both with the current bundled player (which passes `ctx.mode === "lecture"`) and with the next one (which passes `ctx.preview`).
 - **Variant 0** is the current rendering for existing components, and the quietest one (fade in) for new components.
 
 ### 1.3 Attributes

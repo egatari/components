@@ -7,6 +7,9 @@
 // Deliberate exception approved by the owner (v1.8.0): m-map-japan's default drawing changed (no 小笠原諸島 inset unless
 // islands="all"; territory names and the readable layer per docs/map-design.md §5.3), so it is not compared with a baseline
 // older than v1.8.0 (CHANGED_IN). Pinned lessons keep the drawing of the version they pin.
+// Deliberate change (v1.10.0, for Egatari Studio's checker, which requires ≥ 26.6 px HTML text): m-predict's −1 / +1 buttons
+// and count field went from 26 to 27 px text. Against a baseline older than v1.10.0, its controls (.pd-ctl, the presenter's
+// input, not part of the figure) are hidden in both builds (MASKED_IN); everything else must still be pixel-identical.
 //   node tools/test-seed0.mjs [shots dir]      baseline: the release before package.json's version (tools/baseline.mjs)
 import fs from 'node:fs';
 import os from 'node:os';
@@ -25,6 +28,7 @@ const S = await studio();
 const b = await S.browser.launch(LAUNCH);
 let fail = 0, n = 0;
 const CHANGED_IN = { 'map-japan': '1.8.0' };
+const MASKED_IN = { predict: { since: '1.10.0', css: 'm-predict .pd-ctl{visibility:hidden!important}' } };
 const older = (a, b) => { const x = a.split('.').map(Number), y = b.split('.').map(Number); for (let i = 0; i < 3; i++) if (x[i] !== y[i]) return x[i] < y[i]; return false; };
 for (const name of USERS) {
   if (CHANGED_IN[name] && older(base.slice(1), CHANGED_IN[name])) { console.log(`-- ${name}: changed on purpose in v${CHANGED_IN[name]} (owner's decision), not compared with ${base}`); continue; }
@@ -33,6 +37,8 @@ for (const name of USERS) {
   catch { console.log(`-- ${name}: not in ${base} (new component, nothing to compare)`); continue; }
   const cd = S.compDir(name), cur = fs.readFileSync(path.join(cd, 'index.js'), 'utf8');
   const shots = {};
+  const mask = MASKED_IN[name] && older(base.slice(1), MASKED_IN[name].since) ? MASKED_IN[name] : null;
+  if (mask) console.log(`-- ${name}: controls hidden against ${base} (text size changed on purpose in v${mask.since})`);
   for (const [which, js] of [['base', oldJs], ['head', cur]]) {
     fs.writeFileSync(path.join(cd, 'index.js'), js);
     fs.writeFileSync(path.join(cd, 'seed0-demo.html'), demo);
@@ -43,6 +49,7 @@ for (const name of USERS) {
     await p.waitForFunction(() => window.DECK && DECK.ready, null, { timeout: 10000 });
     await p.evaluate(() => document.fonts.ready);
     await hideChrome(p);
+    if (mask) await p.addStyleTag({ content: mask.css });
     const plan = await p.evaluate(() => { const tl = DECK.timeline(); return DECK.slides.map((s, i) => ({ i, max: s._max, comps: s._comps.length, anim: tl.filter((x) => x.i === i).map((x) => x.anim) })).filter((s) => s.comps); });
     shots[which] = {};
     for (const s of plan) for (let k = 0; k <= s.max; k++) {

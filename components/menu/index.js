@@ -97,7 +97,7 @@ D.define("m-menu", class extends D.MotionElement {
     return d;
   }
   render(k, t, ctx){
-    var F = this.props.fade, lecture = ctx && ctx.mode === "lecture";
+    var F = this.props.fade, lecture = ctx && (ctx.preview || ctx.mode === "lecture");
     this.cards.forEach(function(c){
       var p = c.step < k ? 1 : c.step > k ? 0 : D.prog(t, c.at, F);
       if (lecture && p < 1) p = Math.max(p, c.step > k ? 0.28 : p);

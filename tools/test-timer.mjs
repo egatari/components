@@ -64,11 +64,11 @@ try {
     ok(r.ready.clock === '2:05' && r.ready.lab === '合計', 'ready step: the total 2:05 under 合計');
     ok(r.t30.clock === '1:00' && r.t30.lab === '残り' && r.t30.foot === '', 't = 30 s of 90: 1:00 remaining');
     ok(r.t31 === '0:59', 't = 31.2 s: 0:59 (rounded up to the second)');
-    ok(r.end1.clock === '0:00' && r.end1.lab === '時間です' && /次へ/.test(r.end1.foot), 'final state of a phase: 0:00, 時間です, → for the next');
+    ok(r.end1.clock === '0:00' && r.end1.lab === '時間' && /次へ/.test(r.end1.foot), 'final state of a phase: 0:00, 時間, → for the next');
     ok(r.end3.foot === '終了', 'final state of the last phase: 終了');
     ok(r.listDone.slice(0, 2).every((f) => f === 'var(--muted)') && r.listDone[2] === 'var(--fg)', 'finished phases are --muted in the list (not transparent)');
     ok(r.ready.rows[0] === '1　1分30秒　付箋に書く' && r.ready.rows[1] === '2　15秒　島で読み上げる', 'Japanese list: 1分30秒, 15秒');
-    ok(r.lab0.lab === '全部で' && r.lab1.lab === 'あと' && r.lab1end.lab === 'そこまで' && r.lab1end.foot === 'そこまで。次へ進みます' && r.lab2end.foot === 'そこまで' && r.lab0.foot === '合図で始めます', 'labels override the built-in strings');
+    ok(r.lab0.lab === '全部で' && r.lab1.lab === 'あと' && r.lab1end.lab === 'そこまで' && r.lab1end.foot === 'そこまで。次へ進む' && r.lab2end.foot === 'そこまで' && r.lab0.foot === '合図で始める', 'labels override the built-in strings');
     ok(r.buttons === 0, 'no +1/−1 min buttons without ctx.extend');
     ok(errors.length === 0, 'no console error or warning' + (errors.length ? ': ' + errors[0] : ''));
     await page.close();
