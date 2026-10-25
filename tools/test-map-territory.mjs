@@ -1,7 +1,7 @@
 // m-map-japan's territory rule (docs/map-design.md §5.3, owner's decision for v1.8.0), at many sizes, built with the pinned Egatari Studio.
 //   - by default (islands="main") there is no 小笠原諸島 inset, and 北方領土・竹島・尖閣諸島 are drawn (present, inside the element,
 //     not hidden) at every size of the grid: heights 200–700 px, widths 300–1184 px, layout="inset" and "true", with and without labels
-//   - layout="true" also draws 沖ノ鳥島 and 南鳥島, and names 竹島・尖閣諸島・沖ノ鳥島・南鳥島
+//   - layout="true" also draws 沖ノ鳥島・南鳥島・父島・硫黄島, and names 竹島・尖閣諸島・沖ノ鳥島・南鳥島・父島・硫黄島 (or warns that a name cannot fit)
 //   - islands="all" at 300, 380 and 520 px high (and 300×200, 260×160) either names 沖ノ鳥島 and 南鳥島 in the inset or leaves the
 //     inset out with a warning
 //   - an author point with a label on a territory island replaces the built-in dot and name (one dot, one name; layout="true" with
@@ -84,17 +84,17 @@ try {
       const texts = [...el.querySelectorAll('text')].map((t) => t.textContent);
       return { s0, sN, sr, texts, size: [el.clientWidth, el.clientHeight] };
     }, i);
-    const T = ['北方領土', '竹島', '尖閣諸島'], FAR = ['沖ノ鳥島', '南鳥島'];
+    const T = ['北方領土', '竹島', '尖閣諸島'], FAR = ['沖ノ鳥島', '南鳥島'], OGA = ['父島', '硫黄島'];
     for (const [when, s] of [['step 0', r.s0], ['final', r.sN]]) {
       ok(s.bad.length === 0, `${c.name}: ${s.bad.join('; ')}`);
       for (const t of T) ok(s.drawn.includes(t), `${c.name} (${when}): ${t} is not drawn`);
-      if (c.layout === 'true') for (const t of FAR) ok(s.drawn.includes(t), `${c.name} (${when}): ${t} is not drawn`);
+      if (c.layout === 'true') for (const t of FAR.concat(OGA)) ok(s.drawn.includes(t), `${c.name} (${when}): ${t} is not drawn`);
     }
     // the readable layer lists what is drawn (the final state), once per island
     const builtIn = (x) => /(北海道|島根県|沖縄県|東京都)）$/.test(x);
     const layer = (t) => r.sr.filter((x) => x.startsWith(t + '（') && builtIn(x)).length;
     const author = (t) => r.sr.some((x) => x.startsWith(t) && !builtIn(x));
-    for (const t of T.concat(FAR)) {
+    for (const t of T.concat(FAR, c.layout === 'true' ? OGA : [])) {
       const drawn = r.sN.drawn.includes(t), inLayer = layer(t) + (author(t) ? 1 : 0);
       ok(drawn ? inLayer === 1 : inLayer === 0, `${c.name}: readable layer has ${inLayer} entries for ${t}, drawn: ${drawn} (${r.sr.join('；')})`);
     }
@@ -103,6 +103,9 @@ try {
     }
     if (c.layout === 'true' && c.kind === 'grid') {
       for (const t of ['竹島', '尖閣諸島'].concat(FAR)) ok(r.s0.named.includes(t) && r.sN.named.includes(t), `${c.name}: ${t} is not named`);
+      // 父島・硫黄島: named, or a warning names the one that cannot fit
+      for (const t of OGA) if (!r.sN.named.includes(t)) console.log(`     ${c.name}: ${t} not named (warned)`);
+      for (const t of OGA) ok(r.s0.named.includes(t) && r.sN.named.includes(t) || warnings.some((w) => w.includes(`(${r.size[0]}×${r.size[1]} px)`) && w.includes('the name ' + t)), `${c.name}: ${t} is neither named nor warned`);
     }
     if (c.kind === 'all') {
       const shownInset = r.texts.includes('小笠原諸島') || FAR.some((t) => r.sN.drawn.includes(t));

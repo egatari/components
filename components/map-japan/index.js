@@ -407,6 +407,8 @@ DECK.define("m-map-japan", class extends DECK.MotionElement {
     });
     // 小さくて形が消える島（竹島・魚釣島・沖ノ鳥島・南鳥島・父島・硫黄島）は点で描く。領土の端の島には data-territory（名前）
     var ISLAND = {"竹島": "竹島", "魚釣島": "尖閣諸島", "沖ノ鳥島": "沖ノ鳥島", "南鳥島": "南鳥島"};
+    // layout="true" では小笠原諸島の父島・硫黄島にも名前を書く（すべての島を本当の位置に、名前付きで）
+    if (lay === "true"){ ISLAND["父島"] = "父島"; ISLAND["硫黄島"] = "硫黄島"; }
     fixedPts.forEach(function(f){
       var a = {cx: f.p[0].toFixed(1), cy: f.p[1].toFixed(1), r: 3.5, fill: LAND, stroke: "var(--muted)", "stroke-width": 1.5};
       if (ISLAND[f.name]) a["data-territory"] = ISLAND[f.name];
