@@ -463,6 +463,7 @@ DECK.define("m-boxplot", class extends DECK.MotionElement {
   }
   render(k, t, ctx){
     var D = DECK, lecture = ctx && (ctx.preview || ctx.mode === "lecture"), draw = this.variant === "draw", FAINT = 0.45;
+    if (lecture){ var pv = parseFloat(getComputedStyle(this).getPropertyValue("--preview-opacity")); FAINT = pv >= 0 && pv <= 1 ? pv : 0.45; }   // 先の段階の薄さ：テーマの --preview-opacity（ないときは 0.45）
     this.items.forEach(function(it){
       var e = it.st < k ? 1 : it.st > k ? (lecture ? -1 : 0) : D.prog(t, it.at, it.len), op;
       // 箱が出たら消える線（四分位数の仮の線）

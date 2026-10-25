@@ -192,7 +192,7 @@ D.define("m-kobun", class extends D.MotionElement {
     this._open = o && o.li === li && o.wi === wi ? null : {li: li, wi: wi, k: this._k};
     this.redraw();
   }
-  redraw(){ if (this._k !== undefined) this.render(this._k, this._t); }
+  redraw(){ if (this._k !== undefined) this.render(this._k, this._t, this._ctx); }
   duration(k){
     var n = this.model.lines.length;
     if (k >= 1 && k <= n) return this.props.fade + 0.2;
@@ -204,24 +204,29 @@ D.define("m-kobun", class extends D.MotionElement {
     var lag = n > 1 ? Math.min(0.12, 0.15 / (n - 1)) : 0;
     // 段階が動いたら札を閉じる。同じ段階にもう一度入るとき（ctx.reset：触れた部品を、宣言した姿に戻す）も閉じる
     if (this._open && (this._open.k !== k || (ctx && ctx.reset))) this._open = null;
-    this._k = k; this._t = t;
+    this._k = k; this._t = t; this._ctx = ctx ? {mode: ctx.mode, preview: ctx.preview} : undefined;
+    // 先の段階を薄く見せる表示（授業の表示）：後の文の区切りと品詞の札、現代語訳を --preview-opacity の濃さで出す。
+    // 本文の字は初めから見えているので濃さも色も変えない（品詞の色は札で見せる）。薄い語の活用表は開かない
+    var preview = !!(ctx && (ctx.preview || ctx.mode === "lecture")), PV = 0.45;
+    if (preview){ PV = parseFloat(getComputedStyle(this).getPropertyValue("--preview-opacity")); if (!(PV >= 0 && PV <= 1)) PV = 0.45; }
     this.lines.forEach(function(L, li){
       // 文 li の品詞分解は段階 li + 1 に出る
-      var s = li + 1, e = k > s ? 1 : k < s ? 0 : D.prog(t, 0, P.fade);
+      var s = li + 1, e = k > s ? 1 : k < s ? 0 : D.prog(t, 0, P.fade), faint = preview && k < s;
       L.seps.forEach(function(sp){
-        sp.style[tate ? "height" : "width"] = (e * 0.55).toFixed(3) + "em";
-        sp.style.opacity = e.toFixed(3);
+        sp.style[tate ? "height" : "width"] = ((faint ? 1 : e) * 0.55).toFixed(3) + "em";
+        sp.style.opacity = (faint ? PV : e).toFixed(3);
       });
       L.words.forEach(function(W){
         var col = W.w.pos ? COLOR[W.w.pos.kind] : "var(--fg)";
         W.tx.style.color = e > 0.5 ? col : "var(--fg)";
         W.tx.style.fontWeight = e > 0.5 && W.w.pos && W.w.pos.kind === "aux" ? 700 : 400;
         W.tag.style.color = col;
-        W.tag.style.opacity = W.w.pos ? e.toFixed(3) : 0;
+        W.tag.style.opacity = W.w.pos ? (faint ? PV : e).toFixed(3) : 0;
         W.el.style.background = W.w.aux && e > 0.5 ? "var(--emph-tint)" : "transparent";
+        if (W.w.aux && W.w.aux.entry){ W.el.style.pointerEvents = faint ? "none" : ""; W.el.tabIndex = faint ? -1 : 0; }
       });
       // 現代語訳は文ごとに少しずつ遅らせて出し、段階の長さ（0.6 秒）の中で出し終える（2 文までは 0.12 秒ずつ、それより多ければ詰める）
-      if (L.yaku){ var y = self.hasYaku ? (k > n + 1 ? 1 : k < n + 1 ? 0 : D.prog(t, li * lag, 0.45)) : 0; L.yaku.style.opacity = y.toFixed(3); }
+      if (L.yaku){ var y = self.hasYaku ? (k > n + 1 ? 1 : k < n + 1 ? (preview ? PV : 0) : D.prog(t, li * lag, 0.45)) : 0; L.yaku.style.opacity = y.toFixed(3); }
     });
     // 札
     var o = this._open;

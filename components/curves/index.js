@@ -294,9 +294,17 @@ DECK.define("m-curves", class extends DECK.MotionElement {
     }
   }
   duration(k){ return k >= 1 ? this.props.dur * 0.7 + 0.6 : 0; }
-  render(k, t){
-    var dur = this.props.dur;
+  render(k, t, ctx){
+    var dur = this.props.dur, preview = !!(ctx && (ctx.preview || ctx.mode === "lecture")), PV = 0;
+    // 先を薄く見せる表示：後の段階の線と名前を、引き終えた形のままテーマの --preview-opacity（なければ 0.45）で描く
+    if (preview){ PV = parseFloat(getComputedStyle(this).getPropertyValue("--preview-opacity")); if (!(PV >= 0 && PV <= 1)) PV = 0.45; }
     this.items.forEach(function(it){
+      if (preview && it.step > k){
+        it.draw.setAttribute("stroke-dashoffset", (0).toFixed(4));
+        it.path.setAttribute("opacity", PV);
+        it.lab.setAttribute("opacity", PV.toFixed(3));
+        return;
+      }
       var pd = it.step < k ? 1 : it.step === k ? DECK.prog(t, 0, dur) : 0;
       var pl = it.step < k ? 1 : it.step === k ? DECK.prog(t, dur * 0.7, 0.6) : 0;
       it.draw.setAttribute("stroke-dashoffset", (1 - pd).toFixed(4));

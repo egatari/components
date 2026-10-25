@@ -415,8 +415,10 @@ D.define("m-codetree", class extends D.MotionElement {
     });
   }
   // 段階 k の今の道の進み（0〜1 の各辺）と、葉の後の進み
-  render(k, t){
+  render(k, t, ctx){
     var D2 = D, P = this.props, m = this.model(), dec = m.dec, self = this, Lb = m.L;
+    var preview = !!(ctx && (ctx.preview || ctx.mode === "lecture")), PV = 0;
+    if (preview){ PV = parseFloat(getComputedStyle(this).getPropertyValue("--preview-opacity")); if (!(PV >= 0 && PV <= 1)) PV = 0.45; }
     var p = k ? m.plan[k - 1] : null, T = k ? this.times(k) : null;
     var A = k ? this.lay[k - 1] : this.lay[0], B = this.lay[k];
     var mv = k ? D2.prog(t, 0, P.move) : 1;
@@ -560,14 +562,21 @@ D.define("m-codetree", class extends D.MotionElement {
     this.ptr.setAttribute("opacity", po.toFixed(3));
     // 符号語の括弧：読み終えた符号語
     var tokDone = function(i){ if (!p) return 0; if (p.type === "sum" || p.type === "err") return 1; return i < p.tok ? 1 : i === p.tok ? D2.prog(t, T.F0, 0.3) : 0; };
-    this.brk.forEach(function(g, i){ g.setAttribute("opacity", tokDone(i).toFixed(3)); });
+    // 先を薄く見せる表示：後の段階で読む符号語の括弧と、復号する画素を、最後の形のままテーマの --preview-opacity（なければ 0.45）で描く。
+    // 木の道は段階ごとに窓が動くので先は描かない
+    var ahead = function(i){ return preview && (!p || (p.type === "tok" && i > p.tok)); };
+    this.brk.forEach(function(g, i){ g.setAttribute("opacity", ahead(i) ? PV.toFixed(3) : tokDone(i).toFixed(3)); });
     // ---- 画素：葉に着いてから升目を左から塗る
     var fillOf = function(i){ if (!p) return 0; if (p.type === "sum" || p.type === "err") return 1; return i < p.tok ? 1 : i === p.tok ? D2.prog(t, T.F0, P.fill) : 0; };
     var shown = {};   // 符号語ごとの塗った升目の数
     dec.tokens.forEach(function(x, i){ shown[i] = x.kind === "eol" ? 0 : Math.round(x.run * fillOf(i)); });
     this.cells.forEach(function(c){
-      if (c.n >= 0) c.e.setAttribute("opacity", c.n < shown[c.tok] ? 1 : 0);
-      else c.e.setAttribute("width", (shown[c.tok] * self.S.sc).toFixed(2));
+      var ah = ahead(c.tok);
+      if (c.n >= 0) c.e.setAttribute("opacity", ah ? PV : c.n < shown[c.tok] ? 1 : 0);
+      else {
+        c.e.setAttribute("width", ((ah ? c.run : shown[c.tok]) * self.S.sc).toFixed(2));
+        if (ah) c.e.setAttribute("opacity", PV); else c.e.removeAttribute("opacity");
+      }
     });
     // ランの括弧と長さ。字は重ならないように左から順に置く
     var right = -Infinity, S = this.S, G = this.G;

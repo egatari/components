@@ -361,9 +361,10 @@ DECK.define("m-fishbone", class extends DECK.MotionElement {
   }
   render(k, t, ctx){
     var P = this.props, D = DECK, self = this, vr = this.variant, lect = ctx && (ctx.preview || ctx.mode === "lecture"), S = this.span(), FAINT = 0.45;
+    if (lect){ var pv = parseFloat(getComputedStyle(this).getPropertyValue("--preview-opacity")); FAINT = pv >= 0 && pv <= 1 ? pv : 0.45; }   // 先の段階の薄さ：テーマの --preview-opacity（ないときは 0.45）
     var tOf = function(step){ return step < k ? Infinity : step > k ? -1 : t; };
     var pr = function(tt, at, dur){ return tt < 0 ? 0 : D.prog(tt, at, dur); };
-    // 授業の表示：後の段階は薄く（0.45）、今の段階は薄い状態から濃くなる。位置は動かさない（どの見せ方でも同じ）
+    // 授業の表示：後の段階は薄く（--preview-opacity）、今の段階は薄い状態から濃くなる。位置は動かさない（どの見せ方でも同じ）
     var faint = function(tt, e){ return tt < 0 ? FAINT : FAINT + (1 - FAINT) * e; };
     var line = function(el, path, e){ el.setAttribute("d", e > 0 ? self.part(path, e).d : ""); };
     // 背骨：尾から頭へ引く（どの見せ方でも同じ）

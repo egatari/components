@@ -259,7 +259,8 @@ DECK.define("m-pie", class extends DECK.MotionElement {
     return this.plan().some(function(o){ return o.step === k; }) ? this.props.dur : 0;
   }
   render(k, t, ctx){
-    var P = this.props, D = DECK, self = this, vr = this.variant, dur = P.dur, span = dur * 0.6, lecture = ctx && (ctx.preview || ctx.mode === "lecture");
+    var P = this.props, D = DECK, self = this, vr = this.variant, dur = P.dur, span = dur * 0.6, lecture = ctx && (ctx.preview || ctx.mode === "lecture"), FAINT = 0.45;
+    if (lecture){ var pv = parseFloat(getComputedStyle(this).getPropertyValue("--preview-opacity")); FAINT = pv >= 0 && pv <= 1 ? pv : 0.45; }   // 先の段階の薄さ：テーマの --preview-opacity（ないときは 0.45）
     var TAU = Math.PI * 2, R = this.R, ri = this.ri;
     // 同じ段階の切れが占める角度の範囲（sweep はこの範囲を掃く）
     var rng = {};
@@ -269,7 +270,7 @@ DECK.define("m-pie", class extends DECK.MotionElement {
       var st = s.o.step, tt = st < k ? Infinity : st > k ? -1 : t, faint = lecture && st > k;
       first = Math.min(first, st);
       var a0 = s.a0, a1 = s.a1, r0 = ri, r1 = R, op = 1, dy = 0, lo;
-      if (faint){ op = 0.45; lo = 0.45; }
+      if (faint){ op = FAINT; lo = FAINT; }
       else if (tt < 0){ op = 0; lo = 0; }
       else if (vr === "sweep"){
         // 12 時の位置（1 切れずつなら、その段階の最初の切れの端）から時計回りに掃く
@@ -293,7 +294,7 @@ DECK.define("m-pie", class extends DECK.MotionElement {
       if (s.leader) s.leader.setAttribute("opacity", lo.toFixed(3));
     });
     if (this.center){
-      var c = first < k ? 1 : first > k ? (lecture ? 0.45 : 0) : D.prog(t, span, dur - span);
+      var c = first < k ? 1 : first > k ? (lecture ? FAINT : 0) : D.prog(t, span, dur - span);
       this.center.setAttribute("opacity", c.toFixed(3));
     }
   }

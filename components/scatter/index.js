@@ -274,7 +274,8 @@ DECK.define("m-scatter", class extends DECK.MotionElement {
     return c.length ? c.sort(function(a, b){ return a - b; }) : null;
   }
   render(k, t, ctx){
-    var P = this.props, D = DECK, vr = this.variant, dur = P.dur, lecture = ctx && (ctx.preview || ctx.mode === "lecture");
+    var P = this.props, D = DECK, vr = this.variant, dur = P.dur, lecture = ctx && (ctx.preview || ctx.mode === "lecture"), FAINT = 0.45;
+    if (lecture){ var pv = parseFloat(getComputedStyle(this).getPropertyValue("--preview-opacity")); FAINT = pv >= 0 && pv <= 1 ? pv : 0.45; }   // 先の段階の薄さ：テーマの --preview-opacity（ないときは 0.45）
     // この部品の段階の中の時刻（-1 = まだ。授業の表示では先の段階を薄く見せる）
     var local = function(o){ return o.step < k ? Infinity : o.step > k ? -1 : t - o.at; };
     var faint = function(o){ return lecture && o.step > k; };
@@ -282,7 +283,7 @@ DECK.define("m-scatter", class extends DECK.MotionElement {
       var o = se.o, tt = local(o), f = faint(o), span = dur * 0.7;
       se.marks.forEach(function(mk){
         var op, sc = 1;
-        if (f){ op = 0.45; }
+        if (f){ op = FAINT; }
         else if (tt < 0){ op = 0; }
         else if (vr === "sweep"){ op = D.prog(tt, mk.rank * (span - 0.2), 0.2); }
         else if (vr === "grow"){ sc = D.prog(tt, 0, span); op = sc > 0 ? Math.min(1, sc * 3) : 0; }
@@ -290,9 +291,9 @@ DECK.define("m-scatter", class extends DECK.MotionElement {
         mk.g.setAttribute("opacity", op.toFixed(3));
         mk.g.setAttribute("transform", "translate(" + mk.cx.toFixed(1) + " " + mk.cy.toFixed(1) + ")" + (sc < 1 ? " scale(" + Math.max(0.001, sc).toFixed(4) + ")" : ""));
       });
-      var lo = f ? 0.45 : tt < 0 ? 0 : D.prog(tt, dur * 0.6, dur * 0.4);
+      var lo = f ? FAINT : tt < 0 ? 0 : D.prog(tt, dur * 0.6, dur * 0.4);
       se.labels.forEach(function(l){ l.setAttribute("opacity", lo.toFixed(3)); });
-      if (se.leg) se.leg.setAttribute("opacity", (f ? 0.45 : tt < 0 ? 0 : D.prog(tt, 0, dur * 0.5)).toFixed(3));
+      if (se.leg) se.leg.setAttribute("opacity", (f ? FAINT : tt < 0 ? 0 : D.prog(tt, 0, dur * 0.5)).toFixed(3));
     });
     this.trends.forEach(function(tr){
       var o = tr.o, tt = local(o), f = faint(o), span = dur * 0.7, A = tr.A, B = tr.B, e = f ? 1 : tt < 0 ? 0 : D.prog(tt, 0, span);
@@ -302,8 +303,8 @@ DECK.define("m-scatter", class extends DECK.MotionElement {
       else op = e;
       tr.line.setAttribute("d", "M" + D.lerp(A[0], B[0], s0).toFixed(1) + "," + D.lerp(A[1], B[1], s0).toFixed(1) + "L" + D.lerp(A[0], B[0], s1).toFixed(1) + "," + D.lerp(A[1], B[1], s1).toFixed(1));
       if (tr.dash) tr.line.setAttribute("stroke-dashoffset", (s0 * tr.len).toFixed(1));
-      tr.line.setAttribute("opacity", (tr.out ? 0 : f ? 0.45 : op).toFixed(3));
-      if (tr.leg) tr.leg.setAttribute("opacity", (f ? 0.45 : tt < 0 ? 0 : D.prog(tt, span, dur * 0.3)).toFixed(3));
+      tr.line.setAttribute("opacity", (tr.out ? 0 : f ? FAINT : op).toFixed(3));
+      if (tr.leg) tr.leg.setAttribute("opacity", (f ? FAINT : tt < 0 ? 0 : D.prog(tt, span, dur * 0.3)).toFixed(3));
     });
   }
 });

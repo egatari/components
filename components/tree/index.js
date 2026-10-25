@@ -363,6 +363,7 @@ DECK.define("m-tree", class extends DECK.MotionElement {
   }
   render(k, t, ctx){
     var P = this.props, D = DECK, self = this, vr = this.variant, lect = ctx && (ctx.preview || ctx.mode === "lecture"), S = this.span(), FAINT = 0.45;
+    if (lect){ var pv = parseFloat(getComputedStyle(this).getPropertyValue("--preview-opacity")); FAINT = pv >= 0 && pv <= 1 ? pv : 0.45; }   // 先の段階の薄さ：テーマの --preview-opacity（ないときは 0.45）
     // 段階 step の要素の、その段階の中の時刻（-1 = まだ、Infinity = 済み）
     var tOf = function(step){ return step < k ? Infinity : step > k ? -1 : t; };
     var pr = function(tt, at, dur){ return tt < 0 ? 0 : D.prog(tt, at, dur); };

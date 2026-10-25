@@ -68,9 +68,12 @@ DECK.define("m-collect", class extends DECK.MotionElement {
     this.rows = rows;
   }
   duration(k){ var d = 0; this.targets.forEach(function(tg){ d = Math.max(d, tg.last + 0.3); }); return k >= 1 ? d : 0; }
-  render(k, t){
+  render(k, t, ctx){
     var P = this.props, D = DECK;
     var T = k < 1 ? -Infinity : t;   // 段階 0 は動く前
+    // 先の段階を薄く見せる表示（授業の表示）：段階 0 では、まとめた後の箱をテーマの --preview-opacity の濃さで出す（札は動かさない）
+    var PV = 0;
+    if (k < 1 && ctx && (ctx.preview || ctx.mode === "lecture")){ PV = parseFloat(getComputedStyle(this).getPropertyValue("--preview-opacity")); if (!(PV >= 0 && PV <= 1)) PV = 0.45; }
     var pr = function(start, dur){ return T === -Infinity ? 0 : D.prog(T, start, dur); };
     this.chips.forEach(function(c){
       var e = pr(c.start, P.move);
@@ -83,7 +86,8 @@ DECK.define("m-collect", class extends DECK.MotionElement {
     this.targets.forEach(function(tg){
       tg.frame.setAttribute("opacity", (pr(0, 0.3) * (1 - pr(tg.last - 0.1, 0.3))).toFixed(3));
       var e = pr(tg.last - 0.15, 0.45);
-      tg.g.setAttribute("opacity", e.toFixed(3));
+      if (PV){ e = 1; tg.g.setAttribute("opacity", PV.toFixed(3)); }
+      else tg.g.setAttribute("opacity", e.toFixed(3));
       var s = D.lerp(0.9, 1, e);
       tg.g.setAttribute("transform", "translate(" + tg.cx + " " + tg.cy + ") scale(" + s.toFixed(4) + ") translate(" + (-tg.cx) + " " + (-tg.cy) + ")");
     });

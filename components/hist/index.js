@@ -477,6 +477,7 @@ DECK.define("m-hist", class extends DECK.MotionElement {
     // 段階 st の、時刻 at から len 秒の進み（授業の表示では先の段階を薄く：-1 を返す）
     var ph = function(st, at, len){ return st < k ? 1 : st > k ? (lecture ? -1 : 0) : D.prog(t, at, len); };
     var FAINT = 0.45;
+    if (lecture){ var pv = parseFloat(getComputedStyle(this).getPropertyValue("--preview-opacity")); FAINT = pv >= 0 && pv <= 1 ? pv : 0.45; }   // 先の段階の薄さ：テーマの --preview-opacity（ないときは 0.45）
     var binStep = function(b){ return pl.build === "bins" ? b + 1 : null; };
     pl.ser.forEach(function(s){
       if (s.leg){ var le = ph(pl.build === "bins" ? 1 : s.step, 0, 0.4); s.leg.setAttribute("opacity", (le < 0 ? FAINT : le).toFixed(3)); }

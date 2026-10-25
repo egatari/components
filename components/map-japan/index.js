@@ -851,7 +851,8 @@ DECK.define("m-map-japan", class extends DECK.MotionElement {
     return m;
   }
   render(k, t, ctx){
-    var P = this.props, D = DECK, dur = P.dur, vr = this.variant, lecture = !!(ctx && (ctx.preview || ctx.mode === "lecture")), pl = this.plan();
+    var P = this.props, D = DECK, dur = P.dur, vr = this.variant, lecture = !!(ctx && (ctx.preview || ctx.mode === "lecture")), pl = this.plan(), FAINT = 0.45;
+    if (lecture){ var pv = parseFloat(getComputedStyle(this).getPropertyValue("--preview-opacity")); FAINT = pv >= 0 && pv <= 1 ? pv : 0.45; }   // 先の段階の薄さ：テーマの --preview-opacity（ないときは 0.45）
     // 地図そのもの（陸・枠・枠の名前・すべての名前）は段階 0 から出ている（見出しや軸と同じ）
     this.allNames.forEach(function(g){ g.setAttribute("opacity", 1); });
     var legendO = 0;
@@ -859,7 +860,7 @@ DECK.define("m-map-japan", class extends DECK.MotionElement {
       var x = it.x, faint = lecture && x.step > k;
       var tt = x.step < k ? Infinity : x.step > k ? -1 : t - x.at;
       if (faint) tt = Infinity;
-      var mul = faint ? 0.45 : 1;
+      var mul = faint ? FAINT : 1;
       // 動きの区切り：fade は 0〜0.6 dur で現れ、字は 0.4〜1.0 dur。sweep は順位に応じて 0〜0.4 dur 遅らせ、0.6 dur で現れる
       var lo = tt < 0 ? 0 : D.prog(tt, dur * 0.4, dur * 0.6) * mul;
       if (it.flow){
@@ -903,7 +904,8 @@ DECK.define("m-map-japan", class extends DECK.MotionElement {
     // 作り手の点が置かれた島：島の点は作り手の点が現れるのと入れ替わりに消える（点は 1 つ）
     this.fixedPts.forEach(function(f){
       if (!f.byIt) return;
-      var o = (1 - (+f.byIt.els[0].g.getAttribute("opacity") || 0)).toFixed(3);
+      // 授業の表示で作り手の点が薄く見えているあいだは、島の点はそのまま（入れ替わるのはその段階になってから）
+      var o = (lecture && f.byIt.x.step > k ? 1 : 1 - (+f.byIt.els[0].g.getAttribute("opacity") || 0)).toFixed(3);
       f.el.setAttribute("opacity", o);
       if (f.nameEl) f.nameEl.setAttribute("opacity", o);
     });
