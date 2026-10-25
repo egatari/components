@@ -4,6 +4,10 @@ Versions follow [README.md § Releases and versions](README.md#releases-and-vers
 
 ## Unreleased
 
+### Changed
+
+- `m-curves`, `m-scatter`, `m-map-japan`: `anchor` also accepts `top` and `bottom`, as names for `above` and `below` (AI authors guess them)
+
 ### Added
 
 - `m-map-japan` (working name, map-design §6 7): the 47 prefectures of Japan for geography and history lessons. Regions by JIS code or the 八地方区分 (`group`), a choropleth (default 4 classes, up to 5; classes evenly spaced in OKLab lightness, boundaries always drawn, class ranges in the legend, values on the regions where they fit only with `show="value"`; legend ranges like 「500 以上」), points, arrows (`via`: waypoints the arrow passes through, e.g. to keep a sea route offshore; `labelAt`) and author-drawn lon/lat shapes, each with `step` `at` `tone`. The map itself is shown from step 0. The territory dots 竹島, 尖閣諸島, 沖ノ鳥島 and 南鳥島 are always named. Insets for 南西諸島 (a frame tight to the islands, left of 九州) and 小笠原 with 沖ノ鳥島・南鳥島 (0.5×), captioned 「縮尺は本図と異なる」, beside a main map that fills the element's height (or in the main map's empty corners in small elements); `layout="true"` for true positions. A hidden list gives the final state's text (regions, every value, labels). `data-mark="JP-<code>"` on each prefecture for Studio's camera; variants `fade`, `sweep`, `draw`. Map data: Natural Earth 5.1.1 (public domain), modified, built by `tools/map/build-japan.mjs` with the Japanese government's position on the territories fixed in the data (docs/map-design.md §4.5) and ownership checks at build time. New series `social` and purpose `spatial` (場所・地図)
@@ -11,8 +15,29 @@ Versions follow [README.md § Releases and versions](README.md#releases-and-vers
 
 ### Later (candidates, not in this release)
 
-- `m-kanbun`, `m-kobun`: some steps are not complete at their declared length (`tools/test-duration.mjs` lists them as known; they may hold their last frame on purpose; check before changing)
 - `m-compare` `by="row"`; an "outside every set" region for `m-venn`; a project-plan demo for `m-timeline` lanes
+
+## 1.4.1 - 2026-10-25
+
+### Fixed
+
+- `m-kanbun` (issue #3): the columns now fit the element's height and width. Before, the layout came from `size` alone (60 px by default) and ignored the element's height, so a 五言 line (about 690 px with kunten) overflowed the slide whatever `style="height:…"` the author wrote; an AI author in the nightly evaluation changed the height three times without converging. When the longest column (with 振り仮名・送り仮名・返り点・句読点) exceeds the element's height by more than 6 px, or the columns and the 書き下し文 exceed its width, the character size and the column pitch go down together, 1 px at a time, to 42 px at the least (振り仮名・送り仮名・返り点 stay 24 px; below 42 a 返り点 comes closer than 4 px to the next column's 送り仮名). If it still does not fit, a `console.warn` gives the missing px and what to do. When the text fits at `size`, nothing changes (the demo is pixel-identical). A 再読文字's second-reading number moves above its 送り仮名 when the characters are small. The README says in one pack-visible sentence (+23 B) that the size follows the element and that a poem that still does not fit is split (2 句 per slide), not given another height. `tools/test-kanbun-fit.mjs` (in `tools/test-all.mjs`): a 五言 two-line text at 260 px fits (inside the slide and the element, text ≥ 24 px, no overlaps), and a 9-character line at 260 px stops at 42 and warns
+
+### Changed
+
+- CATALOG.md, the gallery and CONTRIBUTING name the `common` series 標準パーツ / Standard parts (the series id `common` and README frontmatter are unchanged)
+
+## 1.4.0 - 2026-10-25
+
+### Changed
+
+- `m-kanbun`: **the number of steps changes.** The reading-order phase (`order`) is now one step per line (column, one 句 of a poem) instead of one step for the whole text: the default `phases="kunten order kaki"` gives kunten 1 + one step per column read + kaki 1. A new step starts wherever the reading moves to another column (where `cues(k)` used to fire; a return to an earlier column by 返り点 or a 再読文字 starts a step of its own). Each step lasts (characters read in it) × `slot` + 0.3 s; `slot` is unchanged and earlier columns stay marked. **Lessons moving to this version must re-align their narration `[n]` (one `[n]` per 句).** `order-by="all"` keeps the old single step, with the same drawing and timing as 1.3.0. The README says it in one pack-visible sentence; the demo's first and third slides show per-line steps, the second keeps `order-by="all"`. `DECK.kanbun.stepGroups` gives the grouping (tested in `tools/test-kokugo.mjs`)
+
+### Fixed
+
+- `m-kanbun` (issue #2): at the end of a reading-order step, the current-character highlight (red frame and red glyph) and the bright arc fade out during the step's last 0.3 s, so the picture at the step's declared length equals its final state (before, they stayed until the next step)
+- `m-kobun`: the translation step (0.6 s) staggered its lines by 0.12 s each, so with more than two sentences the last lines were still fading in after the step ended; the stagger is now shortened to fit the step (unchanged for one or two sentences)
+- `tools/test-duration.mjs`: no component is listed as known any more (`m-kanbun` and `m-kobun` pass)
 
 ## 1.3.0 - 2026-10-25
 

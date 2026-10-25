@@ -193,7 +193,7 @@ The total motion of `draw` and `grow` stays within `fade`'s duration and travel 
 
 - Components with axes (`m-scatter`) use the names of `m-curves` and `m-sweep`: `xr` `yr` (range), `xt` `yt` (ticks), `xf` `yf` (tick format), `xl` `yl` (axis labels).
 - Components that show numbers use `unit` and `digits` (as `m-bars` and `m-kpi`).
-- Chart parts share one series vocabulary: `label`, `tone`, `step`, `at` (start s within the step), `anchor` (right/left/above/below for a label), `labelAt` (x where a line's name goes). `m-curves`'s older `color`, `at` (the x of the name) and `anchor` values `start` `middle` `end` still work but are not documented for authors (`at` would clash with the other components, so `m-curves` does not use it as a start time).
+- Chart parts share one series vocabulary: `label`, `tone`, `step`, `at` (start s within the step), `anchor` (right/left/above/below for a label; `top`/`bottom` are accepted as aliases of above/below), `labelAt` (x where a line's name goes). `m-curves`'s older `color`, `at` (the x of the name) and `anchor` values `start` `middle` `end` still work but are not documented for authors (`at` would clash with the other components, so `m-curves` does not use it as a start time).
 - Step defaults come from the same table as 2.4: scatter shows the points, then the trend; Venn shows the sets, then the overlap; compare shows one side, then the other, then the difference. A pie is shown whole (slice by slice only if the narration discusses each slice in turn).
 - Stacked bars become an `m-bars` attribute (`stack`). Variant 0 rendering does not change.
 

@@ -99,6 +99,12 @@ t('論語：再読文字（未だ生を知らず）', () => assert.equal(K.yomi(
 t('再読文字の二度目の片仮名は左の送り仮名（将(ニ|ス) → す）', () => assert.equal(K.yomi('将(ニ|ス)[レ]帰(ラント)[二]故郷(ニ)[一]'), '将に故郷に帰らんとす'));
 t('児孫の為に美田を買はず', () => assert.equal(K.yomi('不{=ず}[下]為(ニ)[二]児孫(ノ)[一]買(ハ)[中]美田(ヲ)[上]'), '児孫の為に美田を買はず'));
 t('平仮名にする字の送り仮名も平仮名', () => assert.equal(K.hira('ラントヾヽ'), 'らんとゞゝ'));
+// 読む順の段階（order-by）：字の列が変わるところで切る。前の列へ戻れば、そこからまた別の段階
+const groups = (src, by) => { const p = K.parse(src), ce = K.charEvents(K.order(p.chars)); return K.stepGroups(p.chars, ce, by).map((g) => ce.slice(g.a, g.b).map((e) => p.chars[e.c].ch).join('')).join(' / '); };
+t('段階：1 句（列）= 1 段階（春暁）', () => assert.equal(groups('春眠不{=ず}レ覚(エ)レ暁(ヲ)\n処処聞(ク)[二]啼鳥(ヲ)[一]\n夜来風雨(ノ)声\n花落(ツルコト)知(ル)多少'), '春眠暁覚不 / 処処啼鳥聞 / 夜来風雨声 / 花落知多少'));
+t('段階：列をまたいで戻ると、戻ったところから別の段階', () => assert.equal(groups('甲[二]乙\n丙[一]丁'), '乙 / 丙 / 甲 / 丁'));
+t('段階：order-by="all" は全体で 1 段階', () => assert.equal(groups('甲[二]乙\n丙[一]丁', 'all'), '乙丙甲丁'));
+t('段階：字がなくても 1 段階', () => assert.equal(K.stepGroups([], [], 'col').length, 1));
 // 見本（demo.html）の漢文がどれも知らせなしに読めること
 t('見本の漢文：知らせなし', () => {
   const html = fs.readFileSync(path.join(ROOT, 'components/kanbun/demo.html'), 'utf8');

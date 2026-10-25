@@ -9,7 +9,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { ROOT, componentNames } from './studio.mjs';
 import { baseline, git } from './baseline.mjs';
-import { frontmatter, list, purposeIds } from './lint.mjs';
+import { frontmatter, list, purposeIds, SERIES_LABEL } from './lint.mjs';
 
 const esc = (s) => String(s ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
 const ids = purposeIds(ROOT);
@@ -42,7 +42,7 @@ for (const { name, st: mark } of order) {
     <ul>
       <li>言いたいこと：${esc(purposes)}</li>
       <li>見せ方：${variants.length ? esc(variants.join('・')) : '1 種類'}</li>
-      <li>系列：${esc(f.series)}　見本のスライド：${secs.length} 枚</li>
+      <li>系列：${esc(SERIES_LABEL[f.series] || f.series)}　見本のスライド：${secs.length} 枚</li>
     </ul>
   </div>
 </section>`, ...secs.map((s) => s.trim()));

@@ -200,6 +200,7 @@ D.define("m-kobun", class extends D.MotionElement {
   }
   render(k, t, ctx){
     var self = this, P = this.props, n = this.model.lines.length, tate = P.tate;
+    var lag = n > 1 ? Math.min(0.12, 0.15 / (n - 1)) : 0;
     // 段階が動いたら札を閉じる。同じ段階にもう一度入るとき（ctx.reset：触れた部品を、宣言した姿に戻す）も閉じる
     if (this._open && (this._open.k !== k || (ctx && ctx.reset))) this._open = null;
     this._k = k; this._t = t;
@@ -218,7 +219,8 @@ D.define("m-kobun", class extends D.MotionElement {
         W.tag.style.opacity = W.w.pos ? e.toFixed(3) : 0;
         W.el.style.background = W.w.aux && e > 0.5 ? "var(--emph-tint)" : "transparent";
       });
-      if (L.yaku){ var y = self.hasYaku ? (k > n + 1 ? 1 : k < n + 1 ? 0 : D.prog(t, li * 0.12, 0.45)) : 0; L.yaku.style.opacity = y.toFixed(3); }
+      // 現代語訳は文ごとに少しずつ遅らせて出し、段階の長さ（0.6 秒）の中で出し終える（2 文までは 0.12 秒ずつ、それより多ければ詰める）
+      if (L.yaku){ var y = self.hasYaku ? (k > n + 1 ? 1 : k < n + 1 ? 0 : D.prog(t, li * lag, 0.45)) : 0; L.yaku.style.opacity = y.toFixed(3); }
     });
     // 札
     var o = this._open;

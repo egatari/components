@@ -180,7 +180,7 @@ DECK.define("m-map-japan", class extends DECK.MotionElement {
       valuesStep: {type: "integer"},
       points: {type: "array", items: {type: "object", additionalProperties: false, anyOf: [{required: ["lon", "lat"]}, {required: ["code"]}], properties: {
         lon: {type: "number"}, lat: {type: "number"}, code: {type: ["string", "integer"]}, label: {type: "string"}, tone: {type: "string"},
-        anchor: {enum: ["right", "left", "above", "below"]}, step: {type: "integer"}, at: {type: "number"}}}},
+        anchor: {enum: ["right", "left", "above", "below", "top", "bottom"]}, step: {type: "integer"}, at: {type: "number"}}}},
       flows: {type: "array", items: {type: "object", additionalProperties: false, required: ["from", "to"], properties: {
         from: {type: ["string", "integer", "array"]}, to: {type: ["string", "integer", "array"]}, label: {type: "string"}, tone: {type: "string"},
         value: {type: "number"}, bend: {type: "number"}, via: {type: "array", items: {type: "array"}}, labelAt: {type: "array"}, step: {type: "integer"}, at: {type: "number"}}}},
@@ -612,7 +612,7 @@ DECK.define("m-map-japan", class extends DECK.MotionElement {
     pl.items.forEach(function(x){
       if (x.kind !== "point" || !x.o.label) return;
       var it = byItem(x), s = chipSize(x.o.label, 24), p = x.p, order = ["right", "left", "above", "below"];
-      var want = x.o.anchor || "right";
+      var want = {top: "above", bottom: "below"}[x.o.anchor] || x.o.anchor || "right";   // top / bottom は above / below の別名
       order = [want].concat(order.filter(function(a){ return a !== want; }));
       var spot = function(a, r){ return a === "right" ? {x: p[0] + r, y: p[1] - s.h / 2} : a === "left" ? {x: p[0] - r - s.w, y: p[1] - s.h / 2} : a === "above" ? {x: p[0] - s.w / 2, y: p[1] - r - s.h} : {x: p[0] - s.w / 2, y: p[1] + r}; };
       // 書いた向きを先に、離す距離を少しずつ増やして、線・ほかの字に掛からない所。斜めも試す
@@ -701,10 +701,11 @@ DECK.define("m-map-japan", class extends DECK.MotionElement {
       if ((x.kind === "flow" || x.kind === "shape") && x.o.label) lines.push(x.o.label);
     });
     if (lines.length){
-      var sr = document.createElement("ul");
+      // 1 つの段落（項目ごとの要素にしない）：Studio の配置の検査が、隠した子の箱まで測ってはみ出しと数えるため（v1.5.0）
+      var sr = document.createElement("p");
       sr.className = "sr-only";
       sr.setAttribute("style", "position:absolute;width:1px;height:1px;margin:-1px;padding:0;overflow:hidden;clip-path:inset(50%);white-space:nowrap;border:0");
-      lines.forEach(function(t){ var li = document.createElement("li"); li.textContent = t; sr.appendChild(li); });
+      sr.textContent = lines.join("；");
       this.appendChild(sr);
     }
     // 読み上げ用の名前

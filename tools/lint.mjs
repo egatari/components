@@ -11,6 +11,8 @@ import { fileURLToPath } from 'node:url';
 
 export const NAME_RE = /^[a-z][a-z0-9-]{0,63}$/;
 export const SERIES = ['common', 'academic', 'business', 'kokugo', 'info', 'social'];
+// How a series is named to people (CATALOG.md, gallery). The ids above never change; `common` is 標準パーツ / Standard parts
+export const SERIES_LABEL = { common: '標準パーツ', academic: '数理・統計', business: 'ビジネス', kokugo: '国語', info: '情報', social: '地図（社会）' };
 // Components released before demo.html was required (do not add to this list)
 const NO_DEMO = new Set([]);
 
