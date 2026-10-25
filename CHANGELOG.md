@@ -6,6 +6,10 @@ Versions follow [README.md § Releases and versions](README.md#releases-and-vers
 
 ### Changed
 
+- CATALOG.md, the gallery and CONTRIBUTING name the `common` series 標準パーツ / Standard parts (the series id `common` and README frontmatter are unchanged)
+
+### Changed
+
 - `m-kanbun`: **the number of steps changes.** The reading-order phase (`order`) is now one step per line (column, one 句 of a poem) instead of one step for the whole text: the default `phases="kunten order kaki"` gives kunten 1 + one step per column read + kaki 1. A new step starts wherever the reading moves to another column (where `cues(k)` used to fire; a return to an earlier column by 返り点 or a 再読文字 starts a step of its own). Each step lasts (characters read in it) × `slot` + 0.3 s; `slot` is unchanged and earlier columns stay marked. **Lessons moving to this version must re-align their narration `[n]` (one `[n]` per 句).** `order-by="all"` keeps the old single step, with the same drawing and timing as 1.3.0. The README says it in one pack-visible sentence; the demo's first and third slides show per-line steps, the second keeps `order-by="all"`. `DECK.kanbun.stepGroups` gives the grouping (tested in `tools/test-kokugo.mjs`)
 
 ### Fixed
