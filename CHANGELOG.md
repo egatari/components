@@ -4,6 +4,10 @@ Versions follow [README.md § Releases and versions](README.md#releases-and-vers
 
 ## Unreleased
 
+### Added
+
+- `m-timer`: bells like a conference timer (`bells`: `[{left, count}]`, for all phases or per phase; off unless written). The part declares them with `events(k)` (spec §8.4 "Component sounds"); the player rings them on forward crossings during a live presentation and puts them into video. A player without component sounds ignores them; the clock and colours still carry the information
+
 ### Later (candidates, not in this release)
 
 - `m-compare` `by="row"`; an "outside every set" region for `m-venn`; a project-plan demo for `m-timeline` lanes

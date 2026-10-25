@@ -81,6 +81,15 @@ try {
     await page.close();
   }
 
+  // ---- bells (spec §8.4 Component sounds): events(k) declares {t, sound: "bell", count} from `bells`; none when not written
+  {
+    const { page } = await open(out);
+    const r = await page.evaluate(() => ({ e1: __c(0).events(1), e2: __c(0).events(2), e0: __c(0).events(0), other: __c(1).events(1) }));
+    ok(JSON.stringify(r.e1) === JSON.stringify([{ t: 30, sound: 'bell', count: 1 }, { t: 80, sound: 'bell', count: 2 }, { t: 90, sound: 'bell', count: 3 }]), 'bells: phase 1 (90 s) rings at 30 s, 80 s and 90 s, 1, 2 and 3 times');
+    ok(JSON.stringify(r.e2) === JSON.stringify([{ t: 5, sound: 'bell', count: 2 }, { t: 15, sound: 'bell', count: 3 }]), 'bells: a bell longer than the phase (60 s left in a 15 s phase) is left out');
+    ok(r.e0.length === 0 && r.other.length === 0, 'bells: none at the ready step, and none when `bells` is not written');
+    await page.close();
+  }
   // ---- 5. ctx.extend
   {
     const { page, errors } = await open(out);

@@ -20,7 +20,8 @@ DECK.define("m-timer", class extends DECK.MotionElement {
     schema: {type: "object", additionalProperties: false, required: ["phases"], properties: {
       ready: {type: "object", additionalProperties: false, properties: {title: {type: "string"}, text: {type: "string"}}},
       phases: {type: "array", minItems: 1, maxItems: 8, items: {type: "object", additionalProperties: false, required: ["title", "sec"], properties: {
-        title: {type: "string"}, short: {type: "string"}, text: {type: "string"}, sec: {type: "integer"}}}},
+        title: {type: "string"}, short: {type: "string"}, text: {type: "string"}, sec: {type: "integer"}, bells: {type: "array", maxItems: 6, items: {type: "object", additionalProperties: false, required: ["left"], properties: {left: {type: "integer"}, count: {type: "integer"}}}}}}},
+      bells: {type: "array", maxItems: 6, items: {type: "object", additionalProperties: false, required: ["left"], properties: {left: {type: "integer"}, count: {type: "integer"}}}},
       done: {type: "string"},
       labels: {type: "object", additionalProperties: false, properties: {
         ready: {type: "string"}, total: {type: "string"}, remaining: {type: "string"}, done: {type: "string"}, start: {type: "string"},
@@ -120,6 +121,17 @@ DECK.define("m-timer", class extends DECK.MotionElement {
   }
   clockText(s){ s = Math.max(0, Math.ceil(s - 1e-9)); return Math.floor(s / 60) + ":" + ("0" + (s % 60)).slice(-2); }
   duration(k){ return k >= 1 && this.P[k - 1] ? this.P[k - 1].sec : 0; }
+  // 学会タイマーのようなベル（仕様 §8.4「Component sounds」）：部品は音を鳴らさず、鳴らす時刻を宣言するだけ。鳴らすのは再生器
+  // （発表の再生で t が前へ越えたときだけ、Web Audio で合成。動画には同じ時刻で入る。延長は再生器がずらす）。
+  // bells は区切りの bells か、全体の bells：[{left: 残りの秒, count: 1〜3}]。書かなければ鳴らない。音だけに頼らず、時計と色でも示す
+  events(k){
+    var p = k >= 1 && this.P[k - 1];
+    if (!p) return [];
+    var bells = (p.bells || (this.data && this.data.bells) || []);
+    return bells.filter(function(b){ return b.left >= 0 && b.left <= p.sec; })
+      .map(function(b){ return {t: p.sec - b.left, sound: "bell", count: Math.max(1, Math.min(3, b.count || 1))}; })
+      .sort(function(a, b){ return a.t - b.t; });
+  }
   // ---- 見る人の状態：区切りごとに延ばした秒数（−sec より短くはしない）
   ext(k){ return this.video || this._printing ? 0 : this._ext[k] || 0; }
   extend(dl){
