@@ -73,10 +73,10 @@ document.addEventListener("DOMContentLoaded", function(){
 <div id="stage">
 
 <section class="slide">
-  <h2>部品の一覧（30 個、105 枚）</h2>
+  <h2>部品の一覧（31 個、109 枚）</h2>
   <div class="body">
     <p>部品ごとに、説明の 1 枚と見本のスライドが続きます。→ で段階を進めます。</p>
-    <p>m-hissan（新しい）　m-numberline（新しい）　m-tape（新しい）　m-boxplot（変わった）　m-compare（変わった）　m-cycle（変わった）　m-fishbone（変わった）　m-hist（変わった）　m-map-japan（変わった）　m-menu（変わった）　m-pie（変わった）　m-predict（変わった）　m-scatter（変わった）　m-timeline（変わった）　m-timer（変わった）　m-tree（変わった）　m-venn（変わった）　m-bars　m-codetree　m-collect　m-curves　m-flow　m-gendai　m-kanbun　m-kobun　m-kpi　m-market　m-quad　m-seq　m-sweep</p>
+    <p>m-hissan（新しい）　m-keyboard（新しい）　m-numberline（新しい）　m-tape（新しい）　m-boxplot（変わった）　m-compare（変わった）　m-cycle（変わった）　m-fishbone（変わった）　m-hist（変わった）　m-map-japan（変わった）　m-menu（変わった）　m-pie（変わった）　m-predict（変わった）　m-scatter（変わった）　m-timeline（変わった）　m-timer（変わった）　m-tree（変わった）　m-venn（変わった）　m-bars　m-codetree　m-collect　m-curves　m-flow　m-gendai　m-kanbun　m-kobun　m-kpi　m-market　m-quad　m-seq　m-sweep</p>
   </div>
 </section>
 
@@ -114,6 +114,56 @@ document.addEventListener("DOMContentLoaded", function(){
     <m-hissan expr="851÷23" kari="on" style="height:440px"></m-hissan>
   </div>
   <div class="concl"><span>→ 仮の商が大きすぎたら、1 小さくしてやり直す</span></div>
+</section>
+
+<section class="slide">
+  <h2>m-keyboard（新しい、v1.10.0）</h2>
+  <div class="body">
+    <p>ピアノの鍵盤。音階・和音・半音と全音を光らせて音も鳴らす</p>
+    <ul>
+      <li>伝えたいこと：比べる（量・特徴）</li>
+      <li>見せ方：light・press・rise</li>
+      <li>系列：数理・統計　見本のスライド：3 枚</li>
+    </ul>
+  </div>
+</section>
+
+<section class="slide">
+  <h2>ハ長調の音階（ドレミファソラシド）</h2>
+  <div class="body">
+    <m-keyboard aria-label="ドから上のドまで、白い鍵盤を 1 つずつ順にひく" style="height:400px">
+      <script type="application/json">{"range": "C4-C5", "names": "solfa", "steps": [
+        {"keys": ["C4", "D4", "E4", "F4", "G4", "A4", "B4", "C5"], "t": [0, 0.6, 1.2, 1.8, 2.4, 3.0, 3.6, 4.2], "label": "ドから上のドまで、1 つずつ"}]}</script>
+    </m-keyboard>
+  </div>
+  <div class="concl"><span>→ 白い鍵盤だけを順にひくと、ハ長調の音階になる</span></div>
+</section>
+
+<section class="slide">
+  <h2>主要三和音（Ⅰ・Ⅳ・Ⅴ）</h2>
+  <div class="body">
+    <m-keyboard variant="press" aria-label="ハ長調の主要三和音：ドミソ、ファラド、ソシレ" style="height:400px">
+      <script type="application/json">{"range": "C4-C6", "steps": [
+        {"keys": ["C4", "E4", "G4"], "label": "Ⅰ　主和音（ドミソ）"},
+        {"keys": ["F4", "A4", "C5"], "label": "Ⅳ　下属和音（ファラド）", "tone": "accent2"},
+        {"keys": ["G4", "B4", "D5"], "label": "Ⅴ　属和音（ソシレ）", "tone": "term"}]}</script>
+    </m-keyboard>
+  </div>
+  <div class="concl"><span>→ どの和音も、鍵盤を 1 つおきに 3 つ重ねる</span></div>
+</section>
+
+<section class="slide">
+  <h2>オクターブと半音・全音</h2>
+  <div class="body">
+    <m-keyboard variant="rise" aria-label="ドと上のドがオクターブ。ミとファ、ドとド♯は半音、ドとレは全音" style="height:400px">
+      <script type="application/json">{"range": "C4-C5", "steps": [
+        {"keys": ["C4", "C5"], "t": [0, 0.8], "label": "オクターブ：ドから上のドまで"},
+        {"keys": ["E4", "F4"], "t": [0, 0.8], "label": "半音：となりの鍵盤（ミとファ）"},
+        {"keys": ["C4", "C#4"], "t": [0, 0.8], "label": "半音：となりの鍵盤（ドとド♯）"},
+        {"keys": ["C4", "D4"], "t": [0, 0.8], "label": "全音：半音 2 つ分（ドとレ）"}]}</script>
+    </m-keyboard>
+  </div>
+  <div class="concl"><span>→ 1 オクターブは半音 12 個。全音は半音 2 つ分</span></div>
 </section>
 
 <section class="slide">
