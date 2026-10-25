@@ -58,6 +58,10 @@ The source is `yanked.json`; a version may be yanked only with a later, not yank
 
 No component uses `eval`, `setTimeout`/`setInterval` with strings, dynamic `import`, `document.write` or `srcdoc`.
 
+## Dependencies
+
+The components themselves have no dependencies: a release tarball holds only `LICENSE` and each component's own files. The only lockfile is `tools/map/package-lock.json`, the build-time tool that makes the map data (mapshaper, d3-geo); it is installed with `npm ci --ignore-scripts` (no install script runs, and none is needed), runs only when a maintainer rebuilds the map data, and is never in the release tarball. Its versions are pinned, and Dependabot proposes updates only after a 7-day cooldown (14 days for a major version; `.github/dependabot.yml`). Security alerts are fixed with an npm `overrides` entry when the direct dependency has no release yet (adm-zip 0.6.1, 2026-10-25), and `node tools/map/build-japan.mjs --compare` must still report the committed map data unchanged.
+
 ## Reporting
 
 Report a vulnerability privately through GitHub's [security advisories](https://github.com/egatari/components/security/advisories/new), not in a public issue. Problems in Studio's runtime, build or editor go to [Egatari Studio](https://github.com/egatari/egatari-studio/security/advisories/new).

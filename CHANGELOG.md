@@ -4,6 +4,10 @@ Versions follow [README.md § Releases and versions](README.md#releases-and-vers
 
 ## Unreleased
 
+### Security
+
+- `tools/map` (build-time only, not in the release): adm-zip 0.6.1 through an npm `overrides` entry (Dependabot alerts on mapshaper's dependency); the rebuilt map data is unchanged. `.github/dependabot.yml` with a 7-day cooldown (14 for majors); the tool is installed with `npm ci --ignore-scripts`; SECURITY.md § Dependencies
+
 ### Later (candidates, not in this release)
 
 - `m-compare` `by="row"`; an "outside every set" region for `m-venn`; a project-plan demo for `m-timeline` lanes
