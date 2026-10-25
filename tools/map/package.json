@@ -6,6 +6,6 @@
   "type": "module",
   "devDependencies": {
     "d3-geo": "3.1.1",
-    "mapshaper": "0.6.102"
+    "mapshaper": "0.7.98"
   }
 }
