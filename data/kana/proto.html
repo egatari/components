@@ -26,8 +26,8 @@ const CHARS = {"あ":{"s":["M21 28.5 Q45 27 69 22","M43.5 10 C40 35 39 62 44 80"
 const BRUSH = {"default":13,"narrow":9,"guard":12,"overrides":{}};
 const FIT = "Klee One 1.100";
 const q = new URLSearchParams(location.search);
-const FONT_URL = q.get('font') || 'font/KleeOne-SemiBold-kana-egatari.woff2';
-const FAMILY = 'Klee One Egatari Kana';
+const FONT_URL = q.get('font') || 'font/EgatariKana-SemiBold-kana.woff2';
+const FAMILY = 'Egatari Kana';
 const NS = 'http://www.w3.org/2000/svg';
 const el = (n, a = {}) => { const e = document.createElementNS(NS, n); for (const k in a) e.setAttribute(k, a[k]); return e; };
 const width = (ch, i) => { const o = BRUSH.overrides[ch]; return Array.isArray(o) ? (o[i] ?? BRUSH.default) : (o ?? BRUSH.default); };
@@ -103,7 +103,7 @@ function animate(c, ch) {
 (async () => {
   const face = new FontFace(FAMILY, 'url(' + JSON.stringify(FONT_URL) + ')');
   document.fonts.add(face);
-  try { await face.load(); } catch (e) { document.getElementById('main').textContent = FAMILY + ' not found at ' + FONT_URL + ' (put KleeOne-SemiBold-kana-egatari.woff2 in data/kana/font/ or pass ?font=)'; return; }
+  try { await face.load(); } catch (e) { document.getElementById('main').textContent = FAMILY + ' not found at ' + FONT_URL + ' (put EgatariKana-SemiBold-kana.woff2 in data/kana/font/ or pass ?font=)'; return; }
   const main = document.getElementById('main');
   // single-character view; window.show() redraws without reloading the font (used by kana-proto-check.mjs)
   window.show = (o) => {
@@ -118,7 +118,7 @@ function animate(c, ch) {
     window.cur = c;
   };
   if (q.has('ch')) { window.show(Object.fromEntries(q)); document.body.dataset.ready = '1'; return; }
-  main.innerHTML = '<h1>かなの筆順（Klee One の字形を、独自の中心線で順に見せる試作）</h1><p class="note">字形: Klee One Egatari Kana（Klee One (Fontworks, SIL OFL 1.1) のかなだけを取り出し、名前を変えたもの）. 線の順と向き: data/kana/kana.json (MIT, ' + FIT + ' に位置合わせ). クリックで再生。</p>';
+  main.innerHTML = '<h1>かなの筆順（Klee One の字形を、独自の中心線で順に見せる試作）</h1><p class="note">字形: Egatari Kana（Klee One (SIL OFL 1.1) から派生：かなだけを取り出し、名前を変えたもの）. 線の順と向き: data/kana/kana.json (MIT, ' + FIT + ' に位置合わせ). クリックで再生。</p>';
   const grid = document.createElement('div'); grid.className = 'grid'; main.appendChild(grid);
   for (const ch of Object.keys(CHARS)) {
     const c = cell(ch, { place: q.get('place') || 'yoko' });

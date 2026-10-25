@@ -1,9 +1,9 @@
 // Builds data/kana/proto.html: a prototype of the stroke-by-stroke reveal for the characters of
 // data/kana/kana.json that carry "glyphFit" (fitted to Klee One).
 //   node tools/kana-proto.mjs
-// The visible glyph is the font Klee One (Fontworks, SIL OFL 1.1). The font is NOT in the repository yet:
-// the page loads the kana subset "Klee One Egatari Kana" (derived from Klee One, renamed; see data/kana/README.md)
-// from data/kana/font/KleeOne-SemiBold-kana-egatari.woff2 (gitignored) or from ?font=<url>.
+// The visible glyph comes from the font "Egatari Kana", derived from Klee One (SIL OFL 1.1). It is NOT in the repository yet:
+// the page loads the kana subset "Egatari Kana" (derived from Klee One, SIL OFL 1.1, renamed; see data/kana/README.md)
+// from data/kana/font/EgatariKana-SemiBold-kana.woff2 (gitignored) or from ?font=<url>.
 // Small kana carry "place": {yoko, tate} (SVG matrices); the glyph and our lines are drawn through the same matrix.
 //   &place=yoko|tate|none   placement of small kana (default yoko)
 // For each stroke, a thick round brush runs along OUR centreline (stroke-dasharray) inside an SVG mask,
@@ -14,7 +14,7 @@
 //   &guide=0       no light-grey guide      &view=glyph   glyph only (no mask)
 //   &view=mask&k=1     the whole mask after k strokes, white on black (no glyph)
 //   &view=brush&from=0&to=2   only the wide brush of strokes from..to-1, white on black
-//   &font=<url>    where to load Klee One from
+//   &font=<url>    where to load the font (Egatari Kana) from
 import fs from 'node:fs';
 import path from 'node:path';
 import { ROOT } from './studio.mjs';
@@ -59,8 +59,8 @@ const CHARS = ${JSON.stringify(chars)};
 const BRUSH = ${JSON.stringify(BRUSH)};
 const FIT = ${JSON.stringify(fit)};
 const q = new URLSearchParams(location.search);
-const FONT_URL = q.get('font') || 'font/KleeOne-SemiBold-kana-egatari.woff2';
-const FAMILY = 'Klee One Egatari Kana';
+const FONT_URL = q.get('font') || 'font/EgatariKana-SemiBold-kana.woff2';
+const FAMILY = 'Egatari Kana';
 const NS = 'http://www.w3.org/2000/svg';
 const el = (n, a = {}) => { const e = document.createElementNS(NS, n); for (const k in a) e.setAttribute(k, a[k]); return e; };
 const width = (ch, i) => { const o = BRUSH.overrides[ch]; return Array.isArray(o) ? (o[i] ?? BRUSH.default) : (o ?? BRUSH.default); };
@@ -136,7 +136,7 @@ function animate(c, ch) {
 (async () => {
   const face = new FontFace(FAMILY, 'url(' + JSON.stringify(FONT_URL) + ')');
   document.fonts.add(face);
-  try { await face.load(); } catch (e) { document.getElementById('main').textContent = FAMILY + ' not found at ' + FONT_URL + ' (put KleeOne-SemiBold-kana-egatari.woff2 in data/kana/font/ or pass ?font=)'; return; }
+  try { await face.load(); } catch (e) { document.getElementById('main').textContent = FAMILY + ' not found at ' + FONT_URL + ' (put EgatariKana-SemiBold-kana.woff2 in data/kana/font/ or pass ?font=)'; return; }
   const main = document.getElementById('main');
   // single-character view; window.show() redraws without reloading the font (used by kana-proto-check.mjs)
   window.show = (o) => {
@@ -151,7 +151,7 @@ function animate(c, ch) {
     window.cur = c;
   };
   if (q.has('ch')) { window.show(Object.fromEntries(q)); document.body.dataset.ready = '1'; return; }
-  main.innerHTML = '<h1>かなの筆順（Klee One の字形を、独自の中心線で順に見せる試作）</h1><p class="note">字形: Klee One Egatari Kana（Klee One (Fontworks, SIL OFL 1.1) のかなだけを取り出し、名前を変えたもの）. 線の順と向き: data/kana/kana.json (MIT, ' + FIT + ' に位置合わせ). クリックで再生。</p>';
+  main.innerHTML = '<h1>かなの筆順（Klee One の字形を、独自の中心線で順に見せる試作）</h1><p class="note">字形: Egatari Kana（Klee One (SIL OFL 1.1) から派生：かなだけを取り出し、名前を変えたもの）. 線の順と向き: data/kana/kana.json (MIT, ' + FIT + ' に位置合わせ). クリックで再生。</p>';
   const grid = document.createElement('div'); grid.className = 'grid'; main.appendChild(grid);
   for (const ch of Object.keys(CHARS)) {
     const c = cell(ch, { place: q.get('place') || 'yoko' });
