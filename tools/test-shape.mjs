@@ -41,6 +41,8 @@ const WRONG = {
   'm-predict': '<script type="application/json">{"choices": ["重い球", "軽い球"], "answer": 0}</script>',
   'm-hist': '<script type="application/json">{"value": [23, 31, 27], "bins": {"start": 15, "width": 5}}</script>',
   'm-boxplot': '<script type="application/json">{"groups": [{"label": "1 組", "data": [3, 5, 6, 7]}]}</script>',
+  // データを属性だけで受け取る部品は、要素ごと書く（digits は整数の JSON）
+  'm-hissan': '<m-hissan aria-label="m-hissan の図" expr="7÷3" digits="2けた" style="height:300px"></m-hissan>',
 };
 const comps = componentNames().map((n) => 'm-' + n);
 ok(comps.every((t) => WRONG[t] || t === 'm-sweep'), 'every component has a wrong-shape example in this test');
@@ -49,8 +51,13 @@ const deckDir = path.join(work, 'deck');
 fs.mkdirSync(deckDir, { recursive: true });
 const slides = comps.map((t, j) => `<section class="slide noconcl" id="s-w${j}">
   <h2>${t}</h2>
-  <div class="body">${t === 'm-sweep' ? '<m-sweep f="u*u + c" values="[1]" style="height:300px"></m-sweep>' : `<${t} aria-label="${t} の図" style="height:300px">${WRONG[t]}</${t}>`}</div>
+  <div class="body">${t === 'm-sweep' ? '<m-sweep f="u*u + c" values="[1]" style="height:300px"></m-sweep>' : WRONG[t].startsWith('<' + t + ' ') ? WRONG[t] : `<${t} aria-label="${t} の図" style="height:300px">${WRONG[t]}</${t}>`}</div>
 </section>`).join('\n') + `
+<section class="slide noconcl" id="s-hissan">
+  <h2>計算にならない式</h2>
+  <div class="body"><m-hissan id="w-hissan-expr" aria-label="式が途中で終わる" expr="12+" style="height:200px"></m-hissan>
+  <m-hissan id="w-hissan-neg" aria-label="答えが負になるひき算" expr="3-5" style="height:200px"></m-hissan></div>
+</section>
 <section class="slide noconcl" id="s-accept">
   <h2>形に合う新しい欄</h2>
   <div class="body"><m-curves id="ok-curves" aria-label="段階をそろえた線" xr="[0,10]" yr="[0,12]" style="height:300px"><script type="application/json">[{"label": "需要", "f": "10 - x", "tone": "term", "step": 1, "labelAt": 2, "anchor": "below"}, {"label": "供給", "f": "2 + x", "tone": "accent2", "step": 1, "anchor": "left"}, {"label": "均衡", "pts": [[4, 0], [4, 6]], "step": 2, "anchor": "above", "dash": true}, {"label": "古い書き方", "f": "6", "color": "muted", "at": 8, "anchor": "end"}]</script></m-curves></div>
@@ -105,6 +112,10 @@ try {
     ok(s && s.box && s.text.includes('<' + t + '>'), `${t}: shows the inline placeholder`);
     ok(e && e.phase === 'data', `${t}: reported in DECK.componentErrors before mount (${e && e.kind}${e && e.why ? ' ' + e.why : ''})`);
   }
+  // m-hissan：計算にならない式（途中で終わる、答えが負になるひき算）は、段階を数えるところで札を出し、式を言う
+  const hs = r.seen.filter((x) => x.id === 'w-hissan-expr' || x.id === 'w-hissan-neg'), he = r.errs.filter((x) => x.tag === 'm-hissan' && x.kind === 'exception');
+  ok(hs.length === 2 && hs.every((x) => x.box) && he.length === 2 && /expr="12\+"/.test(he[0].msg) && /negative/.test(he[1].msg),
+    'm-hissan: an expression that is not one calculation, and a negative difference, show the placeholder (' + he.map((x) => x.phase + ': ' + x.msg).join(' | ') + ')');
   // m-curves の系列の語（共通の決まり §3）：step・tone・labelAt・anchor（right/left/above/below）は形に合い、古い color・at・anchor（start/middle/end）も動く。
   // 段階は step の最大（書かない系列は i + 1）：ここでは 1, 1, 2, 4 → 4
   const okc = r.seen.find((x) => x.id === 'ok-curves');

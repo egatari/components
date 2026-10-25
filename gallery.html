@@ -73,10 +73,10 @@ document.addEventListener("DOMContentLoaded", function(){
 <div id="stage">
 
 <section class="slide">
-  <h2>部品の一覧（27 個、92 枚）</h2>
+  <h2>部品の一覧（28 個、96 枚）</h2>
   <div class="body">
     <p>部品ごとに、説明の 1 枚と見本のスライドが続きます。→ で段階を進めます。</p>
-    <p>m-boxplot（新しい）　m-hist（新しい）　m-bars　m-codetree　m-collect　m-compare　m-curves　m-cycle　m-fishbone　m-flow　m-gendai　m-kanbun　m-kobun　m-kpi　m-map-japan　m-market　m-menu　m-pie　m-predict　m-quad　m-scatter　m-seq　m-sweep　m-timeline　m-timer　m-tree　m-venn</p>
+    <p>m-boxplot（新しい）　m-hissan（新しい）　m-hist（新しい）　m-bars　m-codetree　m-collect　m-compare　m-curves　m-cycle　m-fishbone　m-flow　m-gendai　m-kanbun　m-kobun　m-kpi　m-map-japan　m-market　m-menu　m-pie　m-predict　m-quad　m-scatter　m-seq　m-sweep　m-timeline　m-timer　m-tree　m-venn</p>
   </div>
 </section>
 
@@ -128,6 +128,42 @@ document.addEventListener("DOMContentLoaded", function(){
     </div>
   </div>
   <div class="concl"><span>→ 資料のシード値（data-egatari-seed）で 1 つが選ばれる。値は架空</span></div>
+</section>
+
+<section class="slide">
+  <h2>m-hissan（新しい、v1.9.0）</h2>
+  <div class="body">
+    <p>筆算（たし算・ひき算・かけ算・わり算、小数も）。式を書けば、部品が教科書の手順で計算して書く</p>
+    <ul>
+      <li>伝えたいこと：手順・工程</li>
+      <li>見せ方：fade・draw</li>
+      <li>系列：数理・統計　見本のスライド：3 枚</li>
+    </ul>
+  </div>
+</section>
+
+<section class="slide">
+  <h2>0 のあるひき算：1003−457</h2>
+  <div class="body">
+    <m-hissan expr="1003-457" style="height:400px"></m-hissan>
+  </div>
+  <div class="concl"><span>→ 十の位も百の位も 0 なので、千の位から順にくり下げる</span></div>
+</section>
+
+<section class="slide">
+  <h2>2 けたをかけるかけ算：38×24</h2>
+  <div class="body">
+    <m-hissan expr="38×24" style="height:420px"></m-hissan>
+  </div>
+  <div class="concl"><span>→ 38×2 の 76 は、十の位から書く</span></div>
+</section>
+
+<section class="slide">
+  <h2>2 けたでわるわり算：851÷23</h2>
+  <div class="body">
+    <m-hissan expr="851÷23" kari="on" style="height:440px"></m-hissan>
+  </div>
+  <div class="concl"><span>→ 仮の商が大きすぎたら、1 小さくしてやり直す</span></div>
 </section>
 
 <section class="slide">
