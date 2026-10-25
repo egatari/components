@@ -8,7 +8,8 @@
 //   6. unit             the safe expression evaluator (tools/test-expr.mjs), m-codetree, m-kanbun / m-kobun / m-gendai parsing
 //                       (tools/test-codetree.mjs, tools/test-kokugo.mjs; no browser)
 //      (also tools/test-yanked.mjs: yanked.json becomes manifest.json's `yanked`; tools/test-variant.mjs: the variant choice;
-//       tools/test-stats.mjs: m-hist / m-boxplot mean, median, mode, classes and quartiles by jp / inc / exc)
+//       tools/test-stats.mjs: m-hist / m-boxplot mean, median, mode, classes and quartiles by jp / inc / exc;
+//       tools/test-numberline.mjs: m-numberline tick positions and labels, fractions, two lines aligned at 0, range levels and shared part)
 //   7. studio           fetch Egatari Studio at the pinned tag and overlay these components (tools/studio.mjs)
 //   8. components       each demo.html: builds, no console errors, screenshots per step, determinism, text ≥ 24px, overlap, outside the slide (tools/test-components.mjs)
 //   9. kanbun-num      m-kanbun's two-digit reading-order numbers stay inside their box and off the character boxes; one-digit numbers unchanged (tools/test-kanbun-num.mjs)
@@ -47,6 +48,7 @@ const TESTS = [
   ['test-yanked', ['tools/test-yanked.mjs']],
   ['test-variant', ['tools/test-variant.mjs']],
   ['test-stats', ['tools/test-stats.mjs']],
+  ['test-numberline', ['tools/test-numberline.mjs']],
   ['test-codetree', ['tools/test-codetree.mjs']],
   ['test-kokugo', ['tools/test-kokugo.mjs']],
   ['studio', ['tools/studio.mjs']],

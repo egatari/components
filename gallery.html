@@ -73,11 +73,133 @@ document.addEventListener("DOMContentLoaded", function(){
 <div id="stage">
 
 <section class="slide">
-  <h2>部品の一覧（27 個、92 枚）</h2>
+  <h2>部品の一覧（29 個、101 枚）</h2>
   <div class="body">
     <p>部品ごとに、説明の 1 枚と見本のスライドが続きます。→ で段階を進めます。</p>
-    <p>m-boxplot（変わった）　m-compare（変わった）　m-cycle（変わった）　m-fishbone（変わった）　m-hist（変わった）　m-map-japan（変わった）　m-menu（変わった）　m-pie（変わった）　m-predict（変わった）　m-scatter（変わった）　m-timeline（変わった）　m-timer（変わった）　m-tree（変わった）　m-venn（変わった）　m-bars　m-codetree　m-collect　m-curves　m-flow　m-gendai　m-kanbun　m-kobun　m-kpi　m-market　m-quad　m-seq　m-sweep</p>
+    <p>m-numberline（新しい）　m-tape（新しい）　m-boxplot（変わった）　m-compare（変わった）　m-cycle（変わった）　m-fishbone（変わった）　m-hist（変わった）　m-map-japan（変わった）　m-menu（変わった）　m-pie（変わった）　m-predict（変わった）　m-scatter（変わった）　m-timeline（変わった）　m-timer（変わった）　m-tree（変わった）　m-venn（変わった）　m-bars　m-codetree　m-collect　m-curves　m-flow　m-gendai　m-kanbun　m-kobun　m-kpi　m-market　m-quad　m-seq　m-sweep</p>
   </div>
+</section>
+
+<section class="slide">
+  <h2>m-numberline（新しい、v1.9.1）</h2>
+  <div class="body">
+    <p>数直線。点・□・ジャンプ・不等式の範囲・0.1 の拡大。2 本で比例数直線</p>
+    <ul>
+      <li>伝えたいこと：比べる（量・特徴）</li>
+      <li>見せ方：fade・draw</li>
+      <li>系列：数理・統計　見本のスライド：4 枚</li>
+    </ul>
+  </div>
+</section>
+
+<section class="slide">
+  <h2>3 + 4 − 2 を数直線で</h2>
+  <div class="body">
+    <m-numberline style="height:400px">
+      <script type="application/json">{"lines": [{"from": 0, "to": 10, "step": 1}],
+        "marks": [{"at": 3}, {"at": 5, "kind": "open", "label": "答え", "show": 5}],
+        "jumps": [{"from": 3, "to": 7, "label": "+4"}, {"from": 7, "to": 5, "label": "−2"}]}</script>
+    </m-numberline>
+  </div>
+  <div class="concl"><span>→ たすときは右へ、ひくときは左へ進む</span></div>
+</section>
+
+<section class="slide">
+  <h2>1 と 2 の間を 10 に分ける</h2>
+  <div class="body">
+    <m-numberline build="ticks,magnify,marks" style="height:440px">
+      <script type="application/json">{"lines": [{"from": 0, "to": 3, "step": 1, "unit": "L"}],
+        "magnify": [{"from": 1, "to": 2}],
+        "marks": [{"at": 1.3, "line": 1}]}</script>
+    </m-numberline>
+  </div>
+  <div class="concl"><span>→ 1 目盛りは 0.1。1.3 は 1 と 0.1 が 3 つ</span></div>
+</section>
+
+<section class="slide">
+  <h2>1200 円の 2/3 はいくら（2 本の数直線）</h2>
+  <div class="body">
+    <m-numberline build="ticks,links,jumps,marks" style="height:490px">
+      <script type="application/json">{"lines": [{"from": 0, "to": 1200, "step": 400, "label": "代金", "unit": "円", "labels": [0, 1200]},
+                 {"from": 0, "to": 1, "step": "1/3", "label": "割合"}],
+        "link": [[1200, 1], [800, "2/3"]],
+        "jumps": [{"from": 1, "to": "2/3", "line": 1, "label": "×2/3"}, {"from": 1200, "to": 800, "label": "×2/3", "show": 4}],
+        "marks": [{"at": 800, "kind": "box"}]}</script>
+    </m-numberline>
+  </div>
+</section>
+
+<section class="slide">
+  <h2>連立不等式の解（見せ方の種類）</h2>
+  <div class="body">
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:0 36px">
+      <m-numberline variant="fade" arrow="on" style="height:400px">
+        <script type="application/json">{"lines": [{"from": -3, "to": 5, "step": 1, "label": "フェード"}],
+          "ranges": [{"from": -1, "incl": [false, false], "label": "*x* > −1"}, {"to": 3, "incl": [true, true], "label": "*x* ≦ 3"}]}</script>
+      </m-numberline>
+      <m-numberline variant="draw" arrow="on" style="height:400px">
+        <script type="application/json">{"lines": [{"from": -3, "to": 5, "step": 1, "label": "線を引く"}],
+          "ranges": [{"from": -1, "incl": [false, false], "label": "*x* > −1"}, {"to": 3, "incl": [true, true], "label": "*x* ≦ 3"}]}</script>
+      </m-numberline>
+    </div>
+  </div>
+  <div class="concl"><span>→ 重なる部分が解：−1 &lt; <i>x</i> ≦ 3（左はフェード、右は線を引く）</span></div>
+</section>
+
+<section class="slide">
+  <h2>m-tape（新しい、v1.9.1）</h2>
+  <div class="body">
+    <p>テープ図・線分図。全体や部分を括弧で括り、わからない量は □ か ?。行から行へ「2 倍」の矢印</p>
+    <ul>
+      <li>伝えたいこと：全体と内訳・比べる（量・特徴）</li>
+      <li>見せ方：fade・grow</li>
+      <li>系列：数理・統計　見本のスライド：3 枚</li>
+    </ul>
+  </div>
+</section>
+
+<section class="slide">
+  <h2>□を使った式：みかんははじめに何こ？</h2>
+  <div class="body">
+    <m-tape style="height:360px">
+      <script type="application/json">{"rows": [{"segs": [{"v": 8, "label": "食べた 8 こ"}, {"v": 15, "label": "のこり 15 こ"}]}],
+        "brace": [{"row": 0, "from": 0, "to": 1, "label": "はじめ □ こ", "side": "above"}]}</script>
+    </m-tape>
+  </div>
+  <div class="concl"><span>→ □ − 8 = 15 だから、□ = 15 + 8 = 23</span></div>
+</section>
+
+<section class="slide">
+  <h2>B のテープは A のテープの何倍？（線分図）</h2>
+  <div class="body">
+    <m-tape kind="line" style="height:380px">
+      <script type="application/json">{"rows": [
+          {"label": "A のテープ", "segs": [{"v": 12, "label": "12 m"}]},
+          {"label": "B のテープ", "segs": [{"v": 12}, {"v": 12}, {"v": 12}]}],
+        "brace": [{"row": 1, "from": 0, "to": 2, "label": "36 m", "side": "below"}],
+        "times": [{"from": 0, "to": 1, "label": "□ 倍"}]}</script>
+    </m-tape>
+  </div>
+  <div class="concl"><span>→ B は A（12 m）の 3 つ分で 36 m。36 ÷ 12 = 3 で 3 倍</span></div>
+</section>
+
+<section class="slide">
+  <h2>見せ方の種類（variant）</h2>
+  <div class="body">
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:0 36px">
+      <m-tape variant="fade" build="rows" style="height:400px">
+        <script type="application/json">{"rows": [{"label": "弟", "segs": [{"v": 20, "label": "20 まい"}]},
+          {"label": "兄", "segs": [{"v": 40, "unknown": "□", "label": "まい"}]}],
+          "times": [{"from": 0, "to": 1, "label": "2 倍"}]}</script>
+      </m-tape>
+      <m-tape variant="grow" build="rows" style="height:400px">
+        <script type="application/json">{"rows": [{"label": "弟", "segs": [{"v": 20, "label": "20 まい"}]},
+          {"label": "兄", "segs": [{"v": 40, "unknown": "□", "label": "まい"}]}],
+          "times": [{"from": 0, "to": 1, "label": "2 倍"}]}</script>
+      </m-tape>
+    </div>
+  </div>
+  <div class="concl"><span>→ 左はフェード（既定）、右は左から伸びる</span></div>
 </section>
 
 <section class="slide">
