@@ -4,14 +4,26 @@ Versions follow [README.md § Releases and versions](README.md#releases-and-vers
 
 ## Unreleased
 
-### Added
-
-- Tools (道具, docs/conventions.md §7): `m-timer` declares `static group = "tool"` and its new-deck tile (`static tile`: 「タイマー」 / "Timer", 「グループワークの時間・残り時間・ベル」, icon `timer`); manifest.json carries `components.timer.group` and `.tile`. Checked by `tools/lint.mjs`. README text unchanged
-- `m-timer`: bells like a conference timer (`bells`: `[{left, count}]`, for all phases or per phase; off unless written). The part declares them with `events(k)` (spec §8.4 "Component sounds"); the player rings them on forward crossings during a live presentation and puts them into video. A player without component sounds ignores them; the clock and colours still carry the information
-
 ### Later (candidates, not in this release)
 
 - `m-compare` `by="row"`; an "outside every set" region for `m-venn`; a project-plan demo for `m-timeline` lanes
+
+## 1.8.0 - 2026-10-25
+
+### Changed
+
+- `m-map-japan`: **the default drawing changes** (owner's decision, docs/map-design.md §5.3.1). The 小笠原諸島 inset (鳥島・父島・硫黄島・沖ノ鳥島・南鳥島) is no longer drawn by default; the main map is laid out without it (it is larger only where the inset limited the width; at the demo's 440 px height the map is height-limited and keeps its size, centred). The new attribute `islands="all"` (default `main`) brings the inset back, and then its 沖ノ鳥島 and 南鳥島 are always named (in the nearby sea with a leader line if needed); if even that cannot fit, the whole inset is left out with a `console.warn` instead of being shown unnamed. The 南西諸島 inset (沖縄県, 尖閣諸島) stays. 北方領土・竹島・尖閣諸島 are drawn at every size; `layout="true"` draws every island at its true position and names 竹島・尖閣諸島・沖ノ鳥島・南鳥島・父島・硫黄島 (the last two with a warning if they cannot fit). The readable layer now always lists the islands drawn (北方領土, 竹島, 尖閣諸島, and 沖ノ鳥島・南鳥島 when drawn; 父島・硫黄島 in `layout="true"`). Lessons pinned to v1.7.x keep the v1.7.x drawing. `tools/test-seed0.mjs` skips m-map-japan against baselines older than v1.8.0 (approved change)
+
+### Added
+
+- `m-map-japan`: demo slide 「日本の範囲（本当の位置）」 with `layout="true"` and the four extremities (択捉島・南鳥島・沖ノ鳥島・与那国島, coordinates from 国土地理院「日本の東西南北端点の経度緯度」), and `islands="all"` on the population slide. README: one pack-visible sentence pointing to `layout="true"` for the extent of Japan, its extremities and the EEZ; the island rule in the implementation notes. `tools/test-map-territory.mjs` (in `tools/test-all.mjs`): 192 maps (heights 200–700 px in 9 steps × widths 300–1184 px in 5 × both layouts × with and without labels, `islands="all"` at 300/380/520 px and two tiny sizes, author points on territory islands) check that the territories are drawn inside the element and not hidden at step 0 and in the final state, that the inset is off by default, the names required above, and that the readable layer lists exactly what is drawn
+- Tools (道具, docs/conventions.md §7): `m-timer` declares `static group = "tool"` and its new-deck tile (`static tile`: 「タイマー」 / "Timer", 「グループワークの時間・残り時間・ベル」, icon `timer`); manifest.json carries `components.timer.group` and `.tile`. Checked by `tools/lint.mjs`. README text unchanged
+- `m-timer`: bells like a conference timer (`bells`: `[{left, count}]`, for all phases or per phase; off unless written). The part declares them with `events(k)` (spec §8.4 "Component sounds"); the player rings them on forward crossings during a live presentation and puts them into video. A player without component sounds ignores them; the clock and colours still carry the information
+
+### Fixed
+
+- `m-map-japan`: an author point with a label on a territory island (e.g. 「南鳥島（東端）」 at 南鳥島 or 「沖ノ鳥島（南端）」 at 沖ノ鳥島 in `layout="true"`) was drawn next to the built-in 「南鳥島」/「沖ノ鳥島」 name, with two dots. When a labelled author point is within 15 px of a territory dot, the built-in dot and name fade out as the author's point appears (one dot and one name in the final state; the built-in name still shows before that step), and the readable layer has one entry for the island (the author's label). All layouts
+- `m-map-japan`: a point label that fits at none of the spots next to its point (near the element's edge, or a point inside an inset frame) was drawn over the edge with an "overlaps another" warning; it is now placed nearby with a leader line
 
 ## 1.7.1 - 2026-10-25
 

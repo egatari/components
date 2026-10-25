@@ -38,7 +38,7 @@
 <section class="slide">
   <h2>都道府県の人口（2020 年、国勢調査速報）</h2>
   <div class="body">
-    <m-map-japan aria-label="都道府県別の人口の塗り分け" legend="人口" unit="万人" style="height:440px">
+    <m-map-japan aria-label="都道府県別の人口の塗り分け" legend="人口" unit="万人" islands="all" style="height:440px">
       <script type="application/json">{
         "classes": [0, 100, 200, 500],
         "values": {"01": 523, "02": 124, "03": 121, "04": 230, "05": 96, "06": 107, "07": 183, "08": 287, "09": 193, "10": 194,
@@ -75,6 +75,26 @@
     </m-map-japan>
   </div>
   <div class="concl"><span>→ 大坂から瀬戸内海・日本海を通って北へ</span></div>
+</section>
+
+<section class="slide">
+  <h2>日本の範囲（本当の位置）</h2>
+  <!-- 東西南北の端：国土地理院「日本の東西南北端点の経度緯度」（https://www.gsi.go.jp/KOKUJYOHO/center.htm、2026-10-25 取得）。
+       東端 南鳥島 153°59′12″E・24°16′59″N、西端 与那国島 122°55′57″E・24°27′05″N、
+       南端 沖ノ鳥島 136°04′11″E・20°25′31″N、北端 択捉島 148°45′08″E・45°33′26″N（度に直して小数 4 桁に丸めた） -->
+  <div class="body">
+    <m-map-japan aria-label="日本の範囲と東西南北の端" layout="true" labels="none" style="height:440px">
+      <script type="application/json">{
+        "points": [
+          {"lon": 148.7522, "lat": 45.5572, "label": "択捉島（北端）", "step": 1},
+          {"lon": 153.9867, "lat": 24.2831, "label": "南鳥島（東端）", "step": 2},
+          {"lon": 136.0697, "lat": 20.4253, "label": "沖ノ鳥島（南端）", "step": 3},
+          {"lon": 122.9325, "lat": 24.4514, "label": "与那国島（西端）", "step": 4}
+        ]
+      }</script>
+    </m-map-japan>
+  </div>
+  <div class="concl"><span>→ 東西は経度で約 31°、南北は緯度で約 25° に広がる</span></div>
 </section>
 
 <section class="slide">
