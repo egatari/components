@@ -90,6 +90,11 @@ eq(lab('Db4', 'solfa'), 'レ♭', 'Db4 solfa');
 eq(lab('Bb3', 'abc'), 'B♭', 'Bb3 abc');
 eq(lab('F#5', 'solfa'), 'ファ♯', 'F#5 solfa');
 eq(lab('C4', 'none'), null, 'none');
+eq(['C4', 'D4', 'E4', 'F4', 'G4', 'A4', 'B4'].map((s) => lab(s, 'iroha')), ['ハ', 'ニ', 'ホ', 'ヘ', 'ト', 'イ', 'ロ'], 'iroha');
+eq(lab('C#4', 'iroha'), '嬰ハ', 'C#4 iroha');
+eq(lab('Db4', 'iroha'), '変ニ', 'Db4 iroha');
+eq(lab('Bb3', 'iroha'), '変ロ', 'Bb3 iroha');
+eq(lab('F#5', 'iroha'), '嬰ヘ', 'F#5 iroha');
 eq(g.whites.map((w) => KB.whiteLetter(w.midi)).join(''), 'CDEFGABC', 'white keys of C4-C5');
 
 // ---- events ----
@@ -110,6 +115,29 @@ eq(KB.length({ keys: ['C4', 'E4'], t: [0, 1], dur: 2 }), 3, 'length = last t + d
 eq(KB.notes({ keys: ['C♯4'] })[0].pitch, 'C#4', 'pitch written with #');
 // broken chord then chord: notes at the same t share the next later t
 eq(KB.notes({ keys: ['C4', 'E4', 'G4', 'C5'], t: [0, 0, 0.5, 0.5] }).map((e) => e.dur), [0.5, 0.5, 0.8, 0.8], 'two chords: first to the second, second 0.8');
+
+// ---- key state per (k, t): current, cumulative (faded) and the lecture preview of later steps ----
+const prog = (t, at, len) => Math.max(0, Math.min(1, (t - at) / len));
+const step = (keys, t, tone = 'emph') => { const s = { keys: keys.map(KB.parseKey), tone }; s.ev = KB.notes({ keys, t }); return s; };
+const S3 = [step(['C4', 'E4', 'G4']), step(['F4', 'A4', 'C5'], undefined, 'accent2'), step(['G4', 'B4', 'D5'], undefined, 'term')];
+const lit = (st) => Object.keys(st).filter((m) => st[m].e > 0).map(Number).sort((a, b) => a - b);
+const pre = (st) => Object.keys(st).filter((m) => st[m].pre).map(Number).sort((a, b) => a - b);
+const st1 = KB.state(S3, 1, Infinity, { variant: 'light', prog });
+eq(lit(st1), [60, 64, 67], 'step 1: C E G lit');
+eq(pre(st1), [], 'no preview without ctx.preview');
+const st1p = KB.state(S3, 1, Infinity, { variant: 'light', prog, preview: true });
+eq(lit(st1p), [60, 64, 67], 'preview: the current step is still lit');
+eq(pre(st1p), [65, 69, 71, 72, 74], 'preview: later steps faint (F A C5 G B D5; G4 is lit now, not faint)');
+eq(st1p[65].preTone, 'accent2', 'preview: faint key in its own step\'s tone');
+eq(st1p[67].pre, false, 'preview: a key lit now is not faint');
+eq(pre(KB.state(S3, 0, 0, { variant: 'light', prog, preview: true })), [60, 64, 65, 67, 69, 71, 72, 74], 'preview at step 0: every step faint');
+eq(st1p[67].tone, 'emph', 'G4 keeps the current tone');
+eq(pre(KB.state(S3, 3, Infinity, { variant: 'light', prog, preview: true })), [], 'preview at the last step: nothing later');
+const st3c = KB.state(S3, 3, Infinity, { variant: 'light', prog, cumulative: true, preview: true });
+eq(Object.keys(st3c).filter((m) => st3c[m].faded && !(st3c[m].e > 0)).map(Number).sort((a, b) => a - b), [60, 64, 65, 69, 72], 'cumulative: earlier keys faded (G4 lit again now)');
+const sc = [step(['C4', 'D4', 'E4'], [0, 0.6, 1.2])];
+eq(lit(KB.state(sc, 1, 0.7, { variant: 'light', prog })), [60, 62], 'scale at t = 0.7: C and D lit, E not yet');
+eq(pre(KB.state(sc, 1, 0.7, { variant: 'light', prog, preview: true })), [], 'preview does not mark keys of the current step that have not lit yet');
 
 console.log(fail ? `\nFAIL: ${fail} of ${n}` : `test-keyboard: ${n} checks ok`);
 process.exit(fail ? 1 : 0);

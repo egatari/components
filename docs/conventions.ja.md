@@ -224,6 +224,7 @@ AI への指示に入れる表（parts-map の 10 の「steps」の欄）に合�
 | `text-structure` | 文章の構造 | 読む順 |
 | `contents` | 目次 | 一度に全部 |
 | `parameter` | パラメータを動かす | 値を 1 つずつ |
+| `music` | 音楽（音の高さ・和音・リズム） | 音・和音を 1 つずつ |
 
 | `deviation` | 差・増減（上下に伸びる棒・ウォーターフォール） | （予約。部品はまだない） |
 | `concept-links` | 概念のつながり（概念地図） | （予約。部品はまだない） |
@@ -260,6 +261,7 @@ purposes: change, compare
 | `m-sweep` | parameter |
 | `m-codetree` | hierarchy, process |
 | `m-kanbun` `m-kobun` `m-gendai` | text-structure |
+| `m-keyboard` | music |
 | `m-compare` | compare |
 | `m-timeline` | timeline |
 | `m-fishbone` | cause-effect |

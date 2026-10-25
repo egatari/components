@@ -224,6 +224,7 @@ The purposes a component can serve (shown to people as 「伝えたいこと」 
 | `text-structure` | Structure of a text | Reading order |
 | `contents` | Contents | Whole at once |
 | `parameter` | Varying a parameter | One value at a time |
+| `music` | Music (pitch, chords, rhythm) | One note or chord at a time |
 
 | `deviation` | Deviation, increase and decrease (diverging bars, waterfall) | (reserved; no component yet) |
 | `concept-links` | Concept links (concept map) | (reserved; no component yet) |
@@ -260,6 +261,7 @@ Proposed declarations for existing and v1.2.0 components:
 | `m-sweep` | parameter |
 | `m-codetree` | hierarchy, process |
 | `m-kanbun` `m-kobun` `m-gendai` | text-structure |
+| `m-keyboard` | music |
 | `m-compare` | compare |
 | `m-timeline` | timeline |
 | `m-fishbone` | cause-effect |

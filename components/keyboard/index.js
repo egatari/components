@@ -8,6 +8,7 @@
 // 次の t まで（なければ 0.8 秒））。duration(k) は最後の音の終わりまで。音だけに頼らない：光った鍵盤と印がいつも同じことを示す
 // 鍵盤の形（customElements.get("m-keyboard").kb、tools/test-keyboard.mjs）：白鍵の幅を 1 として、ド〜ミの 3 つを 5 等分、ファ〜シの 4 つを
 // 7 等分した 2・4（・6）番目に黒鍵を置く（本物の鍵盤と同じく、ド♯とレ♯は外へ、ファ♯とラ♯も外へ寄り、ソ♯は真ん中）
+// 授業の表示（ctx.preview、古い再生器は ctx.mode === "lecture"）：先の段階の鍵盤をテーマの --preview-opacity（なければ 0.45）で薄く、印なしで見せる
 // 見せ方（docs/conventions.md §1）：light（既定。光がフェード）・press（鍵盤が少し沈んで戻る）・rise（光が鍵盤の下から上へ満ちる）
 (function(){
 // ---- BEGIN egatari-variant (source: tools/variant.js; copy with `node tools/variant-sync.mjs`; do not edit inside a component) ----
@@ -73,6 +74,7 @@ var VARIANT = (function(){
 var KB = (function(){
   var LETTERS = "CDEFGAB", PC = {C: 0, D: 2, E: 4, F: 5, G: 7, A: 9, B: 11};
   var SOLFA = {C: "ド", D: "レ", E: "ミ", F: "ファ", G: "ソ", A: "ラ", B: "シ"};
+  var IROHA = {C: "ハ", D: "ニ", E: "ホ", F: "ヘ", G: "ト", A: "イ", B: "ロ"};
   var BW = 0.58, BH = 0.62;   // 黒鍵の幅（白鍵の幅に対して）と長さ（白鍵の長さに対して）
   // "C4" "C#4" "Db4"（♯ ♭ も）→ {letter, acc: "" | "#" | "b", oct, midi, white, name}。読めなければ null
   function parseKey(s){
@@ -108,9 +110,11 @@ var KB = (function(){
     }
     return {all: out, whites: whites, n: whites.length, BW: BW, BH: BH};
   }
-  // 鍵盤の名前：names = "solfa"（ドレミ）・"abc"（CDE）・"none"（null）。黒鍵は ♯・♭ をつける（ド♯ / C♯、レ♭ / D♭）
+  // 鍵盤の名前：names = "solfa"（ドレミ）・"abc"（CDE）・"iroha"（ハニホ）・"none"（null）。黒鍵は ♯・♭ をつける（ド♯ / C♯、レ♭ / D♭）。
+  // iroha は前に 嬰・変 をつける（嬰ハ、変ニ）
   function label(k, names){
     if (names === "none") return null;
+    if (names === "iroha") return (k.acc === "#" ? "嬰" : k.acc === "b" ? "変" : "") + IROHA[k.letter];
     var s = names === "abc" ? k.letter : SOLFA[k.letter];
     return s + (k.acc === "#" ? "♯" : k.acc === "b" ? "♭" : "");
   }
@@ -127,7 +131,30 @@ var KB = (function(){
   }
   // 段階の長さ：最後の音の終わり
   function length(step, dur){ return notes(step, dur).reduce(function(a, n){ return Math.max(a, n.t + n.dur); }, 0); }
-  return {parseKey: parseKey, parseRange: parseRange, keys: keys, label: label, whiteLetter: whiteLetter, notes: notes, length: length, LETTERS: LETTERS, BW: BW, BH: BH};
+  // 段階 k・時刻 t の鍵盤ごとの状態（render が描く。DOM を使わない）。steps は plan の段階（keys は parseKey の結果、ev は notes）。
+  // o = {cumulative, preview, variant, prog(t, at, len)}。{midi: {e: 今の段階の光の進み 0〜1, p: 動きの進み, tone, ids: {綴り: e},
+  //   faded: 前の段階で光った（cumulative）, fadeTone, fids, pre: 先の段階で光る（授業の表示で薄く。印なし）, preTone}}
+  function state(steps, k, t, o){
+    var st = {}, cur = steps[k - 1];
+    var get = function(m){ return st[m] || (st[m] = {e: 0, p: 0, faded: false, pre: false, tone: null, fadeTone: null, preTone: null, ids: {}, fids: {}}); };
+    if (o.cumulative) for (var j = 0; j < k - 1 && j < steps.length; j++){
+      var sj = steps[j];
+      sj.keys.forEach(function(kk){ var s = get(kk.midi); s.faded = true; s.fadeTone = sj.tone; s.fids[kk.midi + "|" + kk.acc] = true; });
+    }
+    if (cur) cur.keys.forEach(function(kk, i){
+      var n = cur.ev[i], len = o.variant === "light" ? Math.min(0.2, n.dur) : Math.min(0.3, n.dur);
+      var e = t === Infinity ? 1 : o.prog(t, n.t, len), s = get(kk.midi), id = kk.midi + "|" + kk.acc;
+      if (e >= s.e){ s.e = e; s.p = t === Infinity ? 1 : Math.max(0, Math.min(1, (t - n.t) / len)); }
+      s.tone = cur.tone; if (e > 0) s.ids[id] = Math.max(s.ids[id] || 0, e);
+    });
+    // 授業の表示：先の段階の鍵盤を薄く（いちばん近い段階の色。今・前の段階で光っている鍵盤はそのまま）
+    if (o.preview) for (var q = steps.length - 1; q >= Math.max(0, k); q--){
+      var sq = steps[q];
+      sq.keys.forEach(function(kk){ var s = get(kk.midi); if (s.e > 0 || s.faded) return; s.pre = true; s.preTone = sq.tone; });
+    }
+    return st;
+  }
+  return {state: state, parseKey: parseKey, parseRange: parseRange, keys: keys, label: label, whiteLetter: whiteLetter, notes: notes, length: length, LETTERS: LETTERS, BW: BW, BH: BH};
 })();
 
 var TONES = /^(term|emph|muted|accent2|fg|series-[1-4])$/;
@@ -137,7 +164,7 @@ DECK.define("m-keyboard", class extends DECK.MotionElement {
   static kb = KB;
   static shape = {
     schema: {type: "object", additionalProperties: false, required: ["range", "steps"], properties: {
-      range: {type: "string"}, names: {type: "string", enum: ["solfa", "abc", "none"]}, cumulative: {type: "boolean"}, dur: {type: "number"},
+      range: {type: "string"}, names: {type: "string", enum: ["solfa", "abc", "iroha", "none"]}, cumulative: {type: "boolean"}, dur: {type: "number"},
       steps: {type: "array", minItems: 1, items: {type: "object", additionalProperties: false, required: ["keys"], properties: {
         keys: {type: "array", minItems: 1, items: {type: "string"}}, label: {type: "string"}, t: {type: "array", items: {type: "number"}},
         tone: {type: "string"}, dur: {type: "number"}}}}}},
@@ -238,26 +265,17 @@ DECK.define("m-keyboard", class extends DECK.MotionElement {
     pl.steps.forEach(function(s, j){ if (s.o.label && est(s.o.label, LFS) > W) console.warn("m-keyboard: steps[" + j + "] label is wider than the element; shorten it"); });
     if (rise) Object.keys(K).forEach(function(m){ K[m].lit.setAttribute("data-y", K[m].y); });
   }
-  render(k, t){
+  render(k, t, ctx){
     var pl = this.plan(), K = this.K, v = this.variant, cur = pl.steps[k - 1];
-    // 鍵盤ごとの状態：e（今の段階で光る進み 0〜1）、faded（前の段階で光った）、tone、名前の綴り
-    var st = {};
-    var get = function(m){ return st[m] || (st[m] = {e: 0, p: 0, faded: false, tone: null, fadeTone: null, ids: {}, fids: {}}); };
-    if (pl.cumulative) for (var j = 0; j < k - 1 && j < pl.steps.length; j++){
-      var sj = pl.steps[j];
-      sj.keys.forEach(function(kk){ var s = get(kk.midi); s.faded = true; s.fadeTone = sj.tone; s.fids[kk.midi + "|" + kk.acc] = true; });
-    }
-    if (cur) cur.keys.forEach(function(kk, i){
-      var n = cur.ev[i], len = v === "light" ? Math.min(0.2, n.dur) : Math.min(0.3, n.dur);
-      var e = t === Infinity ? 1 : DECK.prog(t, n.t, len), s = get(kk.midi);
-      if (e >= s.e){ s.e = e; s.p = t === Infinity ? 1 : Math.max(0, Math.min(1, (t - n.t) / len)); }
-      s.tone = cur.tone; if (e > 0) s.ids[kk.midi + "|" + kk.acc] = Math.max(s.ids[kk.midi + "|" + kk.acc] || 0, e);
-    });
+    // 薄さはテーマの --preview-opacity（仕様 §8.4「Answers under preview」）。書いていないテーマだけ 0.45
+    var FAINT = 0.45;
+    if (ctx && (ctx.preview || ctx.mode === "lecture")){ var fv = parseFloat(getComputedStyle(this).getPropertyValue("--preview-opacity")); if (fv >= 0 && fv <= 1) FAINT = fv; }
+    var st = KB.state(pl.steps, k, t, {cumulative: pl.cumulative, preview: !!(ctx && (ctx.preview || ctx.mode === "lecture")), variant: v, prog: DECK.prog});
     Object.keys(K).forEach(function(m){
-      var o = K[m], s = st[m] || {e: 0, faded: false, ids: {}, fids: {}}, on = s.e > 0;
-      var tone = on ? s.tone : s.fadeTone;
+      var o = K[m], s = st[m] || {e: 0, faded: false, pre: false, ids: {}, fids: {}}, on = s.e > 0;
+      var tone = on ? s.tone : s.faded ? s.fadeTone : s.preTone;
       o.lit.setAttribute("fill", "var(--" + (tone || "emph") + ")");
-      var op = on ? (s.faded ? Math.max(0.4, v === "light" ? s.e : 1) : v === "light" ? s.e : 1) : s.faded ? 0.4 : 0;
+      var op = on ? (s.faded ? Math.max(0.4, v === "light" ? s.e : 1) : v === "light" ? s.e : 1) : s.faded ? 0.4 : s.pre ? FAINT : 0;
       // rise：光が鍵盤の下から上へ満ちる
       if (v === "rise"){
         var f = on ? (s.faded ? 1 : s.e) : 1, h = o.h * f;
