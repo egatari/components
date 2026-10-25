@@ -4,9 +4,14 @@ Versions follow [README.md § Releases and versions](README.md#releases-and-vers
 
 ## Unreleased
 
+### Added
+
+- `m-timeline`: project-plan (Gantt) features, as an extension of the timeline (standards decision, owner-approved; not a new part). Node `after: ["id", …]` draws a finish-to-start arrow (`--muted`, 3 px, right angles) from the end of each predecessor to the start of the dependent item, in the step where the dependent item appears, drawn while it appears; vertical runs are placed so as not to cross other bands or their names where that is possible; a dependent that starts on its predecessor's end day is entered from its edge near the start. With any `after`, each item of a lane gets its own row (author order). Node `progress` (0–100) fills the band from its start in a stronger tone, with the % after the name when it fits (24 px). Attribute `today="2026-11-02"` draws a vertical `--accent2` line with 今日 / Today (with periods only). Attribute `unit="day" | "week" | "month"` chooses the axis ticks: labels at the finest interval whose 24 px labels do not overlap, short unlabelled ticks between, weekends shaded lightly in day mode; without `unit` the ticks are as before. A lesson that uses none of these renders as before (`tools/test-seed0.mjs`). Demo slide 「アプリ開発の工程表（架空）」. Pack-visible README text +225 bytes (the rest in an `llm: omit` block); the prop docs of `unit` and `today` and the shape's note also grow
+- `tools/test-timeline-gantt.mjs` (in `tools/test-all.mjs`): arrows start at the predecessor's end and end at the dependent's start with right angles and without crossing bands, the progress fill is progress % of the band, the today line sits at the date's position, and day / week / month tick labels do not overlap and stay at 24 px (the demo's plan and four made-up cases, including `orient="v"`)
+
 ### Later (candidates, not in this release)
 
-- `m-compare` `by="row"`; an "outside every set" region for `m-venn`; a project-plan demo for `m-timeline` lanes
+- `m-compare` `by="row"`; an "outside every set" region for `m-venn`; planned-vs-actual bars for `m-timeline`
 
 ## 1.10.0 - 2026-10-26
 

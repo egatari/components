@@ -73,7 +73,7 @@ document.addEventListener("DOMContentLoaded", function(){
 <div id="stage">
 
 <section class="slide">
-  <h2>部品の一覧（30 個、105 枚）</h2>
+  <h2>部品の一覧（30 個、106 枚）</h2>
   <div class="body">
     <p>部品ごとに、説明の 1 枚と見本のスライドが続きます。→ で段階を進めます。</p>
     <p>m-hissan（新しい）　m-numberline（新しい）　m-tape（新しい）　m-boxplot（変わった）　m-compare（変わった）　m-cycle（変わった）　m-fishbone（変わった）　m-hist（変わった）　m-map-japan（変わった）　m-menu（変わった）　m-pie（変わった）　m-predict（変わった）　m-scatter（変わった）　m-timeline（変わった）　m-timer（変わった）　m-tree（変わった）　m-venn（変わった）　m-bars　m-codetree　m-collect　m-curves　m-flow　m-gendai　m-kanbun　m-kobun　m-kpi　m-market　m-quad　m-seq　m-sweep</p>
@@ -925,7 +925,7 @@ document.addEventListener("DOMContentLoaded", function(){
     <ul>
       <li>伝えたいこと：年表・予定</li>
       <li>見せ方：fade・draw・grow</li>
-      <li>系列：標準パーツ　見本のスライド：3 枚</li>
+      <li>系列：標準パーツ　見本のスライド：4 枚</li>
     </ul>
   </div>
 </section>
@@ -969,6 +969,24 @@ document.addEventListener("DOMContentLoaded", function(){
     </m-timeline>
   </div>
   <div class="concl"><span>→ 重なる生涯は段を分けて積む。漱石と子規は同じ年の生まれ</span></div>
+</section>
+
+<section class="slide">
+  <h2>アプリ開発の工程表（架空）</h2>
+  <div class="body">
+    <m-timeline unit="week" today="2026-11-02" style="height:400px">
+      <script type="application/json">{
+        "nodes": [
+          {"id": "req", "label": "要件定義", "when": "2026-10-05", "end": "2026-10-17", "lane": "設計", "progress": 100},
+          {"id": "ui", "label": "画面設計", "when": "2026-10-17", "end": "2026-11-07", "lane": "設計", "progress": 70, "after": ["req"]},
+          {"id": "dev", "label": "実装", "when": "2026-11-07", "end": "2026-12-05", "lane": "開発", "progress": 10, "after": ["ui"]},
+          {"id": "test", "label": "試験", "when": "2026-12-05", "end": "2026-12-19", "lane": "開発", "after": ["dev"]},
+          {"id": "rel", "label": "公開", "when": "2026-12-21", "lane": "開発", "tone": "emph", "after": ["test"]}
+        ]
+      }</script>
+    </m-timeline>
+  </div>
+  <div class="concl"><span>→ 矢印は「前の作業が終わってから」。画面設計の遅れは実装に響く</span></div>
 </section>
 
 <section class="slide">
