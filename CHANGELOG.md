@@ -6,6 +6,7 @@ Versions follow [README.md § Releases and versions](README.md#releases-and-vers
 
 ### Added
 
+- Tools (道具, docs/conventions.md §7): `m-timer` declares `static group = "tool"` and its new-deck tile (`static tile`: 「タイマー」 / "Timer", 「グループワークの時間・残り時間・ベル」, icon `timer`); manifest.json carries `components.timer.group` and `.tile`. Checked by `tools/lint.mjs`. README text unchanged
 - `m-timer`: bells like a conference timer (`bells`: `[{left, count}]`, for all phases or per phase; off unless written). The part declares them with `events(k)` (spec §8.4 "Component sounds"); the player rings them on forward crossings during a live presentation and puts them into video. A player without component sounds ignores them; the clock and colours still carry the information
 
 ### Later (candidates, not in this release)

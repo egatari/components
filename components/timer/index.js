@@ -14,6 +14,9 @@ DECK.define("m-timer", class extends DECK.MotionElement {
   static variants = ["fade"];
   static interactive = true;   // 操作できるパーツ（docs/conventions.md §6）
   static clock = true;         // 経った時間そのものが中身：動きを減らす設定でも実時間の t で描く（仕様 §9.1）
+  // 「道具」の組（頼まれたときだけ使う部品）と、新規作成の道具の札（docs/conventions.md §7。tools/release.mjs が manifest に写す。JSON で書く）
+  static group = "tool";
+  static tile = {"label": {"ja": "タイマー", "en": "Timer"}, "examples": {"ja": "グループワークの時間・残り時間・ベル", "en": "Group-work time, time left, bells"}, "icon": "timer"};
   static viewerInput = true;   // 見る人の入力（区切りの時間を延ばす・縮める。仕様 §8.4）
   // データの形（kit/shape.js）
   static shape = {

@@ -15,7 +15,7 @@ for (const name of componentNames()) {
   const fl = flags(fs.readFileSync(path.join(ROOT, 'components', name, 'index.js'), 'utf8'));
   const demo = fs.existsSync(path.join(ROOT, 'components', name, 'demo.html')) ? `[demo](components/${name}/demo.html)` : '—';
   list(f.purposes).forEach((p, i) => { if (!byPurpose.has(p)) byPurpose.set(p, []); byPurpose.get(p).push(i === 0 ? `**\`<${f.name}>\`**` : `\`<${f.name}>\``); });
-  rows.push(`| [\`<${cell(f.name)}>\`](components/${name}/README.md)${fl.interactive ? ' 「操作できる」' : ''} | ${cell(SERIES_LABEL[f.series] ? `${SERIES_LABEL[f.series]}（${f.series}）` : f.series)} | ${cell(f.summary)}${fl.viewerInput ? '（入力あり）' : ''} | ${cell(f.steps)} | ${cell(list(f.purposes).join(', '))} | ${cell(list(f.variants).join(', ') || '—')} | ${cell(f.props)} | ${demo} |`);
+  rows.push(`| [\`<${cell(f.name)}>\`](components/${name}/README.md)${fl.interactive ? ' 「操作できる」' : ''}${fl.group === 'tool' ? ' 「道具」' : ''} | ${cell(SERIES_LABEL[f.series] ? `${SERIES_LABEL[f.series]}（${f.series}）` : f.series)} | ${cell(f.summary)}${fl.viewerInput ? '（入力あり）' : ''} | ${cell(f.steps)} | ${cell(list(f.purposes).join(', '))} | ${cell(list(f.variants).join(', ') || '—')} | ${cell(f.props)} | ${demo} |`);
 }
 const md = `# Components / 部品の一覧
 
