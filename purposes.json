@@ -19,6 +19,7 @@
     {"id": "text-structure", "ja": "文章の構造", "en": "Structure of a text", "steps": {"ja": "読む順", "en": "Reading order"}},
     {"id": "contents", "ja": "目次", "en": "Contents", "steps": {"ja": "一度に全部", "en": "Whole at once"}},
     {"id": "parameter", "ja": "パラメータを動かす", "en": "Varying a parameter", "steps": {"ja": "値を 1 つずつ", "en": "One value at a time"}},
+    {"id": "spatial", "ja": "場所・地図", "en": "Place / map", "steps": {"ja": "地図、それから地域・点・矢印を 1 つずつ", "en": "The map, then regions, points and arrows one at a time"}},
     {"id": "deviation", "ja": "差・増減", "en": "Deviation, increase and decrease", "steps": {"ja": "基準、それから差", "en": "The baseline, then the differences"}, "reserved": true},
     {"id": "concept-links", "ja": "概念のつながり", "en": "Concept links", "steps": {"ja": "中心から外へ", "en": "From the centre outwards"}, "reserved": true}
   ]

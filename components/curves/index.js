@@ -200,7 +200,7 @@ DECK.define("m-curves", class extends DECK.MotionElement {
       properties: {label: {type: "string"}, f: {type: "string"}, pts: {type: "array", items: {type: "array", items: {type: "number"}, minItems: 2, maxItems: 2}},
         tone: {type: "string"}, step: {type: "integer"}, labelAt: {type: "number"},
         color: {type: "string"}, dash: {type: "boolean"}, xr: {type: "array", items: {type: "number"}, minItems: 2, maxItems: 2},
-        at: {type: "number"}, anchor: {enum: ["right", "left", "above", "below", "start", "middle", "end"]}, dx: {type: "number"}, dy: {type: "number"}, ly: {type: "number"}}}},
+        at: {type: "number"}, anchor: {enum: ["right", "left", "above", "below", "top", "bottom", "start", "middle", "end"]}, dx: {type: "number"}, dy: {type: "number"}, ly: {type: "number"}}}},
     example: [{label: "需要 D", f: "10 - x"}, {label: "供給 S", f: "2 + x"}, {label: "均衡", pts: [[4, 0], [4, 6]], dash: true}],
     // よくある書き違い（指示の部品の一覧に書く）
     note: {en: "the data is the array itself, not {\"series\": […]}; axes go in attributes (xr=\"[0,10]\" xl=\"…\"); the expression field is f in x (not fn, not u)",
@@ -265,9 +265,10 @@ DECK.define("m-curves", class extends DECK.MotionElement {
       }
       // anchor：right（点の右から書く）・left（点の左で終わる）・above / below（点の上・下に中央そろえ、約 0.9 字ぶん離す）。
       // start / middle / end は古い書き方（text-anchor そのもの）で、今までどおり
-      var side = {right: "start", left: "end", above: "middle", below: "middle"}, anchor = side[s.anchor] || s.anchor || (end[0] > x1 - 160 ? "end" : "start");
-      var ly0 = s.anchor === "above" ? end[1] - 14 : s.anchor === "below" ? end[1] + 32 : end[1] - 12;
-      if (s.anchor === "below" && ly0 > y1 - 4) ly0 = end[1] - 14;   // 下に入らなければ上へ
+      var an = {top: "above", bottom: "below"}[s.anchor] || s.anchor;   // top / bottom は above / below の別名
+      var side = {right: "start", left: "end", above: "middle", below: "middle"}, anchor = side[an] || an || (end[0] > x1 - 160 ? "end" : "start");
+      var ly0 = an === "above" ? end[1] - 14 : an === "below" ? end[1] + 32 : end[1] - 12;
+      if (an === "below" && ly0 > y1 - 4) ly0 = end[1] - 14;   // 下に入らなければ上へ
       it.lx = end[0] + (anchor === "end" ? -8 : anchor === "start" ? 10 : 0) + (s.dx || 0);
       it.ly = (s.ly !== undefined ? p.y(s.ly) : ly0) + (s.dy || 0);
       // 字の幅の見積もり（記法の * _ ^ を除く。全角 26px、半角 15px）

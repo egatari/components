@@ -8,6 +8,17 @@ Versions follow [README.md § Releases and versions](README.md#releases-and-vers
 
 - `m-compare` `by="row"`; an "outside every set" region for `m-venn`; a project-plan demo for `m-timeline` lanes
 
+## 1.5.0 - 2026-10-25
+
+### Changed
+
+- `m-curves`, `m-scatter`, `m-map-japan`: `anchor` also accepts `top` and `bottom`, as names for `above` and `below` (AI authors guess them)
+
+### Added
+
+- `m-map-japan` (new series `social`): the 47 prefectures of Japan for geography and history lessons. Regions by JIS code or the 八地方区分 (`group`), a choropleth (default 4 classes, up to 5; classes evenly spaced in OKLab lightness, boundaries always drawn, class ranges in the legend, values on the regions where they fit only with `show="value"`; legend ranges like 「500 以上」), points, arrows (`via`: waypoints the arrow passes through, e.g. to keep a sea route offshore; `labelAt`) and author-drawn lon/lat shapes, each with `step` `at` `tone`. The map itself is shown from step 0. The territory dots 竹島, 尖閣諸島, 沖ノ鳥島 and 南鳥島 are always named. Insets for 南西諸島 (a frame tight to the islands, left of 九州) and 小笠原 with 沖ノ鳥島・南鳥島 (0.5×), captioned 「縮尺は本図と異なる」, beside a main map that fills the element's height (or in the main map's empty corners in small elements); `layout="true"` for true positions. A hidden list gives the final state's text (regions, every value, labels). `data-mark="JP-<code>"` on each prefecture for Studio's camera; variants `fade`, `sweep`, `draw`. Map data: Natural Earth 5.1.1 (public domain), modified, built by `tools/map/build-japan.mjs` with the Japanese government's position on the territories fixed in the data (docs/map-design.md §4.5) and ownership checks at build time. New series `social` and purpose `spatial` (場所・地図)
+- `tools/test-classes.mjs`: choropleth legends in the default, kokugo and business themes, with 4 and 5 classes: adjacent classes ≥ 0.08 apart in OKLab lightness and evenly spaced, the lightest class ≥ 3:1 against the background or outlined, every region's boundary drawn. `npm test` also checks the map block's sha256 (`tools/map/build-japan.mjs --check`, no network)
+
 ## 1.4.1 - 2026-10-25
 
 ### Fixed

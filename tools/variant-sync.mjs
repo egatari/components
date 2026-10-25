@@ -11,7 +11,7 @@ const ROOT = path.dirname(path.dirname(fileURLToPath(import.meta.url)));
 export const BEGIN = '// ---- BEGIN egatari-variant ';
 export const END = '// ---- END egatari-variant ----';
 // Components with presentation variants (docs/conventions.md §1). A new one is added here
-export const USERS = ['kpi', 'compare', 'venn', 'tree', 'fishbone', 'scatter', 'pie', 'timeline', 'cycle'];
+export const USERS = ['kpi', 'compare', 'venn', 'tree', 'fishbone', 'scatter', 'pie', 'timeline', 'cycle', 'map-japan'];
 
 const lf = (s) => s.replace(/\r\n?/g, '\n');
 export function source(root = ROOT) { return lf(fs.readFileSync(path.join(root, 'tools', 'variant.js'), 'utf8')).replace(/\n+$/, ''); }

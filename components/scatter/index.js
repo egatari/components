@@ -78,7 +78,7 @@ DECK.define("m-scatter", class extends DECK.MotionElement {
         series: {type: "array", minItems: 1, items: {type: "object", additionalProperties: false, required: ["points"], properties: {
           label: {type: "string"}, tone: {type: "string"}, step: {type: "integer"}, at: {type: "number"},
           points: {type: "array", items: {type: ["array", "object"], items: {type: "number"}, minItems: 2, maxItems: 2, required: ["x", "y"],
-            properties: {x: {type: "number"}, y: {type: "number"}, label: {type: "string"}, anchor: {enum: ["right", "left", "above", "below"]}, tone: {type: "string"}}}}}}},
+            properties: {x: {type: "number"}, y: {type: "number"}, label: {type: "string"}, anchor: {enum: ["right", "left", "above", "below", "top", "bottom"]}, tone: {type: "string"}}}}}}},
         trend: {type: ["string", "object", "array"], properties: {fit: {enum: ["linear"]}, pts: PTS, series: {type: ["integer", "array"]},
           label: {type: "string"}, tone: {type: "string"}, dash: {type: "boolean"}, step: {type: "integer"}, at: {type: "number"}, digits: {type: "integer"}},
           items: {type: "object", properties: {fit: {enum: ["linear"]}, pts: PTS, series: {type: ["integer", "array"]},
@@ -185,7 +185,8 @@ DECK.define("m-scatter", class extends DECK.MotionElement {
           above: {x: mk.cx, y: mk.cy - R - 10, a: "middle", b: {l: mk.cx - w / 2 - 2, r: mk.cx + w / 2 + 2, t: mk.cy - R - 34, b: mk.cy - R - 4}},
           below: {x: mk.cx, y: mk.cy + R + 28, a: "middle", b: {l: mk.cx - w / 2 - 2, r: mk.cx + w / 2 + 2, t: mk.cy + R + 4, b: mk.cy + R + 34}}};
         var pref = ["right", "left", "above", "below"];
-        if (mk.q.anchor) pref = [mk.q.anchor].concat(pref.filter(function(x){ return x !== mk.q.anchor; }));
+        var an = {top: "above", bottom: "below"}[mk.q.anchor] || mk.q.anchor;   // top / bottom は above / below の別名
+        if (an) pref = [an].concat(pref.filter(function(x){ return x !== an; }));
         var inPlot = function(b){ return b.l >= x0 + 4 && b.r <= x1 && b.t >= y0 && b.b <= y1 - 4; };
         var inBox = function(b){ return b.l >= 0 && b.r <= W && b.t >= 0 && b.b <= H; };
         var pick = pref.filter(function(k){ return inPlot(cands[k].b) && !hits(cands[k].b, mk.q); })[0]
