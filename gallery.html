@@ -76,12 +76,12 @@ document.addEventListener("DOMContentLoaded", function(){
   <h2>部品の一覧（23 個、78 枚）</h2>
   <div class="body">
     <p>部品ごとに、説明の 1 枚と見本のスライドが続きます。→ で段階を進めます。</p>
-    <p>m-map-japan（新しい）　m-curves（変わった）　m-kanbun（変わった）　m-scatter（変わった）　m-bars　m-codetree　m-collect　m-compare　m-cycle　m-fishbone　m-flow　m-gendai　m-kobun　m-kpi　m-market　m-menu　m-pie　m-quad　m-seq　m-sweep　m-timeline　m-tree　m-venn</p>
+    <p>m-map-japan（新しい）　m-curves（変わった）　m-scatter（変わった）　m-bars　m-codetree　m-collect　m-compare　m-cycle　m-fishbone　m-flow　m-gendai　m-kanbun　m-kobun　m-kpi　m-market　m-menu　m-pie　m-quad　m-seq　m-sweep　m-timeline　m-tree　m-venn</p>
   </div>
 </section>
 
 <section class="slide">
-  <h2>m-map-japan（新しい、v1.4.1）</h2>
+  <h2>m-map-japan（新しい、v1.5.0）</h2>
   <div class="body">
     <p>日本の 47 都道府県の地図。地域の強調、統計の塗り分け、点、矢印、経度・緯度の重ね描きを段階ごとに出す</p>
     <ul>
@@ -175,7 +175,7 @@ document.addEventListener("DOMContentLoaded", function(){
 </section>
 
 <section class="slide">
-  <h2>m-curves（変わった、v1.4.1）</h2>
+  <h2>m-curves（変わった、v1.5.0）</h2>
   <div class="body">
     <p>同じ座標軸に線を 1 本ずつ引く（線の名前は凡例でなく線の端に直接書く）</p>
     <ul>
@@ -227,55 +227,7 @@ document.addEventListener("DOMContentLoaded", function(){
 </section>
 
 <section class="slide">
-  <h2>m-kanbun（変わった、v1.4.1）</h2>
-  <div class="body">
-    <p>白文に返り点・送り仮名を付け、訓読の順に字をたどり（返り点で上へ戻るところに弧）、書き下し文にする（縦書き）</p>
-    <ul>
-      <li>言いたいこと：文章の構造</li>
-      <li>見せ方：1 種類</li>
-      <li>系列：国語　見本のスライド：3 枚</li>
-    </ul>
-  </div>
-</section>
-
-<section class="slide">
-  <h2>孟浩然「春暁」</h2>
-  <div class="body">
-    <m-kanbun style="height:430px">
-      春眠不{=ず}レ覚(エ)レ暁(ヲ)
-      処処聞(ク)[二]啼鳥(ヲ)[一]
-      夜来風雨(ノ)声
-      花落(ツルコト)知(ル)多少
-    </m-kanbun>
-  </div>
-  <div class="concl"><span>返り点に従って下から上へ戻って読む</span></div>
-</section>
-
-<section class="slide">
-  <h2>レ点・一二点・一レ点（『史記』）</h2>
-  <div class="body">
-    <m-kanbun size="56" order-by="all" style="height:430px">
-      先(ンズレバ)即(チ)制(シ)[レ]人(ヲ)、
-      後(ルレバ)則(チ)為(ル)[二]人(ノ)所(ト)[一レ]制(スル)
-    </m-kanbun>
-  </div>
-  <div class="concl"><span>一レ点は、レ点で戻ってから二へ戻る</span></div>
-</section>
-
-<section class="slide">
-  <h2>再読文字と置き字（『論語』）</h2>
-  <div class="body">
-    <m-kanbun style="height:430px">
-      未(ダ|ず)[レ]知(ラ)[レ]生(ヲ)、
-      焉{いづく}(ンゾ)知(ラン)[レ]死(ヲ)
-      学(ビテ)而{-}時(ニ)習(フ)[レ]之(ヲ)
-    </m-kanbun>
-  </div>
-  <div class="concl"><span>再読文字は二度読み、置き字は読まない</span></div>
-</section>
-
-<section class="slide">
-  <h2>m-scatter（変わった、v1.4.1）</h2>
+  <h2>m-scatter（変わった、v1.5.0）</h2>
   <div class="body">
     <p>散布図。点の組（系列）を段階ごとに出し、そのあと傾向の線（最小二乗の直線か、書いた 2 点）を引く</p>
     <ul>
@@ -752,6 +704,54 @@ document.addEventListener("DOMContentLoaded", function(){
       <li>系列：国語　見本のスライド：0 枚</li>
     </ul>
   </div>
+</section>
+
+<section class="slide">
+  <h2>m-kanbun</h2>
+  <div class="body">
+    <p>白文に返り点・送り仮名を付け、訓読の順に字をたどり（返り点で上へ戻るところに弧）、書き下し文にする（縦書き）</p>
+    <ul>
+      <li>言いたいこと：文章の構造</li>
+      <li>見せ方：1 種類</li>
+      <li>系列：国語　見本のスライド：3 枚</li>
+    </ul>
+  </div>
+</section>
+
+<section class="slide">
+  <h2>孟浩然「春暁」</h2>
+  <div class="body">
+    <m-kanbun style="height:430px">
+      春眠不{=ず}レ覚(エ)レ暁(ヲ)
+      処処聞(ク)[二]啼鳥(ヲ)[一]
+      夜来風雨(ノ)声
+      花落(ツルコト)知(ル)多少
+    </m-kanbun>
+  </div>
+  <div class="concl"><span>返り点に従って下から上へ戻って読む</span></div>
+</section>
+
+<section class="slide">
+  <h2>レ点・一二点・一レ点（『史記』）</h2>
+  <div class="body">
+    <m-kanbun size="56" order-by="all" style="height:430px">
+      先(ンズレバ)即(チ)制(シ)[レ]人(ヲ)、
+      後(ルレバ)則(チ)為(ル)[二]人(ノ)所(ト)[一レ]制(スル)
+    </m-kanbun>
+  </div>
+  <div class="concl"><span>一レ点は、レ点で戻ってから二へ戻る</span></div>
+</section>
+
+<section class="slide">
+  <h2>再読文字と置き字（『論語』）</h2>
+  <div class="body">
+    <m-kanbun style="height:430px">
+      未(ダ|ず)[レ]知(ラ)[レ]生(ヲ)、
+      焉{いづく}(ンゾ)知(ラン)[レ]死(ヲ)
+      学(ビテ)而{-}時(ニ)習(フ)[レ]之(ヲ)
+    </m-kanbun>
+  </div>
+  <div class="concl"><span>再読文字は二度読み、置き字は読まない</span></div>
 </section>
 
 <section class="slide">
