@@ -4,6 +4,12 @@ Versions follow [README.md § Releases and versions](README.md#releases-and-vers
 
 ## Unreleased
 
+### Later (candidates, not in this release)
+
+- `m-compare` `by="row"`; an "outside every set" region for `m-venn`; a project-plan demo for `m-timeline` lanes
+
+## 1.7.0 - 2026-10-25
+
 ### Added
 
 - `m-predict` (series `common`): predict, then reveal. A question and 2–6 choices (step 0), the class's counts as horizontal bars in the `m-bars` look (step 1), and the answer at `answer-step` (default 2): the right choice framed with 「✓ 正解」 and the `note`, the others dimmed but readable. The first component that takes viewer input (spec §8.4 "Viewer input", docs/input-components.ja.md): the presenter counts a show of hands with −1/+1 buttons (48 px high) or by typing into a field, on the stage or (through Studio) from the presenter's view with `input(choice, count)`; `counts()` and an `egatari-input` event let Studio follow; a learner clicks a choice to mark their own prediction. Input is viewer state (spec §8.4, egatari-spec 241770f): the counts and the learner's prediction stay while the viewer is on the slide, forward to the answer step and back, so the reveal shows the class's counts and whether the prediction was right; they go back to the author's `counts` on `ctx.reset` (Studio v0.5.0: entering from another slide, a jump) and, for earlier Studio, when `deck:pos` says the slide was entered from another slide. Never in video (`?mode=video` builds no controls); print shows the author's counts with the controls hidden, and the screen keeps the viewer's afterwards. `static viewerInput = true` in index.js, carried into manifest.json as `components.predict.viewerInput` (CATALOG marks it 「入力あり」). Optional `poll="p1"`: the live poll's counts from `ctx.live.poll(id)` when the player allows them (live §2.5). Variants `fade`, `draw`. `tools/test-predict.mjs` (in `tools/test-all.mjs`); the digits-in-the-field case waits for Studio v0.5.0 (#69) and is skipped with the pinned v0.4.3
@@ -17,10 +23,6 @@ Versions follow [README.md § Releases and versions](README.md#releases-and-vers
 ### Security
 
 - `tools/map` (build-time only, not in the release): adm-zip 0.6.1 through an npm `overrides` entry (Dependabot alerts on mapshaper's dependency); the rebuilt map data is unchanged. `.github/dependabot.yml` with a 7-day cooldown (14 for majors); the tool is installed with `npm ci --ignore-scripts`; SECURITY.md § Dependencies
-
-### Later (candidates, not in this release)
-
-- `m-compare` `by="row"`; an "outside every set" region for `m-venn`; a project-plan demo for `m-timeline` lanes
 
 ## 1.6.0 - 2026-10-25
 
