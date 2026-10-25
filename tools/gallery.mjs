@@ -38,9 +38,9 @@ for (const { name, st: mark } of order) {
   const ia = flags(fs.readFileSync(path.join(dir, 'index.js'), 'utf8')).interactive;
   index.push({ name: f.name, n: secs.length, mark });
   slides.push(`<section class="slide">
-  <h2>${esc(f.name)}${mark ? `（${mark}${next ? `、${next}` : ''}）` : ''}${ia ? ' <span style="font-size:27px;font-weight:700;color:var(--fg);border:2px dashed var(--accent2);border-radius:8px;padding:2px 12px;margin-left:12px;vertical-align:middle">操作できる / Interactive</span>' : ''}</h2>
+  <h2>${esc(f.name)}${mark ? `（${mark}${next ? `、${next}` : ''}）` : ''}</h2>
   <div class="body">
-    <p${ia ? ' style="border:3px dashed var(--accent2);border-radius:10px;padding:10px 16px"' : ''}>${esc(f.summary)}${ia ? '（見る人が押して操作できる）' : ''}</p>
+${ia ? '    <p style="margin:0 0 10px;line-height:1.3"><span style="display:inline-block;font-size:27px;font-weight:700;color:var(--fg);border:2px dashed var(--accent2);border-radius:8px;padding:0 12px">操作できる / Interactive</span></p>\n' : ''}    <p${ia ? ' style="border:3px dashed var(--accent2);border-radius:10px;padding:10px 16px"' : ''}>${esc(f.summary)}${ia ? '（見る人が押して操作できる）' : ''}</p>
     <ul>
       <li>伝えたいこと：${esc(purposes)}</li>
       <li>見せ方：${variants.length ? esc(variants.join('・')) : '1 種類'}</li>
