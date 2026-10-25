@@ -1,7 +1,14 @@
 # Kana stroke data (ひらがな・カタカナ)
 
-Original stroke data for the 92 basic kana (ひらがな 46 + カタカナ 46), meant to feed a future
-stroke-order component (`m-kakijun`). It is not a component yet.
+Original stroke data for 166 kana, meant to feed a future stroke-order component (`m-kakijun`). It is not a
+component yet:
+
+- the 92 basic kana (ひらがな 46 + カタカナ 46);
+- 濁音・半濁音: が〜ぼ, ぱ〜ぽ, ガ〜ボ, パ〜ポ and ヴ (51);
+- small kana: ぁぃぅぇぉっゃゅょゎ, ァィゥェォッャュョヮ, ヵヶ (22);
+- the long-vowel mark ー (horizontal writing only).
+
+Not included: ゐ ゑ ヰ ヱ (historical kana), the vertical-writing form of ー, and punctuation.
 
 | File | What it is |
 |------|------------|
@@ -10,7 +17,7 @@ stroke-order component (`m-kakijun`). It is not a component yet.
 | `../../tools/kana-sheet.mjs` | Rebuilds the sheet: `node tools/kana-sheet.mjs --pdf` (run `node tools/studio.mjs` once first for the browser) |
 | `../../tools/test-kana-data.mjs` | Validates `kana.json`: `node tools/test-kana-data.mjs` (not yet in `test-all`) |
 | `../../tools/kana-path.mjs` | Small SVG path reader shared by the scripts |
-| `proto.html` | Prototype of the stroke-by-stroke reveal over the font Klee One (あ〜ほ). Built by `node tools/kana-proto.mjs`; needs the font at `data/kana/font/KleeOne-SemiBold.ttf` (gitignored, not in the repository yet) or `?font=<url>` |
+| `proto.html` | Prototype of the stroke-by-stroke reveal over the font Klee One (all 166 characters). Built by `node tools/kana-proto.mjs`; needs the font at `data/kana/font/KleeOne-SemiBold.ttf` (gitignored, not in the repository yet) or `?font=<url>` |
 | `../../tools/kana-proto-check.mjs` | Measures the reveal in headless Chrome (coverage, leaks onto later strokes) and renders frames: `node tools/kana-proto-check.mjs OUTDIR --frames` |
 
 ## Licence and provenance
@@ -21,7 +28,7 @@ traced or used as a template. Only facts were taken from outside: the number of 
 order. The shapes follow the proportions of 教科書体 handwriting (strokes separated where school
 handwriting separates them: き・さ・ふ・り・ゆ), not a decorative font.
 
-**Characters marked `"glyphFit": "Klee One 1.100"` (あ〜ほ, 30 characters).**
+**Characters marked `"glyphFit": "Klee One 1.100"` (all 166 characters).**
 線の順と向きのデータは独自に作ったもの。Klee One の字形に合うよう位置を合わせただけで、字形の輪郭は含まない。
 In English: the stroke order and direction data are our own. For these characters the existing hand-made
 centrelines were moved by eye (control points edited by hand while looking at the glyph rendered at 500 px
@@ -30,6 +37,17 @@ counts and order were kept. No outline was extracted, skeletonised or traced, an
 from glyph pixels; rendered pixels were used only to measure how well a brush along the lines covers the glyph
 (`tools/kana-proto-check.mjs`). The 0–100 box is the font's em square: x 0–100 = 0–1000 units, and y 0 is the
 typo ascender (880), so the glyph is drawn with `<text x="0" y="88" font-size="100">` in a `0 0 100 100` box.
+
+How the derived characters were made (our data only; the glyph was looked at, never measured into points):
+
+- **濁音・半濁音** reuse their base character's strokes unchanged (the test checks this) where Klee One's glyph
+  matches; only ダ needed one stroke moved (`"refit"` says which). The 濁点 are two short strokes from upper left
+  to lower right, the 半濁点 one circle (started at the top, going left — anticlockwise), both written last and
+  placed by hand on each glyph.
+- **Small kana** were first derived from their base by a scale and offset (x and y scaled separately) of our own
+  lines, set by eye to the small glyph's extent, then adjusted by hand where Klee One's small form differs
+  (ぁ, ゎ, ゃ, ぉ, ァ, ッ and the ends of ィ, ゥ, ョ, ヶ).
+- **ー** is one stroke, left to right.
 
 ## Format
 
@@ -53,6 +71,8 @@ typo ascender (880), so the glyph is drawn with `<text x="0" y="88" font-size="1
       "source": "school-hiragana",
       "verified": false,      // true once the order has been checked against a named textbook page / by a teacher
       "glyphFit": "Klee One 1.100", // optional: the lines were positioned to run along this font's glyph
+      "base": "か",           // derived characters only (濁音・半濁音・small kana): the character they build on
+      "refit": "…",           // optional, 濁音・半濁音 only: which base strokes were moved for this glyph
       "note": "…"             // optional: what is least certain about this character
     }
   }
@@ -69,16 +89,19 @@ typo ascender (880), so the glyph is drawn with `<text x="0" y="88" font-size="1
     (e.g. い: `… 36 77 L42 70`). A component that draws its own hook can drop that last segment.
 - **`start`** (optional, reserved): a string describing how the stroke starts, if a later version needs
   it. No character uses it yet.
-- Strokes that share a start point (ウ・ロ・ワ) start at exactly the same coordinates.
+- Strokes that share a start point (ウ・ロ・ワ and their derived forms) start at exactly the same coordinates.
+- 濁点・半濁点 strokes come last and end with `tome`.
 
 ### Validation (`tools/test-kana-data.mjs`)
 
-- the 92 expected characters are present and nothing else;
-- `count === strokes.length`, and `count` equals the school stroke count listed in the test;
+- the 166 expected characters are present and nothing else;
+- `count === strokes.length`, and `count` equals the school stroke count listed in the test (濁音 = base + 2,
+  半濁音 = base + 1, small kana = base, ー = 1);
+- derived characters name the right `base`, and a 濁音・半濁音 without `refit` starts with exactly its base's strokes;
 - every `d` parses, every `end` is one of the three values, every sampled point stays inside `0..box`;
 - each `source` names an entry of `sources`.
 
-## Reveal prototype (`proto.html`, あ〜ほ)
+## Reveal prototype (`proto.html`)
 
 The visible glyph is Klee One (Fontworks, SIL OFL 1.1), drawn as SVG `<text>`, with a light-grey copy under it
 as a guide. It is shown through an SVG mask built only from our centrelines, in three layers:
@@ -90,7 +113,7 @@ as a guide. It is shown through an SVG mask built only from our centrelines, in 
 3. a **narrow** brush (9 units) along the drawn part again, on top of the guards, so a drawn stroke stays whole
    where a guard crosses it.
 
-After the last stroke there are no guards, so the full glyph shows (checked: 100 % of the glyph's pixels for all 30).
+After the last stroke there are no guards, so the full glyph shows (checked: 100 % of the glyph's pixels for all 166).
 What still shows early is the ink two strokes share where they cross (e.g. あ, き, せ, ね, ぬ): a mask cannot split
 it. Per-character widths can be set in `proto-brush.json` (`{"あ": [13, 12, 13]}`); none is needed now.
 
@@ -112,15 +135,14 @@ it. Per-character widths can be set in `proto-brush.json` (`{"あ": [13, 12, 13]
 
 ## Out of scope (for now)
 
-- ゐ ゑ ヰ ヱ (historical kana) and ヴ.
-- Small kana (ぁ ぃ ぅ ぇ ぉ っ ゃ ゅ ょ ゎ and katakana) — the same strokes scaled and placed low-left in the
-  square; a component can derive them.
-- 濁点・半濁点 (゛ ゜) — best added later as separate marks (two short strokes / one small circle drawn last,
-  at the upper right) rather than as 50+ extra characters.
-- 長音符 ー and punctuation.
+- ゐ ゑ ヰ ヱ (historical kana): not included.
+- The vertical-writing form of ー, and punctuation.
 
 ## Least certain (also marked with `note` in the data and in red on the sheet)
 
 ヲ (order 一・一・ノ), セ and ヤ (the hook at the end of stroke 1), ア (end of stroke 1), マ (where stroke 2
 meets stroke 1), も (upward はね at the end of stroke 1), む (end of stroke 2), ひ (end), ふ (stroke 3),
-て (end), を (shape of stroke 2), ゆ (the turn in stroke 1).
+て (end), を (shape of stroke 2), ゆ (the end of stroke 1). Ending labels marked uncertain after the Klee One
+fit: ら (the short turn at the end of stroke 1), や (stroke 2's short end line, stroke 1's はね), ル and レ
+(はらい or はね), へ・ヘ (はらい or とめ), き・さ・な (short end lines kept as とめ), た・に (very short はね), and the
+半濁点 circle (where it starts, which way it turns). Derived characters inherit their base's note.

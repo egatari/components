@@ -1,7 +1,11 @@
 // Validates data/kana/kana.json (not yet part of test-all):
 //   - the file shape (version, box 100, sources, chars)
-//   - the expected 92 characters (ひらがな46 + カタカナ46) are all present, and nothing else
+//   - the expected 166 characters are all present, and nothing else: the 92 basic kana, 濁音 (base + 2 strokes),
+//     半濁音 (base + 1), ヴ, the small kana (same count as their base) and ー
 //   - each character: count === strokes.length, count matches the expected school stroke count
+//   - derived characters name their base ("base"); a 濁音・半濁音 starts with exactly its base's strokes, unless
+//     its own glyph needed a re-fit (then only the count is checked)
+//   - glyphFit, when present, is a non-empty string
 //   - every stroke: d parses (M L H V Q T C S Z only), end is tome|hane|harai, every sampled point stays in 0..box
 //   - source names an entry in sources
 // Run: node tools/test-kana-data.mjs
@@ -24,6 +28,18 @@ const EXPECT = {
   タ: 3, チ: 3, ツ: 3, テ: 3, ト: 2, ナ: 2, ニ: 2, ヌ: 2, ネ: 4, ノ: 1, ハ: 2, ヒ: 2, フ: 1, ヘ: 1, ホ: 4,
   マ: 2, ミ: 3, ム: 2, メ: 2, モ: 3, ヤ: 2, ユ: 2, ヨ: 3, ラ: 2, リ: 2, ル: 2, レ: 1, ロ: 3, ワ: 2, ヲ: 3, ン: 2,
 };
+const BASIC = { ...EXPECT };
+// 濁音 (2 marks), 半濁音 (1 circle), ヴ, small kana (same strokes as the base), ー
+const DAKU = 'がぎぐげござじずぜぞだぢづでどばびぶべぼガギグゲゴザジズゼゾダヂヅデドバビブベボヴ';
+const HANDAKU = 'ぱぴぷぺぽパピプペポ';
+const SMALL = { ぁ: 'あ', ぃ: 'い', ぅ: 'う', ぇ: 'え', ぉ: 'お', っ: 'つ', ゃ: 'や', ゅ: 'ゆ', ょ: 'よ', ゎ: 'わ',
+  ァ: 'ア', ィ: 'イ', ゥ: 'ウ', ェ: 'エ', ォ: 'オ', ッ: 'ツ', ャ: 'ヤ', ュ: 'ユ', ョ: 'ヨ', ヮ: 'ワ', ヵ: 'カ', ヶ: 'ケ' };
+const baseOf = (ch) => ch.normalize('NFD')[0];
+const BASE = {};
+for (const ch of DAKU) { BASE[ch] = baseOf(ch); EXPECT[ch] = BASIC[baseOf(ch)] + 2; }
+for (const ch of HANDAKU) { BASE[ch] = baseOf(ch); EXPECT[ch] = BASIC[baseOf(ch)] + 1; }
+for (const [ch, b] of Object.entries(SMALL)) { BASE[ch] = b; EXPECT[ch] = BASIC[b]; }
+EXPECT['ー'] = 1;
 const ENDS = new Set(['tome', 'hane', 'harai']);
 
 if (typeof data.version !== 'string') fail('version must be a string');
@@ -32,7 +48,7 @@ if (!data.sources || typeof data.sources !== 'object') fail('sources missing');
 const box = data.box;
 const chars = data.chars || {};
 for (const ch of Object.keys(EXPECT)) if (!(ch in chars)) fail(`${ch}: missing`);
-for (const ch of Object.keys(chars)) if (!(ch in EXPECT)) fail(`${ch}: not one of the 92 basic kana`);
+for (const ch of Object.keys(chars)) if (!(ch in EXPECT)) fail(`${ch}: not one of the expected characters`);
 
 let strokes = 0;
 for (const [ch, c] of Object.entries(chars)) {
@@ -41,6 +57,13 @@ for (const [ch, c] of Object.entries(chars)) {
   if (ch in EXPECT && c.count !== EXPECT[ch]) fail(`${ch}: count ${c.count}, expected ${EXPECT[ch]}`);
   if (!c.source || !(c.source in (data.sources || {}))) fail(`${ch}: source "${c.source}" not in sources`);
   if (typeof c.verified !== 'boolean') fail(`${ch}: verified must be true or false`);
+  if (ch in BASE && c.base !== BASE[ch]) fail(`${ch}: base must be "${BASE[ch]}"`);
+  if (!(ch in BASE) && c.base !== undefined) fail(`${ch}: has a base but is not a derived character`);
+  if ((DAKU + HANDAKU).includes(ch) && chars[BASE[ch]] && !c.refit) {
+    const b = chars[BASE[ch]].strokes;
+    b.forEach((s, i) => { if (!c.strokes[i] || c.strokes[i].d !== s.d || c.strokes[i].end !== s.end) fail(`${ch} stroke ${i + 1}: differs from its base ${BASE[ch]} (set "refit" if the glyph needs it)`); });
+  }
+  if (c.refit !== undefined && (typeof c.refit !== "string" || !c.refit)) fail(`${ch}: refit must be a non-empty string when present`);
   if (c.glyphFit !== undefined && (typeof c.glyphFit !== 'string' || !c.glyphFit)) fail(`${ch}: glyphFit must be a non-empty string when present`);
   c.strokes.forEach((s, i) => {
     strokes++;

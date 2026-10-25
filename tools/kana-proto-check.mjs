@@ -145,17 +145,32 @@ if (FRAMES) {
         '-vf', 'split[a][b];[a]palettegen=max_colors=32[p];[b][p]paletteuse', path.join(OUT, `anim-${ch}.gif`)]);
     }
   }
-  // grid pages: one row per character (strokes left to right), 10 rows per page
+  // grid pages, one per gojūon row group: one row per character (strokes left to right)
+  const GROUPS = {
+    'a-row': 'あいうえおアイウエオ', 'ka-row': 'かきくけこカキクケコ', 'sa-row': 'さしすせそサシスセソ',
+    'ta-row': 'たちつてとタチツテト', 'na-row': 'なにぬねのナニヌネノ', 'ha-row': 'はひふへほハヒフヘホ',
+    'ma-row': 'まみむめもマミムメモ', 'ya-row': 'やゆよヤユヨ', 'ra-row': 'らりるれろラリルレロ', 'wa-row': 'わをんワヲン',
+    'dakuten-hira-ga-za': 'がぎぐげござじずぜぞ', 'dakuten-hira-da-ba': 'だぢづでどばびぶべぼ',
+    'dakuten-kata-ga-za': 'ガギグゲゴザジズゼゾ', 'dakuten-kata-da-ba-vu': 'ダヂヅデドバビブベボヴ',
+    'handakuten': 'ぱぴぷぺぽパピプペポ', 'small-hira': 'ぁぃぅぇぉっゃゅょゎ', 'small-kata-choon': 'ァィゥェォッャュョヮヵヶー',
+  };
+  const done = new Set(), pages = [];
+  for (const [name, list] of Object.entries(GROUPS)) {
+    const rs = rows.filter(([ch]) => list.includes(ch)); rs.forEach(([ch]) => done.add(ch));
+    if (rs.length) pages.push([name, rs]);
+  }
+  const rest = rows.filter(([ch]) => !done.has(ch));
+  if (rest.length) pages.push(['other', rest]);
   const sheet = await browser.newPage({ viewport: { width: 1200, height: 800 } });
-  for (let pg = 0; pg * 10 < rows.length; pg++) {
-    const body = rows.slice(pg * 10, pg * 10 + 10).map(([ch, n, files]) => `<div class="r"><b>${ch}</b>${files.map((f, k) =>
+  for (const [name, rs] of pages) {
+    const body = rs.map(([ch, n, files]) => `<div class="r"><b>${ch}</b>${files.map((f, k) =>
       `<figure><img src="${fileUrl(f)}"><figcaption>${k + 1 === n ? '完成' : k + 1 + '画目まで'}</figcaption></figure>`).join('')}</div>`).join('');
-    const html = path.join(OUT, `page-${pg + 1}.html`);
+    const html = path.join(OUT, `page-${name}.html`);
     fs.writeFileSync(html, `<!doctype html><meta charset="utf-8"><style>body{margin:12px 12px 24px;font:13px system-ui;background:#fff}
 .r{display:flex;align-items:center;gap:8px;margin:0 0 6px}.r b{font-size:28px;width:40px}figure{margin:0;text-align:center}
 img{width:150px;height:150px;border:1px solid #ccc}figcaption{font-size:11px;color:#555}</style>${body}`);
     await sheet.goto(fileUrl(html));
-    await sheet.screenshot({ path: path.join(OUT, `page-${pg + 1}.png`), fullPage: true });
+    await sheet.screenshot({ path: path.join(OUT, `page-${name}.png`), fullPage: true });
   }
 }
 await browser.close();

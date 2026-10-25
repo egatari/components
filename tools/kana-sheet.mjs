@@ -65,12 +65,20 @@ function cell(ch, c) {
 </div>`;
 }
 
-const groups = [['ひらがな', /[ぁ-ゟ]/u], ['カタカナ', /[゠-ヿ]/u]];
+// Basic kana by script, then the derived ones (濁音・半濁音, small kana and ー); each group starts a new page
+const SMALL = /[ぁぃぅぇぉっゃゅょゎァィゥェォッャュョヮヵヶー]/u;
+const DERIVED = (k, v) => v.base !== undefined || k === 'ー';
+const groups = [
+  ['ひらがな', ([k, v]) => /[ぁ-ゟ]/u.test(k) && !DERIVED(k, v)],
+  ['カタカナ', ([k, v]) => /[゠-ヿ]/u.test(k) && !DERIVED(k, v)],
+  ['濁音・半濁音', ([k, v]) => DERIVED(k, v) && !SMALL.test(k)],
+  ['小書きの仮名・長音符', ([k]) => SMALL.test(k)],
+];
 let body = '';
-for (const [name, re] of groups) {
-  const list = Object.entries(data.chars).filter(([k]) => re.test(k));
-  body += `<h2>${name}（${list.length}字）</h2><div class="grid">${list.map(([k, v]) => cell(k, v)).join('\n')}</div>`;
-}
+groups.forEach(([name, test], i) => {
+  const list = Object.entries(data.chars).filter(test);
+  body += `<h2${i ? ' class="page"' : ''}>${name}（${list.length}字）</h2><div class="grid">${list.map(([k, v]) => cell(k, v)).join('\n')}</div>`;
+});
 
 const html = `<!doctype html>
 <html lang="ja"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
@@ -109,9 +117,9 @@ h2.page { break-before: page; }
 .cell .note { font-size: 6pt; color: #8a1c1c; line-height: 1.3; }
 .cell .chk { font-size: 7pt; border-top: 0.5px dashed #bbb; margin-top: 0.8mm; padding-top: 0.5mm; height: 7mm; }
 </style></head><body><main>
-<h1>仮名の筆順データ 確認表（ひらがな46字・カタカナ46字）</h1>
+<h1>仮名の筆順データ 確認表（${Object.keys(data.chars).length}字：基本の仮名92字、濁音・半濁音51字、小書きの仮名22字、ー）</h1>
 <div class="lead">
-<p>Egatari の部品（筆順を動かして見せる図）で使う、ひらがな・カタカナの筆順データの確認をお願いするための表です。字の線はフォントを写したものではなく、一画ずつ手で描いた中心線です。書写の先生の目で、教科書の楷書の仮名として通用するかを見てください。</p>
+<p>Egatari の部品（筆順を動かして見せる図）で使う、ひらがな・カタカナの筆順データの確認をお願いするための表です。字の線はフォントを写したものではなく、一画ずつ手で描いた中心線です（教科書体に近いフォント Klee One の字形に重なるよう、位置だけを目で合わせています）。書写の先生の目で、教科書の楷書の仮名として通用するかを見てください。</p>
 <p>各字の枠の中の <b>丸の数字</b> が書き始めの位置と画の順、線の上の <b>小さな矢印（＞）</b> が書く向きです。画ごとに線の濃さと色味を変えていますが、順番は数字で読み取ってください。枠の下に、画ごとの終わり方（とめ・はね・はらい）を書いています。</p>
 </div>
 <div class="check">
@@ -131,7 +139,7 @@ h2.page { break-before: page; }
 ${Object.values(data.sources).map((s) => `<li>${esc(s.label)}：${esc(s.order)} ${esc(s.count)}</li>`).join('\n')}
 ${data.references.map((r) => `<li>${esc(r)}</li>`).join('\n')}
 </ul>
-${body.replace('<h2>カタカナ', '<h2 class="page">カタカナ')}
+${body}
 <p class="legend">データ: data/kana/kana.json（version ${esc(data.version)}、MIT ライセンス）。座標は 0〜100 の正方形、y は下向き。</p>
 </main></body></html>
 `;
