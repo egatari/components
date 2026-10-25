@@ -70,7 +70,7 @@ const W = 1184, H = 470;
 function layoutChecks(M, name) {
   const L = C.layout(M, W, H, false);
   // one x per column, evenly spaced (CW apart), wider than a 52 px digit (about 40 px)
-  ok(Math.abs(L.X(0) - L.X(1) - C.CW) < 1e-9 && C.CW >= 44, `${name}: columns ${C.CW} px apart`);
+  ok(Math.abs(L.X(0) - L.X(1) - L.cw) < 1e-9 && L.cw >= 44, `${name}: columns ${L.cw} px apart`);
   const xs = new Map();
   for (const it of M.items) if (it.t === 'd' && it.pos !== 'beside') {
     const x = L.X(it.p);
@@ -81,13 +81,13 @@ function layoutChecks(M, name) {
   const bigRows = M.rows.map((r, i) => i).filter((i) => M.rows[i].k === 'L');
   for (let j = 1; j < bigRows.length; j++) ok(L.Yb(bigRows[j]) - L.Yb(bigRows[j - 1]) >= 48, `${name}: rows ${bigRows[j - 1]} and ${bigRows[j]} are at least 48 px apart`);
   // the decimal point is drawn between the column of its place and the next one to the right
-  for (const it of M.items) if (it.t === 'pt') ok(Math.abs(L.X(it.p) + C.CW / 2 - (L.X(it.p) + L.X(it.p - 1)) / 2) < 1e-9, `${name}: point between cols ${it.p} and ${it.p - 1}`);
+  for (const it of M.items) if (it.t === 'pt') ok(Math.abs(L.X(it.p) + L.cw / 2 - (L.X(it.p) + L.X(it.p - 1)) / 2) < 1e-9, `${name}: point between cols ${it.p} and ${it.p - 1}`);
   return L;
 }
 
 // ---- + and − ----
-function checkAddSub(e) {
-  const M = C.build(e);
+function checkAddSub(e, o = {}) {
+  const M = C.build(e, o);
   const { op, A, B } = C.parse(e);
   const a = D(A.text), b = D(B.text), want = op === '+' ? add(a, b) : sub(a, b);
   const got = clean(C.read(M, M.info.answerRow));
@@ -98,7 +98,7 @@ function checkAddSub(e) {
   ok(eqD(value(rowDigits(M, M.info.answerRow)), want), `${e}: answer written at its places`);
   // くり上がり・くり下がり：small digits only above the first row, never two in one place (the beside-1 excepted)
   const small = M.items.filter((it) => it.t === 'd' && it.sz === 'S');
-  ok(small.every((it) => it.r === M.info.rows.S), `${e}: carries and borrows in the small row above`);
+  ok(small.every((it) => it.r === M.info.rows.S || (it.pos === 'shoulder' && it.r === M.info.rows.A)), `${e}: carries and borrows in the small row (a borrowed 1 also at the shoulder of a first-row digit)`);
   const seen = new Set();
   for (const it of small) { const k = it.p + (it.pos || ''); ok(!seen.has(k), `${e}: one small mark per place (col ${it.p})`); seen.add(k); }
   if (op === '+') {
@@ -106,9 +106,20 @@ function checkAddSub(e) {
     let carry = 0, s = Math.max(a.s, b.s), top = Math.max(A.ip.length, B.ip.length) - 1, need = 0;
     for (let p = -s; p <= top; p++) { const x = (A.at(p) || 0) + (B.at(p) || 0) + carry; carry = x >= 10 ? 1 : 0; if (carry && p < top) need++; }
     ok(small.length === need, `${e}: ${need} carry mark(s), got ${small.length}`);
+    // carry="line" (default): the small row is between the second number and the answer line; carry="top": above the first number
+    const rs = M.info.rows.S;
+    ok(o.carry === 'top' ? rs < M.info.rows.A : rs === M.info.rows.B + 1 && M.rows[rs + 1].k === 'R', `${e}: carries ${o.carry === 'top' ? 'above the first number' : 'just above the answer line'}`);
   } else {
     // every borrowing place gets a small 1, every lent-from place a slash
-    const slashes = M.items.filter((it) => it.t === 'slash').length, ones = small.filter((it) => it.pos === 'beside').length;
+    const slashes = M.items.filter((it) => it.t === 'slash').length, ones = small.filter((it) => it.pos === 'beside' || it.pos === 'shoulder').length;
+    // a borrowed 1 on a digit that was not reduced sits at that digit's left shoulder: in its column, at mid-height, below the reduced-digit row
+    const L2 = C.layout(M, W, H, false);
+    for (const it of small.filter((x) => x.pos === 'shoulder')) {
+      const right = L2.X(it.p) - C.SHX, left = right - 0.63 * 24, base = L2.Yb(it.r) - C.SHY;
+      ok(left > L2.X(it.p) - L2.cw / 2 && right < L2.X(it.p) - 0.76 * 52 / 2 + 2, `${e}: borrowed 1 of col ${it.p} inside its column, left of the digit`);
+      ok(base - 24 * 0.885 > L2.Yb(it.r) - 52 * 0.885 && base < L2.Yb(it.r), `${e}: borrowed 1 of col ${it.p} at the digit's mid-height`);
+      ok(!M.items.some((x) => x.t === 'd' && x.sz === 'S' && x.r === M.info.rows.S && x.p === it.p), `${e}: no reduced digit above a shoulder 1 (col ${it.p})`);
+    }
     ok(slashes >= ones, `${e}: each borrow takes from a slashed digit (${slashes} slashes, ${ones} borrows)`);
   }
   layoutChecks(M, e);
@@ -175,7 +186,7 @@ function checkDiv(e, o = {}) {
     const pr2 = rowDigits(M, R.partialRow), cs = Object.keys(pr2).map(Number).filter((c) => c >= R.c && c <= Math.max(R.left, R.c));
     const pv = cs.sort((x, y) => y - x).reduce((v, c) => v * 10 + +pr2[c], 0);
     ok(pv === R.P, `${name}: partial ${R.P} as written (${pv}) at cols ${Math.max(R.left, R.c)}..${R.c}`);
-    if (R.kari !== undefined) ok(R.kari > R.q && R.kari * d > R.P, `${name}: 仮の商 ${R.kari} is too big (${R.kari}×${d} > ${R.P}), corrected to ${R.q}`);
+    if (R.kari !== undefined) ok(R.kari !== R.q && R.tries.length === Math.abs(R.kari - R.q), `${name}: 仮の商 ${R.kari} corrected to ${R.q} one at a time`);
   }
   // quotient: as read from its row, and as the dividend ÷ divisor truncated to the places computed
   const qGot = clean(C.read(M, I.qRow));
@@ -212,15 +223,15 @@ let seed = 12345;
 const rnd = (lo, hi) => { seed = (seed * 1103515245 + 12345) % 2147483648; return lo + (seed % (hi - lo + 1)); };
 // + : 2–4 digits
 for (let i = 0; i < 120; i++) checkAddSub(`${rnd(10, 9999)}+${rnd(10, 9999)}`);
-['487+356', '687+356', '999+1', '9999+1', '56+487'].forEach((e) => checkAddSub(e));
+['487+356', '687+356', '999+1', '9999+1', '56+487'].forEach((e) => { checkAddSub(e); checkAddSub(e, { carry: 'top' }); });
 // − : 2–4 digits, the first not smaller
 for (let i = 0; i < 120; i++) { const x = rnd(10, 9999), y = rnd(10, 9999); checkAddSub(`${Math.max(x, y)}-${Math.min(x, y)}`); }
 // borrowing across zeros, and answers with leading zeros not written
 for (const e of ['1003-457', '1000-1', '2005-1996', '400-123', '7000-2468', '503-498', '52-48', '100-99', '432-158', '10000-1']) checkAddSub(e);
-{ // 1003−457: the textbook marks (1 struck, 0→9, 0→9, small 1 beside 3) and steps (ones with its borrow, tens, hundreds)
+{ // 1003−457: the textbook marks (1 struck, 0→9, 0→9, small 1 at the shoulder of 3) and steps (ones with its borrow, tens, hundreds)
   const M = C.build('1003-457');
-  const sm = M.items.filter((it) => it.t === 'd' && it.sz === 'S').map((it) => `${it.p}:${it.s}${it.pos ? '*' : ''}`).sort().join(' ');
-  ok(sm === '0:1* 1:9 2:9', `1003-457: small marks 9, 9 and the 1 beside the ones (got ${sm})`);
+  const sm = M.items.filter((it) => it.t === 'd' && it.sz === 'S').map((it) => `${it.p}:${it.s}${it.pos ? '*' + (it.r === M.info.rows.A ? 'A' : 'S') : ''}`).sort().join(' ');
+  ok(sm === '0:1*A 1:9 2:9', `1003-457: small marks 9, 9 and the 1 at the shoulder of the ones digit (got ${sm})`);
   ok(M.items.filter((it) => it.t === 'slash').map((it) => it.p).sort().join() === '1,2,3', '1003-457: 1, 0 and 0 struck');
   ok(new Set(M.phases.map((p) => p.grp)).size === 3, '1003-457: three steps (the thousands write nothing)');
   const caps = M.items.filter((it) => it.t === 'cap').map((it) => it.s);
@@ -228,6 +239,12 @@ for (const e of ['1003-457', '1000-1', '2005-1996', '400-123', '7000-2468', '503
 }
 // decimals + and −
 for (const e of ['2.6+1.4', '3.75+1.25', '0.3+0.7', '12.5+3.48', '5-2.35', '4.2-1.8', '10-0.01', '3.5-1.5', '7.25-3.6', '0.9+0.1']) checkAddSub(e);
+{ // 52−17: 5 struck with 4 above, the borrowed 1 at the shoulder of 2; 432−158: the tens' 1 beside its reduced 2 (reads 12)
+  const M = C.build('52-17'), sm = M.items.filter((it) => it.t === 'd' && it.sz === 'S').map((it) => `${it.p}:${it.s}:${it.pos || '-'}`).sort().join(' ');
+  ok(sm === '0:1:shoulder 1:4:-', `52-17: 4 above the tens, 1 at the shoulder of the ones (got ${sm})`);
+  const N = C.build('432-158'), sn = N.items.filter((it) => it.t === 'd' && it.sz === 'S').map((it) => `${it.p}:${it.s}:${it.pos || '-'}`).sort().join(' ');
+  ok(sn === '0:1:shoulder 1:1:beside 1:2:- 2:3:-', `432-158: the tens' borrowed 1 beside its reduced 2 (got ${sn})`);
+}
 { const M = C.build('2.6+1.4'); ok(M.items.some((it) => it.t === 'strike' && it.withPt), '2.6+1.4: 4.0 → the point and 0 struck'); }
 // × : 2–3 digit × 1–2 digit, fine on and off
 for (let i = 0; i < 80; i++) { const e = `${rnd(10, 999)}×${rnd(2, 99)}`; checkMul(e, false); checkMul(e, true); }
@@ -249,15 +266,33 @@ for (const e of ['2.5÷0.7', '10÷0.3']) checkDiv(e, { digits: 2 });
 { const M = C.build('7.56÷1.8', { cap: 3 }); ok(C.read(M, M.info.qRow) === '4.2' && M.info.m === 1 && M.info.exact, '7.56÷1.8 = 4.2 (both points moved 1 place)'); }
 { const M = C.build('7.5÷2.3', { rem: true }); ok(M.info.quotient === '3' && M.info.remainder.value === '0.6', '7.5÷2.3 = 3 あまり 0.6 (the remainder at the original point)'); }
 { const M = C.build('0.24÷6', { cap: 3 }); ok(C.read(M, M.info.qRow) === '0.04', '0.24÷6 = 0.04 (0 in the ones and tenths)'); }
-// 仮の商
-{
-  const M = checkDiv('851÷23', { kari: true }), R = M.info.rounds.find((r) => r.kari !== undefined);
-  ok(R && R.c === 1 && R.kari === 4 && R.q === 3, '851÷23 kari: 85÷23 seen as 80÷20 → 4, too big (92 > 85), corrected to 3');
-  ok(C.read(M, M.info.qRow) === '37', '851÷23 kari: the quotient is still 37 at the end');
-  const names = M.phases.filter((p) => p.grp === 'r1').map((p) => p.name).join(' ');
-  ok(names === 'kari kari-mul fix kake hiku orosu', '851÷23 kari: the round writes, multiplies, corrects, then かける・ひく・おろす (' + names + ')');
+// 仮の商：わる数を上の 1 けたの位で四捨五入して見当をつけ、1 ずつなおす（大きすぎれば 1 小さく、小さすぎれば 1 大きく）
+function checkKari(e, want) {
+  const M = checkDiv(e, { kari: true }), R = M.info.rounds.find((r) => r.kari !== undefined);
+  ok(R && R.c === want.c && R.kari === want.e && R.q === want.q, `${e} kari: estimate ${want.e} at col ${want.c}, quotient ${want.q} (got ${R && R.kari}, ${R && R.q})`);
+  if (!R) return;
+  // the tries: e, e∓1, …, one at a time, each wrong (too big: product > P; too small: remainder ≥ d)
+  ok(R.tries.map((t) => t.q).join() === want.tries.join(), `${e} kari: tries ${want.tries.join(', ')} (got ${R.tries.map((t) => t.q).join(', ')})`);
+  R.tries.forEach((t, i) => {
+    if (i) ok(Math.abs(t.q - R.tries[i - 1].q) === 1, `${e} kari: corrected by 1`);
+    ok(t.big ? t.prod > R.P : t.r >= M.info.d, `${e} kari: try ${t.q} is ${t.big ? 'too big' : 'too small'}`);
+  });
+  ok(Math.abs(R.tries[R.tries.length - 1].q - R.q) === 1, `${e} kari: the last correction reaches ${R.q}`);
+  const names = M.phases.filter((p) => p.grp === 'r' + R.c).map((p) => p.name).join(' ');
+  ok(names === want.names, `${e} kari: phases ${want.names} (got ${names})`);
+  const caps = M.items.filter((it) => it.t === 'cap' && M.phases[it.g].name === 'fix').map((it) => it.s);
+  ok(caps.length === R.tries.length && caps.every((c, i) => R.tries[i].big ? /ひけないので、1 小さくする/.test(c) : /^あまりが \d+ (より大きい|と同じな)ので、1 大きくする/.test(c)), `${e} kari: the words say what happened (${caps.join(' / ')})`);
+  ok(C.read(M, M.info.qRow) === String(want.quotient), `${e} kari: the quotient is ${want.quotient} at the end`);
+  // every crossed-out try disappears at the end: one digit per place
+  ok(M.items.filter((it) => it.t === 'd' && it.r === M.info.qRow && it.p === R.c && it.end === undefined).length === 1, `${e} kari: one quotient digit left in col ${R.c}`);
 }
-for (const e of ['96÷16', '672÷24', '75÷18', '1554÷37']) checkDiv(e, { kari: true });
+// too big by 1 (23→20: 80÷20 = 4, 23×4 = 92 > 85 → 3) and by 2 (14→10: 90÷10 = 9 → 8 → 7)
+checkKari('851÷23', { c: 1, e: 4, q: 3, tries: [4], quotient: 37, names: 'kari kari-mul fix kake hiku orosu' });
+checkKari('99÷14', { c: 0, e: 9, q: 7, tries: [9, 8], quotient: 7, names: 'kari kari-mul fix kari-mul fix kake hiku' });
+// too small by 1 (27→30: 190÷30 = 6, 195 − 162 = 33 ≥ 27 → 7) and by 2 (16→20: 90÷20 = 4 → 5 → 6)
+checkKari('195÷27', { c: 0, e: 6, q: 7, tries: [6], quotient: 7, names: 'kari kari-mul kari-sub fix kake hiku' });
+checkKari('96÷16', { c: 0, e: 4, q: 6, tries: [4, 5], quotient: 6, names: 'kari kari-mul kari-sub fix kari-mul kari-sub fix kake hiku' });
+for (const e of ['672÷24', '75÷18', '1554÷37', '812÷29', '7÷3']) checkDiv(e, { kari: true });
 // expressions the part refuses
 for (const e of ['', '12+', '1+2+3', 'abc', '3−5', '7÷0', '1.2.3+4']) { n++; try { C.build(e); fail++; console.log(`FAIL "${e}" should be refused`); } catch { /* refused */ } }
 // spellings that are accepted

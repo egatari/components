@@ -118,11 +118,16 @@ var CALC = (function(){
   Model.prototype.cap = function(r, g, s){ return this.add({t: "cap", r: r, g: g, s: s}); };
 
   // ---------------- たし算・ひき算 ----------------
-  function addsub(A, B, op){
+  function addsub(A, B, op, o){
     var M = new Model(op), s = Math.max(A.scale, B.scale), plus = op === "+";
+    if (!plus) M.cw = CWSUB;
     var Ai = A.int * pow10(s - A.scale), Bi = B.int * pow10(s - B.scale);
     if (!plus && Ai < Bi) throw new Error("m-hissan: " + A.text + "−" + B.text + " is negative (the first number must not be smaller)");
-    var rS = M.row("S"), rA = M.row("L"), rB = M.row("L"), rR = M.row("R"), rC = M.row("L");
+    // 小さな字の行：ひき算と carry="top" は上の数の上、たし算の既定は 2 つめの数と線の間（くり上がりは答えの線のすぐ上）
+    var top1 = !plus || (o && o.carry === "top");
+    var rS = top1 ? M.row("S") : null, rA = M.row("L"), rB = M.row("L");
+    if (!top1) rS = M.row("S");
+    var rR = M.row("R"), rC = M.row("L"), rF = top1 ? rS : rA;   // rF：位の色の上端
     A.ds.forEach(function(d){ M.add({t: "d", r: rA, p: d.p, s: String(d.d), id: "a" + d.p}); });
     B.ds.forEach(function(d){ M.add({t: "d", r: rB, p: d.p, s: String(d.d)}); });
     if (A.point) M.add({t: "pt", r: rA, p: 0});
@@ -142,7 +147,7 @@ var CALC = (function(){
       cols.forEach(function(c){
         var g = M.ph("c" + c.p, "col");
         M.add({t: "d", r: rC, p: c.p, s: String(c.d), g: g});
-        M.add({t: "focus", r0: rS, r1: rC, p0: c.p, p1: c.p, g: g});
+        M.add({t: "focus", r0: rF, r1: rC, p0: c.p, p1: c.p, g: g});
         var terms = [c.a, c.b].filter(function(v){ return v !== undefined; }).concat(c.cin ? [1] : []);
         var say = placeName(c.p) + "：" + (terms.length > 1 ? terms.join("＋") + "＝" + c.sum : c.sum + " をそのまま書く");
         if (c.cout){
@@ -177,7 +182,9 @@ var CALC = (function(){
             if (!(nv === 0 && x === topA)) M.add({t: "d", r: rS, p: x, s: String(nv), sz: "S", tone: "term", g: gb, o: 0.15 + (L - x) * 0.1});
             cur[x] = nv; reduced[x] = true;
           }
-          M.add({t: "d", r: rS, p: q, s: "1", sz: "S", tone: "term", pos: "beside", g: gb, o: 0.35});
+          // くり下げてもらった 1：くり下げた数（小さな数）があればその左、なければ大きな字の左肩（字の中ほどの高さ、その列の中）
+          if (reduced[q]) M.add({t: "d", r: rS, p: q, s: "1", sz: "S", tone: "term", pos: "beside", g: gb, o: 0.35});
+          else M.add({t: "d", r: rA, p: q, s: "1", sz: "S", tone: "term", pos: "shoulder", g: gb, o: 0.35});
           cur[q] += 10;
           M.cap(rC, gb, placeName(q) + "：" + placeName(L) + "から" + (L > q + 1 ? "順に" : "") + " 1 くり下げる");
           M.add({t: "focus", r0: rS, r1: rC, p0: L, p1: q, g: gb});
@@ -318,19 +325,20 @@ var CALC = (function(){
     var at = function(c){ return dv[c] !== undefined ? dv[c] : 0; };
     // 書いた わられる数 の、列 c より右に 0 でない字が残っているか
     var restNonzero = function(c){ for (var x = c - 1; x >= lastWritten; x--) if (at(x)) return true; return false; };
-    // 下書き：各回の (列, わられる部分, 商)。仮の商を見せる回を選ぶ（見当が 1 だけ大きい回を先に、なければ最初に大きすぎる回）
+    // 下書き：各回の (列, わられる部分, 商)。仮の商を見せる回は、見当が商と違う最初の回。
+    // 見当：わる数を上の 1 けたの位で四捨五入（23→20、27→30）、わられる部分をその位で切り捨て（85→80）てわる
     var sim = [], r0 = 0, st0 = false;
     for (var c0 = cL; c0 >= cEnd; c0--){
       var P0 = r0 * 10 + at(c0), q0 = Math.floor(P0 / d);
       if (!st0 && q0 === 0 && c0 > 0){ r0 = P0; continue; }
       st0 = true; r0 = P0 - q0 * d;
-      var mm = dI.length - 1, dt = Math.floor(d / pow10(mm)) * pow10(mm), e0 = Math.min(9, Math.floor(P0 / dt));
+      var mm = dI.length - 1, dt = Math.round(d / pow10(mm)) * pow10(mm), e0 = Math.max(1, Math.min(9, Math.floor(Math.floor(P0 / pow10(mm)) * pow10(mm) / dt)));
       sim.push({c: c0, P: P0, q: q0, e: e0, dt: dt, mm: mm});
       if (r0 === 0 && c0 <= 0 && !restNonzero(c0) && !remMode) break;
     }
     var kariCol = null;
     if (o.kari){
-      var k1 = sim.filter(function(s){ return s.q > 0 && s.e === s.q + 1; })[0] || sim.filter(function(s){ return s.q > 0 && s.e > s.q; })[0];
+      var k1 = sim.filter(function(s){ return s.q > 0 && s.e !== s.q; })[0];
       if (k1) kariCol = k1.c;
     }
     var rQ = M.row("L"), rBar = M.row("B"), rD = M.row("L");
@@ -360,22 +368,41 @@ var CALC = (function(){
       var finish = c2 === cEnd || (!remMode && rn === 0 && c2 <= 0 && !restNonzero(c2));
       var grp = "r" + c2, R = {c: c2, P: P, q: q, prod: q * d, r: rn, rowP: null, rowR: null, partialRow: cur, left: partialLeft};
       if (c2 === kariCol){
-        var s0 = sim.filter(function(s){ return s.c === c2; })[0], kari = s0.e, Pt = Math.floor(P / pow10(s0.mm)) * pow10(s0.mm);
-        R.rowP = M.row("L");
-        var gk = M.ph(grp, "kari"), gk2 = M.ph(grp, "kari-mul"), gfix = M.ph(grp, "fix");
-        M.add({t: "d", r: rQ, p: c2, s: String(kari), g: gk, end: gfix, endo: 0.5, kari: true});
-        M.cap(rQ, gk, "たてる：" + P + "÷" + d + " を " + Pt + "÷" + s0.dt + " とみて " + kari);
+        // 仮の商：見当の商から 1 ずつなおす。1 回の試し＝たてる（なおす）→ かける →（小さすぎるときは ひく）→ 斜線で消してなおす
+        var s0 = sim.filter(function(s){ return s.c === c2; })[0], x = s0.e, Pt = Math.floor(P / pow10(s0.mm)) * pow10(s0.mm);
+        R.rowP = M.row("L"); R.rRule = M.row("R"); R.rowR = M.row("L"); R.tries = [];
+        var gk = M.ph(grp, "kari");
+        var dig = M.add({t: "d", r: rQ, p: c2, s: String(x), g: gk});
+        M.cap(rQ, gk, "たてる：" + P + "÷" + d + " を " + Pt + "÷" + s0.dt + " とみて " + x);
         M.add({t: "focus", r0: rQ, r1: rQ, p0: c2, p1: c2, g: gk});
-        var kd = digitsOf(kari * d);
-        kd.forEach(function(x, i){ M.add({t: "d", r: R.rowP, p: c2 + kd.length - 1 - i, s: String(x), g: gk2, end: gfix, endo: 0.5, kari: true}); });
-        M.cap(R.rowP, gk2, "かける：" + d + "×" + kari + "＝" + kari * d);
-        M.add({t: "focus", r0: R.rowP, r1: R.rowP, p0: c2 + kd.length - 1, p1: c2, g: gk2});
-        M.add({t: "slash", r: rQ, p: c2, g: gfix, l: 0.25, end: gfix, endo: 0.5});
-        M.add({t: "xline", r: R.rowP, p0: c2 + kd.length - 1, p1: c2, g: gfix, l: 0.25, end: gfix, endo: 0.5});
-        digit({r: rQ, p: c2, s: String(q), g: gfix, o: 0.6, l: 0.35});
-        M.cap(rQ, gfix, kari * d + " は " + P + " より大きいので、" + kari + " を " + q + " になおす");
-        M.add({t: "focus", r0: rQ, r1: R.rowP, p0: Math.max(c2 + kd.length - 1, partialLeft), p1: c2, g: gfix});
-        R.kari = kari;
+        while (x !== q){
+          var big = x > q, tryItems = [dig], kd = digitsOf(x * d), kl = c2 + kd.length - 1;
+          var gk2 = M.ph(grp, "kari-mul");
+          kd.forEach(function(v, i){ tryItems.push(M.add({t: "d", r: R.rowP, p: kl - i, s: String(v), g: gk2})); });
+          M.cap(R.rowP, gk2, "かける：" + d + "×" + x + "＝" + x * d);
+          M.add({t: "focus", r0: R.rowP, r1: R.rowP, p0: kl, p1: c2, g: gk2});
+          var rr = P - x * d, kleft = Math.max(partialLeft, kl);
+          if (!big){
+            var gk3 = M.ph(grp, "kari-sub"), rdg = digitsOf(rr);
+            tryItems.push(M.add({t: "rule", r: R.rRule, p0: kleft, p1: c2, g: gk3, l: 0.35}));
+            rdg.forEach(function(v, i){ tryItems.push(M.add({t: "d", r: R.rowR, p: c2 + rdg.length - 1 - i, s: String(v), g: gk3, o: 0.3})); });
+            M.cap(R.rowR, gk3, "ひく：" + P + "−" + x * d + "＝" + rr);
+            M.add({t: "focus", r0: cur, r1: R.rowR, p0: kleft, p1: c2, g: gk3});
+          }
+          var gfix = M.ph(grp, "fix"), nx = big ? x - 1 : x + 1;
+          tryItems.push(M.add({t: "slash", r: rQ, p: c2, g: gfix, l: 0.25}));
+          tryItems.push(M.add({t: "xline", r: R.rowP, p0: kl, p1: c2, g: gfix, l: 0.25}));
+          if (!big) tryItems.push(M.add({t: "xline", r: R.rowR, p0: c2 + digitsOf(rr).length - 1, p1: c2, g: gfix, l: 0.25}));
+          tryItems.forEach(function(it){ it.end = gfix; it.endo = 0.5; it.kari = true; });
+          dig = M.add({t: "d", r: rQ, p: c2, s: String(nx), g: gfix, o: 0.6, l: 0.35});
+          M.cap(rQ, gfix, big ? x * d + " は " + P + " より大きくてひけないので、1 小さくする（" + nx + "）"
+                              : "あまりが " + d + (rr === d ? " と同じなので" : " より大きいので") + "、1 大きくする（" + nx + "）");
+          M.add({t: "focus", r0: rQ, r1: big ? R.rowP : R.rowR, p0: Math.max(kl, partialLeft), p1: c2, g: gfix});
+          R.tries.push({q: x, prod: x * d, r: big ? null : rr, big: big});
+          x = nx;
+        }
+        has[rQ + ":" + c2] = true;
+        R.kari = s0.e;
       } else {
         var gt = M.ph(grp, "tate");
         digit({r: rQ, p: c2, s: String(q), g: gt});
@@ -385,7 +412,8 @@ var CALC = (function(){
       qDigits[c2] = q;
       if (q > 0){
         if (!R.rowP) R.rowP = M.row("L");
-        var rRule = M.row("R"); R.rowR = M.row("L");
+        var rRule = R.rRule !== undefined ? R.rRule : M.row("R");
+        if (R.rRule === undefined) R.rowR = M.row("L");
         var gm = M.ph(grp, "kake"), pd = digitsOf(q * d);
         pd.forEach(function(x, i){ digit({r: R.rowP, p: c2 + pd.length - 1 - i, s: String(x), g: gm}); });
         M.cap(R.rowP, gm, "かける：" + d + "×" + q + "＝" + q * d);
@@ -445,12 +473,14 @@ var CALC = (function(){
   function build(expr, o){
     o = o || {};
     var e = parse(expr);
-    if (e.op === "+" || e.op === "−") return addsub(e.A, e.B, e.op);
+    if (e.op === "+" || e.op === "−") return addsub(e.A, e.B, e.op, o);
     if (e.op === "×") return mul(e.A, e.B, o);
     return div(e.A, e.B, {kari: !!o.kari, rem: !!o.rem, digits: o.digits, cap: o.cap === undefined ? 3 : o.cap});
   }
   // ---- 配置（px）。字の大きさ：大きな字 FS、小さな字 SS ----
-  var FS = 52, SS = 26, CW = 56, CAP = 26, FIT = 470, OPG = 10;
+  // CW0：列の幅。ひき算は、くり下げてもらった 1 を字の左肩（その列の中）に置くので CWSUB
+  // SHX・SHY：左肩の 1（24 px）の右端は列の中心から SHX 左（52 px の数字の左端の外）、字の下端は数字の下端から SHY 上（字の中ほど）
+  var FS = 52, SS = 26, CW0 = 56, CWSUB = 74, CAP = 26, FIT = 470, OPG = 10, SHX = 20.5, SHY = 12;
   var ROWH = {L: 62, S: 30, R: 16, B: 14, M: 22, A: 60};
   function geom(M){
     var ys = [], y = 0;
@@ -484,6 +514,7 @@ var CALC = (function(){
   // 要素の中の配置：列 p の中心 X(p)、行 r の字の下端 Yb(r)。図と右の言葉をまとめて左右の真ん中に、上下も真ん中に
   function layout(M, W, H, whole){
     var G = geom(M), opCol = G.hi + 1, divItem = M.items.filter(function(it){ return it.t === "div"; })[0];
+    var CW = M.cw || CW0;
     var leftExtra = divItem ? divItem.s.replace(".", "").length * CW + 30 : OPG;   // 記号は数字から OPG px 離す
     var labW = {}, capW = 0;
     M.items.forEach(function(it){ if (it.t === "lab") labW[it.r] = Math.max(labW[it.r] || 0, est(it.s, CAP) + 24); });
@@ -492,11 +523,11 @@ var CALC = (function(){
     var figW = divItem ? (G.hi - G.lo + 1) * CW + leftExtra : (opCol - G.lo + 1) * CW + OPG;
     var totW = figW + 28 + Math.max(capW, labMax);
     var x0 = Math.max(8, (W - totW) / 2), y0 = Math.max(0, (H - G.h) / 2), leftCol = divItem ? G.hi : opCol;
-    return {G: G, opCol: opCol, opX: x0 + CW / 2, divItem: divItem, labW: labW, figW: figW, totW: totW, x0: x0, y0: y0, capX: x0 + figW + 28,
+    return {cw: CW, G: G, opCol: opCol, opX: x0 + CW / 2, divItem: divItem, labW: labW, figW: figW, totW: totW, x0: x0, y0: y0, capX: x0 + figW + 28,
       X: function(p){ return x0 + leftExtra + (leftCol - p) * CW + CW / 2; },
       Yb: function(r){ return y0 + G.base(r); }, Yt: function(r){ return y0 + G.top[r]; }, Ybot: function(r){ return y0 + G.bot(r); }};
   }
-  return {parse: parse, build: build, geom: geom, layout: layout, est: est, read: read, dec: dec, placeName: placeName, FS: FS, SS: SS, CW: CW, CAP: CAP, FIT: FIT, ROWH: ROWH};
+  return {parse: parse, build: build, geom: geom, layout: layout, est: est, read: read, dec: dec, placeName: placeName, FS: FS, SS: SS, CW: CW0, CWSUB: CWSUB, SHX: SHX, SHY: SHY, CAP: CAP, FIT: FIT, ROWH: ROWH};
 })();
 
 var ON = function(v){ return /^(on|true|yes)$/i.test(String(v || "").trim()); };
@@ -513,6 +544,8 @@ DECK.define("m-hissan", class extends DECK.MotionElement {
     kari:   {type: "string", default: "off", doc: "わり算：on なら大きすぎる仮の商を 1 回見せて直す"},
     rem:    {type: "string", default: "off", doc: "わり算：on なら商を整数で止めて あまり を出す"},
     digits: {type: "json", default: null, doc: "わり算：商を小数第何位まで求めるか", shape: {type: "integer"}, example: 2},
+    carry:  {type: "string", default: "line", doc: "たし算のくり上がり：line（答えの線のすぐ上）か top（上の数の上）"},
+    words:  {type: "string", default: "on", doc: "off なら右の手順の言葉を出さない"},
     focus:  {type: "string", default: "on", doc: "いま計算している位・行に薄い色"},
     dur:    {type: "number", default: 0.9, doc: "1 つの手順の秒数"},
   };
@@ -526,7 +559,8 @@ DECK.define("m-hissan", class extends DECK.MotionElement {
     var P = this.props, notes = [], build = P.build, per = P.per;
     if (["steps", "whole"].indexOf(build) < 0){ notes.push('m-hissan: build="' + build + '" is not steps or whole (steps is used)'); build = "steps"; }
     if (["round", "phase"].indexOf(per) < 0){ notes.push('m-hissan: per="' + per + '" is not round or phase (round is used)'); per = "round"; }
-    var e = CALC.parse(P.expr), o = {fine: ON(P.fine), kari: ON(P.kari), rem: ON(P.rem), digits: P.digits};
+    var e = CALC.parse(P.expr), o = {fine: ON(P.fine), kari: ON(P.kari), rem: ON(P.rem), digits: P.digits, carry: P.carry};
+    if (["line", "top"].indexOf(P.carry) < 0){ notes.push('m-hissan: carry="' + P.carry + '" is not line or top (line is used)'); o.carry = "line"; }
     if (o.digits != null && (!isFinite(o.digits) || o.digits < 0 || o.digits > 8)){ notes.push("m-hissan: digits=" + o.digits + " is not 0–8 (ignored)"); o.digits = null; }
     var M;
     if (e.op === "÷" && o.digits == null && !o.rem && !(e.A.scale === 0 && e.B.scale === 0)){
@@ -565,8 +599,8 @@ DECK.define("m-hissan", class extends DECK.MotionElement {
     this.variant = VARIANT.of(this);
     pl.notes.forEach(function(n){ console.warn(n); });
     this.style.display = "block";
-    var W = this.clientWidth, H = this.clientHeight, whole = pl.build === "whole", FS = C.FS, SS = C.SS, CW = C.CW, CAPS = C.CAP;
-    var Lo = C.layout(M, W, H, whole), G = Lo.G, X = Lo.X, Yb = Lo.Yb, Yt = Lo.Yt, Ybot = Lo.Ybot, capX = Lo.capX, labW = Lo.labW, divItem = Lo.divItem, opCol = Lo.opCol;
+    var W = this.clientWidth, H = this.clientHeight, whole = pl.build === "whole", words = !whole && ON(P.words), FS = C.FS, SS = C.SS, CAPS = C.CAP;
+    var Lo = C.layout(M, W, H, !words), CW = Lo.cw, G = Lo.G, X = Lo.X, Yb = Lo.Yb, Yt = Lo.Yt, Ybot = Lo.Ybot, capX = Lo.capX, labW = Lo.labW, divItem = Lo.divItem, opCol = Lo.opCol;
     if (Lo.totW > W - 8) console.warn("m-hissan: " + P.expr + " needs " + Math.round(Lo.totW) + " px of width, but the element is " + W + " px (it overflows); give it more width");
     if (G.h > H) console.warn("m-hissan: " + P.expr + " needs " + Math.round(G.h) + " px of height, but the element is " + H + " px (it overflows); give it more height" + (M.op === "÷" ? " or fewer digits" : ""));
     this.geo = {X: X, Yb: Yb, capX: capX};
@@ -583,7 +617,7 @@ DECK.define("m-hissan", class extends DECK.MotionElement {
     var path = function(par, d, attrs){ return D.el("path", Object.assign({d: d, fill: "none", stroke: "var(--fg)", "stroke-width": 2.5, "stroke-linecap": "round", "stroke-linejoin": "round", opacity: 0}, attrs || {}), par); };
     // 小さな数の横の 1：その位に小さな数（くり下げた数）があればその左、なければ大きな字の左上
     var smallAt = {};
-    M.items.forEach(function(it){ if (it.t === "d" && it.sz === "S" && it.pos !== "beside") smallAt[it.r + ":" + it.p] = it; });
+    M.items.forEach(function(it){ if (it.t === "d" && it.sz === "S" && !it.pos) smallAt[it.r + ":" + it.p] = it; });
     var rows = M.rows;
     var ruleL = Lo.opX - CW / 2 + 4, ruleR = X(G.lo) + CW / 2 - 4;
     M.items.forEach(function(it){
@@ -591,7 +625,8 @@ DECK.define("m-hissan", class extends DECK.MotionElement {
       switch (it.t){
         case "d": {
           var small = it.sz === "S", x = X(it.p), y = Yb(it.r);
-          if (it.pos === "beside"){
+          if (it.pos === "shoulder") el = num(gT, x - C.SHX, y - C.SHY, it.s, 24, it.tone, "end");
+          else if (it.pos === "beside"){
             var red = smallAt[it.r + ":" + it.p];
             el = num(gT, red ? x - 11 : x - 8, y, it.s, SS, it.tone, "end");
           } else el = num(gT, x, y, it.s, small ? SS : FS, it.tone);
@@ -670,7 +705,7 @@ DECK.define("m-hissan", class extends DECK.MotionElement {
           break;
         }
         case "lab": put(num(gT, capX, Yb(it.r) - (rows[it.r].k === "L" ? 10 : 0), it.s, CAPS, "fg", "start"), it, "text"); break;
-        case "cap": if (!whole) put(num(gT, capX + (labW[it.r] || 0), Yb(it.r) - (rows[it.r].k === "L" ? 10 : 0), it.s, CAPS, "fg", "start"), it, "cap"); break;
+        case "cap": if (words) put(num(gT, capX + (labW[it.r] || 0), Yb(it.r) - (rows[it.r].k === "L" ? 10 : 0), it.s, CAPS, "fg", "start"), it, "cap"); break;
         case "focus": {
           if (whole || !ON(P.focus)) break;
           var fx = X(it.p0) - CW / 2 + 3, fw = X(it.p1) + CW / 2 - 3 - fx, ft = it.r0 === null || it.r0 === undefined ? Yt(it.r1) : Yt(it.r0), fb = Ybot(it.r1);
