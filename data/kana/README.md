@@ -65,7 +65,7 @@ How the derived characters were made (our data only; the glyph was looked at, ne
     "あ": {
       "count": 3,
       "strokes": [
-        {"d": "M24 31 Q48 29 74 25", "end": "tome"},
+        {"d": "M21 28.5 Q45 27 69 22", "end": "tome", "w": [5.8, 4.7, 6.3]},   // w: ink width per third
         …
       ],
       "source": "school-hiragana",
@@ -101,6 +101,14 @@ How the derived characters were made (our data only; the glyph was looked at, ne
   screen** (y down), the same way as な's, which the owner checked: in よ・は・ほ・ま the vertical comes down through
   the crossing, turns left along the bottom of the loop, comes up, and crosses to the right along its top into the
   final stroke. (Before 2026-10-26, よ・は・ほ・ま and their derived forms turned anticlockwise; fixed.)
+- **`w`** (optional, on every stroke now): the stroke's **ink width** in 0–100 units, three numbers for the first,
+  middle and last third of the stroke's length (so a はらい that thins can narrow). Measured, not drawn: the area of
+  the glyph's ink nearest to this centreline in that third, divided by the third's length (rendered at 500 px;
+  clamped to 3.5–9). It is a number per segment, not geometry; no outline is stored. A component uses it to size the
+  brushes that follow the stroke's own ink (see "Reveal prototype"). Because ink at a crossing is counted for the
+  nearer line, `w` can read a little low in the third that holds a crossing; for た・だ・れ・わ・キ・ギ・ケ・ゲ・チ・ヂ・モ・ワ,
+  where that hid drawn ink, each third uses the width measured away from other strokes (ink within 7 units of another
+  centreline left out), or else the larger of its own width and the stroke's typical width.
 - **`place`** (small kana only): `{"yoko": [a, b, c, d, e, f], "tate": [...]}`, two SVG matrices
   (`matrix(a b c d e f)`, here a uniform scale and a move) that put the small kana in the square: in horizontal
   writing (**yoko**) inside the **lower-left quarter**, in vertical writing (**tate**) inside the **upper-right
@@ -130,14 +138,24 @@ as a guide. It is shown through an SVG mask built only from our centrelines, in 
 
 1. a **wide** round brush (13 units) along the drawn part of each stroke (`stroke-dasharray` / `pathLength="1"`),
    wide enough to cover the glyph's stroke including its ends;
-2. a black **guard** (12 units) along the part of each stroke not yet drawn, so a wide brush passing over a later
-   stroke (a crossing, or a stroke close by) does not show it early;
-3. a **narrow** brush (9 units) along the drawn part again, on top of the guards, so a drawn stroke stays whole
-   where a guard crosses it.
+2. a black **guard** along the part of each stroke not yet drawn, so a wide brush passing over a later stroke
+   (a crossing, or a stroke close by) does not show it early: width **`w` + 1.75** per third of the stroke;
+3. a **narrow** brush along the drawn part again, on top of the guards, so a drawn stroke stays whole where a guard
+   crosses it: width **`w` + 1.25** per third of the stroke.
+
+`w` is the stroke's measured ink width (below). Following each stroke's own ink, the narrow brush hardly reaches past
+the drawn stroke's ink, so at a crossing the later stroke shows little more than the ink the two strokes share.
+(Without `w`, fixed widths are used: guard 12, narrow 9 — the first version.) The two margins were chosen by
+measuring "bleed" and "hidden ink" over a set of characters with many crossings (see below).
 
 After the last stroke there are no guards, so the full glyph shows (checked: 100 % of the glyph's pixels for all 166).
 What still shows early is the ink two strokes share where they cross (e.g. あ, き, せ, ね, ぬ): a mask cannot split
-it. Per-character widths can be set in `proto-brush.json` (`{"あ": [13, 12, 13]}`); none is needed now.
+it.
+
+Measured by `kana-proto-check.mjs` after each whole stroke k (pixels at 500 px; 25 px = 1 unit²):
+- **bleed**: ink of a later stroke that shows outside the drawn strokes' own ink band (farther than half the local
+  measured width + 0.4 from every drawn centreline) — the slivers beside a crossing;
+- **hidden**: ink of a drawn stroke that does not show (a guard wider than the narrow brush can hide it). Per-character widths can be set in `proto-brush.json` (`{"あ": [13, 12, 13]}`); none is needed now.
 
 `kana-proto-check.mjs` also renders each small kana through `place.yoko` and `place.tate` and checks that its ink
 lies inside the right quarter (all 22 pass).
@@ -174,7 +192,7 @@ Egatari Kana — Derived from Klee One (SIL OFL 1.1).
   - ク・タ: the owner asked for stroke 1 to overshoot stroke 2 less (now about 5.0 units in ク and 4.6 in タ above
     the top edge of stroke 2's bar). In Klee One, strokes 1 and 2 of ク and タ (and グ, ダ) are **one merged
     contour**, so they cannot be moved or shortened as whole contours; per the review rule the outline was not
-    edited point by point. Left unchanged pending a decision.
+    edited point by point. **The owner accepted ク and タ as Klee One draws them** (round 4); no outline change.
 
 ## Sources for order and count
 

@@ -22,12 +22,19 @@ import { ROOT } from './studio.mjs';
 const DIR = path.join(ROOT, 'data', 'kana');
 const data = JSON.parse(fs.readFileSync(path.join(DIR, 'kana.json'), 'utf8'));
 const chars = Object.fromEntries(Object.entries(data.chars).filter(([, c]) => c.glyphFit)
-  .map(([ch, c]) => [ch, { s: c.strokes.map((s) => s.d), e: c.strokes.map((s) => s.end), ...(c.place ? { p: c.place } : {}) }]));
+  .map(([ch, c]) => [ch, { s: c.strokes.map((s) => s.d), e: c.strokes.map((s) => s.end), w: c.strokes.map((s) => s.w ?? null), ...(c.place ? { p: c.place } : {}) }]));
 const fit = [...new Set(Object.values(data.chars).map((c) => c.glyphFit).filter(Boolean))].join(', ');
 
 // Brush widths (0–100 units): wide brush per stroke (default; a number or an array per character in
 // data/kana/proto-brush.json overrides it), narrow brush and guard (see cell() in the page).
-const BRUSH = { default: 13, narrow: 9, guard: 12, overrides: {} };
+// With measured ink widths ("w": three widths along the stroke), the narrow brush and the guard follow the
+// stroke's own ink: narrow = w + narrowExtra, guard = w + guardExtra, per third of the stroke's length.
+// Without "w" they fall back to the fixed narrow / guard widths.
+const BRUSH = { default: 13, narrow: 9, guard: 12, narrowExtra: 1.25, guardExtra: 1.75, overrides: {} };
+if (process.env.KANA_NX) BRUSH.narrowExtra = +process.env.KANA_NX;
+if (process.env.KANA_GX) BRUSH.guardExtra = +process.env.KANA_GX;
+if (process.env.KANA_NOW) BRUSH.ignoreW = true;
+if (process.env.KANA_WX) BRUSH.wideExtra = +process.env.KANA_WX;
 const brushFile = path.join(DIR, 'proto-brush.json');
 if (fs.existsSync(brushFile)) Object.assign(BRUSH.overrides, JSON.parse(fs.readFileSync(brushFile, 'utf8')));
 
@@ -88,12 +95,18 @@ function cell(ch, { guide = true, view = 'reveal', grid = true, place = 'yoko' }
   if (guide && view === 'reveal') svg.appendChild(g(text('var(--guide)')));
   const line = (d, w, color) => el('path', { d, fill: 'none', stroke: color, 'stroke-width': w, 'stroke-linecap': 'round', 'stroke-linejoin': 'round', pathLength: 1 });
   const S = CHARS[ch].s;
-  const wide = S.map((d, i) => line(d, width(ch, i), '#fff'));
-  const guard = S.map((d) => line(d, BRUSH.guard, '#000'));
-  const narrow = S.map((d) => line(d, BRUSH.narrow, '#fff'));
+  // narrow brushes and guards come in segments [a, b] of the stroke's length, each with its own width
+  const W = CHARS[ch].w;
+  const segs = (i, extra, fixed) => (W[i] && !BRUSH.ignoreW
+    ? W[i].map((w, j) => [j / W[i].length, (j + 1) / W[i].length, w + extra])
+    : [[0, 1, fixed]]);
+  // wide brush: fixed width (13), or w + wideExtra per segment when wideExtra is set
+  const wide = S.map((d, i) => (BRUSH.wideExtra !== undefined ? segs(i, BRUSH.wideExtra, width(ch, i)) : [[0, 1, width(ch, i)]]).map(([a, b, w]) => ({ a, b, p: line(d, w, '#fff') })));
+  const guard = S.map((d, i) => segs(i, BRUSH.guardExtra, BRUSH.guard).map(([a, b, w]) => ({ a, b, p: line(d, w, '#000') })));
+  const narrow = S.map((d, i) => segs(i, BRUSH.narrowExtra, BRUSH.narrow).map(([a, b, w]) => ({ a, b, p: line(d, w, '#fff') })));
   const layers = el('g');
-  if (view === 'brush') wide.forEach((p) => layers.appendChild(p));
-  else [...wide, ...guard, ...narrow].forEach((p) => layers.appendChild(p));
+  if (view === 'brush') wide.flat().forEach((x) => layers.appendChild(x.p));
+  else [...wide.flat().map((x) => x.p), ...guard.flat().map((x) => x.p), ...narrow.flat().map((x) => x.p)].forEach((p) => layers.appendChild(p));
   if (view === 'mask' || view === 'brush') svg.appendChild(g(layers));
   else {
     const mask = el('mask', { id, maskUnits: 'userSpaceOnUse', x: 0, y: 0, width: 100, height: 100 });
@@ -102,13 +115,15 @@ function cell(ch, { guide = true, view = 'reveal', grid = true, place = 'yoko' }
     // the mask is in the glyph's own coordinates: it is referenced by the transformed group
     svg.appendChild(g(text('var(--ink)'), view !== 'glyph' ? { mask: 'url(#' + id + ')' } : {}));
   }
-  // drawn part [0, f] of a path / remaining part [f, 1]; a zero-length dash would still paint a round cap
-  const head = (p, f) => { p.setAttribute('stroke-dasharray', '1 1.01'); p.setAttribute('stroke-dashoffset', 1 - f); p.style.visibility = f > 0 ? 'visible' : 'hidden'; };
-  const tail = (p, f) => { p.setAttribute('stroke-dasharray', '1 1.01'); p.setAttribute('stroke-dashoffset', -f); p.style.visibility = f < 1 ? 'visible' : 'hidden'; };
+  // a zero-length dash would still paint a round cap, so empty parts are hidden
+  // part [lo, hi] of a path
+  const part = (p, lo, hi) => { const len = hi - lo; p.setAttribute('stroke-dasharray', Math.max(len, 0) + ' 2'); p.setAttribute('stroke-dashoffset', -lo); p.style.visibility = len > 1e-6 ? 'visible' : 'hidden'; };
   // state: k strokes done (fractional = part of the next one); from: strokes before it are left out (view=brush)
   const set = (k, from = 0) => S.forEach((_, i) => {
     const f = i < from ? 0 : Math.max(0, Math.min(1, k - i));
-    head(wide[i], f); head(narrow[i], f); tail(guard[i], f);
+    for (const s of wide[i]) part(s.p, s.a, Math.min(s.b, f));
+    for (const s of narrow[i]) part(s.p, s.a, Math.min(s.b, f));          // drawn part of this segment
+    for (const s of guard[i]) part(s.p, Math.max(s.a, f), s.b);           // part not yet drawn
   });
   return { svg, set, n: S.length };
 }

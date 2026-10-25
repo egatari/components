@@ -9,6 +9,7 @@
 //   - every small kana has "place": {yoko, tate}, two SVG matrices (uniform scale, no rotation); tate is yoko moved
 //     by (+50, −50); our lines widened by 4 units, through each matrix, lie inside the lower-left quarter (yoko) or
 //     the upper-right quarter (tate) of the 0–100 square (the rendered ink is checked by kana-proto-check.mjs)
+//   - w (ink widths along the stroke), when present, is 1–5 numbers in 0..20
 //   - every stroke marked "loop": true (結び) crosses itself, and every loop it closes turns clockwise on screen
 //     (y down), the same way as な's 結び (the reference the owner checked)
 //   - every stroke: d parses (M L H V Q T C S Z only), end is tome|hane|harai, every sampled point stays in 0..box
@@ -117,6 +118,7 @@ for (const [ch, c] of Object.entries(chars)) {
     const out = pts.find(([x, y]) => x < 0 || y < 0 || x > box || y > box);
     if (out) fail(`${at}: point (${out[0].toFixed(1)}, ${out[1].toFixed(1)}) is outside the box`);
     if (s.loop !== undefined && s.loop !== true) fail(`${at}: loop must be true when present`);
+    if (s.w !== undefined && !(Array.isArray(s.w) && s.w.length >= 1 && s.w.length <= 5 && s.w.every((v) => typeof v === 'number' && v > 0 && v <= 20))) fail(`${at}: w must be 1–5 ink widths (numbers in 0..20)`);
     if (s.loop) {
       const areas = selfLoops(pts);
       if (!areas.length) fail(`${at}: marked loop but does not cross itself`);
