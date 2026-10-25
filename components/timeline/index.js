@@ -90,7 +90,7 @@ DECK.define("m-timeline", class extends DECK.MotionElement {
         step: {type: "integer"}, at: {type: "number"}}}}}},
     example: {nodes: [{id: "a", label: "明治維新", when: "1868", whenLabel: "明治元年"}, {id: "b", label: "憲法の発布", when: "1889", note: "2 月 11 日"},
       {id: "c", label: "日清戦争", when: "1894", end: "1895", tone: "emph"}]},
-    note: "when / end: a number or \"YYYY\", \"YYYY-MM\", \"YYYY-MM-DD\"; end is exclusive (\"1912\" is the start of 1912). whenLabel: the date text shown instead of the computed one (when still sets the position). A node with end is a period (a band); lane groups bands into named lanes. after: ids this item depends on (a finish-to-start arrow); progress: 0–100 (%) filled from the start",
+    note: "when / end: a number or \"YYYY\", \"YYYY-MM\", \"YYYY-MM-DD\"; end is exclusive (\"1912\" is the start of 1912). whenLabel: the date text shown instead of the computed one (when still sets the position). A node with end is a period (a band); lane groups bands into named lanes",
   };
   static props = {
     orient:     {type: "string", default: "h", doc: "h（左から右へ）か v（上から下へ）"},
@@ -99,8 +99,8 @@ DECK.define("m-timeline", class extends DECK.MotionElement {
     size:       {type: "number", default: 26, doc: "名前の字の大きさ（px。入らなければ 24 まで縮める）"},
     dur:        {type: "number", default: 0.6, doc: "1 つの出来事が現れる秒数"},
     stagger:    {type: "number", default: 0.3, doc: "同じ段階の出来事の出だしのずれ（秒）"},
-    unit:       {type: "string", default: "", doc: "目盛りの単位：day・week・month（既定は自動）"},
-    today:      {type: "string", default: "", doc: "今日の線の日付（\"2026-11-02\"。期間があるとき）"},
+    unit:       {type: "string", default: "", doc: "目盛り：day・week・month"},
+    today:      {type: "string", default: "", doc: "今日の線（YYYY-MM-DD）"},
   };
   get steps(){
     if (this.getAttribute("steps") !== null) return +this.getAttribute("steps");
@@ -512,10 +512,12 @@ DECK.define("m-timeline", class extends DECK.MotionElement {
         return {g: g, line: line, head: head, len: len, step: x.step, at: x.at, pts: pts.map(function(p){ return self.xy(p[0], p[1]); }), from: x.a.n.id, to: x.b.n.id};
       });
     }
-    // 今日：期間の段を縦に通る線と「今日」（--accent2）。軸の上には小さな三角
+    // 今日：期間の段を縦に通る線と「今日」（--accent2）。軸の上には小さな三角。帯と名前の下に描く（帯の字を線が消さない）
     this.today = null;
     if (L.today){
-      var gT = D.el("g", {class: "today", opacity: 0}, svg), tu = L.today.u, c0 = L.axisC + L.tickExt - 6, c1 = L.lanesEnd + 6;
+      var gT = D.el("g", {class: "today", opacity: 0}, svg);
+      svg.insertBefore(gT, gBand);
+      var tu = L.today.u, c0 = L.axisC + L.tickExt - 6, c1 = L.lanesEnd + 6;
       var p0 = this.xy(tu, c0), p1 = this.xy(tu, c1), tri = this.xy(tu, L.axisC - 2);
       D.el("path", {d: "M0,0L-9,-12L9,-12Z", fill: "var(--accent2)", transform: "translate(" + tri[0].toFixed(1) + " " + tri[1].toFixed(1) + ") rotate(" + (hz ? 0 : -90) + ")"}, gT);
       var tl = D.el("line", {x1: p0[0].toFixed(1), y1: p0[1].toFixed(1), x2: p1[0].toFixed(1), y2: p1[1].toFixed(1), stroke: "var(--accent2)", "stroke-width": 3}, gT);
