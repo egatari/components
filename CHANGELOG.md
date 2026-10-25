@@ -4,6 +4,10 @@ Versions follow [README.md § Releases and versions](README.md#releases-and-vers
 
 ## Unreleased
 
+### Changed
+
+- README text only, no code or behaviour change (Egatari Studio's free ja kokugo pack, with `m-predict` added to its core, was 40.2 KB against the 40 KB cap): `m-kobun`'s section 「押すと出る札」 (a player interaction) and, in `m-kanbun`, the line on the 明朝 font and the console warning for `不` without `{=ず}` move into `llm: omit` blocks. They stay for human readers. Pack-visible text: `m-kobun` −645 bytes, `m-kanbun` −163 bytes
+
 ### Later (candidates, not in this release)
 
 - `m-compare` `by="row"`; an "outside every set" region for `m-venn`; a project-plan demo for `m-timeline` lanes
