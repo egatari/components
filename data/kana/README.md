@@ -42,7 +42,7 @@ How the derived characters were made (our data only; the glyph was looked at, ne
 
 - **濁音・半濁音** reuse their base character's strokes unchanged (the test checks this) where Klee One's glyph
   matches; only ダ needed one stroke moved (`"refit"` says which). The 濁点 are two short strokes from upper left
-  to lower right, the 半濁点 one circle (started at the top, going left — anticlockwise), both written last and
+  to lower right, the 半濁点 one circle (started at the bottom, going clockwise — see below), both written last and
   placed by hand on each glyph.
 - **Small kana** were first derived from their base by a scale and offset (x and y scaled separately) of our own
   lines, set by eye to the small glyph's extent, then adjusted by hand where Klee One's small form differs
@@ -91,6 +91,11 @@ How the derived characters were made (our data only; the glyph was looked at, ne
   it. No character uses it yet.
 - Strokes that share a start point (ウ・ロ・ワ and their derived forms) start at exactly the same coordinates.
 - 濁点・半濁点 strokes come last and end with `tome`.
+- **Circles** (checked by the owner, 2026-10-26):
+  - 半濁点 ゜ (ぱぴぷぺぽ・パピプペポ): starts at the **bottom** and goes **clockwise** (bottom → left → top → right).
+    The path starts and ends at the bottom point.
+  - Not in the set, recorded for later: ○ (丸, the symbol) also starts at the bottom and goes clockwise;
+    〇 (零, the kanji numeral) starts at the **top** and goes **anticlockwise**.
 
 ### Validation (`tools/test-kana-data.mjs`)
 
@@ -144,5 +149,5 @@ it. Per-character widths can be set in `proto-brush.json` (`{"あ": [13, 12, 13]
 meets stroke 1), も (upward はね at the end of stroke 1), む (end of stroke 2), ひ (end), ふ (stroke 3),
 て (end), を (shape of stroke 2), ゆ (the end of stroke 1). Ending labels marked uncertain after the Klee One
 fit: ら (the short turn at the end of stroke 1), や (stroke 2's short end line, stroke 1's はね), ル and レ
-(はらい or はね), へ・ヘ (はらい or とめ), き・さ・な (short end lines kept as とめ), た・に (very short はね), and the
-半濁点 circle (where it starts, which way it turns). Derived characters inherit their base's note.
+(はらい or はね), へ・ヘ (はらい or とめ), き・さ・な (short end lines kept as とめ), た・に (very short はね).
+Derived characters inherit their base's note.
