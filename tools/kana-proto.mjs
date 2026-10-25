@@ -23,6 +23,11 @@ const DIR = path.join(ROOT, 'data', 'kana');
 const data = JSON.parse(fs.readFileSync(path.join(DIR, 'kana.json'), 'utf8'));
 const chars = Object.fromEntries(Object.entries(data.chars).filter(([, c]) => c.glyphFit)
   .map(([ch, c]) => [ch, { s: c.strokes.map((s) => s.d), e: c.strokes.map((s) => s.end), w: c.strokes.map((s) => s.w ?? null), ...(c.place ? { p: c.place } : {}) }]));
+// Per-stroke glyphs (Private Use Area code points in the OFL font, see tools/kana-stroke-glyphs.py): when the font
+// folder has strokes-map.json, each character lists its stroke glyphs and the page reveals them one by one.
+const mapFile = path.join(DIR, 'font', 'strokes-map.json');
+const STROKE_MAP = fs.existsSync(mapFile) ? JSON.parse(fs.readFileSync(mapFile, 'utf8')).chars : {};
+for (const [ch, cps] of Object.entries(STROKE_MAP)) if (chars[ch] && cps.length === chars[ch].s.length) chars[ch].g = cps;
 const fit = [...new Set(Object.values(data.chars).map((c) => c.glyphFit).filter(Boolean))].join(', ');
 
 // Brush widths (0–100 units): wide brush per stroke (default; a number or an array per character in
@@ -66,7 +71,9 @@ const CHARS = ${JSON.stringify(chars)};
 const BRUSH = ${JSON.stringify(BRUSH)};
 const FIT = ${JSON.stringify(fit)};
 const q = new URLSearchParams(location.search);
-const FONT_URL = q.get('font') || 'font/EgatariKana-SemiBold-kana.woff2';
+const FONT_URL = q.get('font') || ${JSON.stringify(Object.keys(STROKE_MAP).length ? 'font/EgatariKana-SemiBold-strokes.woff2' : 'font/EgatariKana-SemiBold-kana.woff2')};
+// mode=glyphs (default where per-stroke glyphs exist) or mode=w (one glyph, brushes sized by w)
+const MODE = q.get('mode') || 'glyphs';
 const FAMILY = 'Egatari Kana';
 const NS = 'http://www.w3.org/2000/svg';
 const el = (n, a = {}) => { const e = document.createElementNS(NS, n); for (const k in a) e.setAttribute(k, a[k]); return e; };
@@ -85,14 +92,18 @@ function cell(ch, { guide = true, view = 'reveal', grid = true, place = 'yoko' }
   const P = CHARS[ch].p && place !== 'none' ? CHARS[ch].p[place] : null;
   const g = (child, extra = {}) => { const e = el('g', { ...(P ? { transform: 'matrix(' + P.join(' ') + ')' } : {}), ...extra }); e.appendChild(child); return e; };
   const id = 'm' + (uid++);
-  const svg = el('svg', { viewBox: '0 0 100 100', role: 'img', 'aria-label': ch });
+  // accessible name: the real kana; the drawing inside is hidden from assistive tech (it may use PUA code points)
+  const svg = el('svg', { viewBox: '0 0 100 100', role: 'img', 'aria-label': ch + '（書き順）' });
   if (view === 'mask' || view === 'brush') svg.appendChild(el('rect', { width: 100, height: 100, fill: '#000' }));
   else if (grid) {
     svg.appendChild(el('rect', { x: 0.25, y: 0.25, width: 99.5, height: 99.5, fill: 'none', stroke: 'var(--grid)', 'stroke-width': 0.5 }));
     svg.appendChild(el('path', { d: 'M50 0V100M0 50H100', stroke: 'var(--grid)', 'stroke-width': 0.4, 'stroke-dasharray': '1.5 1.5', fill: 'none' }));
   }
   const text = (fill) => { const t = el('text', { x: 0, y: 88, 'font-size': 100, 'font-family': FAMILY, fill }); t.textContent = ch; return t; };
-  if (guide && view === 'reveal') svg.appendChild(g(text('var(--guide)')));
+  const ink = view === 'ink' || view === 'ideal';   // the reveal without guide and grid, for measuring
+  const ideal = view === 'ideal';                  // strokes 1..k as whole stroke glyphs, unmasked (the target)
+  if (ink) view = 'reveal';
+  if (guide && !ink && view === 'reveal') svg.appendChild(g(text('var(--guide)'), { 'aria-hidden': 'true' }));
   const line = (d, w, color) => el('path', { d, fill: 'none', stroke: color, 'stroke-width': w, 'stroke-linecap': 'round', 'stroke-linejoin': 'round', pathLength: 1 });
   const S = CHARS[ch].s;
   // narrow brushes and guards come in segments [a, b] of the stroke's length, each with its own width
@@ -104,6 +115,31 @@ function cell(ch, { guide = true, view = 'reveal', grid = true, place = 'yoko' }
   const wide = S.map((d, i) => (BRUSH.wideExtra !== undefined ? segs(i, BRUSH.wideExtra, width(ch, i)) : [[0, 1, width(ch, i)]]).map(([a, b, w]) => ({ a, b, p: line(d, w, '#fff') })));
   const guard = S.map((d, i) => segs(i, BRUSH.guardExtra, BRUSH.guard).map(([a, b, w]) => ({ a, b, p: line(d, w, '#000') })));
   const narrow = S.map((d, i) => segs(i, BRUSH.narrowExtra, BRUSH.narrow).map(([a, b, w]) => ({ a, b, p: line(d, w, '#fff') })));
+  // per-stroke glyphs: stroke i is its own glyph, shown through its own mask (its wide brush, the guard on its own
+  // remaining part — for a stroke that crosses itself — and its narrow brush). No other stroke is in that glyph, so
+  // nothing of a later stroke can show. A finished stroke is drawn without a mask.
+  const G = CHARS[ch].g;
+  if (G && (MODE === 'glyphs' || ideal) && view === 'reveal') {
+    const defs = el('defs'); svg.appendChild(defs);
+    const groups = S.map((_, i) => {
+      const m = el('mask', { id: id + 's' + i, maskUnits: 'userSpaceOnUse', x: 0, y: 0, width: 100, height: 100 });
+      const lg = el('g'); [...wide[i], ...guard[i], ...narrow[i]].forEach((x) => lg.appendChild(x.p)); m.appendChild(lg); defs.appendChild(m);
+      const t = el('text', { x: 0, y: 88, 'font-size': 100, 'font-family': FAMILY, fill: 'var(--ink)', 'aria-hidden': 'true', style: 'user-select:none;-webkit-user-select:none' });
+      t.textContent = String.fromCodePoint(parseInt(G[i], 16));
+      const grp = g(t, { 'aria-hidden': 'true' }); svg.appendChild(grp); return grp;
+    });
+    const part = (p, lo, hi) => { const len = hi - lo; p.setAttribute('stroke-dasharray', Math.max(len, 0) + ' 2'); p.setAttribute('stroke-dashoffset', -lo); p.style.visibility = len > 1e-6 ? 'visible' : 'hidden'; };
+    const set = (k) => S.forEach((_, i) => {
+      const f = Math.max(0, Math.min(1, k - i));
+      for (const s of wide[i]) part(s.p, s.a, Math.min(s.b, f));
+      for (const s of narrow[i]) part(s.p, s.a, Math.min(s.b, f));
+      for (const s of guard[i]) part(s.p, Math.max(s.a, f), s.b);
+      if (ideal) { groups[i].style.visibility = f >= 1 ? 'visible' : 'hidden'; groups[i].removeAttribute('mask'); return; }
+      groups[i].style.visibility = f > 0 ? 'visible' : 'hidden';
+      if (f >= 1) groups[i].removeAttribute('mask'); else groups[i].setAttribute('mask', 'url(#' + id + 's' + i + ')');
+    });
+    return { svg, set, n: S.length };
+  }
   const layers = el('g');
   if (view === 'brush') wide.flat().forEach((x) => layers.appendChild(x.p));
   else [...wide.flat().map((x) => x.p), ...guard.flat().map((x) => x.p), ...narrow.flat().map((x) => x.p)].forEach((p) => layers.appendChild(p));
@@ -113,7 +149,7 @@ function cell(ch, { guide = true, view = 'reveal', grid = true, place = 'yoko' }
     mask.appendChild(layers);
     const defs = el('defs'); defs.appendChild(mask); svg.appendChild(defs);
     // the mask is in the glyph's own coordinates: it is referenced by the transformed group
-    svg.appendChild(g(text('var(--ink)'), view !== 'glyph' ? { mask: 'url(#' + id + ')' } : {}));
+    svg.appendChild(g(text('var(--ink)'), view !== 'glyph' ? { mask: 'url(#' + id + ')', 'aria-hidden': 'true' } : { 'aria-hidden': 'true' }));
   }
   // a zero-length dash would still paint a round cap, so empty parts are hidden
   // part [lo, hi] of a path
@@ -162,6 +198,7 @@ function animate(c, ch) {
     const fig = document.createElement('figure'); fig.appendChild(c.svg); main.appendChild(fig);
     if (view === 'brush') c.set(+(o.to ?? c.n), +(o.from ?? 0));
     else if (view === 'glyph') c.set(c.n);
+    else if (view === 'ink' || view === 'ideal') c.set(+(o.k ?? c.n));
     else c.set(+(o.k ?? c.n));
     window.cur = c;
   };

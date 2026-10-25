@@ -38,7 +38,7 @@ const page = await browser.newPage({ viewport: { width: S, height: S }, deviceSc
 const dec = await browser.newPage();
 // load the page (and the font) once; window.show() redraws
 async function open(pg) {
-  await pg.goto(PROTO + '?ch=あ');
+  await pg.goto(PROTO + '?ch=あ' + (process.env.KANA_MODE ? '&mode=' + process.env.KANA_MODE : ''));
   await pg.waitForFunction(() => document.body.dataset.ready === '1');
 }
 async function show(pg, q, file) {
@@ -84,13 +84,26 @@ function distTo(pts, x, y) {
 }
 
 const report = {}, placeFail = [];
+const HAS_STROKES = fs.existsSync(path.join(ROOT, 'data', 'kana', 'font', 'strokes-map.json'));
 for (const [ch, c] of chars) {
   const n = c.strokes.length, pts = c.strokes.map((s) => samplePath(s.d, 48));
   const G = await lum(await shot({ ch, view: 'glyph', guide: 0, grid: 0, place: 'none' }));
   const M = [], K = [];
   for (let i = 0; i < n; i++) M.push(await lum(await shot({ ch, view: 'brush', from: i, to: i + 1, place: 'none' })));
-  for (let k = 1; k <= n; k++) K.push(await lum(await shot({ ch, view: 'mask', k, place: 'none' })));   // the real mask after k strokes
-  let ink = 0, covered = 0;
+  // what actually shows after k strokes: the reveal itself (no guide, no grid), ink = dark pixels -> 255
+  for (let k = 1; k <= n; k++) K.push((await lum(await shot({ ch, view: 'ink', k, grid: 0, guide: 0, place: 'none' }))).map((v) => (v < 128 ? 255 : 0)));
+  // against the per-stroke glyphs (when the font has them): what should show after k strokes is strokes 1..k whole.
+  // bleedG = showing but not in that target (clearly), hiddenG = in the target (clearly) but not showing
+  const bleedG = Array(n).fill(0), hiddenG = Array(n).fill(0);
+  if (c.g !== undefined || HAS_STROKES) for (let k = 1; k < n; k++) {
+    const T = await lum(await shot({ ch, view: 'ideal', k, grid: 0, guide: 0, place: 'none' }));
+    for (let p = 0; p < S * S; p++) {
+      if (K[k - 1][p] >= 128 && T[p] > 200) bleedG[k]++;
+      if (T[p] < 60 && K[k - 1][p] < 128) hiddenG[k]++;
+    }
+  }
+  let ink = 0, covered = 0, excess = 0;
+  for (let p = 0; p < S * S; p++) if (G[p] >= 128 && K[n - 1][p] >= 128) excess++;   // shows at the end but is not in the glyph
   const leak = Array(n).fill(0), leakOut = Array(n).fill(0), hidden = Array(n).fill(0);
   const needW = Array(n).fill(0), owned = Array(n).fill(0), missing = [];
   const dists = Array.from({ length: n }, () => []);
@@ -155,12 +168,12 @@ for (const [ch, c] of chars) {
   const where = {};
   for (const [x, y] of missing) { const key = `${Math.round(x / 5) * 5},${Math.round(y / 5) * 5}`; where[key] = (where[key] || 0) + 1; }
   report[ch] = {
-    strokes: n, inkPx: ink, coverage: +(100 * covered / ink).toFixed(2), missingPx: missing.length,
+    strokes: n, inkPx: ink, coverage: +(100 * covered / ink).toFixed(2), missingPx: missing.length, excessPx: excess,
     missingAt: Object.entries(where).sort((a, b) => b[1] - a[1]).slice(0, 6),
     missingBox: missing.length ? [Math.min(...missing.map((m) => m[0])), Math.min(...missing.map((m) => m[1])), Math.max(...missing.map((m) => m[0])), Math.max(...missing.map((m) => m[1]))] : null,
     // per step k = 1..n-1 (pixels at 500 px; 25 px = 1 unit²)
     leakPx: leak.slice(1), leakOutsideCrossingPx: leakOut.slice(1), hiddenDrawnPx: hidden.slice(1),
-    needWidth: needW, inkWidth: wMeas, inkWidth3: w3, bandWidth3: wBand3, medWidth3: wMed3, clearWidth3: w3x, bleedPx: bleed.slice(1),
+    needWidth: needW, inkWidth: wMeas, bleedVsStrokesPx: bleedG.slice(1), hiddenVsStrokesPx: hiddenG.slice(1), inkWidth3: w3, bandWidth3: wBand3, medWidth3: wMed3, clearWidth3: w3x, bleedPx: bleed.slice(1),
   };
   const r = report[ch];
   // small kana: the rendered ink, through each placement, must lie inside its quarter
@@ -176,7 +189,7 @@ for (const [ch, c] of chars) {
       if (!inside) placeFail.push(`${ch} ${mode} ${JSON.stringify(box)}`);
     }
   }
-  console.log(`${ch}  cover ${r.coverage}%  missing ${r.missingPx}px ${r.missingPx ? JSON.stringify(r.missingAt) + ' box ' + JSON.stringify(r.missingBox) : ''}  leak ${JSON.stringify(r.leakPx)} outside-crossing ${JSON.stringify(r.leakOutsideCrossingPx)}  hidden ${JSON.stringify(r.hiddenDrawnPx)}  bleed ${JSON.stringify(r.bleedPx)}  w ${JSON.stringify(wMeas)}  needW ${JSON.stringify(needW)}`);
+  console.log(`${ch}  cover ${r.coverage}%  excess ${r.excessPx}px  missing ${r.missingPx}px ${r.missingPx ? JSON.stringify(r.missingAt) + ' box ' + JSON.stringify(r.missingBox) : ''}  leak ${JSON.stringify(r.leakPx)} outside-crossing ${JSON.stringify(r.leakOutsideCrossingPx)}  hidden ${JSON.stringify(r.hiddenDrawnPx)}  bleed ${JSON.stringify(r.bleedPx)}  w ${JSON.stringify(wMeas)}  needW ${JSON.stringify(needW)}`);
 }
 fs.writeFileSync(path.join(OUT, 'report.json'), JSON.stringify(report, null, 1));
 const nPlaced = Object.values(report).filter((r) => r.place).length;

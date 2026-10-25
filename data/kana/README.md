@@ -18,6 +18,7 @@ Not included: ゐ ゑ ヰ ヱ (historical kana), the vertical-writing form of �
 | `../../tools/test-kana-data.mjs` | Validates `kana.json`: `node tools/test-kana-data.mjs` (not yet in `test-all`) |
 | `../../tools/kana-path.mjs` | Small SVG path reader shared by the scripts |
 | `proto.html` | Prototype of the stroke-by-stroke reveal over the font Egatari Kana, derived from Klee One (all 166 characters). Built by `node tools/kana-proto.mjs`; needs the font subset at `data/kana/font/EgatariKana-SemiBold-kana.woff2` (gitignored, not in the repository yet; see "The font") or `?font=<url>`; `?place=tate` shows small kana in vertical-writing placement |
+| `../../tools/kana-stroke-glyphs.py` | Builds the per-stroke glyphs into a copy of the font (OFL, not committed): `uv run tools/kana-stroke-glyphs.py --font IN.woff2 --out OUT.woff2 --map strokes-map.json [--chars …]` |
 | `../../tools/kana-proto-check.mjs` | Measures the reveal in headless Chrome (coverage, leaks onto later strokes) and renders frames: `node tools/kana-proto-check.mjs OUTDIR --frames` |
 
 ## Licence and provenance
@@ -157,6 +158,26 @@ Measured by `kana-proto-check.mjs` after each whole stroke k (pixels at 500 px; 
   measured width + 0.4 from every drawn centreline) — the slivers beside a crossing;
 - **hidden**: ink of a drawn stroke that does not show (a guard wider than the narrow brush can hide it). Per-character widths can be set in `proto-brush.json` (`{"あ": [13, 12, 13]}`); none is needed now.
 
+### Per-stroke glyphs (prototype: れ・わ・ね・あ・き・と・ク)
+
+Each stroke can also be its **own glyph in the font** (see FONTLOG): the whole stroke as written, including where it
+crosses another (the overlap belongs to both). The page then draws stroke j's glyph through a single brush along our
+centreline (wide brush, plus the guard and narrow brush on its own remaining part, for a stroke that crosses itself);
+finished strokes are drawn whole. Nothing of a later stroke can show early, because it is not in that glyph.
+`proto.html` uses them when `data/kana/font/strokes-map.json` (code points per character) is present; `?mode=w`
+switches back to the single glyph with brushes sized by `w`. The MIT data is unchanged: the shapes live in the font.
+
+**Accessibility:** the stroke glyphs are Private Use Area characters and must never reach readable text. In
+`proto.html` (and in anything a part copies from it) every glyph layer is `aria-hidden="true"` and not selectable,
+and the `svg` has `role="img"` and the real kana as its name, e.g. `aria-label="あ（書き順）"`. Copy, search and
+screen readers get あ, never a PUA code point.
+
+Measured on the 7 characters (500 px; summed over the steps after each whole stroke):
+- against the stroke glyphs (what should show after k strokes is strokes 1..k whole): bleed 4079 px (fixed brushes)
+  → 3118 (`w` brushes) → **0** (stroke glyphs); hidden 706 → 3622 → **0**;
+- the union of a character's stroke glyphs equals the original glyph within anti-aliasing (≤ 57 px of about
+  9 000–12 000 ink px per character differ, all along the seams and edges; coverage 99.8–99.9 % at the 50 % threshold).
+
 `kana-proto-check.mjs` also renders each small kana through `place.yoko` and `place.tate` and checks that its ink
 lies inside the right quarter (all 22 pass).
 
@@ -178,6 +199,22 @@ repository yet; the prototype loads it from `data/kana/font/` (gitignored).
 ### FONTLOG
 
 Egatari Kana — Derived from Klee One (SIL OFL 1.1).
+
+- 2026-10-26 — **Per-stroke glyphs** (`EgatariKana-SemiBold-strokes.woff2`, built by `tools/kana-stroke-glyphs.py`;
+  not committed). A Private Use Area block from **U+F0000** holds **one glyph per stroke**, cut from the original
+  Klee One outline of the character: the region of the outline along the stroke between the stroke's own edges,
+  **extended straight through crossings** (so a stroke keeps its full shape where it crosses another; the overlap is
+  in both glyphs); ends and edge slivers outside every band go to the stroke whose edge they lie against. The
+  union of a character's stroke glyphs is its original glyph. The edges are read from the outline across our
+  centrelines (the median edge distance on each side of a stroke, + 0.3 units); merged contours (と strokes 1–2,
+  ク, タ) are cut at the junction this way. The stroke glyphs are derived from Klee One outlines and are part of the
+  OFL font; the MIT data holds no outline. The normal kana glyphs stay in the font.
+  - Prototype: れ・わ・ね・あ・き・と・ク, 17 stroke glyphs, **U+F0000–U+F0010**; 31,828 bytes (WOFF2; 42,463 as a
+    `data:` URI) against 29,524 for the kana-only subset.
+  - Full set, built once for size: 166 characters, 477 stroke glyphs, **U+F0000–U+F01DC**; **57,468 bytes**
+    (WOFF2; 76,647 as a `data:` URI). The 濁音・半濁音 repeat their base's stroke glyphs; sharing them as composite
+    glyphs would make it smaller. Not yet checked character by character.
+  - The map from characters to code points (numbers only) is written next to the font as `strokes-map.json`.
 
 - 2026-10-26 — OS/2 `achVendID` set to `NONE` (was `FWKS`, Fontworks' vendor code): a modified version does not
   claim to come from Fontworks.
