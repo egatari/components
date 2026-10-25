@@ -16,6 +16,7 @@ props: kind, build, dur
 - times：`{from, to, label: "2 倍"}`（行の番号）
 - `kind="line"`：線分図
 - 項目の `show`：出す段階
+- 行の名前に色の名前（赤・白）を使わない。色はテーマで変わる
 
 <!-- llm: omit -->
 作る人向けの注

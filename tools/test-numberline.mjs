@@ -74,12 +74,21 @@ eq(G.split('-1/4'), [{ t: M }, { num: '1', den: '4' }], 'negative fraction: minu
 eq(G.hasFrac('1200'), false, 'no fraction in "1200"');
 eq(G.width('1/3', 24) < G.width('13', 24) + 12, true, 'a stacked fraction is about as wide as its widest part');
 
-// ---- thinning tick labels ----
+// ---- thinning tick labels: only generated labels are dropped ----
 {
-  const items = Array.from({ length: 41 }, (_, i) => ({ i, x: i * 25, w: 30 }));
-  eq(G.thin(items), 2, '41 labels 25 px apart, 30 px wide: every 2nd');
-  eq(G.thin(items.map((o) => ({ ...o, w: 12 }))), 1, 'narrow labels (13 px apart): all');
-  eq(G.thin(items.map((o) => ({ ...o, w: 70 }))), 5, '70 px wide: every 5th');
+  const row = (n, gap, w) => Array.from({ length: n }, (_, i) => ({ i, x: i * gap, w, keep: i === 0 || i === n - 1 }));
+  const xs = (k) => k.map((o) => o.i);
+  eq(xs(G.pick(row(41, 25, 30))), Array.from({ length: 21 }, (_, i) => 2 * i), '41 labels 25 px apart, 30 px wide: every 2nd, both ends kept');
+  eq(G.pick(row(41, 25, 12)).length, 41, 'narrow labels (13 px apart): all');
+  eq(xs(G.pick(row(41, 25, 70))), [0, 5, 10, 15, 20, 25, 30, 35, 40], '70 px wide: every 5th');
+  eq(xs(G.pick(row(8, 25, 30))), [0, 2, 4, 7], '0..7 every 2nd: the end 7 is kept and 6 (too close to it) is dropped');
+  eq(xs(G.pick(row(12, 25, 70))), [0, 5, 11], 'the end 11 is kept although 11 is not a multiple of 5; 10 is dropped');
+  const fixed = row(11, 25, 30).map((o) => ({ ...o, keep: o.keep || o.i === 3 }));
+  eq(xs(G.pick(fixed)).includes(3), true, 'a label the author named (keep) is never dropped');
+  eq(xs(G.pick(fixed)).includes(2) || xs(G.pick(fixed)).includes(4), false, '… its generated neighbours that collide with it are dropped instead');
+  eq(xs(G.pick(row(11, 60, 30), [{ x: 300, w: 40 }])), [0, 1, 2, 3, 4, 6, 7, 8, 9, 10], 'a generated label under a □ mark is dropped');
+  eq(xs(G.pick(row(11, 60, 30), [{ x: 0, w: 40 }])).includes(0), true, 'a line end is kept even next to a □ mark');
+  eq(xs(G.pick(row(2, 10, 30))), [0, 1], 'two ends that collide are both kept (the author chose the line)');
 }
 
 // ---- overlapping ranges and their shared part ----

@@ -148,15 +148,21 @@ var NL = (function(){
   function segW(g, size){ return g.t !== undefined ? est(g.t, size) : Math.max(est(g.num, size), est(g.den, size)) + 10; }
   function width(str, size){ var sg = split(str); return sg.reduce(function(a, g){ return a + segW(g, size); }, 0) + GAP * Math.max(0, sg.length - 1); }
   function hasFrac(str){ return str !== null && str !== undefined && split(str).some(function(g){ return g.num !== undefined; }); }
-  // 名前を間引く：x の位置に中心がある幅 w の名前が、隣と 12 px より近くならない間隔 m（1, 2, 5, 10, …）
-  function thin(items){
-    var steps = [1, 2, 5, 10, 20, 50, 100];
+  // 名前を間引く：items は [{i, x, w, keep}]（x は名前の中心、w は幅）。keep の名前（線の端・labels に書いた値）は必ず残し、
+  // 間引くのは部品が作った目盛りの名前だけ。avoid（□ の印など作る人の書いたもの）[{x, w}] と keep の名前に 12 px より近い名前は落とし、
+  // 残りが隣と 12 px あく間隔 m（1, 2, 5, 10, …）おきにする。残す名前を x の順に返す
+  function pick(items, avoid){
+    var near = function(a, b){ return Math.abs(a.x - b.x) < (a.w + b.w) / 2 + 12; };
+    var fixed = items.filter(function(o){ return o.keep; }), gen = items.filter(function(o){ return !o.keep; }), block = fixed.concat(avoid || []);
+    var steps = [1, 2, 5, 10, 20, 50, 100, 200, 500], cand = [];
     for (var a = 0; a < steps.length; a++){
-      var m = steps[a], kept = items.filter(function(o){ return o.i % m === 0; }), ok = true;
-      for (var b = 1; b < kept.length; b++) if (kept[b].x - kept[b].w / 2 < kept[b - 1].x + kept[b - 1].w / 2 + 12){ ok = false; break; }
-      if (ok) return m;
+      var m = steps[a];
+      cand = gen.filter(function(o){ return o.i % m === 0 && !block.some(function(b){ return near(o, b); }); });
+      var ok = true;
+      for (var b = 1; b < cand.length; b++) if (near(cand[b], cand[b - 1])){ ok = false; break; }
+      if (ok) break;
     }
-    return steps[steps.length - 1];
+    return fixed.concat(cand).sort(function(p, q){ return p.x - q.x; });
   }
   // 線を横に置く：x0..x1 の中に、0 の位置をそろえて（2 本とも 0 を含むとき）。[{a, b, x(v)}]
   function spans(lines, x0, x1){
@@ -201,7 +207,7 @@ var NL = (function(){
     return {lo: lo, hi: hi, incl: [il, ih]};
   }
   return {R: R, sub: sub, div: div, isFrac: isFrac, parse: parse, val: val, cmp: cmp, ticks: ticks, fracLabel: fracLabel, fmtDec: fmtDec, split: split, est: est, width: width,
-          hasFrac: hasFrac, thin: thin, arcAt: arcAt, spans: spans, levels: levels, shared: shared, MINUS: MINUS};
+          hasFrac: hasFrac, pick: pick, arcAt: arcAt, spans: spans, levels: levels, shared: shared, MINUS: MINUS};
 })();
 var TONES = /^(term|emph|muted|accent2|fg|series-[1-4])$/;
 var toneOf = function(c, d){ return TONES.test(c || "") ? "var(--" + c + ")" : d; };
@@ -357,19 +363,22 @@ DECK.define("m-numberline", class extends DECK.MotionElement {
     var pickLabels = function(l, X, boxes){
       var spec = l.src ? l.src.labels : l.labels, tk = l.ticks.filter(function(t){ return t.major; });
       tk.forEach(function(t){ t.x = X(t.v); t.w = G.width(t.label, FS); });
-      var shown;
-      if (spec === "none") shown = [];
-      else if (spec === "ends") shown = [tk[0], tk[tk.length - 1]];
-      else if (Array.isArray(spec)){
+      // □ の印のある値の名前は □ に替わる（□ が答えの数の場所）
+      tk = tk.filter(function(t){ return !boxes.some(function(b){ return Math.abs(b.m.v - t.v) < 1e-9; }); });
+      tk.forEach(function(t){ t.keep = false; });
+      var last = tk.length - 1;
+      if (spec === "none") return [];
+      if (spec === "ends") return tk.filter(function(t, i){ return i === 0 || i === last; });
+      if (Array.isArray(spec)){
         var want = spec.map(function(v){ var r = G.parse(v); if (!r) console.warn("m-numberline: labels value " + JSON.stringify(v) + " is not a number"); return r ? G.val(r) : NaN; });
-        shown = tk.filter(function(t){ return want.some(function(v){ return Math.abs(v - t.v) < 1e-9; }); });
+        var shown = tk.filter(function(t){ return want.some(function(v){ return Math.abs(v - t.v) < 1e-9; }); });
         if (shown.length < want.filter(isFinite).length) console.warn("m-numberline: some labels values are not on a tick of the line");
-      } else {
-        if (spec !== undefined && spec !== "all") console.warn('m-numberline: labels="' + spec + '" is not all, ends, none or a list of values');
-        var m = G.thin(tk);
-        shown = tk.filter(function(t){ return t.i % m === 0; });
+        return shown;
       }
-      return shown.filter(function(t){ return !boxes.some(function(b){ return Math.abs(b.x - t.x) < (b.w + t.w) / 2 + 8; }); });
+      if (spec !== undefined && spec !== "all") console.warn('m-numberline: labels="' + spec + '" is not all, ends, none or a list of values');
+      // 線の端は必ず書く。間引くのはその間の目盛りの名前だけ（□ の印に近い名前も落とす）
+      tk.forEach(function(t, i){ t.keep = i === 0 || i === last; });
+      return G.pick(tk, boxes);
     };
     // ---- 縦の置き場所 ----
     var Lx = pl.lines.map(function(l, li){
