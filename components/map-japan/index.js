@@ -831,11 +831,25 @@ DECK.define("m-map-japan", class extends DECK.MotionElement {
       }
       it.els.forEach(function(el){
         var s0 = vr === "sweep" ? (el.rank || 0) * dur * 0.4 : 0, op;
-        if (vr === "draw" && (el.outlines || el.line)){
+        if (vr === "draw" && (el.outlines || el.line) && tt < 0){
+          // まだの段階：mount の直後の属性に戻す（前の呼び出しの値を残さない。docs/contract.md §3）。g が見えないので見た目は同じ。
+          // 0 を書かずに属性を消すのは、v1.10.0 の段階 0 と同じ DOM にするため（見えない子の opacity="0" だけで、Chrome は
+          // 同じ地図の字を LCD の縁取りでなく灰色の縁取りで描く：Linux・Windows の CI で test-default-variant が違いを見つけた）
+          op = 0;
+          if (el.outlines){
+            el.kids.forEach(function(q){ q.removeAttribute("opacity"); });
+            el.outlines.forEach(function(q){ q.p.removeAttribute("opacity"); q.p.removeAttribute("stroke-dasharray"); q.p.removeAttribute("stroke-dashoffset"); });
+          }
+          if (el.line){
+            el.line.setAttribute("stroke-dasharray", it.x.o.dash ? "10 7" : "");
+            el.line.removeAttribute("stroke-dashoffset");
+            if (el.fill) el.fill.removeAttribute("opacity");
+          }
+        }
+        else if (vr === "draw" && (el.outlines || el.line)){
           // 輪郭を 0〜0.6 dur で引き、塗りを 0.4〜1.0 dur で。輪郭は 0.8〜1.0 dur で消える
-          // まだの段階（tt < 0）でも同じ属性を書く（前の呼び出しの値を残さない。docs/contract.md §3）
-          var de = tt < 0 ? 0 : D.prog(tt, 0, dur * 0.6), fe = tt < 0 ? 0 : D.prog(tt, dur * 0.4, dur * 0.6), oe = tt < 0 ? 1 : 1 - D.prog(tt, dur * 0.8, dur * 0.2);
-          op = tt < 0 ? 0 : mul;
+          var de = D.prog(tt, 0, dur * 0.6), fe = D.prog(tt, dur * 0.4, dur * 0.6), oe = 1 - D.prog(tt, dur * 0.8, dur * 0.2);
+          op = mul;
           if (el.outlines){
             el.kids.forEach(function(q){ q.setAttribute("opacity", fe.toFixed(3)); });
             el.outlines.forEach(function(q){
