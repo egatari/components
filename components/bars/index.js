@@ -9,6 +9,8 @@
 // 値の数字は伸びきってから出す（途中の値を読ませない）。count="true" なら伸びに合わせて数え上げる
 // stack="true"：組の値を横に並べず 1 本に積み上げる（積み上げ棒）。下の系列から順に色が満ちていき、合計を棒の端に、
 //              それぞれの値を単位なしで区切りの中に（入るときだけ）書く。系列の名前は最後の組の棒の右（横棒なら最初の組の棒の上）に書く
+// stack="percent"：積み上げ棒の各組を 100 % にそろえ、区切りの中に % を書く（軸は 0〜100 %、端の合計は書かない）
+// 負の値（積み上げでない棒）：値の軸に 0 を含め、0 の基線から下（横棒は左）へ伸ばす。値の数字は棒の端の外側（下・左）に書く
 DECK.define("m-bars", class extends DECK.MotionElement {
   // データの形（kit/shape.js）
   static shape = {
@@ -64,13 +66,24 @@ DECK.define("m-bars", class extends DECK.MotionElement {
     var ns = Math.max(series.length, Math.max.apply(null, pl.groups.map(function(g){ return g.vals.length; }).concat([1])));
     // 積み上げ棒では、軸と端の数字は組の合計で決める
     var st = P.stack, sum = function(g){ return g.vals.reduce(function(a, v){ return a + Math.max(0, v); }, 0); };
-    var tops = function(g){ return st ? [sum(g)] : g.vals; };
+    // stack="percent"：各組を 100 % にそろえる
+    var pct = this.pct = st && this.getAttribute("stack") === "percent";
+    var tops = function(g){ return pct ? [100] : st ? [sum(g)] : g.vals; };
     var all = [].concat.apply([], pl.groups.map(tops));
     // 軸の上限：scale の最初の段階より前に出る棒が収まるように
     var first = pl.scale.length ? pl.scale[0].step : Infinity;
     var early = [].concat.apply([], pl.groups.filter(function(g){ return g.step < first; }).map(tops));
-    this.M0 = P.max || d.max || nice(Math.max.apply(null, (early.length ? early : all).concat([1e-9])) * 1.12);
+    // 負の値があれば（積み上げでない棒）、軸は 0 を含み、0 より下の範囲 N をとる（N は下で枠の大きさから決める）
+    var mn = st ? 0 : Math.min.apply(null, all.concat([0]));
+    this.neg = mn < 0; this.N = 0;
+    if (this.neg){
+      var pmax = Math.max.apply(null, (early.length ? early : all).concat([0]));
+      this.M0 = P.max || d.max || (pmax > 0 ? nice(pmax * 1.12) : 0);
+      this.levels = [this.M0].concat(pl.scale.map(function(s){ return s.max || nice(Math.max(Math.max.apply(null, all), 1e-9) * 1.12); }));
+    } else {
+    this.M0 = pct ? 100 : P.max || d.max || nice(Math.max.apply(null, (early.length ? early : all).concat([1e-9])) * 1.12);
     this.levels = [this.M0].concat(pl.scale.map(function(s){ return s.max || nice(Math.max.apply(null, all) * 1.12); }));
+    }
     pl.scale.forEach(function(s, i){ s.max = self.levels[i + 1]; });
     // 余白：横棒は組の名前の幅（和文 1 字 = 1 字幅、ほかは 0.55 字幅の見積もり）、縦棒は値の軸の目盛り
     var est = function(s, size){ return [...String(s)].reduce(function(a, c){ return a + (/[\u0000-ɏ]/.test(c) ? 0.56 : 1); }, 0) * size; };
@@ -90,17 +103,33 @@ DECK.define("m-bars", class extends DECK.MotionElement {
       this.x1 = Math.max(this.x0, this.x1); this.y1 = Math.max(this.y0, this.y1);
     }
     this.len = hor ? this.x1 - this.x0 : this.y1 - this.y0;
+    if (this.neg){
+      // 0 より下の範囲：いちばん下の棒の端の外に値の数字が入るだけあける（縦棒 40 px、横棒は数字の幅 + 24 px）
+      var room = hor ? valW + 24 : 40, fr = Math.min(0.6, room / Math.max(1, this.len));
+      this.N = nice((-mn + fr * this.M0) / (1 - fr));
+      // 縦棒：負の目盛りの字の幅だけ左をあける
+      if (!hor && P.ticks){
+        var nl = 24 + est(this.fmtTick(-this.N, decs(tickStep(this.M0 + this.N))), 24) + (P.al ? 36 : 0);
+        if (nl > m.l){ m.l = nl; this.x0 = m.l; if (this.x1 < this.x0) this.x1 = this.x0; }
+      }
+    }
     // 前の上限までの範囲（上限を動かす間だけ）
     this.band = D.el("rect", {fill: "var(--term-tint)", opacity: 0}, svg);
     // 目盛り：上限ごとに 1 組。上限が動く間は前の組を薄くし、次の組を濃くする
     var gT = D.el("g", {}, svg);
     this.tickSets = !P.ticks ? [] : this.levels.map(function(M){
-      var st = tickStep(M), dec = decs(st);
+      var st = tickStep(self.neg ? M + self.N : M), dec = decs(st);
       var out = [];
       for (var i = 1; i * st <= M * 1.0001; i++){
         var v = +(i * st).toFixed(8);
         out.push({v: v, grid: D.el("line", {stroke: "var(--line)", "stroke-width": 1.2}, gT),
           text: D.el("text", {"font-size": 24, "text-anchor": hor ? "middle" : "end", style: "font-variant-numeric:tabular-nums"}, gT), label: self.fmtTick(v, dec)});
+      }
+      // 負の側の目盛り（負の値があるときだけ）
+      if (self.neg) for (var i2 = 1; i2 * st <= self.N * 1.0001; i2++){
+        var v2 = -(+(i2 * st).toFixed(8));
+        out.push({v: v2, grid: D.el("line", {stroke: "var(--line)", "stroke-width": 1.2}, gT),
+          text: D.el("text", {"font-size": 24, "text-anchor": hor ? "middle" : "end", style: "font-variant-numeric:tabular-nums"}, gT), label: self.fmtTick(v2, dec)});
       }
       out.forEach(function(o){ o.text.textContent = o.label; });
       return out;
@@ -108,7 +137,8 @@ DECK.define("m-bars", class extends DECK.MotionElement {
     // 0 の目盛りと基線（いつも出す）
     if (P.ticks){
       var z = D.el("text", {"font-size": 24, "text-anchor": hor ? "middle" : "end"}, gT);
-      z.textContent = "0";
+      z.textContent = pct ? "0%" : "0";
+      this.zeroT = z;
       if (hor){ z.setAttribute("x", this.x0); z.setAttribute("y", this.y1 + 32); } else { z.setAttribute("x", this.x0 - 10); z.setAttribute("y", this.y1 + 8); }
     }
     if (P.al){
@@ -116,27 +146,30 @@ DECK.define("m-bars", class extends DECK.MotionElement {
       else D.mtext(svg, 20, (this.y0 + this.y1) / 2, P.al, {"text-anchor": "middle", fill: "var(--muted)", transform: "rotate(-90 20 " + (this.y0 + this.y1) / 2 + ")"});
     }
     var gB = D.el("g", {}, svg), gL = D.el("g", {}, svg);
-    if (hor) D.el("line", {x1: this.x0, y1: this.y0, x2: this.x0, y2: this.y1, stroke: "var(--fg)", "stroke-width": 1.5}, svg);
-    else D.el("line", {x1: this.x0, y1: this.y1, x2: this.x1, y2: this.y1, stroke: "var(--fg)", "stroke-width": 1.5}, svg);
+    if (hor) this.baseL = D.el("line", {x1: this.x0, y1: this.y0, x2: this.x0, y2: this.y1, stroke: "var(--fg)", "stroke-width": 1.5}, svg);
+    else this.baseL = D.el("line", {x1: this.x0, y1: this.y1, x2: this.x1, y2: this.y1, stroke: "var(--fg)", "stroke-width": 1.5}, svg);
     // 組と棒の位置（組の幅は枠の 64%、棒は組の幅を系列で分ける）
     var n = pl.groups.length || 1, cross = hor ? this.y1 - this.y0 : this.x1 - this.x0, slot = cross / n;
     var bw = Math.min(hor ? 56 : 96, slot * 0.64 / (st ? 1 : ns));
     this.bars = [];
     this.stacks = null;
     if (st) this.stacks = pl.groups.map(function(o, i){
-      var c = (hor ? self.y0 : self.x0) + slot * (i + 0.5), cum = 0;
+      var c = (hor ? self.y0 : self.x0) + slot * (i + 0.5), cum = 0, raw = sum(o);
       String(o.g.label || "").split("\n").forEach(function(s, j, a){
         if (hor) D.mtext(gL, self.x0 - 12, c + 8 + (j - (a.length - 1) / 2) * 30, s, {"text-anchor": "end", "font-size": 26});
         else D.mtext(gL, c, self.y1 + 34 + j * 30, s, {"text-anchor": "middle", "font-size": 26});
       });
       var segs = o.vals.map(function(v, j){
         v = Math.max(0, v);
+        if (pct) v = raw > 0 ? v / raw * 100 : 0;
         var col = tone(series[j] && series[j].tone || (ns > 1 ? "series-" + (j % 4 + 1) : "term"));
         var sg = {v: v, j: j, from: cum, col: col, rect: D.el("rect", {rx: 3, fill: col, opacity: 0}, gB),
           val: D.el("text", {"font-size": 24, "font-weight": 700, "text-anchor": "middle", fill: "var(--bg)", opacity: 0, style: "font-variant-numeric:tabular-nums"}, gL)};
         // 区切りの中の値は単位を付けない（単位は端の合計に付く）
-        sg.val.textContent = self.fmt(v, undefined, "");
+        sg.val.textContent = self.fmt(v, undefined, pct ? "%" : "");
         sg.vw = est(sg.val.textContent, 24);
+        // 100 % の積み上げ棒：太字 24 px の数字の幅で見積もる（数字 0.76、% 1、. と , 0.32、− 0.84 字幅。字の読み込みを待たない）
+        sg.vw2 = [...sg.val.textContent].reduce(function(a, ch){ return a + (/[0-9]/.test(ch) ? 0.76 : ch === "%" ? 1 : /[.,]/.test(ch) ? 0.32 : ch === "−" ? 0.84 : /[\u0000-ɏ]/.test(ch) ? 0.6 : 1); }, 0) * 24;
         cum += v;
         return sg;
       });
@@ -163,9 +196,9 @@ DECK.define("m-bars", class extends DECK.MotionElement {
         var off = (j - (ns - 1) / 2) * (bw + 4);
         var b = {o: o, v: v, j: j, c: c + off, col: col,
           rect: D.el("rect", {rx: 3, fill: col}, gB),
-          val: D.el("text", {"font-size": 26, "font-weight": 700, "text-anchor": hor ? "start" : "middle", fill: o.g.tone ? col : "var(--fg)", style: "font-variant-numeric:tabular-nums"}, gL)};
+          val: D.el("text", {"font-size": 26, "font-weight": 700, "text-anchor": hor ? (v < 0 ? "end" : "start") : "middle", fill: o.g.tone ? col : "var(--fg)", style: "font-variant-numeric:tabular-nums"}, gL)};
         // 系列の名前は最初の組の棒の上（横棒なら右）に直接書く（凡例は作らない）
-        if (i === 0 && ns > 1 && series[j] && series[j].label) b.ser = D.mtext(gL, 0, 0, series[j].label, {"text-anchor": hor ? "start" : "middle", "font-size": 24, "font-weight": 700, fill: col});
+        if (i === 0 && ns > 1 && series[j] && series[j].label) b.ser = D.mtext(gL, 0, 0, series[j].label, {"text-anchor": hor ? (v < 0 ? "end" : "start") : "middle", "font-size": 24, "font-weight": 700, fill: col});
         self.bars.push(b);
       });
       return {o: o, lab: lab};
@@ -185,7 +218,7 @@ DECK.define("m-bars", class extends DECK.MotionElement {
     var s = Math.abs(v).toFixed(dg).split("."), i = s[0].replace(/\B(?=(\d{3})+(?!\d))/g, ",");
     return (v < 0 ? "−" : "") + i + (s[1] ? "." + s[1] : "") + (unit !== undefined ? unit : this.props.unit);
   }
-  fmtTick(v, dec){ return this.fmt(v, dec, ""); }
+  fmtTick(v, dec){ return this.fmt(v, dec, this.pct ? "%" : ""); }
   // 段階 k、時刻 t の上限
   maxAt(k, t){
     var P = this.props, m = this.M0, from = 0, e = 1, lv = 0;
@@ -213,6 +246,14 @@ DECK.define("m-bars", class extends DECK.MotionElement {
     var sc = this.maxAt(k, t), M = sc.m;
     var ahead = function(o, v){ return preview && o.step > k && !(v > M * 1.04); };
     var pos = function(v){ var r = Math.min(v, M * 1.04) / M * self.len; return hor ? self.x0 + r : self.y1 - r; };
+    // 負の値があるとき：値の軸は -N から M。棒は 0 の基線から伸びる
+    var N = this.N;
+    if (this.neg){
+      pos = function(v){ var r = (Math.max(-N * 1.04, Math.min(v, M * 1.04)) + N) / (M + N) * self.len; return hor ? self.x0 + r : self.y1 - r; };
+      var z0 = pos(0);
+      if (hor){ this.baseL.setAttribute("x1", z0.toFixed(1)); this.baseL.setAttribute("x2", z0.toFixed(1)); if (this.zeroT) this.zeroT.setAttribute("x", z0.toFixed(1)); }
+      else { this.baseL.setAttribute("y1", z0.toFixed(1)); this.baseL.setAttribute("y2", z0.toFixed(1)); if (this.zeroT) this.zeroT.setAttribute("y", (z0 + 8).toFixed(1)); }
+    }
     // 目盛り：今の上限の組を濃く、動いている間は前の組を薄く
     // 前の組と次の組に同じ値の目盛りがあれば、重ねずに次の組のものだけを濃く出す
     var moving = sc.from !== null, has = function(li, v){ return (self.tickSets[li] || []).some(function(o){ return Math.abs(o.v - v) < 1e-9; }); };
@@ -222,7 +263,7 @@ DECK.define("m-bars", class extends DECK.MotionElement {
         var b = op;
         if (moving && li === sc.lv - 1 && has(sc.lv, o.v)) b = 0;
         if (moving && li === sc.lv && has(sc.lv - 1, o.v)) b = 1;
-        var p = pos(o.v), a = o.v > M * 1.001 ? 0 : b;
+        var p = pos(o.v), a = o.v > M * 1.001 || (self.neg && o.v < -N * 1.001) ? 0 : b;
         if (hor){ o.grid.setAttribute("x1", p.toFixed(1)); o.grid.setAttribute("x2", p.toFixed(1)); o.grid.setAttribute("y1", self.y0); o.grid.setAttribute("y2", self.y1);
                   o.text.setAttribute("x", p.toFixed(1)); o.text.setAttribute("y", self.y1 + 32); }
         else { o.grid.setAttribute("y1", p.toFixed(1)); o.grid.setAttribute("y2", p.toFixed(1)); o.grid.setAttribute("x1", self.x0); o.grid.setAttribute("x2", self.x1);
@@ -241,19 +282,25 @@ DECK.define("m-bars", class extends DECK.MotionElement {
       var o = b.o, at = o.at + 0.1 * b.j;
       var e = o.step < k || ahead(o, b.v) ? 1 : o.step > k ? 0 : D.prog(t, at, P.dur);
       var v = b.v * e, p = pos(v), w = self.bw;
-      if (hor){ b.rect.setAttribute("x", self.x0); b.rect.setAttribute("width", Math.max(0, p - self.x0).toFixed(1)); b.rect.setAttribute("y", (b.c - w / 2).toFixed(1)); b.rect.setAttribute("height", w.toFixed(1)); }
+      if (self.neg){
+        // 0 の基線から値まで（負なら下・左へ）
+        var zb = pos(0);
+        if (hor){ b.rect.setAttribute("x", Math.min(p, zb).toFixed(1)); b.rect.setAttribute("width", Math.abs(p - zb).toFixed(1)); b.rect.setAttribute("y", (b.c - w / 2).toFixed(1)); b.rect.setAttribute("height", w.toFixed(1)); }
+        else { b.rect.setAttribute("x", (b.c - w / 2).toFixed(1)); b.rect.setAttribute("width", w.toFixed(1)); b.rect.setAttribute("y", Math.min(p, zb).toFixed(1)); b.rect.setAttribute("height", Math.abs(zb - p).toFixed(1)); }
+      } else if (hor){ b.rect.setAttribute("x", self.x0); b.rect.setAttribute("width", Math.max(0, p - self.x0).toFixed(1)); b.rect.setAttribute("y", (b.c - w / 2).toFixed(1)); b.rect.setAttribute("height", w.toFixed(1)); }
       else { b.rect.setAttribute("x", (b.c - w / 2).toFixed(1)); b.rect.setAttribute("width", w.toFixed(1)); b.rect.setAttribute("y", p.toFixed(1)); b.rect.setAttribute("height", Math.max(0, self.y1 - p).toFixed(1)); }
       b.rect.setAttribute("opacity", ahead(o, b.v) ? PV : e > 0 ? 1 : 0);
       // 値の数字：既定は伸びきってから。count なら伸びに合わせて
       var vo = ahead(o, b.v) ? PV : P.count ? (e > 0 ? 1 : 0) : o.step < k ? 1 : o.step > k ? 0 : D.prog(t, at + P.dur, 0.35);
       b.val.textContent = self.fmt(P.count ? v : b.v);
-      var pe = P.count ? p : pos(b.v);
-      if (hor){ b.val.setAttribute("x", (pe + 10).toFixed(1)); b.val.setAttribute("y", (b.c + 9).toFixed(1)); }
-      else { b.val.setAttribute("x", b.c.toFixed(1)); b.val.setAttribute("y", (pe - 12).toFixed(1)); }
+      var pe = P.count ? p : pos(b.v), dn = b.v < 0;
+      // 値の数字は棒の端の外側：正なら上（右）、負なら下（左）
+      if (hor){ b.val.setAttribute("x", (dn ? pe - 10 : pe + 10).toFixed(1)); b.val.setAttribute("y", (b.c + 9).toFixed(1)); }
+      else { b.val.setAttribute("x", b.c.toFixed(1)); b.val.setAttribute("y", (dn ? pe + 32 : pe - 12).toFixed(1)); }
       b.val.setAttribute("opacity", vo.toFixed(3));
       if (b.ser){
-        if (hor){ b.ser.setAttribute("x", (pos(b.v) + 24 + self.fmt(b.v).length * 15).toFixed(1)); b.ser.setAttribute("y", (b.c + 8).toFixed(1)); }
-        else { b.ser.setAttribute("x", b.c.toFixed(1)); b.ser.setAttribute("y", (pos(b.v) - 44).toFixed(1)); }
+        if (hor){ b.ser.setAttribute("x", (dn ? pos(b.v) - 24 - self.fmt(b.v).length * 15 : pos(b.v) + 24 + self.fmt(b.v).length * 15).toFixed(1)); b.ser.setAttribute("y", (b.c + 8).toFixed(1)); }
+        else { b.ser.setAttribute("x", b.c.toFixed(1)); b.ser.setAttribute("y", (dn ? pos(b.v) + 62 : pos(b.v) - 44).toFixed(1)); }
         b.ser.setAttribute("opacity", vo.toFixed(3));
       }
     });
@@ -271,9 +318,11 @@ DECK.define("m-bars", class extends DECK.MotionElement {
         if (hor){ sg.rect.setAttribute("x", (pa + gap).toFixed(1)); sg.rect.setAttribute("width", px.toFixed(1)); sg.rect.setAttribute("y", (sk.c - w / 2).toFixed(1)); sg.rect.setAttribute("height", w.toFixed(1)); }
         else { sg.rect.setAttribute("x", (sk.c - w / 2).toFixed(1)); sg.rect.setAttribute("width", w.toFixed(1)); sg.rect.setAttribute("y", pb.toFixed(1)); sg.rect.setAttribute("height", px.toFixed(1)); }
         sg.rect.setAttribute("opacity", px > 0 ? (f ? PV : 1) : 0);
-        // 区切りの中の値：伸びきった区切りに字が収まるときだけ
+        // 区切りの中の値：伸びきった区切りに字が収まるときだけ。100 % の積み上げ棒では、字の箱（幅の見積もり × 24 px）が
+        // 四方に 6 px 以上の余白をもって入るときだけ（ふつうの積み上げ棒は v1.11.0 のまま）
         var full = len(sg.from, sg.from + sg.v) - gap, mid = (pos(sg.from) + pos(sg.from + sg.v)) / 2;
-        var room = hor ? full >= sg.vw + 12 && w >= 30 : full >= 30 && w >= sg.vw + 8;
+        var room = self.pct ? (hor ? full >= sg.vw2 + 12 && w >= 36 : full >= 36 && w >= sg.vw2 + 12)
+          : hor ? full >= sg.vw + 12 && w >= 30 : full >= 30 && w >= sg.vw + 8;
         if (hor){ sg.val.setAttribute("x", mid.toFixed(1)); sg.val.setAttribute("y", (sk.c + 8).toFixed(1)); }
         else { sg.val.setAttribute("x", sk.c.toFixed(1)); sg.val.setAttribute("y", (mid + 8).toFixed(1)); }
         sg.val.setAttribute("opacity", (room ? vo : 0).toFixed(3));
@@ -283,7 +332,8 @@ DECK.define("m-bars", class extends DECK.MotionElement {
       var pe = P.count ? pos(top) : pos(sk.total);
       if (hor){ sk.tot.setAttribute("x", (pe + 10).toFixed(1)); sk.tot.setAttribute("y", (sk.c + 9).toFixed(1)); }
       else { sk.tot.setAttribute("x", sk.c.toFixed(1)); sk.tot.setAttribute("y", (pe - 12).toFixed(1)); }
-      sk.tot.setAttribute("opacity", (f ? PV : P.count ? (e > 0 ? 1 : 0) : vo).toFixed(3));
+      // 100 % の積み上げ棒は端がどれも 100 % なので、合計は書かない
+      sk.tot.setAttribute("opacity", (self.pct ? 0 : f ? PV : P.count ? (e > 0 ? 1 : 0) : vo).toFixed(3));
     });
     // 系列の名前：区切りの真ん中。縦に並ぶ名前（縦棒）は 28 px、横に並ぶ名前（横棒）は字の幅より近づけない
     var prev = null;

@@ -12,10 +12,20 @@ props: fade, draw, size, pulse-dur, pulse-n, label-gap
 
 子の JSON：`{"nodes": [...], "edges": [...]}`。座標は要素の箱の px（`x`, `y` は箱の左上、`w`, `h` は大きさ）。
 
-- node：`id` `label`（`*斜体*` `_下付き` `^上付き`、`\n` で改行）または `tex`（KaTeX）、`step`、`tone`（`term` / `emph` / `muted`）、`at`（段階の中の開始秒）
-- edge：`from` `to` `step`（既定は両端の箱の遅いほう）、`label`、`tone`、`dash`、`offset`（名前と線の距離）、`at`
-- 色：線と線の名前は `--fg`（`tone` があればその色）。`muted` の箱は枠が `--muted`、地が `--bg`、字は `--fg`（v1.2.0 から。前は線の名前と `muted` の箱の字が `--muted` で、投影すると薄かった）
+- node：`id` `label`（`*斜体*` `_下付き` `^上付き`、`\n` で改行）または `tex`（KaTeX）、`step`、`tone`（`term` / `emph` / `muted`）、`at`（段階の中の開始秒）、`shape:"diamond"`（判断）
+- edge：`from` `to` `step`（既定は両端の箱の遅いほう）、`label`、`tone`、`dash`、`offset`（名前と線の距離）、`at`、`loop:true`（戻る辺）
+- 色：線と線の名前は `--fg`（`tone` があればその色）。`muted` の箱は枠が `--muted`、地が `--bg`、字は `--fg`
 - 箱は薄く拡大しながら現れ、矢印は同じ段階の箱が出てから引く
+
+<!-- llm: omit -->
+色の履歴：v1.2.0 より前は、線の名前と `muted` の箱の字が `--muted` で、投影すると薄かった。
+
+流れ図の判断と戻る辺（書かなければこれまでと同じ）：
+
+- node の `shape: "diamond"`：箱の `x` `y` `w` `h` に内接するひし形（判断）。字は真ん中に置くので、ひし形の幅は字の幅のおよそ 2 倍にする。はい／いいえは出ていく辺の `label`。矢印はひし形の辺で切る
+- edge の `loop`：前の箱へ戻る辺を、箱を横切らずに外側から回す。`"left"` `"right"` `"top"` `"bottom"` は回る側、`true` は両端が縦に並ぶなら `right`、横に並ぶなら `bottom`。両端の箱のその側の辺の中点から出入りし、両端の間にある箱（と両端）のその側の端から 34 px 外を通る（かぎ形、角は丸い）。`label` はその線の外側に、図の外に出るなら内側に。`amount` は内側に。`pulse` も折れ線に沿って流れる
+- 回る側の外に場所がいる（右なら箱の右端から 34 px と名前の幅）。図の外にはみ出さないよう、箱の置き方で場所を空けておく
+<!-- llm: end -->
 
 <!-- llm: business -->
 お金・モノの流れ（ビジネスモデルの図）のための edge の欄（書かなければこれまでと同じ）：
@@ -28,4 +38,4 @@ props: fade, draw, size, pulse-dur, pulse-n, label-gap
 - `cues(k)`：pulse の開始時刻を返す（pulse のない図はこれまでどおり null）。口述原稿の `{cue}` の数と合えば、「お金は〜から〜へ{cue}」に合わせて流れる
 <!-- llm: end -->
 
-見本は `demo.html`（ベイズ決定の流れ、お金とサービスの流れ）。
+見本は `demo.html`（ベイズ決定の流れ、お金とサービスの流れ、判断とくり返しの流れ図）。

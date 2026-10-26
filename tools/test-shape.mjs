@@ -37,6 +37,7 @@ const WRONG = {
   'm-timeline': '<script type="application/json">{"nodes": [{"label": "明治維新", "when": true}]}</script>',
   'm-cycle': '<script type="application/json">{"stages": [{"label": "計画"}, {"label": "実行"}]}</script>',
   'm-map-japan': '<script type="application/json">{"regions": [{"code": "13", "tone": "emph"}]}</script>',
+  'm-map-world': '<script type="application/json">{"regions": [{"code": "JPN", "tone": "emph"}]}</script>',
   'm-timer': '<script type="application/json">{"phases": [{"title": "付箋に書く", "sec": "3分"}]}</script>',
   'm-predict': '<script type="application/json">{"choices": ["重い球", "軽い球"], "answer": 0}</script>',
   'm-hist': '<script type="application/json">{"value": [23, 31, 27], "bins": {"start": 15, "width": 5}}</script>',
@@ -45,6 +46,7 @@ const WRONG = {
   'm-keyboard': '<script type="application/json">{"range": "C4-C6", "steps": [{"notes": ["C4", "E4", "G4"]}]}</script>',
   'm-tape': '<script type="application/json">{"rows": [{"label": "みかん", "segments": [{"v": 8}]}]}</script>',
   'm-syntax': '<script type="application/json">{"sentences": ["[S We] [V run]."]}</script>',
+  'm-heatmap': '<script type="application/json">{"rows": ["ねこ", "いぬ"], "cols": ["ねこ", "いぬ"], "data": [[45, 5], [6, 44]]}</script>',
   // データを属性だけで受け取る部品は、要素ごと書く（digits は整数の JSON）
   'm-hissan': '<m-hissan aria-label="m-hissan の図" expr="7÷3" digits="2けた" style="height:300px"></m-hissan>',
   'm-kakijun': '<m-kakijun aria-label="m-kakijun の図" text="あさ" size="大きめ" style="height:300px"></m-kakijun>',

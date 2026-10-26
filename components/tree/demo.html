@@ -85,6 +85,28 @@
   <div class="concl"><span>→ 書かなければ最初の見せ方（fade）になる</span></div>
 </section>
 
+<section class="slide">
+  <h2>確率の木：雨の日に遅れる確率（branch・path）</h2>
+  <div class="body">
+    <m-tree orient="right" aria-label="天気と遅刻の確率の木" style="height:440px">
+      <script type="application/json">{
+        "nodes": [
+          {"id": "s", "label": "出発"},
+          {"id": "r", "label": "雨", "parent": "s", "branch": "0.3"},
+          {"id": "f", "label": "晴れ", "parent": "s", "branch": "0.7"},
+          {"id": "rl", "label": "遅れる", "parent": "r", "branch": "0.4"},
+          {"id": "ro", "label": "間に合う", "parent": "r", "branch": "0.6"},
+          {"id": "fl", "label": "遅れる", "parent": "f", "branch": "0.1"},
+          {"id": "fo", "label": "間に合う", "parent": "f", "branch": "0.9"}
+        ],
+        "path": ["s", "r", "rl"],
+        "pathNote": "0.3 × 0.4 = 0.12"
+      }</script>
+    </m-tree>
+  </div>
+  <div class="concl"><span>→ 道に沿って枝の確率をかける：雨で遅れる確率は 0.12</span></div>
+</section>
+
 </div>
 </body>
 </html>

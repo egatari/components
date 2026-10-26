@@ -28,6 +28,8 @@
 //      raster-history m-tree / m-venn / m-numberline: the pixels of a step do not depend on how often it was drawn before, nor on a click and ctx.reset (tools/test-raster-history.mjs)
 //      syntax         m-syntax: reading the mark-up (roles, nested brackets, arrows, parts of speech, errors), steps, and in a browser the arrow ends,
 //                     brackets beside their words across a wrapped line, console.warn for errors (tools/test-syntax.mjs)
+//      heatmap        m-heatmap's colour scale, row normalisation, label thinning and steps (no browser); every cell's number
+//                     ≥ 4.5:1 against its own cell in the three themes, numbers off above 12×12, the readable table (tools/test-heatmap.mjs)
 //      timeline-gantt m-timeline's after arrows (ends, right angles, no band crossed), progress width, today line position, unit ticks (tools/test-timeline-gantt.mjs)
 //  12. shape            wrong-shaped data and refused expressions: inline placeholder and DECK.componentErrors, no exception (tools/test-shape.mjs)
 //  13. default-variant the default (first) variant of every component with variants is pixel-identical to the last release (tools/test-default-variant.mjs)
@@ -39,7 +41,11 @@
 //      map-small      m-map-japan at 300 / 240 px high and 420 px wide, and m-bars at 0 px: no console error, sizes ≥ 0, inside, text ≥ 24 px, territory names or a warning (tools/test-map-small.mjs)
 //      map-territory  m-map-japan's territory rule at 9 heights × 5 widths × 2 layouts × 2 label settings, islands="all", author points on
 //                     territory islands: 北方領土・竹島・尖閣諸島 always drawn, 沖ノ鳥島・南鳥島 drawn and named when shown, readable layer = drawn; no label or leader on an inset frame or caption (tools/test-map-territory.mjs)
+//      map-world      m-map-world: names = tools/map/atlas-names.csv; 北方領土 in Japan, 竹島・尖閣諸島・沖ノ鳥島・南鳥島 as dots of Japan,
+//                     帰属未定地 white and never coloured with its 4 dashed lines, at 6 heights × 5 widths; Taiwan coloured with China
+//                     as a country and by its own value; small sizes; the seam warning (tools/test-map-world.mjs)
 //      map-data        m-map-japan's generated map block matches the sha256 recorded by tools/map/build-japan.mjs (no network)
+//      map-data-world  the same for m-map-world (tools/map/build-world.mjs)
 //   node tools/test-all.mjs [--only name,name]
 import os from 'node:os';
 import path from 'node:path';
@@ -56,6 +62,7 @@ const TESTS = [
   ['expr-sync', ['tools/expr-sync.mjs', '--check']],
   ['variant-sync', ['tools/variant-sync.mjs', '--check']],
   ['map-data', ['tools/map/build-japan.mjs', '--check']],
+  ['map-data-world', ['tools/map/build-world.mjs', '--check']],
   ['release', ['tools/release.mjs', '--check']],
   ['test-expr', ['tools/test-expr.mjs']],
   ['test-yanked', ['tools/test-yanked.mjs']],
@@ -81,6 +88,7 @@ const TESTS = [
   ['test-raster-history', ['tools/test-raster-history.mjs', path.join(tmp, 'raster-history')]],
   ['test-syntax', ['tools/test-syntax.mjs', path.join(tmp, 'syntax')]],
   ['test-timeline-gantt', ['tools/test-timeline-gantt.mjs', path.join(tmp, 'timeline-gantt')]],
+  ['test-heatmap', ['tools/test-heatmap.mjs', path.join(tmp, 'heatmap')]],
   ['test-shape', ['tools/test-shape.mjs', path.join(tmp, 'shape')]],
   ['test-default-variant', ['tools/test-default-variant.mjs', path.join(tmp, 'default-variant')]],
   ['test-preview', ['tools/test-preview.mjs', path.join(tmp, 'preview')]],
@@ -89,6 +97,7 @@ const TESTS = [
   ['test-classes', ['tools/test-classes.mjs']],
   ['test-map-small', ['tools/test-map-small.mjs', path.join(tmp, 'map-small')]],
   ['test-map-territory', ['tools/test-map-territory.mjs', path.join(tmp, 'map-territory')]],
+  ['test-map-world', ['tools/test-map-world.mjs', path.join(tmp, 'map-world')]],
 ];
 const oi = process.argv.indexOf('--only');
 const only = oi >= 0 ? new Set(process.argv[oi + 1].split(',')) : null;

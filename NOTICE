@@ -13,4 +13,4 @@ data/kana/strokes.ofl.json) — kana stroke shapes
   The notice also travels inside the block itself ("_license"). The rest of index.js, and the order, endings and
   placement data (data/kana/kana.json), are original work under the MIT License.
 
-components/map-japan/index.js — map data derived from Natural Earth (public domain).
+components/map-japan/index.js, components/map-world/index.js — map data derived from Natural Earth (public domain).

@@ -59,6 +59,31 @@
   <div class="concl"><span>→ 会社が払い，社員が使い，記録が戻る</span></div>
 </section>
 
+<section class="slide">
+  <h2>1 から <i>n</i> までの和を求める手順（判断とくり返し）</h2>
+  <div class="body">
+    <m-flow aria-label="1 から n までの和を求める流れ図" style="height:420px">
+      <script type="application/json">{
+        "nodes": [
+          {"id": "init", "label": "*S* ← 0, *i* ← 1",  "x": 0,   "y": 70,  "w": 220, "h": 80, "step": 1},
+          {"id": "dec",  "label": "*i* ≤ *n* ?",       "x": 290, "y": 40,  "w": 260, "h": 140, "step": 1, "shape": "diamond"},
+          {"id": "add",  "label": "*S* ← *S* + *i*",   "x": 640, "y": 70,  "w": 230, "h": 80, "step": 2},
+          {"id": "inc",  "label": "*i* ← *i* + 1",     "x": 950, "y": 70,  "w": 220, "h": 80, "step": 2},
+          {"id": "out",  "label": "*S* を出力",        "x": 305, "y": 300, "w": 230, "h": 80, "step": 4, "tone": "emph"}
+        ],
+        "edges": [
+          {"from": "init", "to": "dec", "step": 1},
+          {"from": "dec", "to": "add", "label": "はい", "step": 2},
+          {"from": "add", "to": "inc", "step": 2},
+          {"from": "inc", "to": "dec", "loop": "top", "label": "くり返す", "step": 3},
+          {"from": "dec", "to": "out", "label": "いいえ", "step": 4, "tone": "emph"}
+        ]
+      }</script>
+    </m-flow>
+  </div>
+  <div class="concl"><span>→ <i>i</i> が <i>n</i> をこえるまで足してから，<i>S</i> を出力する</span></div>
+</section>
+
 </div>
 </body>
 </html>
