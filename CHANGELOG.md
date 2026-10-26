@@ -9,7 +9,11 @@ Versions follow [README.md § Releases and versions](README.md#releases-and-vers
 - The tests pin Egatari Studio by commit instead of by tag: `tools/studio.json` holds the full sha (now `03eaf06` on Studio's `main`, was v0.4.3 `8419183`), and `tools/studio.mjs` fetches exactly that commit (shallow fetch by sha), checks `HEAD` and refuses a short sha. `EGATARI_STUDIO=` still uses a checkout of your own. The overlay goes to `vendor/components/<name>/0.0.0-test/`, the default in `components.lock.json`
 - `tools/test-studio-check.mjs` (in `tools/test-all.mjs`): Studio's own checker (`kit/check.mjs`) on every demo; any error fails, R-narr-steps warnings are ignored (demos have no narration), other warnings are listed
 - `tools/test-contrast.mjs`: the business theme's `--emph` known issue is gone (business 1.0.1 reaches 4.66:1); `tools/test-predict.mjs`: digits typed into a counter (Studio #69) are now tested
-- `tools/test-predict.mjs`: known Studio issue, reported and not counted with this pin only: Studio resets every part the viewer touched on the next step entry (`ctx.reset`), so a prediction clicked at step 1 is gone at the answer step, against egatari-spec §8.4 (viewer input persists within a slide)
+- `tools/test-predict.mjs` and `tools/test-timer.mjs`: real clicks with the pinned Studio (touch, next step, answer step keeps the value; a jump away and back clears it); `ctx.reset` keeps viewer input, `ctx.entered` clears it
+
+### Fixed
+
+- `m-predict`, `m-timer`: viewer input follows egatari-spec §8.4 (881bf76): `ctx.reset` (a touched part entering a step) no longer clears the counts, the learner's prediction or the ±1 分 extension; it only drops focus inside the part. Viewer input is cleared only on the render with `ctx.entered`, or, with a player that never passes `ctx.entered`, when `deck:pos` shows the slide entered from another slide. With Studio main@03eaf06 (which resets touched parts on every step entry) a prediction or count clicked at step 1 used to be gone at the answer step. `m-timer` also no longer re-applies a stored `ctx.reset` when it redraws after ±1 分. Notes in the READMEs' `llm: omit` blocks only: pack-visible bytes +0 for both (`tools/pack-bytes.mjs`)
 
 ### Later (candidates, not in this release)
 
