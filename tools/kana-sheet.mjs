@@ -6,10 +6,13 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { pathToFileURL } from 'node:url';
 import { ROOT } from './studio.mjs';
-import { samplePath, pathLength, pointAt } from './kana-path.mjs';
+import { pathLength, pointAt } from './kana-path.mjs';
+import { inkLine } from './kana-svgpath.mjs';
 
 const DIR = path.join(ROOT, 'data', 'kana');
 const data = JSON.parse(fs.readFileSync(path.join(DIR, 'kana.json'), 'utf8'));
+// the shapes: strokes.ofl.json (from strokesvg, derived from Klee One; SIL OFL 1.1)
+const ofl = JSON.parse(fs.readFileSync(path.join(DIR, 'strokes.ofl.json'), 'utf8'));
 const END = { tome: 'とめ', hane: 'はね', harai: 'はらい' };
 // Shades for strokes 1..n: they differ in lightness as well as hue; the numbers carry the order
 const SHADE = ['#1d2a57', '#1f6f63', '#a4561c', '#7b3d86'];
@@ -26,10 +29,10 @@ function arrow(p, color) {
 }
 
 function cell(ch, c) {
-  const strokes = c.strokes.map((s, i) => ({ ...s, i, color: SHADE[i % SHADE.length], pts: samplePath(s.d) }));
+  const strokes = c.strokes.map((s, i) => ({ ...s, i, color: SHADE[i % SHADE.length], shapes: ofl.chars[ch][i], pts: inkLine(ofl.chars[ch][i]) }));
   let svg = '<rect x="0" y="0" width="100" height="100" fill="#fff" stroke="#999" stroke-width="0.6"/>'
     + '<path d="M50 0V100M0 50H100" stroke="#bbb" stroke-width="0.5" stroke-dasharray="2 2"/>';
-  for (const s of strokes) svg += `<path d="${s.d}" fill="none" stroke="${s.color}" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/>`;
+  for (const s of strokes) for (const [o] of s.shapes) svg += `<path d="${o}" fill="${s.color}" fill-opacity="0.85"/>`;
   for (const s of strokes) {
     const L = pathLength(s.pts), fr = L > 110 ? [0.4, 0.78] : L > 30 ? [0.55] : [];
     for (const f of fr) svg += arrow(pointAt(s.pts, f), s.color);
@@ -124,7 +127,7 @@ h2.page { break-before: page; }
 </style></head><body><main>
 <h1>仮名の筆順データ 確認表（${Object.keys(data.chars).length}字：基本の仮名92字、濁音・半濁音51字、小書きの仮名22字、ー）</h1>
 <div class="lead">
-<p>Egatari の部品（筆順を動かして見せる図）で使う、ひらがな・カタカナの筆順データの確認をお願いするための表です。字の線はフォントを写したものではなく、一画ずつ手で描いた中心線です（教科書体に近いフォント Klee One の字形に重なるよう、位置だけを目で合わせています）。書写の先生の目で、教科書の楷書の仮名として通用するかを見てください。</p>
+<p>Egatari の部品（筆順を動かして見せる図）で使う、ひらがな・カタカナの筆順データの確認をお願いするための表です。字形は strokesvg（Klee One から派生、SIL Open Font License 1.1）の一画ごとの形で、画の順と終わり方（とめ・はね・はらい）は私たちのデータです。書写の先生の目で、教科書の楷書の仮名として通用するかを見てください。</p>
 <p>各字の枠の中の <b>丸の数字</b> が書き始めの位置と画の順、線の上の <b>小さな矢印（＞）</b> が書く向きです。画ごとに線の濃さと色味を変えていますが、順番は数字で読み取ってください。枠の下に、画ごとの終わり方（とめ・はね・はらい）を書いています。</p>
 </div>
 <div class="check">
@@ -145,7 +148,7 @@ ${Object.values(data.sources).map((s) => `<li>${esc(s.label)}：${esc(s.order)} 
 ${data.references.map((r) => `<li>${esc(r)}</li>`).join('\n')}
 </ul>
 ${body}
-<p class="legend">データ: data/kana/kana.json（version ${esc(data.version)}、MIT ライセンス）。座標は 0〜100 の正方形、y は下向き。</p>
+<p class="legend">データ: data/kana/kana.json（version ${esc(data.version)}、MIT ライセンス：筆順・画数・終わり方）。字形: data/kana/strokes.ofl.json — strokesvg (zhengkyl) より、Klee One から派生、SIL Open Font License 1.1（${esc(ofl._license.copyright.join(' / '))}）。座標は 0〜100 の正方形、y は下向き。</p>
 </main></body></html>
 `;
 const out = path.join(DIR, 'review-sheet.html');

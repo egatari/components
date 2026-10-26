@@ -1,24 +1,23 @@
-// Validates data/kana/kana.json (not yet part of test-all):
+// Validates data/kana/kana.json (MIT: order, counts, endings, loops, placement, notes) and its shapes in
+// data/kana/strokes.ofl.json (OFL; not yet part of test-all):
 //   - the file shape (version, box 100, sources, chars)
 //   - the expected 166 characters are all present, and nothing else: the 92 basic kana, 濁音 (base + 2 strokes),
 //     半濁音 (base + 1), ヴ, the small kana (same count as their base) and ー
-//   - each character: count === strokes.length, count matches the expected school stroke count
-//   - derived characters name their base ("base"); a 濁音・半濁音 starts with exactly its base's strokes, unless
-//     its own glyph needed a re-fit (then only the count is checked)
-//   - glyphFit, when present, is a non-empty string
+//   - each character: count === strokes.length, count matches the expected school stroke count; derived characters
+//     name their base ("base"); strokes carry only end / loop / start
+//   - strokes.ofl.json: its _license notice (copyright lines, OFL 1.1, OFL.txt next to it, our modifications); the same
+//     characters, each with the same number of strokes as here; every outline and centreline parses, outlines in the box
 //   - every small kana has "place": {yoko, tate}, two SVG matrices (uniform scale, no rotation); tate is yoko moved
-//     by (+50, −50); our lines widened by 4 units, through each matrix, lie inside the lower-left quarter (yoko) or
-//     the upper-right quarter (tate) of the 0–100 square (the rendered ink is checked by kana-proto-check.mjs)
-//   - w (ink widths along the stroke), when present, is 1–5 numbers in 0..20
-//   - every stroke marked "loop": true (結び) crosses itself, and every loop it closes turns clockwise on screen
-//     (y down), the same way as な's 結び (the reference the owner checked)
-//   - every stroke: d parses (M L H V Q T C S Z only), end is tome|hane|harai, every sampled point stays in 0..box
+//     by (+50, −50); the outlines through each matrix lie inside the lower-left quarter (yoko) or the upper-right
+//     quarter (tate) of the 0–100 square
+//   - every stroke marked "loop": true (結び): the drawing part of its centreline crosses itself, and every loop it
+//     closes turns clockwise on screen (y down), the same way as な's 結び (the reference the owner checked)
 //   - source names an entry in sources
 // Run: node tools/test-kana-data.mjs
 import fs from 'node:fs';
 import path from 'node:path';
 import { ROOT } from './studio.mjs';
-import { samplePath } from './kana-path.mjs';
+import { parse, sample, densify } from './kana-svgpath.mjs';
 
 const file = path.join(ROOT, 'data', 'kana', 'kana.json');
 const data = JSON.parse(fs.readFileSync(file, 'utf8'));
@@ -76,6 +75,21 @@ const chars = data.chars || {};
 for (const ch of Object.keys(EXPECT)) if (!(ch in chars)) fail(`${ch}: missing`);
 for (const ch of Object.keys(chars)) if (!(ch in EXPECT)) fail(`${ch}: not one of the expected characters`);
 
+// the shapes (OFL): strokes.ofl.json, same characters, same strokes in the same order
+const OFL_FILE = path.join(ROOT, 'data', 'kana', 'strokes.ofl.json');
+const ofl = fs.existsSync(OFL_FILE) ? JSON.parse(fs.readFileSync(OFL_FILE, 'utf8')) : null;
+if (!ofl) fail('strokes.ofl.json missing');
+else {
+  const L = ofl._license || {};
+  if (!L.license || !/Open Font License 1\.1/.test(L.license) || !Array.isArray(L.copyright) || !L.copyright.length || !L.licenseFile || !L.modifications) fail('strokes.ofl.json: _license must give copyright lines, the OFL 1.1, the licence file and our modifications');
+  if (!fs.existsSync(path.join(ROOT, 'data', 'kana', L.licenseFile || 'OFL.txt'))) fail(`strokes.ofl.json: ${L.licenseFile} not next to it`);
+  for (const ch of Object.keys(chars)) if (!ofl.chars[ch]) fail(`${ch}: no shapes in strokes.ofl.json`);
+  for (const ch of Object.keys(ofl.chars)) if (!chars[ch]) fail(`${ch}: in strokes.ofl.json but not in kana.json`);
+}
+const ringsOf = (d) => { const out = []; let cur = []; for (const s of parse(d)) { if (s.c === 'M' && cur.length) { out.push(sample(cur, 8)); cur = []; } cur.push(s); } if (cur.length) out.push(sample(cur, 8)); return out; };
+const inPoly = (poly, [x, y]) => { let c = false; for (let i = 0, j = poly.length - 1; i < poly.length; j = i++) { const [xi, yi] = poly[i], [xj, yj] = poly[j]; if ((yi > y) !== (yj > y) && x < ((xj - xi) * (y - yi)) / (yj - yi) + xi) c = !c; } return c; };
+const inRings = (rs, p) => rs.reduce((c, r) => (inPoly(r, p) ? !c : c), false);
+
 let strokes = 0;
 for (const [ch, c] of Object.entries(chars)) {
   if (!Array.isArray(c.strokes) || !c.strokes.length) { fail(`${ch}: strokes must be a non-empty array`); continue; }
@@ -85,10 +99,15 @@ for (const [ch, c] of Object.entries(chars)) {
   if (typeof c.verified !== 'boolean') fail(`${ch}: verified must be true or false`);
   if (ch in BASE && c.base !== BASE[ch]) fail(`${ch}: base must be "${BASE[ch]}"`);
   if (!(ch in BASE) && c.base !== undefined) fail(`${ch}: has a base but is not a derived character`);
-  if ((DAKU + HANDAKU).includes(ch) && chars[BASE[ch]] && !c.refit) {
-    const b = chars[BASE[ch]].strokes;
-    b.forEach((s, i) => { if (!c.strokes[i] || c.strokes[i].d !== s.d || c.strokes[i].end !== s.end) fail(`${ch} stroke ${i + 1}: differs from its base ${BASE[ch]} (set "refit" if the glyph needs it)`); });
-  }
+  const shapes = ofl && ofl.chars[ch];
+  if (shapes && shapes.length !== c.count) fail(`${ch}: ${shapes.length} strokes in strokes.ofl.json, count ${c.count} here`);
+  // every outline parses and lies in the box; every centreline parses
+  const outlinePts = [];
+  if (shapes) shapes.forEach((pieces, i) => pieces.forEach(([o, cl], k) => {
+    try { const pts = sample(o, 6); outlinePts.push(...pts); const out = pts.find(([x, y]) => x < -0.5 || y < -0.5 || x > box + 0.5 || y > box + 0.5); if (out) fail(`${ch} stroke ${i + 1}.${k + 1}: outline point (${out[0].toFixed(1)}, ${out[1].toFixed(1)}) outside the box`); }
+    catch (e) { fail(`${ch} stroke ${i + 1}.${k + 1}: outline does not parse (${e.message})`); }
+    try { if (sample(cl, 4).length < 2) fail(`${ch} stroke ${i + 1}.${k + 1}: centreline has no length`); } catch (e) { fail(`${ch} stroke ${i + 1}.${k + 1}: centreline does not parse (${e.message})`); }
+  }));
   if (ch in SMALL) {
     const P = c.place;
     if (!P || !Array.isArray(P.yoko) || !Array.isArray(P.tate) || P.yoko.length !== 6 || P.tate.length !== 6) fail(`${ch}: place must be {yoko: [6 numbers], tate: [6 numbers]}`);
@@ -96,32 +115,28 @@ for (const [ch, c] of Object.entries(chars)) {
       const [a, b, cc, dd, e, f] = P.yoko;
       if (b !== 0 || cc !== 0 || a !== dd || !(a > 0 && a < 1)) fail(`${ch}: place.yoko must be a uniform scale below 1 and a move`);
       if (P.tate[0] !== a || P.tate[3] !== dd || P.tate[1] !== 0 || P.tate[2] !== 0 || Math.abs(P.tate[4] - (e + 50)) > 1e-6 || Math.abs(P.tate[5] - (f - 50)) > 1e-6) fail(`${ch}: place.tate must be place.yoko moved by (+50, -50)`);
+      // the outlines (the ink) through each matrix lie inside the quarter
       for (const [mode, [qx0, qy0]] of [['yoko', [0, 50]], ['tate', [50, 0]]]) {
         const [s0, , , , tx, ty] = P[mode];
-        for (const st of c.strokes) for (const [x, y] of samplePath(st.d)) {
-          const X = x * s0 + tx, Y = y * s0 + ty, r = 4 * s0;
-          if (X - r < qx0 || X + r > qx0 + 50 || Y - r < qy0 || Y + r > qy0 + 50) { fail(`${ch}: ${mode} placement leaves its quarter at (${X.toFixed(1)}, ${Y.toFixed(1)})`); break; }
-        }
+        const bad = outlinePts.find(([x, y]) => { const X = x * s0 + tx, Y = y * s0 + ty; return X < qx0 || X > qx0 + 50 || Y < qy0 || Y > qy0 + 50; });
+        if (bad) fail(`${ch}: ${mode} placement leaves its quarter at (${(bad[0] * s0 + tx).toFixed(1)}, ${(bad[1] * s0 + ty).toFixed(1)})`);
       }
     }
   } else if (c.place !== undefined) fail(`${ch}: only small kana have place`);
-  if (c.refit !== undefined && (typeof c.refit !== "string" || !c.refit)) fail(`${ch}: refit must be a non-empty string when present`);
-  if (c.glyphFit !== undefined && (typeof c.glyphFit !== 'string' || !c.glyphFit)) fail(`${ch}: glyphFit must be a non-empty string when present`);
   c.strokes.forEach((s, i) => {
     strokes++;
     const at = `${ch} stroke ${i + 1}`;
+    const extra = Object.keys(s).filter((k) => !['end', 'loop', 'start'].includes(k));
+    if (extra.length) fail(`${at}: unexpected ${extra.join(', ')} (shapes belong in strokes.ofl.json)`);
     if (!ENDS.has(s.end)) fail(`${at}: end "${s.end}" is not tome|hane|harai`);
     if (s.start !== undefined && typeof s.start !== 'string') fail(`${at}: start must be a string when present`);
-    let pts;
-    try { pts = samplePath(s.d); } catch (e) { fail(`${at}: path does not parse (${e.message})`); return; }
-    if (pts.length < 2) fail(`${at}: path has no length`);
-    const out = pts.find(([x, y]) => x < 0 || y < 0 || x > box || y > box);
-    if (out) fail(`${at}: point (${out[0].toFixed(1)}, ${out[1].toFixed(1)}) is outside the box`);
     if (s.loop !== undefined && s.loop !== true) fail(`${at}: loop must be true when present`);
-    if (s.w !== undefined && !(Array.isArray(s.w) && s.w.length >= 1 && s.w.length <= 5 && s.w.every((v) => typeof v === 'number' && v > 0 && v <= 20))) fail(`${at}: w must be 1–5 ink widths (numbers in 0..20)`);
-    if (s.loop) {
+    if (s.loop && shapes && shapes[i]) {
+      // the part of the centreline that draws (inside the stroke's outline) must close its loops clockwise, like な
+      const rs = shapes[i].map(([o]) => ringsOf(o));
+      const pts = densify(sample(shapes[i][0][1], 24)).filter((p) => rs.some((r) => inRings(r, p)));
       const areas = selfLoops(pts);
-      if (!areas.length) fail(`${at}: marked loop but does not cross itself`);
+      if (!areas.length) fail(`${at}: marked loop but its centreline does not cross itself`);
       if (areas.some((a) => a <= 0)) fail(`${at}: loop turns anticlockwise; 結び turn clockwise on screen, like な`);
     }
   });
