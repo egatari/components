@@ -5,27 +5,16 @@
 // （JSON の終わり）</m-compare>
 // 段階：既定は 一方の列 → もう一方の列（→ 3 つ目の列）→ 違い（diff の列と better の枠）。違いのない表は列の数だけ
 // 観点の名前（行の名前）は最初の列と一緒に出る。値は列の幅で折り返す（字数から幅を見積もる。\n で改行）
-// 字は size（既定 28 px）から 24 px まで縮めて要素の箱に収める。収まらなければ console.warn
+// 字は size（既定 28 px）から 24 px まで縮めて要素の箱に収める。収まらなければ ctx.report（size）
 // 見せ方（docs/conventions.md §1）：fade（既定。列が少し上がりながら現れる）・slide（列が自分の側から横に寄って現れる）・
 // reveal（列の中を上の行から 1 行ずつ）。どれも動く距離（16 px）と長さ（dur）は同じで、段階の数・長さ・最後の中身は変わらない
-// ---- BEGIN egatari-variant (source: tools/variant.js; copy with `node tools/variant-sync.mjs`; do not edit inside a component) ----
-// Choosing a presentation variant (Egatari spec §8.4, docs/conventions.md §1). A component lists its variant names in
-// `static variants` (the first is the default) and calls VARIANT.of(this) once, in mount. The variant is the component's
-// `variant` attribute when it names one of them, otherwise the first name. There is no seed: lessons do not carry one
-// (spec §8.4 since egatari-spec 28d8801), and `seed` / `data-egatari-seed` are not read.
-// The choice is a pure function of the attribute: the picture still depends on (i, k, t) only.
-var VARIANT = (function(){
-  "use strict";
-  function of(el){
-    var tag = el.tagName.toLowerCase(), C = customElements.get(tag), names = (C && C.variants) || [], v = el.getAttribute("variant");
-    if (v !== null && names.indexOf(v) >= 0) return v;
-    if (v !== null) console.warn(tag + ' variant="' + v + '" is not one of ' + names.join(", ") + " (the first, " + (names[0] || "none") + ", is used)");
-    return names[0] || null;
-  }
-  return {of: of};
-})();
-// ---- END egatari-variant ----
-DECK.define("m-compare", class extends DECK.MotionElement {
+// 2.0（Egatari spec §6.1 の部品）：base の MotionElement・el・mtext・prog・lerp・variant・previewOpacity を使い、プレイヤーのグローバルは使わない。
+// 違いの列の既定の見出しの言語は ctx.lang（mount で読む）。収まらない表は ctx.report で知らせる（1.x の console.warn の代わり）
+egatariParts.define({name: "compare", version: "2.0.0", requires: {base: "1.0.0"}, element: "m-compare"}, function(deps){
+"use strict";
+var base = deps.base;
+return class extends base.MotionElement {
+  static partName = "compare";   // the registry name (define meta name), for report prefixes
   static variants = ["fade", "slide", "reveal"];
   // データの形（kit/shape.js）
   static shape = {
@@ -51,9 +40,9 @@ DECK.define("m-compare", class extends DECK.MotionElement {
   hasDiff(){
     return ((this.data || {}).rows || []).some(function(r){ return (r.diff !== undefined && r.diff !== "") || r.better !== undefined; });
   }
-  mount(){
-    var P = this.props, D = DECK, self = this, data = this.data || {sides: [], rows: []};
-    this.variant = VARIANT.of(this);
+  mount(ctx){
+    var P = this.props, D = base, self = this, data = this.data || {sides: [], rows: []};
+    this.variant = base.variant(this);
     // 形（static shape）では書けない決まり：values は列の数だけ、better は列の番号（0 から）。黙って値を落とさない
     var ns = (data.sides || []).length;
     (data.rows || []).forEach(function(r, j){
@@ -68,7 +57,8 @@ DECK.define("m-compare", class extends DECK.MotionElement {
     var TONES = /^(term|emph|muted|accent2|series-[1-4])$/, DEF = ["term", "accent2", "series-4"];
     var tone = function(s, i){ return "var(--" + (TONES.test(s.tone || "") ? s.tone : DEF[i] || "term") + ")"; };
     var hasDiff = this.hasDiff(), hasDiffCol = rows.some(function(r){ return r.diff !== undefined && r.diff !== ""; });
-    var diffHead = P["diff-label"] || (D.ja !== false ? "違い" : "Difference");
+    this.ja = String(ctx.lang).startsWith("ja");
+    var diffHead = P["diff-label"] || (this.ja ? "違い" : "Difference");
     // 字の幅の見積もり（和文 1 字 = 1 字幅、英数字 0.6、空白 0.33。太字は 1.04 倍）
     var est = function(s, fs, bold){ return [...String(s)].reduce(function(a, c){ return a + (c === " " ? 0.33 : /[\u0000-ɏ]/.test(c) ? 0.6 : 1); }, 0) * fs * (bold ? 1.04 : 1); };
     // 折り返し：英数字の語はまとめ、行頭に来てはいけない字（、。）」など）の前では折らない
@@ -110,7 +100,7 @@ DECK.define("m-compare", class extends DECK.MotionElement {
       })(fs);
       if (L.ok) break;
     }
-    if (!L.ok) console.warn("m-compare: the table does not fit in " + W + "×" + H + " px even at 24 px (shorten the texts or make the element taller)");
+    if (!L.ok) ctx.report("size", "[compare] the table does not fit in " + W + "×" + H + " px even at 24 px (shorten the texts or make the element taller)");
     // 余った高さは行に分ける（1 行につき字の行の高さまで。表は上にそろえる）
     var extra = Math.max(0, Math.min((H - L.tot) / Math.max(1, rows.length), L.lh));
     var ys = [], y = L.hh;
@@ -186,10 +176,9 @@ DECK.define("m-compare", class extends DECK.MotionElement {
   }
   cues(){ return null; }
   render(k, t, ctx){
-    var D = DECK, F = this.props.dur, vr = this.variant, m = this.m, lecture = ctx && (ctx.preview || ctx.mode === "lecture");
+    var D = base, F = this.props.dur, vr = this.variant, m = this.m, lecture = !!ctx.preview;
     // 先の段階の薄さ：テーマの --preview-opacity（ないときは 0.45）
-    var dim = 0.45;
-    if (lecture){ var dv = parseFloat(getComputedStyle(this).getPropertyValue("--preview-opacity")); if (dv >= 0 && dv <= 1) dim = dv; }
+    var dim = lecture ? base.previewOpacity(this) : 0.45;
     var TRAVEL = 16;
     this.pieces.forEach(function(p){
       // reveal：行ごとに F/2 秒ずつ、出だしを F/2 の中で上から順にずらす（全体で F 秒。fade と同じ長さ）
@@ -207,4 +196,5 @@ DECK.define("m-compare", class extends DECK.MotionElement {
       if (tr) p.g.setAttribute("transform", tr); else p.g.removeAttribute("transform");
     });
   }
+};
 });
