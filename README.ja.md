@@ -44,7 +44,7 @@ npm run components:update -- v1.0.0
 npm test
 ```
 
-Node 22 以上と、Chrome・Edge・Playwright の Chromium のどれか。試験は、固定した版の Egatari Studio（[tools/studio.json](tools/studio.json)）で見本を組みます。初回は `.studio/` に clone して `npm ci` します（ネットワークを使うのはここだけ）。見本ごとに、コンソールのエラーがないこと、段階ごとの画像（動きの途中と最終状態）、決定性（ほかの位置へ飛んで戻っても同じ画素）、字が 24px 以上、字の重なりとスライドからのはみ出しがないこと、形の違うデータでは例外を出さずにその場に札を出すことを確かめます。CI は Linux・macOS・Windows で走らせます。
+Node 22 以上と、Chrome・Edge・Playwright の Chromium のどれか。試験は、固定したコミットの Egatari Studio（[tools/studio.json](tools/studio.json)。コミットの sha をすべて書く。今は Studio の `main` の `03eaf06`）で見本を組みます。初回はそのコミットだけを `.studio/` に取ってきて `npm ci` します（ネットワークを使うのはここだけ）。見本ごとに Studio 自身の品質検査（`kit/check.mjs`）も走らせ、エラーがないことを確かめます（警告は一覧に出すだけ）。見本ごとに、コンソールのエラーがないこと、段階ごとの画像（動きの途中と最終状態）、決定性（ほかの位置へ飛んで戻っても同じ画素）、字が 24px 以上、字の重なりとスライドからのはみ出しがないこと、形の違うデータでは例外を出さずにその場に札を出すことを確かめます。CI は Linux・macOS・Windows で走らせます。
 
 ## 安全
 

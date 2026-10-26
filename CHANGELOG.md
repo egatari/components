@@ -4,6 +4,13 @@ Versions follow [README.md § Releases and versions](README.md#releases-and-vers
 
 ## Unreleased
 
+### Tests
+
+- The tests pin Egatari Studio by commit instead of by tag: `tools/studio.json` holds the full sha (now `03eaf06` on Studio's `main`, was v0.4.3 `8419183`), and `tools/studio.mjs` fetches exactly that commit (shallow fetch by sha), checks `HEAD` and refuses a short sha. `EGATARI_STUDIO=` still uses a checkout of your own. The overlay goes to `vendor/components/<name>/0.0.0-test/`, the default in `components.lock.json`
+- `tools/test-studio-check.mjs` (in `tools/test-all.mjs`): Studio's own checker (`kit/check.mjs`) on every demo; any error fails, R-narr-steps warnings are ignored (demos have no narration), other warnings are listed
+- `tools/test-contrast.mjs`: the business theme's `--emph` known issue is gone (business 1.0.1 reaches 4.66:1); `tools/test-predict.mjs`: digits typed into a counter (Studio #69) are now tested
+- `tools/test-predict.mjs`: known Studio issue, reported and not counted with this pin only: Studio resets every part the viewer touched on the next step entry (`ctx.reset`), so a prediction clicked at step 1 is gone at the answer step, against egatari-spec §8.4 (viewer input persists within a slide)
+
 ### Later (candidates, not in this release)
 
 - `m-compare` `by="row"`; an "outside every set" region for `m-venn`; planned-vs-actual bars for `m-timeline`

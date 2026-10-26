@@ -50,7 +50,7 @@ node tools/test-all.mjs --only test-components
 node tools/test-components.mjs bars        # 見本 1 つ（画像は components/bars/out/shots/）
 ```
 
-試験は、固定した版の Egatari Studio（`tools/studio.json`、`tools/studio.mjs` が `.studio/` に取ってくる）で見本を組みます。手元の Studio で試すときは `EGATARI_STUDIO=<作業用の写しのパス>` を指定します（ここの部品をそこへ写します）。Studio が部品の約束事を変えたら、固定する版をそれを含む Studio のリリースに移します。タグは付け替えないので、固定した版はいつも同じコードです。
+試験は、固定したコミットの Egatari Studio（`tools/studio.json` にコミットの sha をすべて書く。`tools/studio.mjs` が `.studio/` に取ってきて、checkout の後に確かめる）で見本を組みます。手元の Studio で試すときは `EGATARI_STUDIO=<作業用の写しのパス>` を指定します（ここの部品をそこへ写します）。Studio が部品の約束事を変えたら、固定するコミットをそれを含む Studio のコミット（リリースのタグのコミット、または `main` のコミット）に移します。sha はいつも同じコードです。手順は RELEASING.md の「Moving the Studio pin」。
 
 ## リリース
 

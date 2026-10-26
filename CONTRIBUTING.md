@@ -50,7 +50,7 @@ node tools/test-all.mjs --only test-components
 node tools/test-components.mjs bars        # one demo (screenshots in components/bars/out/shots/)
 ```
 
-The tests build the demos with a pinned release of Egatari Studio (`tools/studio.json`, fetched by `tools/studio.mjs` into `.studio/`). To test against a Studio checkout of your own, set `EGATARI_STUDIO=<path to a scratch copy>` (the components here are copied into it). When Studio changes the component contract, the pin moves to a Studio release that has it; tags are never moved, so a pin always means the same code.
+The tests build the demos with a pinned commit of Egatari Studio (`tools/studio.json`: the full commit sha, fetched by `tools/studio.mjs` into `.studio/` and checked after checkout). To test against a Studio checkout of your own, set `EGATARI_STUDIO=<path to a scratch copy>` (the components here are copied into it). When Studio changes the component contract, the pin moves to a Studio commit that has it (a release tag's commit, or a commit on `main`); a sha always means the same code. See RELEASING.md "Moving the Studio pin".
 
 ## Releases
 
