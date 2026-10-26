@@ -192,17 +192,27 @@ D.define("m-gendai", class extends D.MotionElement {
     if (name === "roles") return this.boxes.length * 0.35 + P.draw + (this.links.length ? 0.3 + P.draw : 0);
     return 0;
   }
-  render(k, t){
+  render(k, t, ctx){
     var self = this, P = this.props, tate = P.tate;
     var at = function(name){ var s = self.phaseStep(name); if (!s) return -1; return k > s ? Infinity : k < s ? -1 : t; };
     var pr = function(tt, a, d){ return tt < 0 ? 0 : D.prog(tt, a, d); };
     var tm = at("marks"), trf = at("refs"), tro = at("roles");
+    // 先の段階を薄く見せる表示（授業の表示）：後の段階の傍線・指示語の囲みと矢印・段落の枠と札とつなぐ線を、
+    // 引き終えた形のまま --preview-opacity の濃さで出す
+    var preview = !!(ctx && (ctx.preview || ctx.mode === "lecture")), PV = 0.45;
+    if (preview){ PV = parseFloat(getComputedStyle(this).getPropertyValue("--preview-opacity")); if (!(PV >= 0 && PV <= 1)) PV = 0.45; }
+    var later = function(name){ return preview && self.phaseStep(name) > k; };
+    var fM = later("marks"), fR = later("refs"), fO = later("roles");
+    if (fM) tm = Infinity;
+    if (fR) trf = Infinity;
+    if (fO) tro = Infinity;
     var f1 = function(x){ return x.toFixed(1); };
     // ---- 傍線：縦書きは字の右、横書きは字の下。二重傍線は 2 本。行をまたぐときは行ごとに順に引く
     this.lines.forEach(function(o, j){
       var e = pr(tm, j * P.draw * 0.8, P.draw), rs = self.rects(o.el), total = 0;
       rs.forEach(function(r){ total += tate ? r.b - r.t : r.r - r.l; });
       while (o.g.childNodes.length > (o.lab ? 1 : 0)) o.g.removeChild(o.g.lastChild);
+      if (fM) o.g.setAttribute("opacity", PV); else o.g.removeAttribute("opacity");
       var left = e * total;
       rs.forEach(function(r){
         var len = tate ? r.b - r.t : r.r - r.l, d = Math.max(0, Math.min(len, left)); left -= len;
@@ -230,6 +240,7 @@ D.define("m-gendai", class extends D.MotionElement {
       while (o.box.firstChild) o.box.removeChild(o.box.firstChild);
       while (o.fill.firstChild) o.fill.removeChild(o.fill.firstChild);
       if (!A || !B){ o.box.setAttribute("opacity", 0); return; }
+      if (fR) eb = ea = PV;
       D.el("rect", {x: f1(A.l - 3), y: f1(A.t - 2), width: f1(A.r - A.l + 6), height: f1(A.b - A.t + 4), rx: 5, fill: "none", stroke: "var(--emph)", "stroke-width": 2.5}, o.box);
       self.rects(o.to).forEach(function(r){ D.el("rect", {x: f1(r.l - 2), y: f1(r.t), width: f1(r.r - r.l + 4), height: f1(r.b - r.t), rx: 4, fill: "var(--emph-tint)"}, o.fill); });
       o.box.setAttribute("opacity", eb.toFixed(3)); o.fill.setAttribute("opacity", ea.toFixed(3));
@@ -249,10 +260,10 @@ D.define("m-gendai", class extends D.MotionElement {
         if (cx > mid(x0, x1)) cx = Math.min(cx, 2 * (para.r - pad) - mid(x0, x1));
       }
       o.path.setAttribute("d", "M" + f1(x0) + "," + f1(y0) + "Q" + f1(cx) + "," + f1(cy) + " " + f1(x1) + "," + f1(y1));
-      o.path.setAttribute("stroke-dashoffset", (1 - ea).toFixed(4));
-      o.path.setAttribute("opacity", ea > 0 ? 1 : 0);
+      o.path.setAttribute("stroke-dashoffset", (fR ? 0 : 1 - ea).toFixed(4));
+      o.path.setAttribute("opacity", fR ? PV : ea > 0 ? 1 : 0);
       o.head.setAttribute("transform", "translate(" + f1(x1) + " " + f1(y1) + ") rotate(" + (Math.atan2(y1 - cy, x1 - cx) * 180 / Math.PI).toFixed(1) + ")");
-      o.head.setAttribute("opacity", ea >= 0.98 ? 1 : 0);
+      o.head.setAttribute("opacity", fR ? PV : ea >= 0.98 ? 1 : 0);
     });
     // ---- 段落の枠：順に囲み、札を出し、最後につなぐ線
     var nb = this.boxes.length, tLink = nb * 0.35 + P.draw;
@@ -264,13 +275,13 @@ D.define("m-gendai", class extends D.MotionElement {
       boxOf[o.P2.p.id || j] = {x: x, y: y, w: w, h: h};
       o.rect.setAttribute("x", x); o.rect.setAttribute("y", y); o.rect.setAttribute("width", w); o.rect.setAttribute("height", h);
       o.rect.setAttribute("stroke-dashoffset", (1 - e).toFixed(4));
-      o.rect.setAttribute("opacity", e > 0 ? 1 : 0);
+      o.rect.setAttribute("opacity", fO ? PV : e > 0 ? 1 : 0);
       // 札：縦書きは枠の上の辺の右寄り、横書きは左上の角
       var tw = Array.from(o.P2.p.role).length * 24 + 24;
       var cx = tate ? x + w - tw / 2 - 12 : x + tw / 2 + 12, cy = tate ? y - 17 : y - 17;
       o.cr.setAttribute("x", f1(cx - tw / 2)); o.cr.setAttribute("y", f1(cy - 17)); o.cr.setAttribute("width", tw);
       o.ct.setAttribute("x", f1(cx)); o.ct.setAttribute("y", f1(cy + 8.5));
-      o.chip.setAttribute("opacity", pr(tro, j * 0.35 + P.draw * 0.5, 0.3).toFixed(3));
+      o.chip.setAttribute("opacity", (fO ? PV : pr(tro, j * 0.35 + P.draw * 0.5, 0.3)).toFixed(3));
       chipOf[o.P2.p.id || j] = {l: cx - tw / 2, r: cx + tw / 2, t: cy - 17, b: cy + 17, at: []};
     });
     // 札に付く線の端：縦書きは札の上の辺に左から、横書きは札の左の辺に上から並べる。
@@ -310,10 +321,10 @@ D.define("m-gendai", class extends D.MotionElement {
       }
       o.path.setAttribute("d", d);
       o.path.setAttribute("stroke-dasharray", "1"); o.path.setAttribute("stroke-dashoffset", (1 - e).toFixed(4));
-      o.path.setAttribute("opacity", e > 0 ? 1 : 0);
+      o.path.setAttribute("opacity", fO ? PV : e > 0 ? 1 : 0);
       o.h1.setAttribute("transform", "translate(" + f1(x1) + " " + f1(y1) + ") rotate(" + ang1 + ")");
-      o.h1.setAttribute("opacity", e >= 0.98 ? 1 : 0);
-      if (o.h0){ o.h0.setAttribute("transform", "translate(" + f1(x0) + " " + f1(y0) + ") rotate(" + ang0 + ")"); o.h0.setAttribute("opacity", e >= 0.98 ? 1 : 0); }
+      o.h1.setAttribute("opacity", fO ? PV : e >= 0.98 ? 1 : 0);
+      if (o.h0){ o.h0.setAttribute("transform", "translate(" + f1(x0) + " " + f1(y0) + ") rotate(" + ang0 + ")"); o.h0.setAttribute("opacity", fO ? PV : e >= 0.98 ? 1 : 0); }
     });
   }
 });

@@ -19,3 +19,6 @@ props: per-step, slot, xr, yr, xt, yt, xf, yf, xl, yl, digits, panel, ghosts
 - 数値は前後の値の間を補間し、`digits` の桁でそろえて表示する（等幅の数字）
 
 見本は `demo.html`（分散既知の正規モデルで平均の事後分布を更新）。
+<!-- llm: omit -->
+授業の表示（`ctx.preview`）：最後の段階の密度の曲線と、先の観測の点を薄く見せる。途中の曲線と読み取りの値は見せない（全部の曲線を重ねると図が読めない）
+<!-- llm: end -->

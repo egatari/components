@@ -75,6 +75,7 @@ DECK.define("m-predict", class extends DECK.MotionElement {
   static variants = ["fade", "draw"];
   static interactive = true;   // 操作できるパーツ（docs/conventions.md §6）
   static viewerInput = true;   // 見る人の入力を受け付ける（仕様 §8.4）
+  static preview = "none";     // 先の段階は答えなので、授業の表示でも先を見せない（仕様 §8.4、docs/conventions.md §1.2）
   // データの形（kit/shape.js）
   static shape = {
     schema: {type: "object", additionalProperties: false, required: ["choices", "answer"], properties: {
@@ -277,7 +278,7 @@ DECK.define("m-predict", class extends DECK.MotionElement {
   }
   render(k, t, ctx){
     var self = this, P = this.props, D = DECK, G = this.g, dd = this.data, n = this.rows.length, vr = this.variant;
-    var lecture = ctx && (ctx.preview || ctx.mode === "lecture"), a = this.aStep;
+    var a = this.aStep;
     // ほかのスライドから入ったとき・飛んだとき（ctx.reset）は、見る人の状態を捨てる。同じスライドの中の段階の移りでは残す
     if (ctx && ctx.reset) this.reset();
     this._k = k; this._t = t; this._ctx = ctx ? {mode: ctx.mode, preview: ctx.preview, live: ctx.live} : undefined;
@@ -289,7 +290,8 @@ DECK.define("m-predict", class extends DECK.MotionElement {
     }
     var c = live || (this._printing ? this.author : this.counts()), pick = this._printing ? null : this._pick;
     // 段階 1 の棒（draw は上から順に、同じ長さの中で）、答えの段階
-    var e1 = k > 1 ? 1 : k < 1 ? (lecture ? 0.45 : 0) : null;
+    // 先の段階は授業の表示（ctx.preview）でも見せない：予想する前に棒や答えが見えてはいけない（static preview = "none"）
+    var e1 = k > 1 ? 1 : k < 1 ? 0 : null;
     var at1 = 0, ea = k > a ? 1 : k < a ? 0 : D.prog(t, a === 1 ? 0.6 : 0, 0.6);
     var rowE = function(j){
       if (e1 !== null) return e1;

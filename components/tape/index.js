@@ -244,7 +244,8 @@ DECK.define("m-tape", class extends DECK.MotionElement {
     if (grow) items.forEach(function(it){ if (it.kind === "line") it.el.setAttribute("pathLength", 1); });
   }
   render(k, t, ctx){
-    var D = DECK, lecture = ctx && ctx.mode === "lecture", grow = this.variant === "grow", FAINT = 0.45;
+    var D = DECK, lecture = ctx && (ctx.preview || ctx.mode === "lecture"), grow = this.variant === "grow", FAINT = 0.45;
+    if (lecture){ var pv = parseFloat(getComputedStyle(this).getPropertyValue("--preview-opacity")); FAINT = pv >= 0 && pv <= 1 ? pv : 0.45; }   // 先の段階の薄さ：テーマの --preview-opacity（ないときは 0.45）
     this.items.forEach(function(it){
       var e = it.st < k ? 1 : it.st > k ? (lecture ? -1 : 0) : D.prog(t, it.at, it.len), op;
       if (e < 0){ op = FAINT; e = 1; } else op = e;

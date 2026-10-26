@@ -170,13 +170,16 @@ DECK.define("m-kpi", class extends DECK.MotionElement {
     this.plan().forEach(function(o){ if (o.step === k && o.at > 0) c.push(o.at); });
     return c.length ? c.sort(function(a, b){ return a - b; }) : null;
   }
-  render(k, t){
+  render(k, t, ctx){
     var P = this.props, D = DECK, self = this;
+    // 先の段階を薄く見せる表示（授業の表示）：後の段階の札を最後の値で、テーマの --preview-opacity の濃さに（動かさない）
+    var preview = !!(ctx && (ctx.preview || ctx.mode === "lecture")), PV = 1;
+    if (preview){ PV = parseFloat(getComputedStyle(this).getPropertyValue("--preview-opacity")); if (!(PV >= 0 && PV <= 1)) PV = 0.45; }
     this.cards.forEach(function(o){
-      var s = o.o.step, at = o.o.at;
-      var tt = s < k ? Infinity : s > k ? -1 : t;   // この札の段階の中の時刻（-1 = まだ）
+      var s = o.o.step, at = o.o.at, ahead = preview && s > k;
+      var tt = s < k || ahead ? Infinity : s > k ? -1 : t;   // この札の段階の中の時刻（-1 = まだ）
       var e = tt < 0 ? 0 : D.prog(tt, at, 0.45);
-      o.g.setAttribute("opacity", e.toFixed(3));
+      o.g.setAttribute("opacity", ahead ? PV.toFixed(3) : e.toFixed(3));
       o.g.setAttribute("transform", "translate(0 " + ((1 - e) * 14).toFixed(2) + ")");
       var vr = self.variant, span = P.count ? P.dur : 0.45;
       if (vr === "count"){

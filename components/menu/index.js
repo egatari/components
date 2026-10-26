@@ -97,17 +97,20 @@ D.define("m-menu", class extends D.MotionElement {
     return d;
   }
   render(k, t, ctx){
-    var F = this.props.fade, lecture = ctx && (ctx.preview || ctx.mode === "lecture");
+    var F = this.props.fade, lecture = ctx && (ctx.preview || ctx.mode === "lecture"), FAINT = 0.45;
+    // 先の段階の薄さ：テーマの --preview-opacity（ないときは 0.45）
+    if (lecture){ var pv = parseFloat(getComputedStyle(this).getPropertyValue("--preview-opacity")); if (pv >= 0 && pv <= 1) FAINT = pv; }
     this.cards.forEach(function(c){
       var p = c.step < k ? 1 : c.step > k ? 0 : D.prog(t, c.at, F);
-      if (lecture && p < 1) p = Math.max(p, c.step > k ? 0.28 : p);
+      if (lecture && p < 1) p = Math.max(p, c.step > k ? FAINT : p);
       c.a.style.opacity = p.toFixed(3);
       c.a.style.transform = p < 1 && !lecture ? "translateY(" + ((1 - p) * 14).toFixed(2) + "px)" : "";
       // 見えていない札は押せない・選べない・読み上げない
-      var off = p <= 0;
-      c.a.style.pointerEvents = off ? "none" : "";
-      if (off){ c.a.setAttribute("tabindex", "-1"); c.a.setAttribute("aria-hidden", "true"); }
-      else { c.a.removeAttribute("tabindex"); c.a.removeAttribute("aria-hidden"); }
+      // 授業の表示で薄く見せている先の札も押せない・選べない（読み上げはする）
+      var off = p <= 0, inert = off || (lecture && c.step > k);
+      c.a.style.pointerEvents = inert ? "none" : "";
+      if (inert) c.a.setAttribute("tabindex", "-1"); else c.a.removeAttribute("tabindex");
+      if (off) c.a.setAttribute("aria-hidden", "true"); else c.a.removeAttribute("aria-hidden");
     });
   }
 });

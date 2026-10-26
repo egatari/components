@@ -429,8 +429,11 @@ D.define("m-kanbun", class extends D.MotionElement {
     for (var m = a + 1; m < st.g.b; m++) if (ch[ce[m].c].col !== ch[ce[m - 1].c].col) out.push(+((m - a) * slot).toFixed(4));
     return out.length ? out : null;
   }
-  render(k, t){
+  render(k, t, ctx){
     var self = this, S = this.geom.S, slot = this.props.slot;
+    // 先の段階を薄く見せる表示（授業の表示）：後の段階の訓点・読む順の番号と弧・書き下し文を、最後の形のまま --preview-opacity の濃さで
+    var preview = !!(ctx && (ctx.preview || ctx.mode === "lecture")), PV = 0.45;
+    if (preview){ PV = parseFloat(getComputedStyle(this).getPropertyValue("--preview-opacity")); if (!(PV >= 0 && PV <= 1)) PV = 0.45; }
     // 段階 name の進み：まだなら -1、済んだら Infinity、今なら t。phases になければ、訓点は初めから済み、ほかは来ない
     var at = function(name){ var s = self.phaseStep(name); if (!s) return name === "kunten" ? Infinity : -1; return k > s ? Infinity : k < s ? -1 : t; };
     var pr = function(tt, a, d){ return tt < 0 ? 0 : D.prog(tt, a, d); };
@@ -440,6 +443,7 @@ D.define("m-kanbun", class extends D.MotionElement {
     var started = first > 0 && k >= first, done = started && k > last, a = 0, len = 0, to = -1;
     if (started && !done){ a = G[k - first].a; len = G[k - first].b - a; to = t; }
     var eK = pr(tk, 0, 0.4), eO = pr(tk, 0.3, 0.45), eP = pr(tk, 0.45, 0.3);
+    if (preview && tk < 0) eK = eO = eP = PV;
     this.cells.forEach(function(e){
       e.kaeri.forEach(function(x){ x.style.opacity = eK.toFixed(3); });
       e.ann.forEach(function(x){ x.style.opacity = eO.toFixed(3); });
@@ -460,11 +464,18 @@ D.define("m-kanbun", class extends D.MotionElement {
     ce.forEach(function(ev, m){
       var e = self.cells[ev.c], v = m < j ? 1 : m === j ? pr(lt(m), 0.12 * slot, 0.3 * slot) : 0;
       if (v > 0) seen[ev.c] = Math.max(seen[ev.c] || 0, v);
-      ev.num.style.opacity = self.props.nums ? (v * numFade).toFixed(3) : 0;
+      // 後の段階の事柄（読む順の段階の前、または今の段階より後）
+      var later = preview && first > 0 && (!started || (!done && m >= a + len));
+      ev.num.style.opacity = self.props.nums ? (later ? PV : v * numFade).toFixed(3) : 0;
     });
     Object.keys(seen).forEach(function(c){ self.cells[c].bg.style.opacity = (seen[c] * 0.9).toFixed(3); });
     var fade = 1 - pr(tw, 0, 0.45);   // 書き下し文が出るときに弧を薄くする
     this.jumps.forEach(function(J){
+      if (preview && first > 0 && (!started || (!done && J.m >= a + len))){
+        // 後の段階の弧：引き終えた形を、読み終えた弧の濃さ（0.55）のまま薄く
+        J.path.setAttribute("stroke-dashoffset", "0.0000"); J.head.setAttribute("opacity", 1); J.g.setAttribute("opacity", (0.55 * PV).toFixed(3));
+        return;
+      }
       var d = J.m < j ? 1 : J.m === j ? pr(lt(J.m), 0, 0.35 * slot) : 0;
       J.path.setAttribute("stroke-dashoffset", (1 - d).toFixed(4));
       J.head.setAttribute("opacity", d >= 0.98 ? 1 : 0);
@@ -481,7 +492,7 @@ D.define("m-kanbun", class extends D.MotionElement {
       cur.ch.style.color = tail > 0 ? "color-mix(in srgb, var(--emph) " + (100 * (1 - tail)).toFixed(1) + "%, var(--fg))" : "var(--emph)";
     } else this.eye.style.opacity = 0;
     // 書き下し文：行ごとに 0.3 秒ずつ遅らせて出す
-    this.kakiLines.forEach(function(d, L){ d.style.opacity = pr(tw, L * 0.3, 0.45).toFixed(3); });
+    this.kakiLines.forEach(function(d, L){ d.style.opacity = (preview && tw < 0 && self.phaseStep("kaki") ? PV : pr(tw, L * 0.3, 0.45)).toFixed(3); });
   }
 });
 })();

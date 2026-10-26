@@ -229,8 +229,9 @@ DECK.define("m-compare", class extends DECK.MotionElement {
   cues(){ return null; }
   render(k, t, ctx){
     var D = DECK, F = this.props.dur, vr = this.variant, m = this.m, lecture = ctx && (ctx.preview || ctx.mode === "lecture");
-    var dim = 0.5;
-    if (lecture){ var dv = parseFloat(getComputedStyle(document.documentElement).getPropertyValue("--lecture-dim")); if (dv >= 0.45 && dv <= 0.5) dim = dv; }
+    // 先の段階の薄さ：テーマの --preview-opacity（ないときは 0.45）
+    var dim = 0.45;
+    if (lecture){ var dv = parseFloat(getComputedStyle(this).getPropertyValue("--preview-opacity")); if (dv >= 0 && dv <= 1) dim = dv; }
     var TRAVEL = 16;
     this.pieces.forEach(function(p){
       // reveal：行ごとに F/2 秒ずつ、出だしを F/2 の中で上から順にずらす（全体で F 秒。fade と同じ長さ）

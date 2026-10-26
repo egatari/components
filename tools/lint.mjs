@@ -9,6 +9,8 @@
 //   a method input(…), addEventListener for click / dblclick / pointer* / mouse* / touch* / key* / input / change,
 //   createElement of a / button / input / select / textarea, or child links as its data (static shape = {links: true, …}).
 // It fails when such a part lacks `static interactive = true`, and when viewerInput is set without interactive.
+// Answers under preview (docs/conventions.md §1.2, spec §8.4): a part whose later steps are an answer declares
+// `static preview = "none";` (the only value) and shows nothing ahead; tools/release.mjs writes it to the manifest.
 // <name> is a registry name: ^[a-z][a-z0-9-]{0,63}$ (Egatari spec §6). Only regular files; no symbolic links, no out/ in git.
 //   node tools/lint.mjs
 import fs from 'node:fs';
@@ -29,11 +31,11 @@ export function flags(js) {
     || /addEventListener\(\s*["'](click|dblclick|pointer\w*|mouse\w*|touch\w*|key\w*|input|change)["']/.test(code)
     || /createElement\(\s*["'](a|button|input|select|textarea)["']/.test(code)
     || /static\s+shape\s*=\s*\{\s*links\s*:\s*true/.test(code);
-  const g = code.match(/static\s+group\s*=\s*"([a-z][a-z0-9-]*)"\s*;/), tm = code.match(/static\s+tile\s*=\s*(\{.*\})\s*;\s*$/m);
+  const g = code.match(/static\s+group\s*=\s*"([a-z][a-z0-9-]*)"\s*;/), pv = code.match(/static\s+preview\s*=\s*"([^"]*)"\s*;/), tm = code.match(/static\s+tile\s*=\s*(\{.*\})\s*;\s*$/m);
   let tile = null, tileError = null;
   if (tm) { try { tile = JSON.parse(tm[1]); } catch (e) { tileError = e.message; } }
   return { interactive: /static\s+interactive\s*=\s*true\s*;/.test(code), viewerInput: /static\s+viewerInput\s*=\s*true\s*;/.test(code), clock: /static\s+clock\s*=\s*true\s*;/.test(code), operable,
-    group: g ? g[1] : null, tile, tileError, tileWritten: !!tm || /static\s+tile\s*=/.test(code) };
+    group: g ? g[1] : null, preview: pv ? pv[1] : null, previewWritten: !!pv || /static\s+preview\s*=/.test(code), tile, tileError, tileWritten: !!tm || /static\s+tile\s*=/.test(code) };
 }
 export const list = (s) => (s ? s.split(',').map((x) => x.trim()).filter(Boolean) : []);
 // purposes.json: id → entry
@@ -104,6 +106,8 @@ export function lint(root) {
     if (fl.operable && !fl.interactive) errs.push(`components/${name}/index.js: the viewer can operate it (an input() method, a click/pointer/key/input/change listener, a link or control, or links as data): declare static interactive = true;`);
     // groups of parts the user chooses (docs/conventions.md §7): today only "tool"; a tool needs its own new-deck tile
     if (fl.group !== null && fl.group !== 'tool') errs.push(`components/${name}/index.js: static group must be "tool" (the only group so far)`);
+    // answers under preview (docs/conventions.md §1.2, spec §8.4): a part whose later steps are an answer shows nothing ahead and says so
+    if (fl.previewWritten && fl.preview !== 'none') errs.push(`components/${name}/index.js: static preview must be "none" (the only value; leave it out for a part that previews its later steps)`);
     if (fl.tileWritten && !fl.tile) errs.push(`components/${name}/index.js: static tile must be one line of JSON ({"label": {"ja", "en"}, "examples": {"ja", "en"}, "icon"})${fl.tileError ? ': ' + fl.tileError : ''}`);
     if (fl.group === 'tool' && !(fl.tile && fl.tile.label && fl.tile.label.ja && fl.tile.label.en && fl.tile.examples && fl.tile.examples.ja && fl.tile.examples.en && /^[a-z][a-z0-9-]*$/.test(fl.tile.icon || ''))) errs.push(`components/${name}/index.js: a tool (static group = "tool") needs static tile with label.{ja,en}, examples.{ja,en} and icon`);
     if (fl.viewerInput && !fl.interactive) errs.push(`components/${name}/index.js: static viewerInput = true needs static interactive = true`);

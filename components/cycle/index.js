@@ -260,10 +260,11 @@ DECK.define("m-cycle", class extends DECK.MotionElement {
   }
   render(k, t, ctx){
     var D = DECK, self = this, vr = this.variant, T = this.props.dur, L = this.L;
-    var lecture = !!(ctx && (ctx.preview || ctx.mode === "lecture"));
+    var lecture = !!(ctx && (ctx.preview || ctx.mode === "lecture")), FAINT = 0.45;
+    if (lecture){ var pv = parseFloat(getComputedStyle(this).getPropertyValue("--preview-opacity")); FAINT = pv >= 0 && pv <= 1 ? pv : 0.45; }
     var pr = function(s, start, len){ return s < k ? 1 : s > k ? 0 : D.prog(t, start, len); };
-    // 授業の表示：後の段階は最後の形を薄く（0.45）、今の段階は 0.45 から濃くなる。形は動かさない（どの見せ方でも同じ）
-    var faint = function(s, start, len){ return s < k ? 1 : s > k ? 0.45 : 0.45 + 0.55 * D.prog(t, start, len); };
+    // 授業の表示：後の段階は最後の形を薄く（テーマの --preview-opacity、ないときは 0.45）、今の段階はその薄さから濃くなる。形は動かさない（どの見せ方でも同じ）
+    var faint = function(s, start, len){ return s < k ? 1 : s > k ? FAINT : FAINT + (1 - FAINT) * D.prog(t, start, len); };
     var boxE = {}, arrE = {};
     // 段階ごとの箱と、一緒に出る入ってくる矢印の進み
     // 箱の動きは 12 px まで（docs/conventions.md §1.2：どの見せ方も fade より遠くへ動かさない）

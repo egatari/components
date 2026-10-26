@@ -537,6 +537,7 @@ var CALC = (function(){
 var ON = function(v){ return /^(on|true|yes)$/i.test(String(v || "").trim()); };
 DECK.define("m-hissan", class extends DECK.MotionElement {
   static variants = ["fade", "draw"];
+  static preview = "none";   // 数字は計算そのものなので、授業の表示でも先の段階を見せない（仕様 §8.4、docs/conventions.md §1.2）
   static calc = CALC;
   // データは属性だけ（子の JSON はない）
   static shape = {schema: null, example: '<m-hissan expr="487+356"></m-hissan>'};
@@ -747,7 +748,8 @@ DECK.define("m-hissan", class extends DECK.MotionElement {
     return out.length ? out : null;
   }
   render(k, t, ctx){
-    var D = DECK, P = this.props.dur, lecture = ctx && ctx.mode === "lecture", draw = this.variant === "draw", FAINT = 0.45, whole = this.plan().build === "whole";
+    // 先の段階は授業の表示（ctx.preview）でも見せない：筆算の数字は計算そのもので、先に見えると答えになる（static preview = "none"）
+    var D = DECK, P = this.props.dur, draw = this.variant === "draw", whole = this.plan().build === "whole";
     this.items.forEach(function(o){
       var it = o.it, e, op;
       var o0 = (it.o || 0) * P, len = (it.l !== undefined ? it.l : 0.6) * P;
@@ -760,7 +762,7 @@ DECK.define("m-hissan", class extends DECK.MotionElement {
         return;
       }
       if (it.g < 0 || o.k < k) e = 1;
-      else if (o.k > k) e = lecture && it.end === undefined ? -1 : 0;
+      else if (o.k > k) e = 0;
       else e = D.prog(t, start, len);
       // 消えるもの（仮の商とその積）
       var gone = 0;
@@ -769,10 +771,10 @@ DECK.define("m-hissan", class extends DECK.MotionElement {
         else if (o.ek === k) gone = D.prog(t, (whole ? 0 : o.ej * P) + (it.endo || 0) * P, P * 0.3);
         if (whole) gone = 1;
       }
-      if (e < 0){ op = FAINT; e = 1; } else op = e;
+      op = e;
       if (draw && o.kind === "line"){
         o.el.setAttribute("stroke-dasharray", e >= 1 ? "none" : e.toFixed(4) + " 2");
-        op = e > 0 ? (op === FAINT && o.k > k ? FAINT : 1) : 0;
+        op = e > 0 ? 1 : 0;
       }
       o.el.setAttribute("opacity", (op * (1 - gone)).toFixed(3));
     });

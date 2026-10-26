@@ -13,6 +13,7 @@
 DECK.define("m-timer", class extends DECK.MotionElement {
   static variants = ["fade"];
   static interactive = true;   // 操作できるパーツ（docs/conventions.md §6）
+  static preview = "none";     // 先の時間は中身ではないので、授業の表示でも先の区切りを見せない（仕様 §8.4、docs/conventions.md §1.2）
   static clock = true;         // 経った時間そのものが中身：動きを減らす設定でも実時間の t で描く（仕様 §9.1）
   // 「道具」の組（頼まれたときだけ使う部品）と、新規作成の道具の札（docs/conventions.md §7。tools/release.mjs が manifest に写す。JSON で書く）
   static group = "tool";

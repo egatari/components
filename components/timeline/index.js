@@ -428,11 +428,12 @@ DECK.define("m-timeline", class extends DECK.MotionElement {
   }
   render(k, t, ctx){
     var D = DECK, P = this.props, self = this, vr = this.variant, T = P.dur, hz = this.hz;
-    var lecture = !!(ctx && (ctx.preview || ctx.mode === "lecture")), pl = this.plan();
+    var lecture = !!(ctx && (ctx.preview || ctx.mode === "lecture")), pl = this.plan(), FAINT = 0.45;
+    if (lecture){ var pv = parseFloat(getComputedStyle(this).getPropertyValue("--preview-opacity")); FAINT = pv >= 0 && pv <= 1 ? pv : 0.45; }
     // 段階 s の、start から len 秒の進み（前の段階なら 1、後の段階なら 0）
     var pr = function(s, start, len){ return s < k ? 1 : s > k ? 0 : D.prog(t, start, len); };
-    // 授業の表示：後の段階は最後の形を薄く（0.45）、今の段階は 0.45 から濃くなる。形は動かさない（どの見せ方でも同じ）
-    var faint = function(s, start){ return s < k ? 1 : s > k ? 0.45 : 0.45 + 0.55 * D.prog(t, start, T); };
+    // 授業の表示：後の段階は最後の形を薄く（テーマの --preview-opacity、ないときは 0.45）、今の段階はその薄さから濃くなる。形は動かさない（どの見せ方でも同じ）
+    var faint = function(s, start){ return s < k ? 1 : s > k ? FAINT : FAINT + (1 - FAINT) * D.prog(t, start, T); };
     // 軸
     var A = this.axis, ea = lecture ? 1 : pr(pl.axisStep, 0, 0.5);
     var ax = D.lerp(A.p0[0], A.p1[0], ea), ay = D.lerp(A.p0[1], A.p1[1], ea);

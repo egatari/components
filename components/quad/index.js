@@ -116,22 +116,27 @@ DECK.define("m-quad", class extends DECK.MotionElement {
     this.plan().forEach(function(o){ if (o.step === k && o.at > 0) c.push(o.at); });
     return c.length ? c.sort(function(a, b){ return a - b; }) : null;
   }
-  render(k, t){
+  render(k, t, ctx){
     var P = this.props, D = DECK, self = this;
+    // 先の段階を薄く見せる表示（授業の表示）：後の段階の点（動いた後の位置）・動く跡・行き先の名前・象限の名前を、
+    // テーマの --preview-opacity の濃さに。今の段階に出ている点は元の位置のまま
+    var preview = !!(ctx && (ctx.preview || ctx.mode === "lecture")), PV = 1;
+    if (preview){ PV = parseFloat(getComputedStyle(this).getPropertyValue("--preview-opacity")); if (!(PV >= 0 && PV <= 1)) PV = 0.45; }
     var pr = function(step, at, dur){ return step < k ? 1 : step > k ? 0 : D.prog(t, at, dur); };
     var qs = P["quads-step"];
-    this.quadG.setAttribute("opacity", (qs === 0 ? 1 : pr(qs, 0, P.fade)).toFixed(3));
+    this.quadG.setAttribute("opacity", (qs === 0 ? 1 : preview && qs > k ? PV : pr(qs, 0, P.fade)).toFixed(3));
     this.pts.forEach(function(p){
-      var o = p.o, e = pr(o.step, o.at, P.fade);
-      var m = o.to ? pr(o.to.step, o.to.at, P.move) : 0;
+      var o = p.o, e = pr(o.step, o.at, P.fade), fp = preview && o.step > k, fm = preview && o.to && o.to.step > k;
+      var m = o.to ? (fp ? 1 : pr(o.to.step, o.to.at, P.move)) : 0;
+      if (fp) e = 1;
       var x0 = self.X(o.it.x), y0 = self.Y(o.it.y);
       var x = o.to ? D.lerp(x0, self.X(o.to.x), m) : x0, y = o.to ? D.lerp(y0, self.Y(o.to.y), m) : y0;
       var s = D.lerp(0.6, 1, e);
-      p.g.setAttribute("opacity", e.toFixed(3));
+      p.g.setAttribute("opacity", fp ? PV.toFixed(3) : e.toFixed(3));
       p.g.setAttribute("transform", "translate(" + x.toFixed(2) + " " + y.toFixed(2) + ") scale(" + s.toFixed(4) + ")");
       // 自社の点：着いたときに輪が 1 回広がって消える（最終状態では出さない）
       if (p.ring){
-        var rt = o.step === k && t !== Infinity ? D.clamp01((t - o.at - P.fade * 0.6) / 0.8) : 1;
+        var rt = !fp && o.step === k && t !== Infinity ? D.clamp01((t - o.at - P.fade * 0.6) / 0.8) : 1;
         p.ring.setAttribute("cx", x.toFixed(2)); p.ring.setAttribute("cy", y.toFixed(2));
         p.ring.setAttribute("r", (p.r * (1 + 1.6 * rt)).toFixed(2));
         p.ring.setAttribute("opacity", (rt > 0 && rt < 1 ? 0.8 * (1 - rt) : 0).toFixed(3));
@@ -139,11 +144,12 @@ DECK.define("m-quad", class extends DECK.MotionElement {
       if (p.trail){
         p.trail.setAttribute("x1", x0.toFixed(2)); p.trail.setAttribute("y1", y0.toFixed(2));
         p.trail.setAttribute("x2", x.toFixed(2)); p.trail.setAttribute("y2", y.toFixed(2));
-        p.trail.setAttribute("opacity", m > 0 ? 0.9 : 0);
+        if (fm){ p.trail.setAttribute("x2", self.X(o.to.x).toFixed(2)); p.trail.setAttribute("y2", self.Y(o.to.y).toFixed(2)); }
+        p.trail.setAttribute("opacity", fm ? PV : m > 0 ? 0.9 : 0);
       }
       if (p.lab2){
         p.lab2.setAttribute("x", self.X(o.to.x).toFixed(2)); p.lab2.setAttribute("y", (self.Y(o.to.y) - p.r - 14).toFixed(2));
-        p.lab2.setAttribute("opacity", pr(o.to.step, o.to.at + P.move * 0.8, 0.3).toFixed(3));
+        p.lab2.setAttribute("opacity", fm ? PV.toFixed(3) : pr(o.to.step, o.to.at + P.move * 0.8, 0.3).toFixed(3));
       }
     });
   }
