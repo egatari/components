@@ -69,7 +69,8 @@ try {
   page.on('console', (m) => { if (m.type() === 'error') errors.push(m.text()); if (m.type() === 'warning') warnings.push(m.text()); });
   await page.goto(S.browser.fileUrl(out));
   await page.waitForFunction(() => window.DECK && DECK.ready, null, { timeout: 15000 });
-  await page.addStyleTag({ content: '.kj-ideal [data-ink] { visibility: hidden !important; }' });
+  // display:none (a child with visibility:visible would still show under visibility:hidden)
+  await page.addStyleTag({ content: '.kj-ideal [data-ink] { display: none !important; }' });
   const settle = () => page.evaluate(() => new Promise((r) => requestAnimationFrame(() => requestAnimationFrame(r))));
   // PNG → ink mask (1 = darker than the middle grey), decoded by the browser
   const ink = async (png) => {

@@ -423,7 +423,7 @@ var UID = 0;
 // buildInk(D, g, c, tf)：字 c のインクの層を g の中に作り、画ごとの書き始め・終わり・インクの点（字の座標）を c.strokes[j].geo に置く
 // drawStroke(c, j, f)：字 c の j 画目を、書いた割合 f（0〜1）の状態にする（純粋：前の状態に頼らない）
 // いまの描き方（strokesvg と同じ）：画の各部分（自分と交わる画は部分に分かれる）の中心線を、筆の幅の丸い線で、その部分の輪郭で切り抜いて描き、
-// 破線のずれで進める。1 つの画の部分は同じ長さだけ進む。書き終えた画は全部描く。書いている間は、各部分の書き始めの後ろの半円を
+// 破線のずれで進める。1 つの画の部分は同じ長さだけ進む。書き終えた画は、その輪郭を塗って描く（切り抜きの縁はなめらかにならないため）。書いている間は、各部分の書き始めの後ろの半円を
 // 切り抜きから除く（丸い端が、書き始めの点の後ろに小さく出ないように）
 function buildInk(D, g, c, tf){
   var S = STROKES.chars[c.ch], BR = STROKES.brush, defs = D.el("defs", {}, g);
@@ -445,6 +445,9 @@ function buildInk(D, g, c, tf){
       return {line: line, outline: outline, len: len, cut: "url(#" + hid + ")"};
     });
     sk.max = Math.max.apply(null, sk.pieces.map(function(p){ return p.len; }));
+    // 書き終えた画は、輪郭そのものを塗る（切り抜きの縁はなめらかにならないので、書いている画だけを切り抜きで描く）。色は書いている画と同じ --fg
+    sk.fill = D.el("g", {"data-f": j}, ink);
+    S[j].forEach(function(pc){ D.el("path", {d: pc[0], fill: "var(--fg)"}, sk.fill); });
     // インクを引く中心線（最初の部分の中心線のうち、画の輪郭の中にある所。strokesvg の線は輪郭の外から始まり外で終わる）
     var p0 = sk.pieces[0], pts = [];
     for (var d = 0; d <= p0.len; d += 1){
@@ -459,12 +462,10 @@ function buildInk(D, g, c, tf){
 }
 function drawStroke(c, j, f){
   var sk = c.strokes[j];
+  // 書き終えた画：塗った輪郭だけ。書いている画・まだの画：切り抜いた中心線だけ
+  sk.fill.style.visibility = f >= 1 ? "visible" : "hidden";
   sk.pieces.forEach(function(pc){
-    if (f >= 1){
-      pc.line.removeAttribute("stroke-dasharray"); pc.line.removeAttribute("stroke-dashoffset");
-      pc.line.style.visibility = "visible"; pc.outline.removeAttribute("clip-path");
-      return;
-    }
+    if (f >= 1){ pc.line.style.visibility = "hidden"; return; }
     var drawn = Math.min(pc.len, f * sk.max);
     pc.outline.setAttribute("clip-path", pc.cut);
     pc.line.setAttribute("stroke-dasharray", pc.len + " " + (pc.len + 1000));
