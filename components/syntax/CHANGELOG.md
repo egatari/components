@@ -6,7 +6,7 @@ The part's own versions (Egatari spec §6.1). Releases of the whole library are 
 
 - Moved to `egatariParts.define({name: "syntax", version: "2.0.0", requires: {base: "1.0.0"}, element: "m-syntax"})`,
   extending `base.MotionElement` with `base.el` / `prog` / `variant` / `previewOpacity`; `static partName = "syntax"`.
-  The embedded egatari-variant block is gone (`base.variant`). The DOM is byte-identical to 1.13.0 on its demo at every
+  The embedded egatari-variant block is gone (`base.variant`). The DOM is byte-identical to 1.13.0 on its demo and on `tools/fixtures/c2-identity/syntax.html` at every
   step (tools/test-c2-identity.mjs).
 - Reports instead of `console.warn("m-syntax: …")`: writing errors `ctx.report("data", "[syntax] …")`, `build` other than
   steps / whole `ctx.report("attr", …)`, `size` below 27 `ctx.report("range", …)` (all from `mount`), and an arrow across
