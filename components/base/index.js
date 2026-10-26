@@ -155,8 +155,13 @@ function up(e, name){ return Reflect.get(Object.getPrototypeOf(e), name, e); }
 // escape: the first one is kept as the instance's fault, reported once through ctx.report("error", "[<name>] <phase>: <error>")
 // as soon as a ctx is at hand (steps, duration and cues get none: it is reported at the next mount, render or layout), and
 // the element then shows the .m-error placeholder with its text equivalent (aria-label, else its own text). From then on
-// steps is the steps attribute (else 0), and the part is not called again. <name> is the registry name: the tag without m-.
-function partName(e){ var t = e.tagName.toLowerCase(); return t.indexOf("m-") === 0 ? t.slice(2) : t; }
+// steps is the steps attribute (else 0), and the part is not called again. <name> is the registry name the class declares
+// (static partName, = its define meta's name; lint checks it), else the tag without m-, else the whole tag.
+function partName(e){
+  var n = e.constructor.partName, t = e.tagName.toLowerCase();
+  if (typeof n === "string" && n) return n;
+  return t.indexOf("m-") === 0 ? t.slice(2) : t;
+}
 function errText(x){ return x && x.message !== undefined ? (x.name && x.name !== "Error" ? x.name + ": " : "") + x.message : String(x); }
 function fallbackSteps(e){ var n = stepInt(e.getAttribute("steps"), e.tagName.toLowerCase() + " steps"); return n !== null ? n : 0; }
 function textEquivalent(e){

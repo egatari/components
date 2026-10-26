@@ -23,7 +23,8 @@ export const ALLOW = {
   // Declarations in the component); a value is read, nothing is called. Any other use of .constructor stays refused
   // compProblem (deck.js's data check) reads the class once (var C = c.constructor) and then C.props and C.shape;
   // dataProblem reads constructor.shape for the record
-  'components/base/index.js': { 'constructor.steps': 1, 'constructor.props': 1, 'constructor.variants': 1, 'constructor.shape': 1, constructor: 1 },
+  // containment reads static partName for its report prefix
+  'components/base/index.js': { 'constructor.steps': 1, 'constructor.props': 1, 'constructor.variants': 1, 'constructor.shape': 1, 'constructor.partName': 1, constructor: 1 },
 };
 const NAMES = new Set(['eval', 'Function', 'constructor', 'import']);
 const TIMERS = new Set(['setTimeout', 'setInterval', 'setImmediate', 'execScript']);

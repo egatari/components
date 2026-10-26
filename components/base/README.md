@@ -35,7 +35,8 @@ nothing changes.
 
 **Containment** (spec §6.1). An exception the part throws while the player calls it (`steps`, `mount`, `render`,
 `layout`, and also `duration` and `cues`) never escapes. The first one is the instance's fault: it is reported once,
-through `ctx.report("error", "[<name>] <phase>: <error>")` (`<name>` is the tag without `m-`; `steps`, `duration` and
+through `ctx.report("error", "[<name>] <phase>: <error>")` (`<name>` is the class's `static partName`, which an
+element part declares equal to its define meta name, else the tag without `m-`, else the whole tag; `steps`, `duration` and
 `cues` get no ctx, so their fault is reported at the next `mount`, `render` or `layout`), the element shows
 `<div class="m-error" role="note" data-part-failure="error">` with its text equivalent (`aria-label`, else its own
 text), `steps` becomes the `steps` attribute (else 0), and the part is not called again. Handlers the part registers

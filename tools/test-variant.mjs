@@ -7,7 +7,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import vm from 'node:vm';
 import { ROOT } from './studio.mjs';
-import { USERS } from './variant-sync.mjs';
+import { VARIANT_PARTS as USERS } from './variant-sync.mjs';
 
 const warns = [];
 const root = { attrs: {}, getAttribute(n) { return n in this.attrs ? this.attrs[n] : null; } };

@@ -6,12 +6,19 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { migratedNames } from './parts.mjs';
 
 const ROOT = path.dirname(path.dirname(fileURLToPath(import.meta.url)));
 export const BEGIN = '// ---- BEGIN egatari-variant ';
 export const END = '// ---- END egatari-variant ----';
 // Components with presentation variants (docs/conventions.md §1). A new one is added here
-export const USERS = ['kpi', 'compare', 'venn', 'tree', 'fishbone', 'scatter', 'pie', 'timeline', 'cycle', 'map-japan', 'map-world', 'predict', 'hist', 'boxplot', 'numberline', 'tape', 'hissan', 'keyboard', 'kakijun', 'syntax', 'heatmap'];
+const LISTED = ['kpi', 'compare', 'venn', 'tree', 'fishbone', 'scatter', 'pie', 'timeline', 'cycle', 'map-japan', 'map-world', 'predict', 'hist', 'boxplot', 'numberline', 'tape', 'hissan', 'keyboard', 'kakijun', 'syntax', 'heatmap'];
+// A part migrated to components 2.0 (tools/parts.mjs migratedNames: derived from the part itself) drops its copy and uses the
+// base.variant helper instead, so it leaves USERS without editing this list; a copy left in it is an error (check)
+const MIGRATED = new Set(migratedNames(ROOT));
+export const USERS = LISTED.filter((n) => !MIGRATED.has(n));
+// Every part with presentation variants, migrated or not (for tests of the variants themselves)
+export const VARIANT_PARTS = LISTED.slice();
 
 const lf = (s) => s.replace(/\r\n?/g, '\n');
 export function source(root = ROOT) { return lf(fs.readFileSync(path.join(root, 'tools', 'variant.js'), 'utf8')).replace(/\n+$/, ''); }
@@ -31,6 +38,7 @@ export function check(root = ROOT) {
     const f = path.join(dir, name, 'index.js');
     if (!fs.existsSync(f)) continue;
     const text = lf(fs.readFileSync(f, 'utf8')), b = block(text);
+    if (MIGRATED.has(name)) { if (b) errs.push(`components/${name}/index.js: a 2.0 part has no egatari-variant block (use base.variant(this); docs/c2-migration.md)`); continue; }
     if (!b) { if (USERS.includes(name)) errs.push(`components/${name}/index.js: no egatari-variant block (run node tools/variant-sync.mjs)`); continue; }
     if (!USERS.includes(name)) errs.push(`components/${name}/index.js: has an egatari-variant block but is not listed in tools/variant-sync.mjs USERS`);
     if (b.end < 0) { errs.push(`components/${name}/index.js: egatari-variant block without its END line`); continue; }

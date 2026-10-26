@@ -10,6 +10,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import vm from 'node:vm';
 import { ROOT, studio, pinLabel, componentNames } from './studio.mjs';
+import { partClass } from './parts.mjs';
 
 let fails = 0;
 const ok = (cond, msg) => { console.log((cond ? 'ok   ' : 'FAIL ') + msg); if (!cond) fails++; };
@@ -32,9 +33,7 @@ ok(SH && Object.keys(SH).join() === Object.keys(REF).join(), `shape returns DECK
 const shapes = [];
 for (const name of componentNames()) {
   let cls = null;
-  const D = { define: (n, c) => { cls = c; }, MotionElement: class {} };
-  const ctx = vm.createContext({ DECK: D, window: { DECK: D }, console: { warn() {} } });
-  try { vm.runInContext(read(`components/${name}/index.js`), ctx, { filename: `${name}/index.js` }); } catch { /* a part that needs a browser to load */ }
+  try { cls = partClass(read(`components/${name}/index.js`), `${name}/index.js`); } catch { /* a part that needs a browser to load */ }
   if (!cls) continue;
   const sh = cls.shape;
   if (sh && sh.schema) shapes.push({ where: `m-${name} shape`, schema: sh.schema, example: sh.example });

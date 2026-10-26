@@ -18,7 +18,7 @@ import os from 'node:os';
 import path from 'node:path';
 import { execFileSync } from 'node:child_process';
 import { ROOT, studio } from './studio.mjs';
-import { USERS } from './variant-sync.mjs';
+import { VARIANT_PARTS as USERS } from './variant-sync.mjs';
 import { baseline } from './baseline.mjs';
 import { LAUNCH, TOLERANCE, hideChrome, settle, pixelDiff } from './shot-helpers.mjs';
 

@@ -26,7 +26,7 @@
 //     put its own on the instance) to pass a 2.0 context (spec §8.4) instead of DECK's:
 //     mode ("talk" | "learn" | "video"; DECK's "lecture" is talk with preview), preview, slide (the slide's key, a string),
 //     instant, reset, entered (true on the first render after the slide was entered from another slide, followed through the
-//     bridged parts' renders and DECK's deck:pos events; a jump to the same slide is not detected), lang (deck-meta lang, else <html lang>, else "ja"), slides ([{key, title}], frozen),
+//     bridged parts' renders and DECK's deck:pos events; a jump to the same slide is not detected), lang (deck-meta lang, else <html lang>, else "ja"), slides ([{key, title, steps}], frozen),
 //     go(slideKey, stepKey?) → DECK.go, visited(slideKey) → DECK.visited (a boolean), report(code, message) → DECK.componentErrors and console.warn, extend (DECK's when
 //     it has one), live (null); ctx.deck is not passed;
 //   - calls the part's layout(ctx), if it has one, when its size changes, when the fonts finish loading and when its
@@ -164,7 +164,9 @@ function ctxOf(c, d, first){
 var slidesCache = null;
 function slidesOf(){
   var D = G.DECK;
-  if (!slidesCache && D.slides) slidesCache = Object.freeze(D.slides.map(function(s){ var h = s.querySelector("h1, h2"); return Object.freeze({key: s._key, title: h ? h.textContent.trim() : ""}); }));
+  // steps (spec §8.4, egatari-spec b7520a8): the slide's largest numbered step key, 0 when it has none; concl is not counted
+  // (DECK puts a slide's concl step last, at _cstep = _max, and numbers no step there)
+  if (!slidesCache && D.slides) slidesCache = Object.freeze(D.slides.map(function(s){ var h = s.querySelector("h1, h2"); return Object.freeze({key: s._key, title: h ? h.textContent.trim() : "", steps: Math.max(0, s._cstep >= 0 ? s._cstep - 1 : s._max)}); }));
   return slidesCache || Object.freeze([]);
 }
 function bridged(cls){

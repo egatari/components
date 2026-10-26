@@ -86,6 +86,14 @@ export function lintMeta(name, js, meta) {
   if (/\bDECK\b/.test(code)) errs.push(`${at}: a 2.0 part must not use DECK (spec §6.1: no globals of the player; use ctx and base)`);
   if (/(^|[^.\w$])(window|globalThis)\b/m.test(code)) errs.push(`${at}: a 2.0 part must not use window or globalThis (spec §6.1: no globals of the player; the DOM through document and the element)`);
   if (/\brequire\s*\(/.test(code) || /(^|[^.\w$])import\b/m.test(code)) errs.push(`${at}: a 2.0 part must not import or require (spec §6.1)`);
+  // an element part declares its registry name for report prefixes (base reads it): static partName = "<meta.name>"
+  if ('element' in meta) {
+    const pn = code.match(/static\s+partName\s*=\s*["']([^"']*)["']/);
+    if (!pn) errs.push(`${at}: an element part declares static partName = "${meta.name}" (base prefixes its reports with it)`);
+    else if (pn[1] !== meta.name) errs.push(`${at}: static partName "${pn[1]}" must be the define meta name "${meta.name}"`);
+  }
+  // static testing = {…} is for this part's own tests only: no part reads it (another part's or its own)
+  if (/\.\s*testing\b|\[\s*["'`]testing["'`]\s*\]/.test(code)) errs.push(`${at}: reads .testing; static testing is for tests only and no part reads it (shared logic goes in a library part, docs/c2-migration.md)`);
   if ((code.match(/egatariParts\.define\s*\(/g) || []).length !== 1) errs.push(`${at}: a part calls egatariParts.define exactly once`);
   return errs;
 }
@@ -159,6 +167,13 @@ export function lint(root) {
     for (const k of ['name', 'version', 'series', 'summary', 'steps', 'props']) if (!(k in f)) errs.push(`components/${name}/README.md: frontmatter has no ${k}`);
     if ('version' in f && !EXACT.test(f.version)) errs.push(`components/${name}/README.md: version ${f.version} is not X.Y.Z (the part's own version)`);
     if (meta && f.version !== meta.version) errs.push(`components/${name}/README.md: version ${f.version} differs from the define meta's ${meta.version}`);
+    // a migrated part (2.0, element) keeps its own changelog, so that parts migrated in parallel do not all edit the
+    // repository's CHANGELOG.md: components/<name>/CHANGELOG.md with a "## <version>" section (id rewrites are noted there)
+    if (meta && /^2\./.test(f.version || '')) {
+      const cl = path.join(dir, 'CHANGELOG.md');
+      if (!fs.existsSync(cl)) errs.push(`components/${name}: a migrated part has its own CHANGELOG.md (docs/c2-migration.md)`);
+      else if (!new RegExp(`^## ${meta.version.replace(/\./g, '\\.')}\\b`, 'm').test(fs.readFileSync(cl, 'utf8'))) errs.push(`components/${name}/CHANGELOG.md: no "## ${meta.version}" section`);
+    }
     if ('kind' in f) errs.push(`components/${name}/README.md: kind is only for library parts (kind: library, no element)`);
     if (f.name && f.name !== `m-${name}`) errs.push(`components/${name}/README.md: name is ${f.name}, expected m-${name}`);
     if (f.series && !SERIES.includes(f.series)) errs.push(`components/${name}/README.md: series ${f.series} is not one of ${SERIES.join(', ')}`);

@@ -6,13 +6,18 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { migratedNames } from './parts.mjs';
 
 const ROOT = path.dirname(path.dirname(fileURLToPath(import.meta.url)));
 export const BEGIN = '// ---- BEGIN egatari-expr ';
 export const END = '// ---- END egatari-expr ----';
 // Components that evaluate expressions written by authors (attribute or data). A new one is added here
 // expr is the 2.0 library part (components/expr): the same block inside its egatariParts.define factory
-export const USERS = ['curves', 'sweep', 'expr'];
+const LISTED = ['curves', 'sweep', 'expr'];
+// A part migrated to components 2.0 (tools/parts.mjs migratedNames: derived from the part itself) drops its copy and uses the
+// expr library part instead, so it leaves USERS without editing this list; a copy left in it is an error (check)
+const MIGRATED = new Set(migratedNames(ROOT));
+export const USERS = LISTED.filter((n) => !MIGRATED.has(n));
 
 const lf = (s) => s.replace(/\r\n?/g, '\n');
 export function source(root = ROOT) { return lf(fs.readFileSync(path.join(root, 'tools', 'expr.js'), 'utf8')).replace(/\n+$/, ''); }
@@ -32,6 +37,7 @@ export function check(root = ROOT) {
     const f = path.join(dir, name, 'index.js');
     if (!fs.existsSync(f)) continue;
     const text = lf(fs.readFileSync(f, 'utf8')), b = block(text);
+    if (MIGRATED.has(name)) { if (b) errs.push(`components/${name}/index.js: a 2.0 part has no egatari-expr block (use the expr part, requires {expr: "1.0.0"}; docs/c2-migration.md)`); continue; }
     if (!b) { if (USERS.includes(name)) errs.push(`components/${name}/index.js: no egatari-expr block (run node tools/expr-sync.mjs)`); continue; }
     if (!USERS.includes(name)) errs.push(`components/${name}/index.js: has an egatari-expr block but is not listed in tools/expr-sync.mjs USERS`);
     if (b.end < 0) { errs.push(`components/${name}/index.js: egatari-expr block without its END line`); continue; }

@@ -17,6 +17,7 @@ egatariParts.define({name: "bars", version: "2.0.0", requires: {base: "1.0.0"}, 
 "use strict";
 var base = deps.base;
 return class extends base.MotionElement {
+  static partName = "bars";   // the registry name (define meta name), for report prefixes
   // データの形（kit/shape.js）
   static shape = {
     schema: {type: "object", additionalProperties: false, required: ["groups"], properties: {

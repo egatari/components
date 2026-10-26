@@ -130,11 +130,15 @@ function sandbox() {
 }
 // lint of 2.0 metas: the registry name is the folder, element the tag
 {
-  const js = (n, e) => `egatariParts.define({name: "${n}", version: "2.0.0", requires: {base: "1.0.0"}, element: "${e}"}, f);`;
+  const js = (n, e) => `egatariParts.define({name: "${n}", version: "2.0.0", requires: {base: "1.0.0"}, element: "${e}"}, f); static partName = "${n}";`;
   const errs = (n, e) => lintMeta('bars', js(n, e), partMeta(js(n, e)));
   ok(errs('bars', 'm-bars').length === 0 && errs('m-bars', 'm-bars').some((x) => /folder name/.test(x)) && errs('bars', 'm-bar').some((x) => /must be "m-bars"/.test(x)), 'lint: name is the folder (bars) and element the tag (m-bars)');
-  ok(lintMeta('bars', 'egatariParts.define({name: "bars", version: "2.0.0", requires: {base: "^1.0.0"}, element: "m-bars"}, f); DECK.el;', { name: 'bars', version: '2.0.0', requires: { base: '^1.0.0' }, element: 'm-bars' }).length === 2, 'lint: a range in requires and DECK in the code are refused');
-  const w = (code) => lintMeta('bars', 'egatariParts.define({name: "bars", version: "2.0.0", requires: {base: "1.0.0"}, element: "m-bars"}, f); ' + code, { name: 'bars', version: '2.0.0', requires: { base: '1.0.0' }, element: 'm-bars' });
+  ok(lintMeta('bars', 'egatariParts.define({name: "bars", version: "2.0.0", requires: {base: "^1.0.0"}, element: "m-bars"}, f); static partName = "bars"; DECK.el;', { name: 'bars', version: '2.0.0', requires: { base: '^1.0.0' }, element: 'm-bars' }).length === 2, 'lint: a range in requires and DECK in the code are refused');
+  const lm = (code) => lintMeta('bars', 'egatariParts.define({name: "bars", version: "2.0.0", requires: {base: "1.0.0", "kanbun-core": "1.0.0"}, element: "m-bars"}, f); ' + code, { name: 'bars', version: '2.0.0', requires: { base: '1.0.0', 'kanbun-core': '1.0.0' }, element: 'm-bars' });
+  ok(lm('').some((x) => /declares static partName = "bars"/.test(x)) && lm('static partName = "m-bars";').some((x) => /must be the define meta name/.test(x)) && lm('static partName = "bars";').length === 0, 'lint: an element part declares static partName equal to its meta name');
+  ok(lm('static partName = "bars"; var p = deps["kanbun-core"].testing.parse;').some((x) => /reads \.testing/.test(x)) && lm('static partName = "bars"; var p = d.x["testing"];').some((x) => /reads \.testing/.test(x))
+    && lm('static partName = "bars"; static testing = {parse: parse};').length === 0, 'lint: no part reads static testing (its own declaration is allowed)');
+  const w = (code) => lintMeta('bars', 'egatariParts.define({name: "bars", version: "2.0.0", requires: {base: "1.0.0"}, element: "m-bars"}, f); static partName = "bars"; ' + code, { name: 'bars', version: '2.0.0', requires: { base: '1.0.0' }, element: 'm-bars' });
   ok(w('var D = window.DECK;').some((x) => /window or globalThis/.test(x)) && w('globalThis.x = 1;').some((x) => /window or globalThis/.test(x)) && w('// window.DECK in a comment\nvar a = b.window;').length === 0, 'lint: window and globalThis are refused in a 2.0 part (not in comments, not as a property name)');
 }
 // the library parts of this repository load through the registry
@@ -195,12 +199,18 @@ const THROWING = `egatariParts.define({name: "c2throw", version: "0.0.1", requir
     render(k, t, ctx){ this._r = (this._r || 0) + 1; if (this.getAttribute("at") === "render" && k >= 1){ this._x = (this._x || 0) + 1; throw new TypeError("bad render " + k); } this._svg.setAttribute("data-k", k); }
     layout(ctx){ this._l = (this._l || 0) + 1; if (this.getAttribute("at") === "layout"){ this._x = (this._x || 0) + 1; throw new Error("bad layout"); } }
   };
+});
+egatariParts.define({name: "c2named", version: "0.0.1", requires: {base: "1.0.0"}, element: "m-c2named"}, function(d){
+  return class extends d.base.MotionElement { static partName = "c2named-part"; mount(){ throw new Error("named"); } };
+});
+egatariParts.define({name: "c2bare", version: "0.0.1", requires: {base: "1.0.0"}, element: "x-c2bare"}, function(d){
+  return class extends d.base.MotionElement { mount(){ throw new Error("bare"); } };
 });`;
 fs.writeFileSync(path.join(work, 'deck.html'), `<!DOCTYPE html>
 <html lang="en" data-theme="default">
 <head><meta charset="utf-8"><title>registry</title></head>
 <body><div id="stage">
-<section class="slide noconcl" id="s-first"><h2>First</h2><div class="body"><p>a</p></div></section>
+<section class="slide" id="s-first"><h2>First</h2><div class="body"><p>a</p><p data-step="1">b</p></div><div class="concl"><span>c</span></div></section>
 <section class="slide noconcl" id="s-probe"><h2>Probe</h2><div class="body"><m-c2probe id="probe" aria-label="probe" label="hello" style="display:block;height:120px"></m-c2probe>
 <m-c2fail id="failing" aria-label="the text equivalent of the failing part" style="display:block;height:80px"><script type="application/json">{"x": 1}</script></m-c2fail><p data-step="1" id="other">other</p>
 <m-c2dep id="dep" aria-label="a part whose library failed" style="display:block;height:40px"></m-c2dep></div></section>
@@ -211,6 +221,7 @@ fs.writeFileSync(path.join(work, 'deck.html'), `<!DOCTYPE html>
 <m-c2throw id="t-render2" at="render" data-from="2" aria-label="throws in render too" style="display:block;height:40px"></m-c2throw>
 <m-c2throw id="t-layout" at="layout" aria-label="throws in layout" style="display:block;height:40px"></m-c2throw>
 <m-c2throw id="t-fine" at="none" aria-label="does not throw" style="display:block;height:40px"></m-c2throw>
+<m-c2named aria-label="named" style="display:block;height:20px"></m-c2named><x-c2bare aria-label="bare" style="display:block;height:20px"></x-c2bare>
 <p data-step="3" id="other3">other</p></div></section>
 </div></body></html>
 `);
@@ -267,7 +278,8 @@ try {
   ok(r.log2.length >= 2 && r.log2[0][0] === 'layout' && r.log2[0][1] === 's-probe' && r.log2[1][0] === 'render' && r.log2[1][1] === 2, 'a size change calls layout(ctx) and then render at the last (k, t)');
   ok(r.went === true && r.pos.slide === 1, 'ctx.go(slideKey) moves the deck');
   ok(JSON.stringify(r.vis) === '[true,false,false,true]', `ctx.visited(slideKey) is DECK.visited as a boolean: shown slide true, not yet shown false, unknown false, true after going there (${JSON.stringify(r.vis)})`);
-  ok(r.frozen && r.slides.map((s) => s.key + ':' + s.title).join() === 's-first:First,s-probe:Probe,s-throw:Throw', 'ctx.slides is [{key, title}], read-only');
+  ok(r.frozen && r.slides.map((s) => s.key + ':' + s.title + ':' + s.steps).join() === 's-first:First:1,s-probe:Probe:2,s-throw:Throw:3' && r.slides.every((s) => Object.keys(s).join() === 'key,title,steps'),
+    `ctx.slides is [{key, title, steps}], read-only; steps is the largest numbered step key, concl not counted (${r.slides.map((s) => s.key + ':' + s.steps).join(', ')})`);
   ok(r.fail.box && r.fail.text === 'the text equivalent of the failing part' && r.fail.script, 'a failing element part shows its text equivalent (aria-label) and keeps its data');
   ok(r.failures.some((x) => x.key === 'c2fail@0.0.1' && x.code === 'factory'), 'its failure is recorded');
   ok(r.other === '1', 'the rest of the slide still steps (the data-step item is shown at step 2)');
@@ -292,7 +304,8 @@ try {
         x: c._x || 0, m: c._m || 0, svg: !!c.querySelector('svg'), r: c._r || 0 };
     }
     const reps = EGATARI_PARTS_SHIM.reports().filter((x) => x.tag === 'm-c2throw').map((x) => x.code + ' ' + x.msg);
-    return { i, max, out, reps, deckExceptions: DECK.componentErrors.filter((x) => x.tag === 'm-c2throw' && x.kind === 'exception').length,
+    const named = EGATARI_PARTS_SHIM.reports().filter((x) => x.tag === 'm-c2named' || x.tag === 'x-c2bare').map((x) => x.msg);
+    return { i, max, out, reps, named, deckExceptions: DECK.componentErrors.filter((x) => x.tag === 'm-c2throw' && x.kind === 'exception').length,
       other3: getComputedStyle(document.getElementById('other3')).opacity };
   });
   const o = t.out;
@@ -301,6 +314,7 @@ try {
   const want = ['error [c2throw] steps: RangeError: bad steps', 'error [c2throw] mount: bad mount', 'error [c2throw] render: TypeError: bad render 1', 'error [c2throw] render: TypeError: bad render 1', 'error [c2throw] layout: bad layout'];
   ok(t.reps.length === 5 && want.every((w) => t.reps.filter((x) => x === w).length === want.filter((y) => y === w).length),
     `containment: ctx.report("error", "[c2throw] <phase>: <error>") exactly once per failing instance, for steps, mount, render (two instances) and layout (${JSON.stringify(t.reps)})`);
+  ok(t.named.join() === '[c2named-part] mount: named,[x-c2bare] mount: bare', `containment: the prefix is static partName, else the tag without m- (above), else the whole tag (${t.named.join(' | ')})`);
   ok(['t-steps', 't-mount', 't-render', 't-render2', 't-layout'].every((id) => o[id].box && o[id].boxes === 1 && o[id].failure === 'error'), 'containment: each failing instance shows one .m-error placeholder');
   ok(o['t-steps'].text === 'throws in steps' && o['t-render'].text === 'the text of the part that throws in render' && o['t-layout'].text === 'throws in layout', 'containment: the placeholder is the text equivalent (aria-label, else the element\'s own text)');
   ok(o['t-steps'].steps === 3 && o['t-render'].steps === 0 && o['t-mount'].steps === 0, `containment: steps is then the steps attribute (3), else 0 (${o['t-steps'].steps}, ${o['t-render'].steps}, ${o['t-mount'].steps})`);

@@ -9,13 +9,18 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { ROOT, componentNames } from './studio.mjs';
 import { baseline, git } from './baseline.mjs';
+import { migratedNames, C2_BASELINE } from './parts.mjs';
 import { frontmatter, list, purposeIds, SERIES_LABEL, flags } from './lint.mjs';
 
 const esc = (s) => String(s ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
 const ids = purposeIds(ROOT);
 // New and changed components (index.js or demo.html) since the release before this one come first, marked on their first slide
 const { base, label: next } = baseline();
-const changed = new Set(base ? git('diff', '--name-only', base, '--', 'components').split('\n').filter((p) => /\/(index\.js|demo\.html)$/.test(p)).map((p) => p.split('/')[1]) : []);
+// A part migrated to components 2.0 draws what it drew in C2_BASELINE (tools/test-c2-identity.mjs), so its index.js counts as
+// changed only if it changed between base and C2_BASELINE; its demo.html as usual
+const migrated = new Set(migratedNames(ROOT));
+const changed = new Set(base ? git('diff', '--name-only', base, '--', 'components').split('\n').filter((p) => /\/(index\.js|demo\.html)$/.test(p))
+  .filter((p) => !(p.endsWith('/index.js') && migrated.has(p.split('/')[1]) && !git('diff', '--name-only', base, C2_BASELINE, '--', p).trim())).map((p) => p.split('/')[1]) : []);
 const existed = (name) => !!base && git('cat-file', '-t', `${base}:components/${name}/index.js`).trim() === 'blob';
 const status = (name) => (!base ? '' : !existed(name) ? '新しい' : changed.has(name) ? '変わった' : '');
 const order = componentNames().map((name) => ({ name, st: status(name) }));

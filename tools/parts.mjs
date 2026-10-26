@@ -6,7 +6,11 @@
 //   EXACT          an exact version (semver X.Y.Z with an optional pre-release); `requires` in a part are always exact
 import fs from 'node:fs';
 import path from 'node:path';
+import vm from 'node:vm';
 
+// The release the 2.0 migration starts from: a migrated part draws what it drew there (tools/test-c2-identity.mjs), and its
+// move to egatariParts.define is not a change for the gallery's marks (tools/gallery.mjs)
+export const C2_BASELINE = 'v1.13.0';
 export const EXACT = /^\d+\.\d+\.\d+(-[0-9A-Za-z.-]+)?$/;
 const CALL = 'egatariParts.define(';
 
@@ -68,7 +72,17 @@ export function partMetas(root) {
   return out;
 }
 // The migrated element parts (2.0 parts with an element), by folder name
-export function migratedNames(root) { return Object.entries(partMetas(root)).filter(([, m]) => m.element).map(([n]) => n).sort(); }
+// The migrated element parts, by folder name: derived, never listed. A part counts as migrated when its index.js calls
+// egatariParts.define with an element and its README frontmatter says version: 2.x (tools that need the list import this,
+// so that migrating a part edits only the part's own folder)
+export function migratedNames(root) {
+  return Object.entries(partMetas(root)).filter(([n, m]) => {
+    if (!m.element) return false;
+    const readme = path.join(root, 'components', n, 'README.md');
+    const v = fs.existsSync(readme) && (fs.readFileSync(readme, 'utf8').replace(/\r\n?/g, '\n').match(/^---\n[\s\S]*?^version:\s*(\S+)/m) || [])[1];
+    return /^2\./.test(v || '');
+  }).map(([n]) => n).sort();
+}
 // The parts a part needs, itself last, in dependency order (spec §6.1 Order)
 export function requiresClosure(name, metas) {
   const need = {};
@@ -90,4 +104,18 @@ export function c2Bundle(root, name) {
     out += `// ---- part ${n}@${metas[n].version}\nif (!EGATARI_PARTS_SHIM.status(${JSON.stringify(`${n}@${metas[n].version}`)})) {\n${read(n)}\n}\n`;
   }
   return out;
+}
+
+// The element class a part's index.js defines, read without a browser (for its static props and shape: tools/pack-bytes.mjs,
+// tools/test-part-shape.mjs). A 1.x part through a stub DECK.define; a 2.0 part through a stub egatariParts.define whose
+// dependencies are stubs (MotionElement an empty class, every other member a no-op function). null if it cannot be read.
+export function partClass(js, filename = 'index.js') {
+  let cls = null;
+  const D = { define: (n, c) => { cls = c; }, MotionElement: class {} };
+  const lib = () => new Proxy({}, { get: (_, k) => (k === 'MotionElement' ? class {} : function () {}) });
+  const deps = new Proxy({}, { get: () => lib() });
+  const ctx = vm.createContext({ DECK: D, window: { DECK: D }, console: { warn() {} },
+    egatariParts: { define: (meta, f) => { if (meta && meta.element) cls = f(deps); } } });
+  vm.runInContext(js, ctx, { filename });
+  return cls;
 }

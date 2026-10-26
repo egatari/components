@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="ja" data-theme="default">
+<head>
+<meta charset="utf-8">
+<title>m-menu: links to steps (tools/test-c2-identity.mjs)</title>
+<!-- Cards whose fragments are valid, out of range or not readable (spec §9.1A): after a tour of every slide, a card is
+     marked visited exactly where 1.x (DECK.resolveFragment) marked it. Not covered: #<key>:concl on a slide without a
+     conclusion (ctx.slides does not say whether a slide has one; docs/c2-migration.md). -->
+</head>
+<body>
+<div id="stage">
+
+<section class="slide noconcl" id="s-menu">
+  <h2>行き先</h2>
+  <div class="body">
+    <m-menu cols="3" aria-label="行き先" style="--mm-h:60px">
+      <a href="#s-b" data-sub="スライド">B</a>
+      <a href="#s-b:2" data-sub="最後の段階">B:2</a>
+      <a href="#s-b:3" data-sub="範囲の外">B:3</a>
+      <a href="#s-b:02" data-sub="鍵の書き方が違う">B:02</a>
+      <a href="#s-c:1" data-sub="段階 1">C:1</a>
+      <a href="#s-c:2" data-sub="結論の段階を数字で">C:2</a>
+      <a href="#s-c:concl" data-sub="結論">C:concl</a>
+      <a href="#3" data-sub="番号">#3</a>
+      <a href="#9" data-sub="番号が範囲の外">#9</a>
+      <a href="#s-nowhere" data-sub="ないスライド">?</a>
+      <a href="#s-d%3A1" data-sub="エスケープした :">D:1</a>
+      <a href="other.ega.html#s-b" data-sub="別のファイル">外</a>
+    </m-menu>
+  </div>
+</section>
+
+<section class="slide noconcl" id="s-b">
+  <h2>B</h2>
+  <div class="body"><p data-step="1">一</p><p data-step="2">二</p></div>
+</section>
+
+<section class="slide" id="s-c">
+  <h2>C</h2>
+  <div class="body"><p data-step="1">一</p></div>
+  <div class="concl"><span>結論</span></div>
+</section>
+
+<section class="slide noconcl" id="s-d">
+  <h2>D</h2>
+  <div class="body"><p data-step="1">一</p></div>
+</section>
+
+</div>
+</body>
+</html>

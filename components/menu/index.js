@@ -38,21 +38,25 @@ var CHECK = '<svg class="mm-seen" viewBox="0 0 26 26" aria-hidden="true"><path d
 var EXT = '<svg class="mm-ext" viewBox="0 0 20 20" aria-hidden="true"><path d="M8 4H4v12h12v-4M11 3h6v6M17 3l-8 8"/></svg>';
 function cards(el){ return [].filter.call(el.children, function(x){ return x.localName === "a" && x.hasAttribute("href"); }); }
 // 札の行き先のスライドの鍵（spec §9.1A：#<スライドの id>、#<id>:<段階の鍵>。段階の鍵は最後の : で切り、0・1・…（3 桁まで）か concl。
-// 数字だけの #N は 1 から数えたスライドの番号）。読めなければ null。段階が範囲の中かは ctx.slides からはわからないので見ない
+// 数字だけの #N は 1 から数えたスライドの番号）。読めなければ null。数字の段階の鍵は、そのスライドの数字の段階の最後
+// （ctx.slides の steps。spec §8.4）を超えれば読めない（1.x の DECK.resolveFragment と同じ）。concl があるかは ctx.slides
+// からはわからないので、concl はいつも読める
 function slideOf(frag, slides){
   var f = String(frag == null ? "" : frag);
   try { f = decodeURIComponent(f); } catch (e) { /* the fragment as written */ }
   if (!f) return null;
   if (/^[0-9]+$/.test(f)){ var n = +f; return n >= 1 && n <= slides.length ? slides[n - 1].key : null; }
-  var has = function(key){ for (var j = 0; j < slides.length; j++) if (slides[j].key === key) return true; return false; };
-  if (has(f)) return f;
-  var p = f.lastIndexOf(":");
-  if (p <= 0 || !has(f.slice(0, p))) return null;
+  var find = function(key){ for (var j = 0; j < slides.length; j++) if (slides[j].key === key) return slides[j]; return null; };
+  if (find(f)) return f;
+  var p = f.lastIndexOf(":"), s = p > 0 ? find(f.slice(0, p)) : null;
+  if (!s) return null;
   var sk = f.slice(p + 1);
-  return sk === "concl" || /^(0|[1-9][0-9]{0,2})$/.test(sk) ? f.slice(0, p) : null;
+  if (sk === "concl") return s.key;
+  return /^(0|[1-9][0-9]{0,2})$/.test(sk) && +sk <= (s.steps || 0) ? s.key : null;
 }
 
 return class extends base.MotionElement {
+  static partName = "menu";   // the registry name (define meta name), for report prefixes
   static interactive = true;   // 操作できるパーツ（札はリンク。docs/conventions.md §6）
   // データの形（kit/shape.js）：JSON ではなく、子のリンク <a href="#<スライドの id>">題</a>
   static shape = {links: true, example: '<a href="#s-abc123" data-sub="副題">題</a>'};

@@ -16,6 +16,7 @@ import path from 'node:path';
 import vm from 'node:vm';
 import { execFileSync } from 'node:child_process';
 import { ROOT, studio, componentNames } from './studio.mjs';
+import { partClass } from './parts.mjs';
 
 const args = process.argv.slice(2);
 const opt = (k) => { const i = args.indexOf(k); if (i < 0) return null; const v = args[i + 1]; args.splice(i, 2); return v; };
@@ -45,10 +46,7 @@ function count(r, name) {
     .split('\n').filter((ln) => !/demo\.html|examples\/|tools\/|motion-components スキル/.test(ln)).join('\n').replace(/\n{3,}/g, '\n\n').trim();
   let cls = null;
   if (js !== null) {
-    const D = { define: (n, c) => { cls = c; }, MotionElement: class {} };
-    const ctx = { DECK: D, window: { DECK: D } };
-    vm.createContext(ctx);
-    try { vm.runInContext(js, ctx, { filename: `${name}/index.js` }); } catch (e) { console.warn(`${name}: index.js could not be read (${e.message}); props and shape not counted`); }
+    try { cls = partClass(js, `${name}/index.js`); } catch (e) { console.warn(`${name}: index.js could not be read (${e.message}); props and shape not counted`); }
   }
   const props = Object.values((cls && cls.props) || {}).reduce((n, d) => n + B(d.type) + (d.default === undefined ? 0 : B(typeof d.default === 'string' ? d.default : JSON.stringify(d.default))) + B(d.doc), 0);
   const sh = cls && cls.shape;
