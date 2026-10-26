@@ -11,9 +11,13 @@
 // 本文の中：__語句__ 傍線、==語句== 二重傍線、{語句|しるし,…}（しるし：_A 傍線と記号 A、=B 二重傍線と記号 B、#名前 指す先、>名前 指示語）
 // 段階（phases の順。中身のないものは飛ばす。既定は marks refs roles）：marks 傍線 → refs 指示語の矢印 → roles 段落の枠と線
 // 線と枠は、字の位置を測って SVG で描く（部品の中の座標。描く度に測るので、呼び出しの順によらない）
-(function(){
+// 2.0（Egatari spec §6.1 の部品）：base の MotionElement・el・prog・previewOpacity を使い、プレイヤーのグローバルは使わない。
+// 書き方の誤りは ctx.report("data", "[gendai] …") で知らせる（1.x の console.warn("m-gendai: …") の代わり）。
+// 読み取り（parse）は試験のために static testing に出す（ほかのパーツは読まない）
+egatariParts.define({name: "gendai", version: "2.0.0", requires: {base: "1.0.0"}, element: "m-gendai"}, function(deps){
 "use strict";
-var D = window.DECK;
+var base = deps.base;
+var D = base;
 
 // ---------------------------------------------------------------- 読み取り
 // parse(文字列) → {paras: [{role, id, to, rel, runs: [{t, line, label, id, ref}]}], warnings}
@@ -59,8 +63,6 @@ function inline(s, warnings){
   runs.forEach(function(r){ if (/[{}]|__|==/.test(r.t)) warnings.push("しるしの書き方が違う（閉じていない・入れ子）：" + r.t); });
   return runs;
 }
-D.gendai = {parse: parse};
-if (!D.MotionElement) return;   // 試験（Node）では読み取りだけ
 
 // ---------------------------------------------------------------- 部品
 var ROLE_COLOR = function(role){ return /主張|結論|筆者/.test(role) ? "var(--emph)" : /対比|反論|対立/.test(role) ? "var(--accent2)" : /具体|例/.test(role) ? "var(--term)" : "var(--muted)"; };
@@ -70,7 +72,9 @@ var PH = ["marks", "refs", "roles"];
 var CHIP = 34;              // 札の高さ
 var STUB = 22, STEP = 16;   // 札から 1 段目までの距離、段の間
 var LH_TATE = 2.4;          // 縦書きの行の送り（傍線と記号 A の入る列の間を空ける）
-D.define("m-gendai", class extends D.MotionElement {
+return class extends base.MotionElement {
+  static partName = "gendai";   // the registry name (define meta name), for report prefixes
+  static testing = {parse: parse};   // for tools/test-kokugo.mjs only (no part reads it)
   // データの形（kit/shape.js）：JSON ではなく、要素の中に本文の字（段落は空行で区切る）
   static shape = {text: true, example: "@主張#p1\n便利な道具は、私たちから==迷う機会を奪う==。"};
   static props = {
@@ -89,11 +93,11 @@ D.define("m-gendai", class extends D.MotionElement {
   }
   get steps(){ return this.getAttribute("steps") !== null ? +this.getAttribute("steps") : this.phaseList.length; }
   phaseStep(name){ return this.phaseList.indexOf(name) + 1; }
-  mount(){
+  mount(ctx){
     var self = this, P = this.props, tate = P.tate;
     this._src = this.textContent;
     var m = this.model;
-    m.warnings.forEach(function(w){ console.warn("m-gendai: " + w); });
+    m.warnings.forEach(function(w){ ctx.report("data", "[gendai] " + w); });
     this.textContent = "";
     this.classList.add("plot");
     this.style.display = "block"; this.style.position = "relative";
@@ -199,8 +203,7 @@ D.define("m-gendai", class extends D.MotionElement {
     var tm = at("marks"), trf = at("refs"), tro = at("roles");
     // 先の段階を薄く見せる表示（授業の表示）：後の段階の傍線・指示語の囲みと矢印・段落の枠と札とつなぐ線を、
     // 引き終えた形のまま --preview-opacity の濃さで出す
-    var preview = !!(ctx && (ctx.preview || ctx.mode === "lecture")), PV = 0.45;
-    if (preview){ PV = parseFloat(getComputedStyle(this).getPropertyValue("--preview-opacity")); if (!(PV >= 0 && PV <= 1)) PV = 0.45; }
+    var preview = !!ctx.preview, PV = preview ? base.previewOpacity(this) : 0.45;
     var later = function(name){ return preview && self.phaseStep(name) > k; };
     var fM = later("marks"), fR = later("refs"), fO = later("roles");
     if (fM) tm = Infinity;
@@ -327,5 +330,5 @@ D.define("m-gendai", class extends D.MotionElement {
       if (o.h0){ o.h0.setAttribute("transform", "translate(" + f1(x0) + " " + f1(y0) + ") rotate(" + ang0 + ")"); o.h0.setAttribute("opacity", fO ? PV : e >= 0.98 ? 1 : 0); }
     });
   }
+};
 });
-})();
