@@ -49,6 +49,7 @@ Components 2.0 (alpha, not for lessons yet): parts other parts require (Egatari 
 | パーツ | 版 | 内容 | 使うパーツ |
 |---|---|---|---|
 | [`base`](components/base/README.md) | 1.0.0 | 2.0 の要素のパーツが使う土台（基底のクラス MotionElement と、SVG・時間・見せ方の補助）。データの形は mount の前に確かめる。教材の作者が直接は書かない | shape@1.0.0 |
+| [`codetree-core`](components/codetree-core/README.md) | 1.0.0 | 符号表から符号の木を作り、2 値の系列を復号する（ファクシミリの MH 符号：白と黒のランを交互に読む）。m-codetree が使う。教材の作者が直接は書かない | — |
 | [`expr`](components/expr/README.md) | 1.0.0 | 2.0 のパーツが属性やデータに書かれた式を計算するための、算術だけの安全な式の評価器（コードとしては動かさない）。教材の作者が直接は書かない | — |
 | [`kanbun-core`](components/kanbun-core/README.md) | 1.0.0 | 漢文の読み取り（白文・返り点・送り仮名・振り仮名）と訓読の順・書き下し文の計算。m-kanbun が使う。教材の作者が直接は書かない | — |
 | [`plot`](components/plot/README.md) | 1.0.0 | 2.0 のパーツが使う座標軸つきの図（軸・目盛り・軸の名前・切り抜き）。教材の作者が直接は書かない | base@1.0.0 |

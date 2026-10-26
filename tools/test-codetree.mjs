@@ -1,6 +1,7 @@
 // m-codetree の試験（ブラウザなし）：符号表から木を作ること、MH の復号（白から始めて交互、メイクアップ符号の後は同じ色、EOL の後は白）、誤り
 //   node tools/test-codetree.mjs
-// 部品の index.js を Node の vm で読み（DECK.MotionElement がないので部品は定義せず、DECK.codetree だけを出す）。
+// 復号の規則はライブラリのパーツ codetree-core（components 2.0）：試験だけの登録の代わり（tools/registry-shim.js）と一緒に Node の vm で
+// 読み、EGATARI_PARTS_SHIM.get で取り出す。
 // 表は見本（components/codetree/demo.html）の ITU-T T.4 の MH 符号をそのまま使う。描画・決定性は tools/test-components.mjs（demo.html）
 import fs from 'node:fs';
 import path from 'node:path';
@@ -9,9 +10,12 @@ import assert from 'node:assert/strict';
 import { fileURLToPath } from 'node:url';
 
 const ROOT = path.dirname(path.dirname(fileURLToPath(import.meta.url)));
-const ctx = { window: { DECK: {} }, console };
-vm.runInNewContext(fs.readFileSync(path.join(ROOT, 'components', 'codetree', 'index.js'), 'utf8'), ctx, { filename: 'codetree/index.js' });
-const C = ctx.window.DECK.codetree;
+const ctx = vm.createContext({ console });
+ctx.globalThis = ctx;
+vm.runInContext(fs.readFileSync(path.join(ROOT, 'tools', 'registry-shim.js'), 'utf8'), ctx, { filename: 'tools/registry-shim.js' });
+vm.runInContext(fs.readFileSync(path.join(ROOT, 'components', 'codetree-core', 'index.js'), 'utf8'), ctx, { filename: 'codetree-core/index.js' });
+const C = ctx.EGATARI_PARTS_SHIM.get('codetree-core', '1.0.0');
+assert.ok(C, 'codetree-core@1.0.0 is defined through the registry');
 const demo = fs.readFileSync(path.join(ROOT, 'components', 'codetree', 'demo.html'), 'utf8');
 const MH = JSON.parse(demo.match(/<script type="application\/json">([\s\S]*?)<\/script>/)[1]).table;
 const T = C.build(MH);
