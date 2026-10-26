@@ -10,26 +10,14 @@
 //   語[品詞]（boy[名]）              品詞。pos="on" のときだけ出す
 // 段階：（pos）→ 要素を 1 つずつ（S V O C M のうち出てくるもの）→ 括弧（と中の小文字の要素）→ 矢印 → 和訳。build="whole" で 1 段階
 // 字は HTML（英文は var(--font-sans)、和訳も）。線・括弧・札は SVG で、描くたびに語の位置を測る（呼び出しの順によらない）
-(function(){
+// 2.0（Egatari spec §6.1 の部品）：base の MotionElement・el・prog・variant・previewOpacity を使い、プレイヤーのグローバルは使わない。
+// 書き方の誤りは ctx.report("data", "[syntax] …")、属性の誤りは ctx.report("attr", …)・ctx.report("range", …)、矢印が行をまたぐときと
+// 要素の高さが足りないときは ctx.report("size", …) で知らせる（1.x の console.warn("m-syntax: …") の代わり）。
+// 読み取りと段階（parse・plan・durationOf と表）は試験のために static testing に出す（ほかのパーツは読まない）
+egatariParts.define({name: "syntax", version: "2.0.0", requires: {base: "1.0.0"}, element: "m-syntax"}, function(deps){
 "use strict";
-var D = window.DECK;
-// ---- BEGIN egatari-variant (source: tools/variant.js; copy with `node tools/variant-sync.mjs`; do not edit inside a component) ----
-// Choosing a presentation variant (Egatari spec §8.4, docs/conventions.md §1). A component lists its variant names in
-// `static variants` (the first is the default) and calls VARIANT.of(this) once, in mount. The variant is the component's
-// `variant` attribute when it names one of them, otherwise the first name. There is no seed: lessons do not carry one
-// (spec §8.4 since egatari-spec 28d8801), and `seed` / `data-egatari-seed` are not read.
-// The choice is a pure function of the attribute: the picture still depends on (i, k, t) only.
-var VARIANT = (function(){
-  "use strict";
-  function of(el){
-    var tag = el.tagName.toLowerCase(), C = customElements.get(tag), names = (C && C.variants) || [], v = el.getAttribute("variant");
-    if (v !== null && names.indexOf(v) >= 0) return v;
-    if (v !== null) console.warn(tag + ' variant="' + v + '" is not one of ' + names.join(", ") + " (the first, " + (names[0] || "none") + ", is used)");
-    return names[0] || null;
-  }
-  return {of: of};
-})();
-// ---- END egatari-variant ----
+var base = deps.base;
+var D = base;
 
 // ---------------------------------------------------------------- 決まり
 var ROLES = ["S", "V", "O", "C", "M"];
@@ -242,8 +230,6 @@ function durationOf(pl, k){
 function localTime(p, k, t){ return p.step < k ? Infinity : p.step > k ? -Infinity : t - p.off; }
 function prog(lt, a, d){ if (lt === Infinity) return 1; if (!(lt > a)) return 0; return D.prog ? D.prog(lt, a, d) : Math.min(1, (lt - a) / d); }
 
-D.syntax = {parse: parse, plan: plan, durationOf: durationOf, POS: POS, KIND: KIND};
-if (!D.MotionElement) return;   // 試験（Node）では読み取りと段階だけ
 
 // ---------------------------------------------------------------- 部品
 var CSS = [
@@ -259,7 +245,10 @@ var ROWH = 40;      // 要素の下線と記号の段の高さ
 var POSH = 30;      // 品詞の段の高さ
 var ON = function(v){ return /^(on|true|yes)$/i.test(String(v || "").trim()); };
 var f1 = function(x){ return x.toFixed(1); };
-D.define("m-syntax", class extends D.MotionElement {
+var CSS_ID = "syntax-2-0-0-css";   // the style element this part writes, named with its name and version (spec §6.1 Identifiers)
+return class extends base.MotionElement {
+  static partName = "syntax";   // the registry name (define meta name), for report prefixes
+  static testing = {parse: parse, plan: plan, durationOf: durationOf, POS: POS, KIND: KIND};   // for tools/test-syntax.mjs only (no part reads it)
   static variants = ["fade", "draw"];
   // データの形（kit/shape.js）：JSON ではなく、要素の中に 1 行 1 文の英文（「= 」の行は和訳）
   static shape = {text: true, example: "[S We] [V call] [O him] [C Ken].\n= 私たちは彼をケンと呼ぶ。"};
@@ -276,17 +265,17 @@ D.define("m-syntax", class extends D.MotionElement {
   }
   get steps(){ return this.getAttribute("steps") !== null ? +this.getAttribute("steps") : this.plan.steps; }
   duration(k){ return durationOf(this.plan, k); }
-  mount(){
+  mount(ctx){
     var self = this, P = this.props, size = P.size, m = this.model, pos = ON(P.pos);
     this._src = this.textContent;
-    m.warnings.forEach(function(w){ console.warn("m-syntax: " + w); });
-    if (!/^(steps|whole)$/.test(String(P.build).trim())) console.warn('m-syntax: build="' + P.build + '" is not steps or whole (steps is used)');
-    if (size < 27){ console.warn("m-syntax: size " + size + " is below 27 px (27 is used)"); size = 27; }
+    m.warnings.forEach(function(w){ ctx.report("data", "[syntax] " + w); });
+    if (!/^(steps|whole)$/.test(String(P.build).trim())) ctx.report("attr", '[syntax] build="' + P.build + '" is not steps or whole (steps is used)');
+    if (size < 27){ ctx.report("range", "[syntax] size " + size + " is below 27 px (27 is used)"); size = 27; }
     this.size = size;
-    this.variant = VARIANT.of(this);
+    this.variant = base.variant(this);
     this.textContent = "";
     this.classList.add("plot");
-    if (!document.getElementById("m-syntax-css")){ var st = document.createElement("style"); st.id = "m-syntax-css"; st.textContent = CSS; document.head.appendChild(st); }
+    if (!document.getElementById(CSS_ID)){ var st = document.createElement("style"); st.id = CSS_ID; st.textContent = CSS; document.head.appendChild(st); }
     var W = this.clientWidth || 1184, H = this.clientHeight || 400;
     var mk = function(tag, cls, parent, text){ var e = document.createElement(tag); if (cls) e.className = cls; if (text !== undefined) e.textContent = text; parent.appendChild(e); return e; };
     var box = mk("div", "sx-text", this);
@@ -378,8 +367,7 @@ D.define("m-syntax", class extends D.MotionElement {
   }
   render(k, t, ctx){
     var self = this, P = this.props, pl = this.plan, draw = this.variant === "draw", BR = this.BR;
-    var preview = !!(ctx && (ctx.preview || ctx.mode === "lecture")), PV = 0.45;
-    if (preview){ PV = parseFloat(getComputedStyle(this).getPropertyValue("--preview-opacity")); if (!(PV >= 0 && PV <= 1)) PV = 0.45; }
+    var preview = !!ctx.preview, PV = preview ? base.previewOpacity(this) : 0.45;
     // 段ごとの時刻と、薄く見せるか
     var phase = {};
     pl.phases.forEach(function(p){ phase[p.name === "role" ? "role" + p.code : p.name] = p; });
@@ -488,8 +476,8 @@ D.define("m-syntax", class extends D.MotionElement {
     if (!this._warned){
       var last = this.box.lastElementChild, bottom = last ? last.offsetTop + last.offsetHeight : 0;
       if (bottom > this.clientHeight + 2) warns.push("要素の高さ " + this.clientHeight + "px に " + Math.ceil(bottom - this.clientHeight) + "px 足りない（要素を高くするか、文を分ける）");
-      if (warns.length && document.fonts && document.fonts.status === "loaded"){ this._warned = true; warns.filter(function(w, i){ return warns.indexOf(w) === i; }).forEach(function(w){ console.warn("m-syntax: " + w); }); }
+      if (warns.length && document.fonts && document.fonts.status === "loaded"){ this._warned = true; warns.filter(function(w, i){ return warns.indexOf(w) === i; }).forEach(function(w){ ctx.report("size", "[syntax] " + w); }); }
     }
   }
+};
 });
-})();

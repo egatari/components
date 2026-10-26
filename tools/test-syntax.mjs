@@ -1,16 +1,16 @@
 // m-syntax: reading the marked-up text, bracket nesting, modifier arrows, steps (no browser), then the drawing in a browser
 // (pinned Egatari Studio): arrow ends on the head word and the bracket's name, brackets beside their first and last words,
-// underlines and brackets across a wrapped line, and console.warn for writing errors and for an arrow across lines.
+// underlines and brackets across a wrapped line, and ctx.report for writing errors and for an arrow across lines (the
+// registry shim's bridge prints a report as "[egatariParts] m-syntax (<slide>): <code>: [syntax] …").
+// The reading and steps come from the part's static testing, read without a browser through partClass (tools/parts.mjs).
 //   node tools/test-syntax.mjs [work dir]
 import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
-import vm from 'node:vm';
 import { ROOT, studio } from './studio.mjs';
+import { partClass } from './parts.mjs';
 
-const ctx = { window: { DECK: {} }, console };
-vm.runInNewContext(fs.readFileSync(path.join(ROOT, 'components', 'syntax', 'index.js'), 'utf8'), ctx, { filename: 'syntax/index.js' });
-const X = ctx.window.DECK.syntax;
+const X = partClass(fs.readFileSync(path.join(ROOT, 'components', 'syntax', 'index.js'), 'utf8'), 'syntax/index.js').testing;
 let fail = 0, n = 0;
 const eq = (got, want, msg) => { n++; const g = JSON.stringify(got), w = JSON.stringify(want); if (g !== w) { fail++; console.log(`FAIL ${msg}\n     got  ${g}\n     want ${w}`); } };
 const ok = (cond, msg) => { n++; if (!cond) { fail++; console.log('FAIL ' + msg); } };
@@ -68,7 +68,7 @@ eq(mods(one('[S The tall^ boy {形^ in the cap}] [V runs].')), ['1-1>2#1', '3-5>
   eq(p.sentences.map((s) => s.yaku), ['私たちは走る。', '雨が降る。'], 'each = line belongs to the sentence above');
 }
 
-// ---------------------------------------------------------------- writing errors (warnings; the component prints them with console.warn)
+// ---------------------------------------------------------------- writing errors (warnings; the component reports them with ctx.report)
 const has = (src, re, msg) => { const w = warns(src); ok(w.some((x) => re.test(x)), `${msg}: ${JSON.stringify(w)}`); };
 has('= 訳だけ', /和訳の前に英文がない/, 'translation before any sentence');
 has('[S We] [V run].\n= 一\n= 二', /和訳が 2 行ある/, 'two translation lines');
@@ -205,10 +205,10 @@ try {
     ok(pts.some(([x, y]) => x < who.l && x > who.l - 40 && y >= who.t - 8 && y <= who.b + 8), 'opening bracket beside "who" on its line');
     ok(pts.some(([x, y]) => x > house.r && x < house.r + 40 && y >= house.t - 8 && y <= house.b + 8), 'closing bracket beside "house" on its line');
   }
-  ok(logs.some((l) => /m-syntax: .*行をまたぐ/.test(l)), 'an arrow across lines warns once: ' + JSON.stringify(logs.filter((l) => /m-syntax/.test(l))));
-  // ---- writing errors reach console.warn, and the part still draws
-  ok(logs.some((l) => /m-syntax: 閉じていない「\[S」/.test(l)), 'unclosed [S warns');
-  ok(logs.some((l) => /m-syntax: 矢印の先「walk」/.test(l)), 'missing arrow head warns');
+  ok(logs.some((l) => /m-syntax \([^)]*\): size: \[syntax\] .*行をまたぐ/.test(l)), 'an arrow across lines is reported: ' + JSON.stringify(logs.filter((l) => /\[syntax\]/.test(l))));
+  // ---- writing errors reach ctx.report, and the part still draws
+  ok(logs.some((l) => /m-syntax \([^)]*\): data: \[syntax\] 閉じていない「\[S」/.test(l)), 'unclosed [S is reported');
+  ok(logs.some((l) => /m-syntax \([^)]*\): data: \[syntax\] 矢印の先「walk」/.test(l)), 'missing arrow head is reported');
   ok(!logs.some((l) => /^ERROR/.test(l)), 'no page errors: ' + JSON.stringify(logs.filter((l) => /^ERROR/.test(l))));
   // the readable layer
   const sr = await p.evaluate(() => document.querySelector('#rel .sr-only').textContent);
