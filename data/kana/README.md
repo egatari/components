@@ -1,6 +1,7 @@
 # Kana stroke data (ひらがな・カタカナ)
 
-Stroke-order data for 166 kana, for the stroke-order part (`m-kakijun`):
+Stroke-order data for 166 kana, for the stroke-order part (`m-kakijun`, `components/kakijun/`; `tools/kana-embed.mjs` writes both
+files into its index.js, the OFL one as its own delimited block, and copies the licence files next to it):
 
 - the 92 basic kana (ひらがな 46 + カタカナ 46);
 - 濁音・半濁音: が〜ぼ, ぱ〜ぽ, ガ〜ボ, パ〜ポ and ヴ (51);
