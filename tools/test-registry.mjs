@@ -278,8 +278,8 @@ try {
   ok(r.log2.length >= 2 && r.log2[0][0] === 'layout' && r.log2[0][1] === 's-probe' && r.log2[1][0] === 'render' && r.log2[1][1] === 2, 'a size change calls layout(ctx) and then render at the last (k, t)');
   ok(r.went === true && r.pos.slide === 1, 'ctx.go(slideKey) moves the deck');
   ok(JSON.stringify(r.vis) === '[true,false,false,true]', `ctx.visited(slideKey) is DECK.visited as a boolean: shown slide true, not yet shown false, unknown false, true after going there (${JSON.stringify(r.vis)})`);
-  ok(r.frozen && r.slides.map((s) => s.key + ':' + s.title + ':' + s.steps).join() === 's-first:First:1,s-probe:Probe:2,s-throw:Throw:3' && r.slides.every((s) => Object.keys(s).join() === 'key,title,steps'),
-    `ctx.slides is [{key, title, steps}], read-only; steps is the largest numbered step key, concl not counted (${r.slides.map((s) => s.key + ':' + s.steps).join(', ')})`);
+  ok(r.frozen && r.slides.map((s) => s.key + ':' + s.title + ':' + s.steps + ':' + s.concl).join() === 's-first:First:1:true,s-probe:Probe:2:false,s-throw:Throw:3:false' && r.slides.every((s) => Object.keys(s).join() === 'key,title,steps,concl'),
+    `ctx.slides is [{key, title, steps, concl}], read-only; steps is the largest numbered step key, concl not counted; concl true when the slide has a conclusion (${r.slides.map((s) => s.key + ':' + s.steps + ':' + s.concl).join(', ')})`);
   ok(r.fail.box && r.fail.text === 'the text equivalent of the failing part' && r.fail.script, 'a failing element part shows its text equivalent (aria-label) and keeps its data');
   ok(r.failures.some((x) => x.key === 'c2fail@0.0.1' && x.code === 'factory'), 'its failure is recorded');
   ok(r.other === '1', 'the rest of the slide still steps (the data-step item is shown at step 2)');

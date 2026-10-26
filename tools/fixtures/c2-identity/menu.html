@@ -4,8 +4,8 @@
 <meta charset="utf-8">
 <title>m-menu: links to steps (tools/test-c2-identity.mjs)</title>
 <!-- Cards whose fragments are valid, out of range or not readable (spec §9.1A): after a tour of every slide, a card is
-     marked visited exactly where 1.x (DECK.resolveFragment) marked it. Not covered: #<key>:concl on a slide without a
-     conclusion (ctx.slides does not say whether a slide has one; docs/c2-migration.md). -->
+     marked visited exactly where 1.x (DECK.resolveFragment) marked it, including #<key>:concl on a slide without a
+     conclusion (refused; ctx.slides concl, egatari-spec d2b2474). -->
 </head>
 <body>
 <div id="stage">
@@ -25,6 +25,7 @@
       <a href="#9" data-sub="番号が範囲の外">#9</a>
       <a href="#s-nowhere" data-sub="ないスライド">?</a>
       <a href="#s-d%3A1" data-sub="エスケープした :">D:1</a>
+      <a href="#s-b:concl" data-sub="結論のないスライドの結論">B:concl</a>
       <a href="other.ega.html#s-b" data-sub="別のファイル">外</a>
     </m-menu>
   </div>

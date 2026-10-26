@@ -39,8 +39,8 @@ var EXT = '<svg class="mm-ext" viewBox="0 0 20 20" aria-hidden="true"><path d="M
 function cards(el){ return [].filter.call(el.children, function(x){ return x.localName === "a" && x.hasAttribute("href"); }); }
 // 札の行き先のスライドの鍵（spec §9.1A：#<スライドの id>、#<id>:<段階の鍵>。段階の鍵は最後の : で切り、0・1・…（3 桁まで）か concl。
 // 数字だけの #N は 1 から数えたスライドの番号）。読めなければ null。数字の段階の鍵は、そのスライドの数字の段階の最後
-// （ctx.slides の steps。spec §8.4）を超えれば読めない（1.x の DECK.resolveFragment と同じ）。concl があるかは ctx.slides
-// からはわからないので、concl はいつも読める
+// （ctx.slides の steps。spec §8.4）を超えれば読めない。concl は結論の段階があるスライド（ctx.slides の concl）でだけ読める
+// （どちらも 1.x の DECK.resolveFragment と同じ）
 function slideOf(frag, slides){
   var f = String(frag == null ? "" : frag);
   try { f = decodeURIComponent(f); } catch (e) { /* the fragment as written */ }
@@ -51,7 +51,7 @@ function slideOf(frag, slides){
   var p = f.lastIndexOf(":"), s = p > 0 ? find(f.slice(0, p)) : null;
   if (!s) return null;
   var sk = f.slice(p + 1);
-  if (sk === "concl") return s.key;
+  if (sk === "concl") return s.concl === true ? s.key : null;
   return /^(0|[1-9][0-9]{0,2})$/.test(sk) && +sk <= (s.steps || 0) ? s.key : null;
 }
 
