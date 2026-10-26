@@ -5,11 +5,14 @@
 //   4. no +1/−1 min buttons without ctx.extend (Studio v0.4.3 has none)
 //   5. with a fake ctx.extend (spec §8.4, egatari-spec 485ae54): ±60 is asked, the remaining time follows, a returned total is used,
 //      −1 min stops at 0:00, + and − keys on a focused button, the extension persists across steps on the slide and on ctx.reset
-//      (spec §8.4: ctx.reset MUST NOT clear viewer input; only focus is dropped), and resets on ctx.entered and, for a player
-//      without ctx.entered, on entering the slide from another slide (deck:pos); egatari-input is dispatched
+//      (spec §8.4: ctx.reset MUST NOT clear viewer input; only focus is dropped), and resets on ctx.entered (entering the slide
+//      from another slide); deck:pos alone does nothing (timer 2.0.0 listens to no player event); egatari-input is dispatched
 //   5b. real clicks in the pinned Studio (whose step entry passes ctx.reset to a touched part): +1 min clicked at step 1 is kept
 //      after going to step 2 and back; a jump to another slide and back clears it
 //   6. video: no buttons, the author's seconds; print: buttons hidden, the author's seconds, the screen keeps the extension
+// timer 2.0.0 runs through the registry shim (tools/parts.mjs c2Bundle), which builds the 2.0 ctx itself (entered from the
+// slide the viewer is on). A render with a hand-made ctx (extend, entered, reset) calls the part's own render (__r: the
+// class's prototype method, below the shim's and base's instance wrappers).
 //   node tools/test-timer.mjs [work folder]
 import fs from 'node:fs';
 import os from 'node:os';
@@ -42,6 +45,7 @@ try {
     await page.evaluate(() => document.fonts.ready);
     await page.evaluate(() => {
       window.__c = (i) => DECK.slides[i]._comps[0];
+      window.__r = (c, k, t, ctx) => { let p = Object.getPrototypeOf(c); while (p && !Object.prototype.hasOwnProperty.call(p, 'render')) p = Object.getPrototypeOf(p); return p.render.call(c, k, t, ctx); };
       window.__v = (c) => ({ clock: c.clock.textContent, lab: c.lab.textContent, foot: c.foot.textContent, rows: c.rows.map((r) => r.tx.textContent) });
     });
     return { page, errors };
@@ -102,7 +106,7 @@ try {
       window.__tot = 0;
       window.__X = { mode: 'talk', extend: (s) => { if (s) __calls.push(s); __tot += s; return __tot; } };
       __c(0).addEventListener('egatari-input', (e) => __ev.push(e.detail.extend));
-      DECK.go(0, 1, false); __c(0).render(1, 10, __X);
+      DECK.go(0, 1, false); __r(__c(0), 1, 10, __X);
     });
     ok(await page.locator('m-timer').first().locator('button').count() === 2, 'with ctx.extend: two buttons');
     const plus = page.locator('m-timer').first().locator('button').nth(1), minus = page.locator('m-timer').first().locator('button').nth(0);
@@ -122,43 +126,45 @@ try {
     await page.keyboard.press('-');
     r = await page.evaluate(() => {
       const c = __c(0), o = { clock: c.clock.textContent };
-      DECK.go(0, 2, false); DECK.go(0, 1, false); c.render(1, 10, __X); o.back = c.clock.textContent;
-      DECK.autoplay(true); DECK.autoplay(false); DECK.go(0, 1, false); c.render(1, 10, __X); o.auto = c.clock.textContent;
-      c.render(1, 10, { mode: 'talk', extend: __X.extend, reset: true }); o.reset = c.clock.textContent;   // the player keeps its total on ctx.reset
-      c.render(1, 10, __X); o.afterReset = c.clock.textContent;
-      c.render(1, 10, __X); c.extend(60); DECK.go(1, 0, false); __tot = 0; DECK.go(0, 1, false); c.render(1, 10, __X); o.otherSlide = c.clock.textContent;
+      DECK.go(0, 2, false); DECK.go(0, 1, false); __r(c, 1, 10, __X); o.back = c.clock.textContent;
+      DECK.autoplay(true); DECK.autoplay(false); DECK.go(0, 1, false); __r(c, 1, 10, __X); o.auto = c.clock.textContent;
+      __r(c, 1, 10, { mode: 'talk', extend: __X.extend, reset: true }); o.reset = c.clock.textContent;   // the player keeps its total on ctx.reset
+      __r(c, 1, 10, __X); o.afterReset = c.clock.textContent;
+      __r(c, 1, 10, __X); c.extend(60); DECK.go(1, 0, false); __tot = 0; DECK.go(0, 1, false); __r(c, 1, 10, __X); o.otherSlide = c.clock.textContent;
       // a player that passes ctx.entered: the extension is cleared on that render only (the player clears its own total on entry)
       c.extend(60); o.beforeEntered = c.clock.textContent;
-      __tot = 0; c.render(1, 10, { ...__X, entered: true }); o.entered = c.clock.textContent;
-      c.extend(60); c.render(1, 10, { ...__X, entered: false }); o.notEntered = c.clock.textContent;
-      // with ctx.entered known, deck:pos no longer resets (the player says when the slide is entered)
-      DECK.go(1, 0, false); DECK.go(0, 1, false); c.render(1, 10, __X); o.posIgnored = c.clock.textContent;
-      __tot = 0; c.render(1, 10, { ...__X, entered: true });
-      c.render(1, 80, __X); c.extend(-60); o.stop = c.clock.textContent; o.stopCall = __calls[__calls.length - 1];
-      c.render(1, 10, { mode: 'talk', entered: true });
-      c.render(1, 10, { mode: 'talk', extend: () => 30 }); c.extend(60); o.returned = c.clock.textContent;
+      __tot = 0; __r(c, 1, 10, { ...__X, entered: true }); o.entered = c.clock.textContent;
+      c.extend(60); __r(c, 1, 10, { ...__X, entered: false }); o.notEntered = c.clock.textContent;
+      // the part listens to no player event: deck:pos for another slide and back, without a render, resets nothing
+      document.dispatchEvent(new CustomEvent('deck:pos', { detail: { i: 1, k: 0 } }));
+      document.dispatchEvent(new CustomEvent('deck:pos', { detail: { i: 0, k: 1 } }));
+      __r(c, 1, 10, { mode: 'talk' }); o.posIgnored = c.clock.textContent;
+      __tot = 0; __r(c, 1, 10, { ...__X, entered: true });
+      __r(c, 1, 80, __X); c.extend(-60); o.stop = c.clock.textContent; o.stopCall = __calls[__calls.length - 1];
+      __r(c, 1, 10, { mode: 'talk', entered: true });
+      __r(c, 1, 10, { mode: 'talk', extend: () => 30 }); c.extend(60); o.returned = c.clock.textContent;
       return o;
     });
     ok(r.clock === '0:20', 'the − key: back to 0:20');
     ok(r.back === '0:20', 'the extension persists across steps on the same slide');
     ok(r.auto === '0:20', 'an autoplay toggle does not reset it');
     ok(r.reset === '0:20' && r.afterReset === '0:20', 'ctx.reset keeps the extension (viewer input, spec §8.4)');
-    ok(r.otherSlide === '1:20', 'entering the slide from another slide (deck:pos, no ctx.entered) restores the author\'s 90 s');
+    ok(r.otherSlide === '1:20', 'entering the slide from another slide (ctx.entered from the player) restores the author\'s 90 s');
     ok(r.beforeEntered === '2:20' && r.entered === '1:20', 'ctx.entered restores the author\'s 90 s');
     ok(r.notEntered === '2:20', 'entered: false keeps the extension');
-    ok(r.posIgnored === '2:20', 'once the player passes ctx.entered, deck:pos does not reset');
+    ok(r.posIgnored === '2:20', 'deck:pos alone (no render with ctx.entered) does not reset');
     ok(r.stop === '0:00' && r.stopCall === -10, '−1 min with 10 s left ends the phase now (asks −10, not −60)');
     ok(r.returned === '1:50', 'a total returned by ctx.extend is used (30 s: 90 + 30 − 10)');
     ok(errors.length === 0, 'no console error' + (errors.length ? ': ' + errors[0] : ''));
     // print: buttons hidden, the author's seconds; the screen keeps the extension afterwards
-    await page.evaluate(() => { const c = __c(0); __tot = 0; c.render(1, 10, { mode: 'talk', entered: true }); c.render(1, 10, __X); c.extend(60); });
+    await page.evaluate(() => { const c = __c(0); __tot = 0; __r(c, 1, 10, { mode: 'talk', entered: true }); __r(c, 1, 10, __X); c.extend(60); });
     await page.evaluate(() => window.dispatchEvent(new Event('beforeprint')));
     await page.emulateMedia({ media: 'print' });
-    r = await page.evaluate(() => { const c = __c(0); c.render(1, 10, __X); return { vis: [...document.querySelectorAll('m-timer button')].filter((e) => e.getBoundingClientRect().width > 0).length, clock: c.clock.textContent }; });
+    r = await page.evaluate(() => { const c = __c(0); __r(c, 1, 10, __X); return { vis: [...document.querySelectorAll('m-timer button')].filter((e) => e.getBoundingClientRect().width > 0).length, clock: c.clock.textContent }; });
     ok(r.vis === 0 && r.clock === '1:20', 'print: no buttons, the author\'s 90 s');
     await page.emulateMedia({ media: 'screen' });
     await page.evaluate(() => window.dispatchEvent(new Event('afterprint')));
-    r = await page.evaluate(() => { const c = __c(0); c.render(1, 10, __X); return c.clock.textContent; });
+    r = await page.evaluate(() => { const c = __c(0); __r(c, 1, 10, __X); return c.clock.textContent; });
     ok(r === '2:20', 'after printing, the screen keeps the extension');
     await page.close();
   }
@@ -167,9 +173,9 @@ try {
   // so the component keeps the total itself
   {
     const { page, errors } = await open(out);
-    await page.evaluate(() => { window.__Y = { mode: 'talk', extend: () => undefined }; DECK.go(0, 1, false); __c(0).render(1, 10, __Y); });
+    await page.evaluate(() => { window.__Y = { mode: 'talk', extend: () => undefined }; DECK.go(0, 1, false); __r(__c(0), 1, 10, __Y); });
     await page.locator('m-timer').first().locator('button').nth(1).click();
-    const clock = () => page.evaluate(() => { const c = __c(0); c.render(1, 10, __Y); return c.clock.textContent; });
+    const clock = () => page.evaluate(() => { const c = __c(0); __r(c, 1, 10, __Y); return c.clock.textContent; });
     const a = await clock();
     await page.evaluate(() => DECK.go(0, 2, false));
     await page.evaluate(() => DECK.go(0, 1, false));
@@ -187,7 +193,7 @@ try {
     const { page, errors } = await open(out, '?mode=video');
     const r = await page.evaluate(() => {
       const c = __c(0), calls = [];
-      DECK.seek(0, 1, 10); c.render(1, 10, { mode: 'video', extend: (s) => calls.push(s) }); c.extend(60);
+      DECK.seek(0, 1, 10); __r(c, 1, 10, { mode: 'video', extend: (s) => calls.push(s) }); c.extend(60);
       return { buttons: document.querySelectorAll('m-timer button').length, clock: c.clock.textContent, calls: calls.length };
     });
     ok(r.buttons === 0 && r.calls === 0 && r.clock === '1:20', 'video: no buttons, no extension, the author\'s 90 s');
