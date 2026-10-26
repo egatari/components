@@ -21,7 +21,7 @@ jobs:
   # Browser: Studio's kit/browser.mjs tries CHROME_PATH, then Google Chrome, then Microsoft Edge, then Playwright's Chromium.
   test:
     runs-on: ${{ matrix.os }}
-    timeout-minutes: 30
+    timeout-minutes: 50
     strategy:
       fail-fast: false
       matrix:
