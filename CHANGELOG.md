@@ -4,6 +4,10 @@ Versions follow [README.md § Releases and versions](README.md#releases-and-vers
 
 ## Unreleased
 
+### Added
+
+- `m-tree`: branch labels and a highlighted path (GA item 7, owner-approved via standards). Node `branch` puts text on the link from its parent (a probability, a condition, yes/no): 24 px `--fg`, on the link into the child, clear of the line and of other labels (`elbow`: the bend moves to 20 px from the parent and the label sits on the longer last segment, above it with `orient="right"`, beside it on the outer side with `down`; the level gap widens to fit the labels and `down` reserves their width beside the boxes; children are not folded into two rows; `straight`: beside the middle of the line on the outer side). Top-level `path: ["root", …, "leaf"]` (parent to child from the root; otherwise the placeholder) is highlighted in `--emph`: a 6 px line traced over the link, a 4 px frame around each box it reaches, and that link's `branch` turned `--emph`; by default one link per step after the tree's last step (the step count grows), or all links in turn within `pathStep`. `pathNote` (for example the product of the probabilities) appears beyond the last box (right of it with `orient="right"`, below it with `down`) at the box text size once the last link arrives; room for it is kept beyond the deepest level. The lecture view shows later steps' path at the theme's `--preview-opacity`. A tree without these fields renders as before (`tools/test-default-variant.mjs`). Demo slide 「確率の木：雨の日に遅れる確率」. Pack-visible bytes (`tools/pack-bytes.mjs --base v1.11.0`) +197 for `m-tree` (one README bullet, `branch?` `path?` `pathStep?` `pathNote?` in the shape summary; details in an `llm: omit` block); docs/conventions(.ja).md §2.2
+
 ### Later (candidates, not in this release)
 
 - `m-compare` `by="row"`; an "outside every set" region for `m-venn`; planned-vs-actual bars for `m-timeline`

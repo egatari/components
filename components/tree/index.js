@@ -13,6 +13,8 @@
 // 見せ方（docs/conventions.md §2.5）：fade（箱が下から 12 px 上がりながら現れてから線を引く、既定）・draw（線を先に引き、
 // その先に箱が親の側から 12 px 寄りながら現れる）・grow（箱が親の側から 12 px 寄りながら 0.92 → 1 に大きくなる）。
 // 箱の動きはどれも 12 px まで。段階の数・長さ・最後の中身はどれも同じ
+// branch（子の節）：親からの線に添える字（確率・条件・はい/いいえ）。path：根から葉への id の列を --emph で示す
+// （既定は木の後に線 1 本ごとに 1 段階、pathStep があればその段階に）。pathNote：終わりの箱の外の一言
 // ---- BEGIN egatari-variant (source: tools/variant.js; copy with `node tools/variant-sync.mjs`; do not edit inside a component) ----
 // Choosing a presentation variant (Egatari spec §8.4, docs/conventions.md §1). A component lists its variant names in
 // `static variants` (the first is the default) and calls VARIANT.of(this) once, in mount. The variant is the component's
@@ -39,10 +41,11 @@ DECK.define("m-tree", class extends DECK.MotionElement {
     schema: {type: "object", additionalProperties: false, required: ["nodes"], properties: {
       nodes: {type: "array", minItems: 1, items: {type: "object", required: ["id"], properties: {
         id: {type: ["string", "integer"]}, label: {type: "string"}, tex: {type: "string"}, note: {type: "string"}, tone: {type: "string"},
-        parent: {type: ["string", "integer"]}, step: {type: "integer"}, at: {type: "number"}}}},
+        parent: {type: ["string", "integer"]}, branch: {type: "string"}, step: {type: "integer"}, at: {type: "number"}}}},
       edges: {type: "array", items: {type: "object", required: ["from", "to"], properties: {
         from: {type: ["string", "integer"]}, to: {type: ["string", "integer"]}, label: {type: "string"}, tone: {type: "string"}, dash: {type: "boolean"},
-        step: {type: "integer"}, at: {type: "number"}}}}}},
+        step: {type: "integer"}, at: {type: "number"}}}},
+      path: {type: "array", minItems: 2, items: {type: ["string", "integer"]}}, pathStep: {type: "integer"}, pathNote: {type: "string"}}},
     example: {nodes: [{id: "r", label: "動物"}, {id: "a", label: "脊椎動物", parent: "r"}, {id: "b", label: "無脊椎動物", parent: "r"}]},
     note: "parent のない節（根）はちょうど 1 つ",
   };
@@ -79,12 +82,23 @@ DECK.define("m-tree", class extends DECK.MotionElement {
       if (!a || !b) throw new Error("m-tree: edge to an unknown node " + JSON.stringify(a ? e.to : e.from));
       return {e: e, a: a, b: b, step: e.step !== undefined ? e.step : Math.max(a.step, b.step)};
     });
-    return (this._plan = {nodes: nodes, order: order, root: roots[0], byId: byId, edges: edges});
+    // 強調する道（path：根から葉への id の列）。既定は木ができた後に 1 段階に 1 本ずつ、pathStep があればその段階に順に
+    var path = null;
+    if (d.path !== undefined){
+      if (!Array.isArray(d.path) || d.path.length < 2) throw new Error("m-tree: path must list at least two ids, from the root");
+      var pn = d.path.map(function(id){ if (!byId[id]) throw new Error("m-tree: path names an unknown node " + JSON.stringify(id)); return byId[id]; });
+      if (pn[0] !== roots[0]) throw new Error("m-tree: path must start at the root " + JSON.stringify(roots[0].n.id));
+      pn.forEach(function(o, i){ if (i && o.par !== pn[i - 1]) throw new Error("m-tree: path: " + JSON.stringify(o.n.id) + " is not a child of " + JSON.stringify(pn[i - 1].n.id)); });
+      var last = 1, one = d.pathStep !== undefined;
+      nodes.concat(edges).forEach(function(o){ last = Math.max(last, o.step); });
+      path = {nodes: pn, note: d.pathNote, links: pn.slice(1).map(function(o, i){ return {o: o, step: one ? d.pathStep : last + 1 + i, at: one ? i * P.draw : 0}; })};
+    }
+    return (this._plan = {nodes: nodes, order: order, root: roots[0], byId: byId, edges: edges, path: path});
   }
   get steps(){
     if (this.getAttribute("steps") !== null) return +this.getAttribute("steps");
     var p = this.plan(), m = 1;
-    p.nodes.concat(p.edges).forEach(function(o){ m = Math.max(m, o.step); });
+    p.nodes.concat(p.edges, p.path ? p.path.links : []).forEach(function(o){ m = Math.max(m, o.step); });
     return m;
   }
   mount(){
@@ -104,6 +118,10 @@ DECK.define("m-tree", class extends DECK.MotionElement {
     var labW = 0;
     pl.edges.forEach(function(x){ if (x.e.label) labW = Math.max(labW, est(x.e.label) * 24); });
     var edgeRoom = pl.edges.length ? 56 + (labW ? (right ? labW + 14 : 36) : 0) : 0;
+    // 枝の名前（node.branch：親からの線に添える字。確率・条件・はい/いいえ）と、道の終わりの一言（pathNote）の場所
+    var brs = pl.nodes.filter(function(o){ o.brw = o.par && o.n.branch ? est(o.n.branch) * 24 : 0; return o.brw > 0; }), brW = 0;
+    brs.forEach(function(o){ brW = Math.max(brW, o.brw); });
+    var pnote = pl.path && pl.path.note ? String(pl.path.note) : "", pnRoom = pnote ? (right ? est(pnote) * 27 + 18 : 44) : 0;
     // 名前を 2 行に折る（入らないときだけ）。\n も *_^ もない 4 字以上の名前に限る。空白があれば真ん中に近い空白で、
     // 和文は真ん中あたりで（小さい仮名・長音・句読点を行の頭にしない）。空白のない欧文の 1 語は折らない
     function wrap2(t){
@@ -136,6 +154,8 @@ DECK.define("m-tree", class extends DECK.MotionElement {
         o.nw = o.notes.length ? Math.max.apply(null, o.notes.map(est)) * NS : 0; o.nh = o.notes.length ? o.notes.length * NLH + 4 : 0;
         o.fb = right ? o.h + o.nh : Math.max(o.w, o.nw);
         o.fd = right ? Math.max(o.w, o.nw) : o.h + o.nh;
+        // 下向きでは枝の名前が線の横に並ぶので、その分を並ぶ向きの幅にとる
+        if (!right && o.brw) o.fb = Math.max(o.fb, o.w + 2 * (o.brw + 14));
       });
     }
     // 部分木を置く：段ごとの輪郭 [左, 右] を返し、子の親からのずれ off を決める
@@ -187,12 +207,14 @@ DECK.define("m-tree", class extends DECK.MotionElement {
       r2.forEach(function(e, d){ rowOff[d] = (ext[d] || 0) + RG; ext[d] = rowOff[d] + e; });
       return {ext: ext, rowOff: rowOff, sum: ext.reduce(function(a, b){ return a + b; }, 0)};
     }
-    var B = right ? H : W, DA = (right ? W : H) - edgeRoom;
+    var B = right ? H : W, DA = (right ? W : H) - edgeRoom - pnRoom;
     var gmin = right ? 14 : 22, gmax = right ? 30 : 64, lgmin = right ? 56 : 40, lgmax = right ? 110 : 90;
+    // 枝の名前があれば、段の間に名前の入る長さをとる（right：線の上に横書き、down：線の横）
+    if (brs.length){ lgmin = Math.max(lgmin, right ? brW + 52 : 76); lgmax = Math.max(lgmax, lgmin); }
     // 入れ方を順に試す：字を 27 → 24 px、それでも入らなければ 24 px のまま、葉だけの子の多い親から順に子を 2 段にし、
     // さらに名前を 2 行に折る。字は 24 px より小さくしない（docs/conventions.md §2.3）。どれでも入らなければ、
     // はみ出しのいちばん少ない形で描き、足りない px を console.warn で知らせる
-    var cands = P.link === "straight" ? [] : pl.nodes.filter(function(o){ return o.kids.length >= 3 && o.kids.every(function(c){ return !c.kids.length; }); })
+    var cands = P.link === "straight" || brs.length ? [] : pl.nodes.filter(function(o){ return o.kids.length >= 3 && o.kids.every(function(c){ return !c.kids.length; }); })
       .sort(function(a, b){ return b.kids.length - a.kids.length; });
     var sizes = P.size ? [P.size] : [27, 26, 25, 24], s24 = sizes[sizes.length - 1], tries = [], cfg = null, best = null, nf;
     sizes.forEach(function(z){ tries.push([z, false, 0]); });
@@ -254,15 +276,28 @@ DECK.define("m-tree", class extends DECK.MotionElement {
       o.outP = right ? [o.x + o.w, o.cy] : [o.cx, o.y + o.h + o.nh];
     });
     // 親子の線。o.dir：親の中心から箱の中心への向き（draw と grow で箱が寄ってくる向き）
+    // 枝の名前があれば、かぎの曲がり角を親の側に寄せ（20 px）、子へ入る線を長くしてそこに名前を添える
+    var bo = brs.length ? Math.min(lgap / 2, 20) : lgap / 2, gB = brs.length ? D.el("g", {}) : null;
     pl.nodes.forEach(function(o){
       if (!o.par){ o.dir = [0, 1]; return; }
       var dx = o.cx - o.par.cx, dy = o.cy - o.par.cy, dl = Math.hypot(dx, dy) || 1;
       o.dir = [dx / dl, dy / dl];
       var p = o.par, a = p.outP, z = o.inP, pts;
       if (P.link === "straight") pts = [a, z];
-      else if (right){ var bx = lvStart[p.depth] + oD + ds.ext[p.depth] + lgap / 2; pts = [a, [bx, a[1]], [bx, z[1]], z]; }
-      else { var by = lvStart[p.depth] + oD + ds.ext[p.depth] + lgap / 2; pts = [a, [a[0], by], [z[0], by], z]; }
+      else if (right){ var bx = lvStart[p.depth] + oD + ds.ext[p.depth] + bo; pts = [a, [bx, a[1]], [bx, z[1]], z]; }
+      else { var by = lvStart[p.depth] + oD + ds.ext[p.depth] + bo; pts = [a, [a[0], by], [z[0], by], z]; }
       o.path = self.poly(pts);
+      if (o.brw){
+        // 名前は子へ入る線に添え、線とほかの名前を避ける。right：線の上、down：線の外側（親から離れる側）の横
+        var sd = o.cx < p.cx - 0.5 ? -1 : 1, lx, ly, an, q = pts[pts.length - 2];
+        if (P.link === "straight"){
+          var mx = (a[0] + z[0]) / 2, my = (a[1] + z[1]) / 2, ddx = z[0] - a[0], ddy = z[1] - a[1];
+          if (right){ var sl = Math.abs(ddy / (ddx || 1)) * o.brw / 2; lx = mx; an = "middle"; ly = ddy <= 0 ? my - sl - 12 : my + sl + 27; }
+          else { lx = mx + sd * (10 + 14 * Math.abs(ddx / (ddy || 1))); ly = my + 8; an = sd > 0 ? "start" : "end"; }
+        } else if (right){ lx = (q[0] + z[0]) / 2; ly = z[1] - 9; an = "middle"; }
+        else { lx = z[0] + sd * 10; ly = (q[1] + z[1]) / 2 + 8; an = sd > 0 ? "start" : "end"; }
+        o.blab = D.mtext(gB, lx.toFixed(1), ly.toFixed(1), String(o.n.branch), {"text-anchor": an, "font-size": 24, fill: "var(--fg)", opacity: 0});
+      }
       o.line = D.el("path", {d: "", fill: "none", stroke: "var(--muted)", "stroke-width": 3, "stroke-linejoin": "round"}, gL);
     });
     // そのほかのつながり：外側（down は下、right は右）にふくらむ破線の曲線
@@ -291,6 +326,22 @@ DECK.define("m-tree", class extends DECK.MotionElement {
       [a, b].forEach(function(o){ if (o.step === x.step) after = Math.max(after, o.at + self.span()); });
       return {g: g, line: line, head: head, lab: lab, path: self.poly(pts), step: x.step, at: e.at !== undefined ? e.at : after};
     });
+    if (gB) root.appendChild(gB);
+    // 強調する道：線の上に --emph の太い線を引き、箱を --emph の枠で囲む。終わりの箱の外に pathNote
+    if (pl.path){
+      var gPL = D.el("g", {}), gPF = D.el("g", {});
+      root.insertBefore(gPL, gE); root.appendChild(gPF);
+      var frame = function(o){ return D.el("rect", {x: (o.x - 4).toFixed(1), y: (o.y - 4).toFixed(1), width: (o.w + 8).toFixed(1), height: (o.h + 8).toFixed(1), rx: 13, fill: "none", stroke: "var(--emph)", "stroke-width": 4, opacity: 0}, gPF); };
+      this.pathRoot = frame(pl.root);
+      this.pathEls = pl.path.links.map(function(x){
+        return {x: x, line: D.el("path", {d: "", fill: "none", stroke: "var(--emph)", "stroke-width": 6, "stroke-linejoin": "round", "stroke-linecap": "round", opacity: 0}, gPL), frame: frame(x.o)};
+      });
+      if (pnote){
+        var lf = pl.path.links[pl.path.links.length - 1].o;
+        this.pathNote = right ? D.mtext(gPF, (lf.x + Math.max(lf.w, lf.nw) + 16).toFixed(1), (lf.cy + s * 0.36).toFixed(1), pnote, {"text-anchor": "start", "font-size": s, fill: "var(--emph)", opacity: 0})
+          : D.mtext(gPF, lf.cx.toFixed(1), (lf.y + lf.h + lf.nh + 10 + s * 0.95).toFixed(1), pnote, {"text-anchor": "middle", "font-size": s, fill: "var(--emph)", opacity: 0});
+      }
+    }
     // 形の一覧（render の終わりに形を作り直すため。下の render を見る）
     this.shapes = [].slice.call(svg.querySelectorAll("rect,circle,ellipse,path,line,polyline,polygon"));
   }
@@ -321,6 +372,11 @@ DECK.define("m-tree", class extends DECK.MotionElement {
     var self = this, d = 0, pl = this.plan();
     pl.nodes.forEach(function(o){ if (o.step === k) d = Math.max(d, o.at + (o.par ? self.span() : self.props.fade)); });
     (this.edges || []).forEach(function(o){ if (o.step === k) d = Math.max(d, o.at + self.props.draw + (o.lab ? 0.3 : 0)); });
+    if (pl.path){
+      var P = this.props, ls = pl.path.links, z = ls[ls.length - 1];
+      ls.forEach(function(x){ if (x.step === k) d = Math.max(d, x.at + Math.max(P.draw, P.draw * 0.8 + P.fade * 0.6)); });
+      if (pl.path.note && z.step === k) d = Math.max(d, z.at + P.draw + 0.4);
+    }
     return d;
   }
   render(k, t, ctx){
@@ -350,13 +406,28 @@ DECK.define("m-tree", class extends DECK.MotionElement {
         var f = tt < 0 ? FAINT : FAINT + (1 - FAINT) * eb;
         o.g.setAttribute("opacity", f.toFixed(3)); o.g.setAttribute("transform", "");
         if (o.line){ o.line.setAttribute("d", self.part(o.path, 1).d); o.line.setAttribute("opacity", f.toFixed(3)); }
+        if (o.blab) o.blab.setAttribute("opacity", f.toFixed(3));
         return;
       }
       o.g.setAttribute("opacity", eb.toFixed(3));
       o.g.setAttribute("transform", sc >= 1 && Math.abs(sh[0]) < 0.01 && Math.abs(sh[1]) < 0.01 ? "" :
         "translate(" + (o.cx + sh[0]).toFixed(2) + " " + (o.cy + sh[1]).toFixed(2) + ") scale(" + sc.toFixed(4) + ") translate(" + (-o.cx).toFixed(2) + " " + (-o.cy).toFixed(2) + ")");
       if (o.line){ o.line.setAttribute("d", el > 0 ? self.part(o.path, el).d : ""); o.line.setAttribute("opacity", el > 0 ? 1 : 0); }
+      if (o.blab) o.blab.setAttribute("opacity", Math.max(0, Math.min(1, el * 2 - 1)).toFixed(3));
     });
+    // 強調する道：線を親から引き、届いたら箱の枠と枝の名前を --emph に。授業の表示では後の段階を薄く、全部引いた形で
+    if (this.pathEls){
+      var pth = this.plan().path, lit = function(tt, v){ return lect ? (tt < 0 ? FAINT : FAINT + (1 - FAINT) * v) : v; };
+      this.pathEls.forEach(function(e, i){
+        var x = e.x, tt = tOf(x.step), l = pr(tt, x.at, P.draw), f = pr(tt, x.at + P.draw * 0.8, P.fade * 0.6);
+        e.line.setAttribute("d", lect || l > 0 ? self.part(x.o.path, lect ? 1 : l).d : "");
+        e.line.setAttribute("opacity", lit(tt, l > 0 ? 1 : 0).toFixed(3));
+        e.frame.setAttribute("opacity", lit(tt, f).toFixed(3));
+        if (x.o.blab) x.o.blab.setAttribute("style", "fill:" + (l >= 1 ? "var(--emph)" : "var(--fg)") + ";");
+        if (!i){ var r = pr(tt, x.at, P.fade * 0.6); self.pathRoot.setAttribute("opacity", lit(tt, r).toFixed(3)); }
+      });
+      if (this.pathNote){ var z = pth.links[pth.links.length - 1], zt = tOf(z.step); this.pathNote.setAttribute("opacity", lit(zt, pr(zt, z.at + P.draw, 0.4)).toFixed(3)); }
+    }
     this.edges.forEach(function(o){
       var tt = tOf(o.step), e = pr(tt, o.at, P.draw), lo = pr(tt, o.at + P.draw * 0.8, 0.3);
       if (lect){ var f = tt < 0 ? FAINT : FAINT + (1 - FAINT) * e; e = 1; lo = 1; o.g.setAttribute("opacity", f.toFixed(3)); }
