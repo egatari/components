@@ -4,6 +4,10 @@ Versions follow [README.md § Releases and versions](README.md#releases-and-vers
 
 ## Unreleased
 
+### Added
+
+- `m-bars`: negative values and 100 % stacked bars (GA item 7, owner-approved via standards). **Negative values** (bars that are not stacked): the value axis includes 0 and the bars grow from a `--fg` zero baseline, downwards (leftwards with `orient="h"`) for negative values; ticks run both ways from 0 at the same interval and the 0 tick label follows the baseline; the range below 0 leaves room for the lowest bar's value label (40 px, or the label's width + 24 px across); value labels sit outside the bar end on its own side (above or right for positive values, below or left for negative ones), and so do series names. Before, a negative value drew no bar and its label fell below the axis; values that are all ≥ 0 render as before. **100 % stacked bars**: `stack="percent"` divides each group's values by the group's total, on a 0–100 % axis (ticks with %), with each segment's share as `digits`-digit % inside it, drawn only when its estimated text box (bold 24 px digit widths) fits inside the segment with at least 6 px on every side (ordinary stacks keep the v1.11.0 rule: under this rule the v1.11.0 demo would lose 「1.0」 and 「1.1」 of 卸 in 1 年目 and 2 年目, 31 and 34 px tall); the total at the bar end is not drawn (always 100 %). `stack` stays a `bool` prop (`"percent"` reads as true, so older releases draw an ordinary stack). Without these, a lesson's DOM is byte-identical to v1.11.0 at every step in the talk and lecture views (checked on the v1.11.0 demo; m-bars has no variants, so `tools/test-default-variant.mjs` does not compare it). Demo slide 「前の年からの増減と、答えの割合」 (both, side by side). Pack-visible bytes (`tools/pack-bytes.mjs --base v1.11.0`) −12 for `m-bars`: `"percent"` named in the stack bullet, negative values and the details in an `llm: omit` block, paid for by shortening the stack bullet's usage example
+
 ### Later (candidates, not in this release)
 
 - `m-compare` `by="row"`; an "outside every set" region for `m-venn`; planned-vs-actual bars for `m-timeline`

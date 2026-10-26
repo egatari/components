@@ -81,6 +81,35 @@
   <div class="concl"><span>→ 伸びたのは通販。店頭はほぼ横ばい</span></div>
 </section>
 
+<section class="slide">
+  <h2>前の年からの増減と、答えの割合（架空）</h2>
+  <div class="body">
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:40px">
+      <m-bars unit="%" digits="1" al="前年比" aria-label="店ごとの売上の前年比（負の値）" style="height:420px">
+        <script type="application/json">{
+          "groups": [
+            {"label": "北店", "value": 4.2},
+            {"label": "駅前店", "value": -3.1, "tone": "emph"},
+            {"label": "南店", "value": 1.5},
+            {"label": "西店", "value": -0.8}
+          ]
+        }</script>
+      </m-bars>
+      <m-bars stack="percent" orient="h" per-step="0" ticks="false" aria-label="学年ごとの答えの割合（100 % 積み上げ）" style="height:420px">
+        <script type="application/json">{
+          "series": [{"label": "はい"}, {"label": "いいえ"}, {"label": "未定"}],
+          "groups": [
+            {"label": "1 年", "values": [48, 30, 42]},
+            {"label": "2 年", "values": [66, 24, 30]},
+            {"label": "3 年", "values": [72, 24, 24]}
+          ]
+        }</script>
+      </m-bars>
+    </div>
+  </div>
+  <div class="concl"><span>→ 駅前店だけが大きく減った。学年が上がるほど「はい」が増える</span></div>
+</section>
+
 </div>
 </body>
 </html>
