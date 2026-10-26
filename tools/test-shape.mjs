@@ -43,6 +43,7 @@ const WRONG = {
   'm-boxplot': '<script type="application/json">{"groups": [{"label": "1 組", "data": [3, 5, 6, 7]}]}</script>',
   'm-numberline': '<script type="application/json">{"lines": [{"from": 0, "to": 10}], "marks": [{"value": 3}]}</script>',
   'm-keyboard': '<script type="application/json">{"range": "C4-C6", "steps": [{"notes": ["C4", "E4", "G4"]}]}</script>',
+  'm-score': '<script type="application/json">{"abc": "X:1\\nK:C\\nC D E F |]"}</script>',
   'm-tape': '<script type="application/json">{"rows": [{"label": "みかん", "segments": [{"v": 8}]}]}</script>',
   // データを属性だけで受け取る部品は、要素ごと書く（digits は整数の JSON）
   'm-hissan': '<m-hissan aria-label="m-hissan の図" expr="7÷3" digits="2けた" style="height:300px"></m-hissan>',

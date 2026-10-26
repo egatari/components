@@ -12,6 +12,8 @@
 //       tools/test-numberline.mjs: m-numberline tick positions and labels, fractions, two lines aligned at 0, range levels and shared part)
 //       tools/test-hissan.mjs: m-hissan's written calculations reproduce plain arithmetic; places in columns, quotient over the right digits;
 //       tools/test-keyboard.mjs: m-keyboard's black-key positions and widths, key names, sound events per step, range errors;
+//       tools/test-score.mjs: m-score's frozen abcjs SVG read with allowed elements only, abcMap parsing, steps by note and by measure,
+//         sound events (pitch, dur from beats and tempo, chords at one t, ties), elements per note, note names and their placement;
 //       tools/test-kakijun.mjs: m-kakijun's embedded stroke data equals data/kana/kana.json and its font block is the Egatari Kana subset;
 //       every one of the 166 characters shows ≥ 99 % of its glyph in the final state; small kana inside their quarter in both writings)
 //   7. studio           fetch Egatari Studio at the pinned tag and overlay these components (tools/studio.mjs)
@@ -61,6 +63,7 @@ const TESTS = [
   ['test-numberline', ['tools/test-numberline.mjs']],
   ['test-hissan', ['tools/test-hissan.mjs']],
   ['test-keyboard', ['tools/test-keyboard.mjs']],
+  ['test-score', ['tools/test-score.mjs']],
   ['test-codetree', ['tools/test-codetree.mjs']],
   ['test-kokugo', ['tools/test-kokugo.mjs']],
   ['studio', ['tools/studio.mjs']],

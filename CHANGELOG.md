@@ -4,6 +4,12 @@ Versions follow [README.md § Releases and versions](README.md#releases-and-vers
 
 ## Unreleased
 
+### Added
+
+- `m-score` (series music 音楽, purpose `music`; not in the free pack for now): music notation per step, with sound. The first user of build-time rendering (components 2.0 design §4.1): the author writes `abc` (ABC notation); the build renders it with abcjs (`add_classes: true`) and adds `abcSvg`, `abcMap` (`tempo` in quarter notes per minute; per note `cls`, `m`, `pitch[]`, `beat`, `dur`, `box`, `tie`) and `renderer`; the part carries no abcjs. Until Studio has that build step the data is written inline as the build would (the demo carries `components/score/fixtures/*.json`, rendered with abcjs 6.7.2); data with `abc` only shows the placeholder. The SVG is not trusted: it is rebuilt from allowed elements and attributes only (no innerHTML or DOMParser; style, title, other colours, links and handlers dropped). `by="note"` (default; one note, chord or rest per step) or `by="measure"`; staff, clef, key and time signature from step 0; bar lines with the last note of their measure, beams with their first note, ties with the note they end on. `events(k)`: one `note` per pitch (`vel` 0.7, a chord at one t), `dur` from beats and tempo, a tied note sounding on past the end of its step, rests and tie continuations silent. `names="solfa|abc|iroha|none"` (default none) under the noteheads at 26 px, from the frozen notehead boxes; chords top note first; crowded names move down a row. The current note in `--emph`, earlier ones `--fg`; under preview later notes at `--preview-opacity`. Readable layer 「楽譜：ド レ ミ ファ｜…」, drawing aria-hidden. Variant `light`. Demo: a scale, a rhythm exercise, かえるの合唱 (German folk song, public domain) by measure, and I–IV–V–I
+- `tools/test-score.mjs` (in `tools/test-all.mjs`): m-score without a browser on the fixtures: the SVG reader keeps only allowed elements and attributes, abcMap errors, steps by note and by measure, events (pitch, dur, chords at one t, notes of a measure at their beat, rests and ties), which note each SVG element appears with, note names and their placement, the readable layer, and the demo carrying the fixtures unchanged
+- `tools/test-shape.mjs`: m-score's wrong-shape case (`abc` without the rendered `abcSvg` / `abcMap`)
+
 ### Later (candidates, not in this release)
 
 - `m-compare` `by="row"`; an "outside every set" region for `m-venn`; planned-vs-actual bars for `m-timeline`
