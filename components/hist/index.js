@@ -6,65 +6,19 @@
 //       → 代表値の印を 1 つずつ（marks の順）
 // 軸の属性（xr yr xt yt xf yf xl yl）は m-curves と同じ名前と意味。階級は「以上・未満」（start + i·width 以上、start + (i+1)·width 未満）
 // 見せ方（docs/conventions.md §1）：fade（棒・点がフェードして現れる、既定）・grow（棒が下から伸びる。点は下の段から順に現れる）
-(function(){
-// ---- BEGIN egatari-variant (source: tools/variant.js; copy with `node tools/variant-sync.mjs`; do not edit inside a component) ----
-// Choosing a presentation variant (Egatari spec §8.4, docs/conventions.md §1). A component lists its variant names in
-// `static variants` (the first is the default) and calls VARIANT.of(this) once, in mount. The variant is the component's
-// `variant` attribute when it names one of them, otherwise the first name. There is no seed: lessons do not carry one
-// (spec §8.4 since egatari-spec 28d8801), and `seed` / `data-egatari-seed` are not read.
-// The choice is a pure function of the attribute: the picture still depends on (i, k, t) only.
-var VARIANT = (function(){
-  "use strict";
-  function of(el){
-    var tag = el.tagName.toLowerCase(), C = customElements.get(tag), names = (C && C.variants) || [], v = el.getAttribute("variant");
-    if (v !== null && names.indexOf(v) >= 0) return v;
-    if (v !== null) console.warn(tag + ' variant="' + v + '" is not one of ' + names.join(", ") + " (the first, " + (names[0] || "none") + ", is used)");
-    return names[0] || null;
-  }
-  return {of: of};
-})();
-// ---- END egatari-variant ----
-// ---- 代表値と度数（tools/test-stats.mjs が試す。customElements.get("m-hist").stats） ----
-var STATS = (function(){
-  function sorted(a){ return a.slice().sort(function(x, y){ return x - y; }); }
-  function sum(a){ var s = 0; for (var i = 0; i < a.length; i++) s += a[i]; return s; }
-  function mean(a){ return sum(a) / a.length; }
-  // 中央値：小さい順に並べた真ん中の値（偶数個なら真ん中の 2 つの平均）
-  function median(a){ var s = sorted(a), n = s.length; return n % 2 ? s[(n - 1) / 2] : (s[n / 2 - 1] + s[n / 2]) / 2; }
-  // 最頻値：いちばん多く出る値（同数なら全部、小さい順）。どの値も 1 回ずつ（2 個以上）なら最頻値はない（[]）
-  function modes(a){
-    var c = {}, keys = [], mx = 0;
-    a.forEach(function(v){ var k = String(v); if (!(k in c)){ c[k] = 0; keys.push(v); } c[k]++; mx = Math.max(mx, c[k]); });
-    if (mx === 1 && a.length > 1) return [];
-    return sorted(keys.filter(function(v){ return c[String(v)] === mx; }));
-  }
-  // 階級の番号（start + i·width 以上、start + (i+1)·width 未満。浮動小数の誤差を少し許す）
-  function binOf(v, start, width){ return Math.floor((v - start) / width + 1e-9); }
-  function counts(values, start, width, nb){
-    var c = []; for (var i = 0; i < nb; i++) c.push(0);
-    values.forEach(function(v){ var b = binOf(v, start, width); if (b >= 0 && b < nb) c[b]++; });
-    return c;
-  }
-  function mids(start, width, nb){ var m = []; for (var i = 0; i < nb; i++) m.push(clean(start + (i + 0.5) * width)); return m; }
-  // 度数分布表からの平均値：Σ（階級値 × 度数）÷ 度数の合計
-  function tableMean(mid, cnt){ var s = 0, n = 0; mid.forEach(function(m, i){ s += m * cnt[i]; n += cnt[i]; }); return s / n; }
-  // 度数分布表の最頻値：度数がいちばん多い階級の階級値（同数なら全部）
-  function binModes(mid, cnt){ var mx = Math.max.apply(null, cnt); return mx > 0 ? mid.filter(function(m, i){ return cnt[i] === mx; }) : []; }
-  // 度数分布表の中央値：真ん中の順位の値が入る階級（{bin}）。偶数個で真ん中の 2 つが別の階級なら、その境の値（{at}）
-  function tableMedian(start, width, cnt){
-    var n = sum(cnt), r1 = n % 2 ? (n + 1) / 2 : n / 2, r2 = n % 2 ? r1 : n / 2 + 1, find = function(r){ var c = 0; for (var i = 0; i < cnt.length; i++){ c += cnt[i]; if (c >= r) return i; } return cnt.length - 1; };
-    var a = find(r1), b = find(r2);
-    return a === b ? {bin: a, from: clean(start + a * width), to: clean(start + (a + 1) * width), x: clean(start + (a + 0.5) * width)} : {at: clean(start + b * width), x: clean(start + b * width)};
-  }
-  function cumulative(c){ var s = 0; return c.map(function(v){ return (s += v); }); }
-  function clean(v){ return +(+v).toFixed(10); }
-  return {sorted: sorted, sum: sum, mean: mean, median: median, modes: modes, binOf: binOf, counts: counts, mids: mids,
-          tableMean: tableMean, binModes: binModes, tableMedian: tableMedian, cumulative: cumulative, clean: clean};
-})();
+// 2.0（Egatari spec §6.1 の部品）：base の MotionElement・el・mtext・prog・lerp・variant・previewOpacity、plot の Plot、
+// 代表値と度数は hist-core（1.x の static stats）を使い、プレイヤーのグローバルは使わない。書き方やデータの知らせ
+// （1.x の console.warn）は mount で ctx.report に。言語は ctx.lang（mount で読む）
+egatariParts.define({name: "hist", version: "2.0.0", requires: {base: "1.0.0", "hist-core": "1.0.0", plot: "1.0.0"}, element: "m-hist"}, function(deps){
+"use strict";
+var base = deps.base, plot = deps.plot;
+// ---- 代表値と度数（hist-core。tools/test-stats.mjs が試す） ----
+var STATS = deps["hist-core"];
 // 印の名前の置き場所：線の頭の右（start）か左（end）。名前がほかの印の線にかからない側を選び、名前がかかる線の印は
 // それより下の行に置く（線は自分の名前の行までしか伸びないので、上の名前を横切らない）。同じ行の名前は 14 px あける。
-// fl：[{x, w}]（x は線の位置、w は名前の幅）。各要素に a（start / end）・L・R・row を書き、行の数を返す
-function FLAGS(fl, W, tag){
+// fl：[{x, w}]（x は線の位置、w は名前の幅）。各要素に a（start / end）・L・R・row を書き、行の数を返す。
+// 置き場所がないときは report(code, message)（ctx.report）で知らせる
+function FLAGS(fl, W, report){
   var span = function(f, a){ var l = a === "start" ? f.x + 8 : f.x - 8 - f.w; return [l, l + f.w]; };
   var covers = function(f, g){ return g !== f && g.x > f.L - 6 && g.x < f.R + 6; };
   fl.forEach(function(f){
@@ -91,16 +45,16 @@ function FLAGS(fl, W, tag){
         return (o.row === row && f.L < o.R + 14 && o.L < f.R + 14) || (o.row < row && covers(o, f)) || (o.row > row && covers(f, o));
       });
       if (!clash) break;
-      if (row > 12){ console.warn(tag + ': no free place for the name "' + (f.text || "") + '" (it may overlap)'); break; }
+      if (row > 12){ report("layout", '[hist] no free place for the name "' + (f.text || "") + '" (it may overlap)'); break; }
     }
     f.row = row; placed.push(f); rows = Math.max(rows, row + 1);
   });
   return rows;
 }
 var ON = function(v){ return /^(on|true|yes)$/i.test(String(v || "").trim()); };
-DECK.define("m-hist", class extends DECK.MotionElement {
+return class extends base.MotionElement {
+  static partName = "hist";   // the registry name (define meta name), for report prefixes
   static variants = ["fade", "grow"];
-  static stats = STATS;
   // データの形（kit/shape.js）
   static shape = (function(){
     var NUMS = {type: "array", minItems: 1, items: {type: "number"}};
@@ -142,8 +96,8 @@ DECK.define("m-hist", class extends DECK.MotionElement {
     var d = this.data || {}, P = this.props, S = STATS, notes = [];
     var kind = P.kind, sa = this.getAttribute("style");
     // style="dots" と書かれたとき（style は大きさに使う属性なので kind を勧める）
-    if (/^\s*(bars|dots)\s*$/.test(sa || "")){ kind = sa.trim(); notes.push('m-hist: write kind="' + kind + '" (style is for the size, e.g. style="height:420px")'); }
-    if (kind !== "bars" && kind !== "dots"){ notes.push('m-hist: kind="' + kind + '" is not bars or dots (bars is used)'); kind = "bars"; }
+    if (/^\s*(bars|dots)\s*$/.test(sa || "")){ kind = sa.trim(); notes.push(["attr", '[hist] write kind="' + kind + '" (style is for the size, e.g. style="height:420px")']); }
+    if (kind !== "bars" && kind !== "dots"){ notes.push(["attr", '[hist] kind="' + kind + '" is not bars or dots (bars is used)']); kind = "bars"; }
     var src = Array.isArray(d.series) && d.series.length ? d.series : [{values: d.values, table: d.table}];
     var ser = src.map(function(s, i){
       return {i: i, label: s.label || "", tone: s.tone, values: Array.isArray(s.values) ? s.values.map(Number) : null,
@@ -176,7 +130,7 @@ DECK.define("m-hist", class extends DECK.MotionElement {
       // 階級を書かなければ、およそ 1 + log2(n) 個の切りのよい幅
       var k0 = Math.max(1, Math.ceil(1 + Math.log2(Math.max(1, all.length)))), w0 = niceStep((hi - lo || 1) / k0);
       bins = {start: S.clean(Math.floor(lo / w0 + 1e-9) * w0), width: w0, nb: 0};
-      notes.push("m-hist: no bins were written; classes of width " + w0 + " from " + bins.start + " are used (write \"bins\": {\"start\", \"width\"})");
+      notes.push(["data", "[hist] no bins were written; classes of width " + w0 + " from " + bins.start + " are used (write \"bins\": {\"start\", \"width\"})"]);
     }
     if (bins && all.length){
       if (S.binOf(lo, bins.start, bins.width) < 0) throw new Error("m-hist: the value " + lo + " is below bins.start (" + bins.start + ")");
@@ -197,7 +151,7 @@ DECK.define("m-hist", class extends DECK.MotionElement {
     // 代表値（marks の順）
     var marks = [];
     String(P.marks || "").split(/[\s,、]+/).filter(Boolean).forEach(function(m){
-      if (["mean", "median", "mode"].indexOf(m) < 0){ notes.push('m-hist: marks: "' + m + '" is not mean, median or mode (ignored)'); return; }
+      if (["mean", "median", "mode"].indexOf(m) < 0){ notes.push(["attr", '[hist] marks: "' + m + '" is not mean, median or mode (ignored)']); return; }
       if (marks.some(function(x){ return x.type === m; })) return;
       var per = ser.map(function(s){
         if (!s.n) return null;
@@ -209,18 +163,18 @@ DECK.define("m-hist", class extends DECK.MotionElement {
         }
         // 最頻値：点を値の上に積むときは値から、階級でまとめるときは度数がいちばん多い階級の階級値
         var mo = kind === "dots" && !given ? S.modes(s.values) : S.binModes(bins.mids, s.counts);
-        if (!mo.length){ notes.push("m-hist: " + (s.label || "the data") + " has no mode (every value appears once); the mark is left out"); return null; }
+        if (!mo.length){ notes.push(["data", "[hist] " + (s.label || "the data") + " has no mode (every value appears once); the mark is left out"]); return null; }
         return {xs: mo, cls: kind === "dots" && !given ? null : true};
       });
       if (per.some(Boolean)) marks.push({type: m, per: per});
     });
     // 段階
     var build = P.build;
-    if (["whole", "values", "bins"].indexOf(build) < 0){ notes.push('m-hist: build="' + build + '" is not whole, values or bins (whole is used)'); build = "whole"; }
-    if (build === "values" && !raw){ notes.push('m-hist: build="values" needs raw values; build="bins" is used'); build = "bins"; }
-    if (build === "bins" && kind === "dots"){ notes.push('m-hist: build="bins" is for bars; build="values" is used for dots'); build = "values"; }
+    if (["whole", "values", "bins"].indexOf(build) < 0){ notes.push(["attr", '[hist] build="' + build + '" is not whole, values or bins (whole is used)']); build = "whole"; }
+    if (build === "values" && !raw){ notes.push(["attr", '[hist] build="values" needs raw values; build="bins" is used']); build = "bins"; }
+    if (build === "bins" && kind === "dots"){ notes.push(["attr", '[hist] build="bins" is for bars; build="values" is used for dots']); build = "values"; }
     var poly = ON(P.polygon), rel = ON(P.relative), cum = ON(P.cumulative);
-    if (kind === "dots" && (poly || rel || cum)){ notes.push("m-hist: polygon, relative and cumulative are for bars (ignored with kind=\"dots\")"); poly = rel = cum = false; }
+    if (kind === "dots" && (poly || rel || cum)){ notes.push(["attr", "[hist] polygon, relative and cumulative are for bars (ignored with kind=\"dots\")"]); poly = rel = cum = false; }
     var k = 0;
     if (build === "bins"){ ser.forEach(function(s){ s.step = 1; }); bins.step0 = 1; k = bins.nb; }
     else ser.forEach(function(s){ s.step = ++k; });
@@ -244,12 +198,13 @@ DECK.define("m-hist", class extends DECK.MotionElement {
     var p = s.split("."), i = p[0].replace(/\B(?=(\d{3})+(?!\d))/g, ",");
     return (v < 0 && +s !== 0 ? "−" : "") + i + (p[1] ? "." + p[1] : "");
   }
-  mount(){
-    var P = this.props, D = DECK, self = this, pl = this.plan(), S = STATS;
-    this.variant = VARIANT.of(this);
-    pl.notes.forEach(function(n){ console.warn(n); });
+  mount(ctx){
+    var P = this.props, D = base, self = this, pl = this.plan(), S = STATS;
+    this.variant = base.variant(this);
+    // 書き方とデータの知らせ（plan が集めた [code, message]）
+    pl.notes.forEach(function(n){ ctx.report(n[0], n[1]); });
     this.classList.add("plot"); this.style.display = "block";
-    var ja = DECK.ja !== false;
+    var ja = this.ja = String(ctx.lang).startsWith("ja");
     var est = function(s, size){ return [...String(s).replace(/[*_^]/g, "")].reduce(function(a, c){ return a + (/[\u0000-ɏ]/.test(c) ? 0.56 : 1); }, 0) * size; };
     var colorOf = function(c, i){ return /^(term|emph|muted|accent2|fg|series-[1-4])$/.test(c || "") ? "var(--" + c + ")" : null; };
     var two = pl.ser.length > 1, dots = pl.kind === "dots", bins = pl.bins;
@@ -288,7 +243,7 @@ DECK.define("m-hist", class extends DECK.MotionElement {
     var m = {l: dots ? 28 : Math.max(64, yw + 22 + (yl ? 40 : 0)), r: 28, t: 16, b: P.xl ? 70 : 44};
     // 系列の名前（2 つのとき）：図の上に右寄せで、印と一緒に
     // 2 組の名前はいつも出す（label が無ければ「1 組目」「2 組目」にして知らせる）
-    if (two) pl.ser.forEach(function(s, i){ if (!s.label){ s.label = ja ? (i + 1) + " 組目" : "Group " + (i + 1); console.warn("m-hist: series " + (i + 1) + " has no label; write \"label\" for the legend"); } });
+    if (two) pl.ser.forEach(function(s, i){ if (!s.label){ s.label = ja ? (i + 1) + " 組目" : "Group " + (i + 1); ctx.report("data", "[hist] series " + (i + 1) + " has no label; write \"label\" for the legend"); } });
     var legendH = two ? 46 : 0;
     // 代表値の名前：図の上の行に、印の線の頭の右か左に置く（ほかの名前と線に重ならない行へ）
     var px0 = m.l, px1 = W - m.r, X = function(v){ return px0 + (v - xr[0]) / (xr[1] - xr[0]) * (px1 - px0); };
@@ -304,14 +259,14 @@ DECK.define("m-hist", class extends DECK.MotionElement {
           dash: {mean: null, median: "12 7", mode: "3 6"}[mk.type]});
       });
     });
-    var rows = FLAGS(flags, W, "m-hist");
+    var rows = FLAGS(flags, W, function(code, msg){ ctx.report(code, msg); });
     m.t = legendH + (rows ? rows * 34 + 14 : 16);
     // 数を棒の上に書く余白（系列が 1 つの柱状グラフ）
-    var p = this.p = D.Plot(this, {xr: xr, yr: yr, xt: xt, yt: dots ? [] : yt, xf: xf, yf: yf, xl: P.xl, yl: yl, noY: dots, m: m});
+    var p = this.p = plot.Plot(this, {xr: xr, yr: yr, xt: xt, yt: dots ? [] : yt, xf: xf, yf: yf, xl: P.xl, yl: yl, noY: dots, m: m});
     var axl = p.svg.querySelectorAll("g.axes > line");
     for (var a = 0; a < Math.min(dots ? 1 : 2, axl.length); a++) axl[a].setAttribute("class", "axis");
     var x0 = m.l, x1 = W - m.r, y0 = m.t, y1 = H - m.b;
-    if (y1 - y0 < 60) console.warn("m-hist: the element (" + W + "×" + H + " px) is too small for the figure; give it more height");
+    if (y1 - y0 < 60) ctx.report("size", "[hist] the element (" + W + "×" + H + " px) is too small for the figure; give it more height");
     this.geo = {x0: x0, x1: x1, y0: y0, y1: y1, W: W, H: H};
     var gB = D.el("g", {}, p.svg), gM = D.el("g", {}, p.svg), gP = D.el("g", {}, p.svg), gD = D.el("g", {}, p.svg), gT = D.el("g", {}, p.svg);
     this.heights = heights;
@@ -384,7 +339,7 @@ DECK.define("m-hist", class extends DECK.MotionElement {
       var gapPx = Infinity; for (var i2 = 1; i2 < xs.length; i2++) gapPx = Math.min(gapPx, p.x(xs[i2]) - p.x(xs[i2 - 1]));
       if (pl.given) gapPx = Math.min(gapPx, p.x(bins.edges[1]) - p.x(bins.edges[0]));
       var R = Math.min(15, (y1 - y0 - 8) / (2 * maxS) - 1.5, isFinite(gapPx) ? gapPx / 2 - 1.5 : 15);
-      if (R < 4){ console.warn("m-hist: the dots are too small (" + R.toFixed(1) + " px); give the element more height or fewer values"); R = Math.max(R, 2); }
+      if (R < 4){ ctx.report("size", "[hist] the dots are too small (" + R.toFixed(1) + " px); give the element more height or fewer values"); R = Math.max(R, 2); }
       this.R = R;
       var shapes = [function(r){ return "M" + r + ",0A" + r + "," + r + " 0 1,1 " + (-r) + ",0A" + r + "," + r + " 0 1,1 " + r + ",0Z"; },
                     function(r){ var s2 = r * 0.86; return "M" + (-s2) + "," + (-s2) + "H" + s2 + "V" + s2 + "H" + (-s2) + "Z"; }];
@@ -431,11 +386,11 @@ DECK.define("m-hist", class extends DECK.MotionElement {
     return d;
   }
   render(k, t, ctx){
-    var P = this.props, D = DECK, pl = this.plan(), self = this, vr = this.variant, lecture = ctx && (ctx.preview || ctx.mode === "lecture"), p = this.p, g = this.geo, dur = P.dur;
+    var P = this.props, D = base, pl = this.plan(), self = this, vr = this.variant, lecture = !!ctx.preview, p = this.p, g = this.geo, dur = P.dur;
     // 段階 st の、時刻 at から len 秒の進み（授業の表示では先の段階を薄く：-1 を返す）
     var ph = function(st, at, len){ return st < k ? 1 : st > k ? (lecture ? -1 : 0) : D.prog(t, at, len); };
     var FAINT = 0.45;
-    if (lecture){ var pv = parseFloat(getComputedStyle(this).getPropertyValue("--preview-opacity")); FAINT = pv >= 0 && pv <= 1 ? pv : 0.45; }   // 先の段階の薄さ：テーマの --preview-opacity（ないときは 0.45）
+    if (lecture) FAINT = base.previewOpacity(this);   // 先の段階の薄さ：テーマの --preview-opacity（ないときは 0.45）
     var binStep = function(b){ return pl.build === "bins" ? b + 1 : null; };
     pl.ser.forEach(function(s){
       if (s.leg){ var le = ph(pl.build === "bins" ? 1 : s.step, 0, 0.4); s.leg.setAttribute("opacity", (le < 0 ? FAINT : le).toFixed(3)); }
@@ -520,5 +475,5 @@ DECK.define("m-hist", class extends DECK.MotionElement {
       F.text.setAttribute("opacity", (te < 0 ? FAINT : te).toFixed(3));
     });
   }
+};
 });
-})();

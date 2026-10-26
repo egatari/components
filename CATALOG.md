@@ -50,6 +50,7 @@ Components 2.0 (alpha, not for lessons yet): parts other parts require (Egatari 
 |---|---|---|---|
 | [`base`](components/base/README.md) | 1.0.0 | 2.0 の要素のパーツが使う土台（基底のクラス MotionElement と、SVG・時間・見せ方の補助）。データの形は mount の前に確かめる。教材の作者が直接は書かない | shape@1.0.0 |
 | [`expr`](components/expr/README.md) | 1.0.0 | 2.0 のパーツが属性やデータに書かれた式を計算するための、算術だけの安全な式の評価器（コードとしては動かさない）。教材の作者が直接は書かない | — |
+| [`hist-core`](components/hist-core/README.md) | 1.0.0 | m-hist の代表値と度数の計算（平均値・中央値・最頻値、階級への数え上げ、度数分布表からの代表値）。教材の作者が直接は書かない | — |
 | [`plot`](components/plot/README.md) | 1.0.0 | 2.0 のパーツが使う座標軸つきの図（軸・目盛り・軸の名前・切り抜き）。教材の作者が直接は書かない | base@1.0.0 |
 | [`shape`](components/shape/README.md) | 1.0.0 | 2.0 のパーツのデータの形（static shape）を確かめる小さな検査器。base が使う。教材の作者が直接は書かない | — |
 
