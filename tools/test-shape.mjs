@@ -37,6 +37,7 @@ const WRONG = {
   'm-timeline': '<script type="application/json">{"nodes": [{"label": "明治維新", "when": true}]}</script>',
   'm-cycle': '<script type="application/json">{"stages": [{"label": "計画"}, {"label": "実行"}]}</script>',
   'm-map-japan': '<script type="application/json">{"regions": [{"code": "13", "tone": "emph"}]}</script>',
+  'm-map-world': '<script type="application/json">{"regions": [{"code": "JPN", "tone": "emph"}]}</script>',
   'm-timer': '<script type="application/json">{"phases": [{"title": "付箋に書く", "sec": "3分"}]}</script>',
   'm-predict': '<script type="application/json">{"choices": ["重い球", "軽い球"], "answer": 0}</script>',
   'm-hist': '<script type="application/json">{"value": [23, 31, 27], "bins": {"start": 15, "width": 5}}</script>',

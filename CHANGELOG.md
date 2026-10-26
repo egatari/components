@@ -4,6 +4,14 @@ Versions follow [README.md § Releases and versions](README.md#releases-and-vers
 
 ## Unreleased
 
+### Added
+
+- `m-map-world` (series social 社会, purpose `spatial`; not in the free pack for now): the countries and regions of the world, the companion of `m-map-japan` (docs/map-design.md). Equal Earth, central meridian 150°E (Pacific-centred only, map-design §6 2; the seam is at 30°W and a flow whose short way crosses it warns). Child JSON as in `m-map-japan`: `regions` (`id` = ISO alpha-3 / Natural Earth code / Japanese name, or `group` = the six regions 六州 from Natural Earth's `REGION_UN`), `categories` (sets of countries with a legend, up to 4 series colours), `values` + `classes` (choropleth with a legend; classes as in `m-map-japan`), `points`, `flows`, `shapes`; `grid="equator|graticule"`; variants `fade` `sweep` `draw`; readable layer
+- Territory and names (map-design §4.5, §4.8; a fixed property of the data): data from Natural Earth 5.1.1's Japan point-of-view admin-0, so 北方領土・竹島・尖閣諸島 are Japan (竹島・尖閣諸島・沖ノ鳥島・南鳥島 drawn as dots of Japan); 南樺太 (south of 50°N) and the Kurils from 得撫島 north are cut out of Russia as 帰属未定地 (`XUD`): ground-coloured, never coloured by a lesson, no name, with the four dashed boundary lines. Country names are the authorised-atlas names of `tools/map/atlas-names.csv` (13 differ from Natural Earth's `NAME_JA`: 中国, 韓国, 北朝鮮, 台湾, ホンコン, …). Taiwan is coloured with China in country colourings (`regions`, `categories`) and by its own value in `values` (map-design §4.8.4)
+- `tools/map/build-world.mjs` (with `atlas-names.csv` and `world.sha256`): builds the embedded data (Visvalingam 22 km, 2 km for Japan and 帰属未定地; data block 54,351 bytes) and checks the owner of key points on the source and the final geometry; `--cache <dir>` downloads outside the repository. `map-data-world` in `tools/test-all.mjs` checks the block's sha256
+- `tools/test-map-world.mjs` (in `tools/test-all.mjs`): names equal the table; at 6 heights × 5 widths and two label settings, 北方領土 lies in Japan's land, the island dots, 帰属未定地 (white, in no coloured path even with Russia coloured) and its 4 lines are drawn, the readable layer lists them once; Taiwan with China / by its own value; XUD refused with a warning; small elements (no error, sizes ≥ 0, inside, text ≥ 24 px); the seam warning
+- `tools/test-shape.mjs`: m-map-world's wrong-shape case; `tools/test-classes.mjs`: its generated 4- and 5-class deck uses 47 country codes for m-map-world
+
 ### Later (candidates, not in this release)
 
 - `m-compare` `by="row"`; an "outside every set" region for `m-venn`; planned-vs-actual bars for `m-timeline`

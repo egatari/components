@@ -22,3 +22,39 @@ What it does:
 6. Writes the block and `japan.sha256` (the block's sha256 and the sources').
 
 Change the data only by changing the script, and say what changed and why in CHANGELOG.md (map-design §4.6.1: borders are redrawn only when the government's position changes). Attribution: 地図データ：Natural Earth（パブリックドメイン）を加工.
+
+# Map data (m-map-world)
+
+`build-world.mjs` makes the map data embedded in `components/map-world/index.js` (between the `BEGIN/END map-world-data`
+lines) from Natural Earth 5.1.1's 1:10m Japan point-of-view admin-0 (`ne_10m_admin_0_countries_jpn`, public domain; the same
+file and sha256 as above), following [docs/map-design.md](../../docs/map-design.md) §4.5, §4.8, §5 and §6.
+
+```bash
+node tools/map/build-world.mjs [--cache <dir>]             # download into <dir> (default tools/map/.cache/), build, check, write
+node tools/map/build-world.mjs [--cache <dir>] --compare   # rebuild in memory; fail if it differs from the committed block
+node tools/map/build-world.mjs [--cache <dir>] --block <f> # rebuild and write only the block to <f>
+node tools/map/build-world.mjs --check                     # what npm test runs: the block's sha256 equals world.sha256 (no network)
+```
+
+`--cache` lets the download go to a new empty folder outside the repository; it is read as data only (mapshaper reads the
+.shp/.dbf; nothing in it is run).
+
+What it does:
+
+1. Checks the zip's sha256 and `VERSION.txt` (5.1.1), and every feature's `NAME_JA` against `atlas-names.csv` (the one table of
+   names, map-design §4.8; `ATLAS_name` is used, 13 names differ from `NAME_JA`).
+2. Takes 帰属未定地 (XUD, map-design §4.5 3. 1) out of RUS: Sakhalin's ring is cut at 50°N (the south part becomes XUD), and the
+   14 Kuril rings from 得撫島 to 占守島 (centre in 149.5–157°E, 45.5–51°N) move to XUD. It stops if a RUS island appears near
+   South Sakhalin (海馬島 and the like are a pending decision, map-design §4.6 5; none is in the 1:10m data). The four boundary
+   lines (北緯50度 across the cut, 宗谷海峡, 択捉島と得撫島の間, 占守島とカムチャツカ半島の間) are kept as lines; the sea lines are
+   checked not to touch land.
+3. Checks the owner of key points on the source, after projection and on the final geometry: 国後島・択捉島・色丹島・志発島 → JPN
+   (with a shape), 竹島・魚釣島 → JPN (as fixed points), 豊原・得撫島・幌筵島・占守島 → XUD, 北樺太・カムチャツカ → RUS, 台湾 → TWN,
+   クリミア → UKR, 西サハラ → SAH, and others.
+4. Projects with d3-geo (Equal Earth, central meridian 150°E, sphere, 1 unit ≈ 1 km; cut at the seam, 30°W; the component's
+   formula is checked against d3-geo), drops rings under 1500 km² (4 km² for JPN and XUD) except each feature's largest,
+   simplifies (mapshaper, Visvalingam, 22 km; 2 km for JPN and XUD; map-design §3.1), quantizes and builds the topology.
+5. Writes label anchors, the six regions (六州, from `REGION_UN`/`SUBREGION`), the fixed island points, the lines, the block and
+   `world.sha256` (the block's, the source's and the names table's sha256).
+
+Attribution: 地図データ：Natural Earth（パブリックドメイン）を加工.

@@ -19,7 +19,9 @@ const names = process.argv.slice(2).length ? process.argv.slice(2) : fs.readdirS
 });
 // a deck with 4 and 5 classes for each component (made-up values; the component draws them from its README's data shape)
 const extra = (name) => {
-  const v = {}; for (let i = 1; i <= 47; i++) v[String(i).padStart(2, '0')] = (i * 37) % 100;
+  // m-map-japan: the 47 prefectures; m-map-world: 47 countries
+  const WORLD = 'JPN CHN KOR IND IDN AUS NZL USA CAN MEX BRA ARG CHL PER COL GBR FRA DEU ITA ESP POL UKR RUS TUR IRN SAU EGY NGA ZAF KEN ETH DZA MAR VNM THA PHL MYS PAK KAZ MNG SWE NOR FIN GRL VEN BOL MDG'.split(' ');
+  const v = {}; for (let i = 1; i <= 47; i++) v[name === 'map-world' ? WORLD[i - 1] : String(i).padStart(2, '0')] = (i * 37) % 100;
   const one = (cls) => `<m-${name} legend="架空" style="height:440px"><script type="application/json">${JSON.stringify({ classes: cls, values: v })}</script></m-${name}>`;
   return `<!DOCTYPE html>\n<html lang="ja" data-theme="default">\n<head><meta charset="utf-8"><title>階級</title></head>\n<body><div id="stage">\n` +
     `<section class="slide noconcl"><h2>4 階級</h2><div class="body">${one([0, 25, 50, 75])}</div></section>\n` +
