@@ -1,6 +1,6 @@
 ---
 name: m-sweep
-version: 1.13.0
+version: 2.0.0
 series: academic
 summary: パラメータを動かして関数の形の変化を見せる（前の形は灰色で残す）
 steps: values の数 − 1
