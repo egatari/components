@@ -4,13 +4,14 @@
 //    "renderer": {"name": "abcjs", "version": "6.7.2"}}
 // （JSON の終わり）</m-score>
 // 楽譜を描くのは組み立て（作り手。部品庫 2.0 の「組み立てのときの描画」）：作者の書いた abc を abcjs（add_classes）で描き、
-// abcSvg（abcjs の SVG。class はそのまま）と abcMap（音符ごとの class・小節・音の高さ・拍・長さ・符頭の箱）を足して渡す。
+// abcSvg（abcjs の SVG。class はそのまま）と abcMap（音符ごとの class・小節 measure・音の高さ・拍・長さ（四分音符 = 1）・符頭の箱、連桁 beams とタイ ties の音符の組）を足して渡す。
 // 再生のときに abcjs は持たない。この部品は abcSvg を読み、許した要素と属性だけで組み直して（スクリプト・外への参照・色は入らない）、
 // abcjs の class（abcjs-mm…・abcjs-n…）で段階ごとに出す。五線・音部記号・調号・拍子は段階 0 から見える
 // 段階：by="note"（既定）は音符・和音・休符 1 つ、by="measure" は 1 小節。休符とタイでつながった音は鳴らさずに進む
 // 音（仕様 §8.4「Component sounds」）：events(k) は段階 k で出る音の note（pitch・dur（秒、tempo から。タイは次の音符の分も鳴る）・vel 0.7）。
 // 和音は同じ t。duration(k) は段階の音符の長さ（by="measure" は小節の終わりまで）
-// 名前：names="solfa|abc|iroha|none" で符頭の下（五線の下の帯）に 26 px で書く。位置は abcMap の符頭の箱（box）から
+// 名前：names="solfa|abc|iroha|none" で符頭の下（五線の下の帯）に 26 px で書く。位置は abcMap の符頭の箱（box）から。
+// 名前が重なる小節は、その小節の名前を全部ジグザグ（奇数番目は上の段、偶数番目は下の段）に
 // 今の段階の音符は --emph、前の段階は --fg。授業の表示（ctx.preview、古い再生器は ctx.mode === "lecture"）では先の音符を --preview-opacity で薄く
 // 読める層：音の名前を文字で（「ド レ ミ ファ｜ソ …」）。描いた図は aria-hidden
 (function(){
@@ -117,8 +118,19 @@ var SC = (function(){
         if (!q) throw new Error("m-score: abcMap.notes[" + i + "].pitch \"" + s + "\" is not a pitch such as C4, F#4, Bb3");
         return q;
       });
-      return {i: i, cls: n.cls.trim().split(/\s+/), m: n.m, beat: n.beat || 0, dur: n.dur, box: n.box || null, tie: n.tie === true && p.length > 0, p: p, raw: n};
+      if (!(n.measure >= 0) || Math.floor(n.measure) !== n.measure) throw new Error("m-score: abcMap.notes[" + i + "].measure must be the measure number (0, 1, …)");
+      return {i: i, cls: n.cls.trim().split(/\s+/), m: n.measure, beat: n.beat || 0, dur: n.dur, box: n.box || null, tie: n.tie === true && p.length > 0, p: p, raw: n};
     });
+    // 連桁とタイ：組み立てが記録した音符の番号の組（beams・ties）
+    var groups = function(key, min){
+      var g = map[key] === undefined ? [] : map[key];
+      if (!Array.isArray(g) || !g.every(function(x){ return Array.isArray(x) && x.length >= min && x.every(function(j, q){ return Math.floor(j) === j && j >= 0 && j < notes.length && (q === 0 || j > x[q - 1]); }); }))
+        throw new Error("m-score: abcMap." + key + " must be lists of increasing note indices (such as [[4, 5, 6, 7]])");
+      return g;
+    };
+    var beams = groups("beams", 1), ties = groups("ties", 2);
+    // タイの先（鳴らし直さない）：ties の 2 番目から。tie: true もそう扱う
+    ties.forEach(function(x){ x.slice(1).forEach(function(j){ if (notes[j].p.length) notes[j].tie = true; }); });
     // タイ：つながった先の分も鳴らす（鳴るのは始めの音符だけ）
     var sound = notes.map(function(n, i){
       if (!n.p.length || n.tie) return 0;
@@ -136,7 +148,7 @@ var SC = (function(){
       last.len = Math.max(last.len, at[n.i] + n.dur * spb);
     });
     steps.forEach(function(s){ s.len = +s.len.toFixed(6); delete s.b0; });
-    return {tempo: map.tempo, spb: spb, notes: notes, steps: steps, stepOf: stepOf, at: at, sound: sound};
+    return {tempo: map.tempo, spb: spb, notes: notes, steps: steps, stepOf: stepOf, at: at, sound: sound, beams: beams, ties: ties};
   }
   // 段階 k の音：音の高さ 1 つに 1 つの note（和音は同じ t）。休符・タイの先は鳴らない
   function events(pl, k){
@@ -160,22 +172,43 @@ var SC = (function(){
     pl.notes.forEach(function(n){
       if (!n.p.length || n.tie || !n.box) return;
       var ps = n.p.slice().sort(function(a, b){ return b.midi - a.midi; });
-      out.push({i: n.i, x: n.box[0] + n.box[2] / 2, rows: ps.map(function(p, r){ return {s: label(p, mode), r: r}; })});
+      out.push({i: n.i, m: n.m, x: n.box[0] + n.box[2] / 2, rows: ps.map(function(p, r){ return {s: label(p, mode), r: r}; })});
     });
     return out;
   }
-  // 名前を行に置く（px）：x = ox + 楽譜の x × s。和音は高い音が上の行に続けて並ぶ。左の名前と重なるなら、その名前のかたまりを下の行へずらす
-  // （八分音符が続くところ）。est(文字, 大きさ) は字の幅の見積もり。→ {labels: [{i, s, x, row}], rows, overlap（ずらしても重なった）}
+  // 名前を行に置く（px）：x = ox + 楽譜の x × s。和音は高い音が上の行に続けて並ぶ。1 行で重なる名前が小節の中に 1 か所でもあれば
+  // （八分音符が続くところ）、その小節の名前を全部、ジグザグに置く：小節の 1・3・5…番目の音符は上の段、2・4…番目は下の段（段の高さは
+  // その小節の和音のいちばん多い音の数）。重ならない小節は 1 段のまま。est(文字, 大きさ) は字の幅の見積もり。
+  // → {labels: [{i, s, x, row}], rows, zig: [ジグザグにした小節], overlap（ジグザグでも重なった）}
   function place(items, s, ox, size, est){
-    var end = [], labels = [], overlap = false, MAXR = 6;
-    items.slice().sort(function(a, b){ return a.x - b.x || a.i - b.i; }).forEach(function(n){
-      var x = ox + n.x * s, ws = n.rows.map(function(rw){ return est(rw.s, size); }), c = n.rows.length, o = 0;
-      var free = function(o){ for (var r = 0; r < c; r++){ var e = end[o + r]; if (e !== undefined && x - ws[r] / 2 < e + 4) return false; } return true; };
-      while (!free(o) && o + c < MAXR) o++;
-      if (!free(o)){ overlap = true; o = 0; }
-      n.rows.forEach(function(rw, r){ labels.push({i: n.i, s: rw.s, x: x, row: o + r}); end[o + r] = Math.max(end[o + r] === undefined ? -Infinity : end[o + r], x + ws[r] / 2); });
+    var GAP = 4, labels = [], zig = [], overlap = false, rows = 0;
+    var list = items.slice().sort(function(a, b){ return a.i - b.i; }).map(function(n){
+      return {n: n, x: ox + n.x * s, w: n.rows.map(function(rw){ return est(rw.s, size); })};
     });
-    return {labels: labels, rows: end.length, overlap: overlap};
+    // 同じ行で重なるか（a が前の音符。b が左にあるのは段が変わったところで、重ならない）。名前は譜面の順（i）に並べる
+    var hits = function(a, b, ra, rb){
+      for (var p = 0; p < a.w.length; p++) for (var q = 0; q < b.w.length; q++)
+        if (ra + p === rb + q && b.x >= a.x && b.x - b.w[q] / 2 < a.x + a.w[p] / 2 + GAP) return true;
+      return false;
+    };
+    var ms = [];
+    list.forEach(function(e){ var g = ms[ms.length - 1]; if (!g || g.m !== e.n.m){ g = {m: e.n.m, e: []}; ms.push(g); } g.e.push(e); });
+    ms.forEach(function(g, gi){
+      var c = g.e.reduce(function(a, e){ return Math.max(a, e.w.length); }, 0);
+      var crowded = g.e.some(function(e, j){ return j > 0 && hits(g.e[j - 1], e, 0, 0); });
+      // 前の小節の最後の名前と、この小節の最初の名前が重なるときも、この小節をジグザグにする
+      var prev = gi > 0 ? ms[gi - 1].e[ms[gi - 1].e.length - 1] : null;
+      if (!crowded && prev && hits(prev, g.e[0], prev.row0, 0)) crowded = true;
+      if (crowded) zig.push(g.m);
+      g.e.forEach(function(e, j){
+        e.row0 = crowded && j % 2 === 1 ? c : 0;
+        e.n.rows.forEach(function(rw, r){ labels.push({i: e.n.i, s: rw.s, x: e.x, row: e.row0 + r}); });
+        rows = Math.max(rows, e.row0 + e.w.length);
+      });
+    });
+    // 置いた後も重なっていないか（同じ行の、となり合う名前）
+    for (var j = 1; j < list.length; j++) for (var q = j - 1; q >= Math.max(0, j - 3); q--) if (hits(list[q], list[j], list[q].row0, list[j].row0)) overlap = true;
+    return {labels: labels, rows: rows, zig: zig, overlap: overlap};
   }
   // 読める層の文：小節は「｜」、和音は「（ド・ミ・ソ）」、休符は「休み」/「rest」、タイの先は「〜」
   function readable(pl, mode, ja){
@@ -188,16 +221,13 @@ var SC = (function(){
   }
   // 要素がどの小節・何番目の音符か（abcjs の class から）
   function where(list){ return {v: num(list, /^abcjs-v(\d+)$/), mm: num(list, /^abcjs-mm(\d+)$/), n: num(list, /^abcjs-n(\d+)$/), l: num(list, /^abcjs-l(\d+)$/), m: num(list, /^abcjs-m(\d+)$/)}; }
-  // 線（M・L だけの path）の x の幅（連桁の音符を探す）
-  function xRange(d){
-    var re = /[ML]\s*(-?[\d.]+)[\s,]+(-?[\d.]+)/g, x, lo = Infinity, hi = -Infinity;
-    while ((x = re.exec(d || ""))){ lo = Math.min(lo, +x[1]); hi = Math.max(hi, +x[1]); }
-    return lo <= hi ? [lo, hi] : null;
-  }
   // 楽譜の木の要素を、どの音符と一緒に出すか決める（DOM を使わない）。
   // → [{node, i（音符の番号。null なら段階 0 から見える）, note: 音符・休符そのものか}]。
-  // 音符・休符：abcMap の cls が全部ある要素。小節線：その小節の最後の音符と。連桁：x が重なる最初の音符と。
-  // タイ・スラー（abcjs-start-m…-n… abcjs-end-m…-n…）：終わりの音符と。そのほかの abcjs-mm… の要素：その小節の最初の音符と。
+  // 音符・休符：abcMap の cls が全部ある要素。小節線：その小節の最後の音符と。
+  // 連桁（abcjs-beam-elem）：abcjs は連桁 1 組を 1 つの path に描き、beams の順に並ぶので、k 番目の path を beams[k] の最初の音符と。
+  // タイ（abcjs-tie）：ties の組を終わりの音符の順に、つなぎ 1 つ × 音の高さの数だけ path が並ぶので、それぞれ つなぎの先の音符と。
+  // 数が合わなければ（組み立ての記録と SVG が違う）、その小節の最初の音符と出し、mismatch で知らせる。
+  // そのほかの abcjs-mm… の要素（スラーなど）：その小節の最初の音符と。
   // 五線・音部記号・調号・拍子・速度（abcjs-staff・abcjs-staff-extra・abcjs-tempo）と、小節のないものは段階 0 から
   function assign(tree, pl){
     var out = [], used = {};
@@ -210,11 +240,12 @@ var SC = (function(){
       }
       return null;
     };
-    var noteAt = function(mm, n){
-      var ms = byMeasure[mm] || [];
-      for (var j = 0; j < ms.length; j++){ var w = where(pl.notes[ms[j]].cls); if (w.n === n) return ms[j]; }
-      return null;
-    };
+    // タイの path の順の、つなぎの先の音符
+    var tieEnds = [];
+    pl.ties.map(function(x){ return x; }).sort(function(a, b){ return a[1] - b[1]; }).forEach(function(x){
+      for (var q = 1; q < x.length; q++) for (var r = 0; r < Math.max(1, pl.notes[x[q]].p.length); r++) tieEnds.push(x[q]);
+    });
+    var nb = 0, nt = 0, beamEls = [], tieEls = [];
     (function walk(node){
       node.kids.forEach(function(k){
         var list = cls(k);
@@ -227,21 +258,21 @@ var SC = (function(){
         if (!ms){ if (k.kids.length && w.mm === null) walk(k); else out.push({node: k, i: null}); return; }
         var i = ms[0];
         if (list.indexOf("abcjs-bar") >= 0) i = ms[ms.length - 1];
-        else if (list.indexOf("abcjs-beam-elem") >= 0){
-          var r = xRange(k.a.d);
-          if (r) for (var q = 0; q < ms.length; q++){ var b = pl.notes[ms[q]].box; if (b && b[0] + b[2] >= r[0] - 4 && b[0] <= r[1] + 4){ i = ms[q]; break; } }
-        } else {
-          var e = num(list, /^abcjs-end-m(\d+)-n\d+$/), en = num(list, /^abcjs-end-m\d+-n(\d+)$/), s = num(list, /^abcjs-start-m(\d+)-n\d+$/);
-          if (e !== null && s !== null){ var t = noteAt(w.mm + (e - s), en); if (t !== null) i = t; }
-          else if (w.n !== null){ var u = noteAt(w.mm, w.n); if (u !== null) i = u; }
-        }
-        out.push({node: k, i: i});
+        var part = {node: k, i: i};
+        if (list.indexOf("abcjs-beam-elem") >= 0) beamEls.push(part);
+        else if (list.indexOf("abcjs-tie") >= 0) tieEls.push(part);
+        out.push(part);
       });
     })(tree);
+    var mismatch = [];
+    if (beamEls.length === pl.beams.length) beamEls.forEach(function(p, q){ p.i = pl.beams[q][0]; });
+    else mismatch.push("beams: " + pl.beams.length + " in abcMap, " + beamEls.length + " in abcSvg");
+    if (tieEls.length === tieEnds.length) tieEls.forEach(function(p, q){ p.i = tieEnds[q]; });
+    else mismatch.push("ties: " + tieEnds.length + " tie paths expected from abcMap, " + tieEls.length + " in abcSvg");
     var missing = pl.notes.filter(function(n){ return !used[n.i]; }).map(function(n){ return n.i; });
-    return {parts: out, missing: missing};
+    return {parts: out, missing: missing, mismatch: mismatch};
   }
-  return {place: place, parseSvg: parseSvg, parsePitch: parsePitch, label: label, plan: plan, events: events, names: names, readable: readable, assign: assign, xRange: xRange, where: where};
+  return {place: place, parseSvg: parseSvg, parsePitch: parsePitch, label: label, plan: plan, events: events, names: names, readable: readable, assign: assign, where: where};
 })();
 
 var FS = 26, ROW = 30;   // 名前の字（24 px 以上）と行の高さ
@@ -255,12 +286,12 @@ DECK.define("m-score", class extends DECK.MotionElement {
       abc: {type: "string"}, abcSvg: {type: "string"}, renderer: {type: "object"},
       abcMap: {type: "object", required: ["tempo", "notes"], properties: {
         tempo: {type: "number"},
-        notes: {type: "array", minItems: 1, items: {type: "object", required: ["cls", "m", "pitch", "beat", "dur"], properties: {
-          cls: {type: "string"}, m: {type: "integer"}, pitch: {type: "array", items: {type: "string"}}, beat: {type: "number"}, dur: {type: "number"},
-          box: {type: "array", items: {type: "number"}}, tie: {type: "boolean"}}}}}}}},
+        notes: {type: "array", minItems: 1, items: {type: "object", required: ["cls", "measure", "pitch", "beat", "dur"], properties: {
+          cls: {type: "string"}, measure: {type: "integer"}, pitch: {type: "array", items: {type: "string"}}, beat: {type: "number"}, dur: {type: "number"},
+          box: {type: "array", items: {type: "number"}}, tie: {type: "boolean"}}}},
+        beams: {type: "array", items: {type: "array", items: {type: "integer"}}}, ties: {type: "array", items: {type: "array", items: {type: "integer"}}}}}}},
     example: {abc: "X:1\nM:4/4\nL:1/4\nQ:1/4=96\nK:C\nC D E F |]"},
-    note: {en: "write abc (ABC notation); the build adds abcSvg and abcMap (do not write them by hand)",
-           ja: "abc（ABC 記譜法）を書く。abcSvg と abcMap は組み立てが足す（手で書かない）"},
+    note: {en: "write abc only; the build adds abcSvg and abcMap", ja: "abc だけを書く（abcSvg・abcMap は組み立てが足す）"},
   };
   static props = {
     by: {type: "string", default: "note", doc: "note（1 音・和音ずつ）| measure（1 小節ずつ）"},
@@ -288,6 +319,7 @@ DECK.define("m-score", class extends DECK.MotionElement {
     this.style.display = "block";
     var W = this.clientWidth, H = this.clientHeight;
     var tree = SC.parseSvg(this.data.abcSvg), as = SC.assign(tree, pl);
+    as.mismatch.forEach(function(x){ console.warn("m-score: the build's record and abcSvg differ (" + x + "); those marks appear with the first note of their measure"); });
     if (as.missing.length) console.warn("m-score: no element in abcSvg has the classes of abcMap.notes[" + as.missing.join(", ") + "] (they are not drawn)");
     var svg = D.el("svg", {viewBox: "0 0 " + W + " " + H, width: W, height: H, "aria-hidden": "true", style: "display:block;overflow:visible"}, this);
     // 楽譜の木を組み直す（許した属性だけ。色は currentColor → color: var(--fg)）

@@ -6,7 +6,7 @@
   "notes": [
    {
     "cls": "abcjs-v0 abcjs-mm0 abcjs-n0",
-    "m": 0,
+    "measure": 0,
     "pitch": [
      "C4"
     ],
@@ -21,7 +21,7 @@
    },
    {
     "cls": "abcjs-v0 abcjs-mm0 abcjs-n1",
-    "m": 0,
+    "measure": 0,
     "pitch": [
      "D4"
     ],
@@ -36,7 +36,7 @@
    },
    {
     "cls": "abcjs-v0 abcjs-mm0 abcjs-n2",
-    "m": 0,
+    "measure": 0,
     "pitch": [
      "E4"
     ],
@@ -51,7 +51,7 @@
    },
    {
     "cls": "abcjs-v0 abcjs-mm0 abcjs-n3",
-    "m": 0,
+    "measure": 0,
     "pitch": [
      "F4"
     ],
@@ -66,7 +66,7 @@
    },
    {
     "cls": "abcjs-v0 abcjs-mm1 abcjs-n0",
-    "m": 1,
+    "measure": 1,
     "pitch": [
      "G4"
     ],
@@ -81,7 +81,7 @@
    },
    {
     "cls": "abcjs-v0 abcjs-mm1 abcjs-n1",
-    "m": 1,
+    "measure": 1,
     "pitch": [
      "A4"
     ],
@@ -96,7 +96,7 @@
    },
    {
     "cls": "abcjs-v0 abcjs-mm1 abcjs-n2",
-    "m": 1,
+    "measure": 1,
     "pitch": [
      "B4"
     ],
@@ -111,7 +111,7 @@
    },
    {
     "cls": "abcjs-v0 abcjs-mm1 abcjs-n3",
-    "m": 1,
+    "measure": 1,
     "pitch": [
      "C5"
     ],
@@ -126,7 +126,7 @@
    },
    {
     "cls": "abcjs-v0 abcjs-mm2 abcjs-n0",
-    "m": 2,
+    "measure": 2,
     "pitch": [
      "C5"
     ],
@@ -141,7 +141,7 @@
    },
    {
     "cls": "abcjs-v0 abcjs-mm2 abcjs-n1",
-    "m": 2,
+    "measure": 2,
     "pitch": [
      "B4"
     ],
@@ -156,7 +156,7 @@
    },
    {
     "cls": "abcjs-v0 abcjs-mm2 abcjs-n2",
-    "m": 2,
+    "measure": 2,
     "pitch": [
      "A4"
     ],
@@ -171,7 +171,7 @@
    },
    {
     "cls": "abcjs-v0 abcjs-mm2 abcjs-n3",
-    "m": 2,
+    "measure": 2,
     "pitch": [
      "G4"
     ],
@@ -186,7 +186,7 @@
    },
    {
     "cls": "abcjs-v0 abcjs-mm3 abcjs-n0",
-    "m": 3,
+    "measure": 3,
     "pitch": [
      "F4"
     ],
@@ -201,7 +201,7 @@
    },
    {
     "cls": "abcjs-v0 abcjs-mm3 abcjs-n1",
-    "m": 3,
+    "measure": 3,
     "pitch": [
      "E4"
     ],
@@ -216,7 +216,7 @@
    },
    {
     "cls": "abcjs-v0 abcjs-mm3 abcjs-n2",
-    "m": 3,
+    "measure": 3,
     "pitch": [
      "D4"
     ],
@@ -231,7 +231,7 @@
    },
    {
     "cls": "abcjs-v0 abcjs-mm3 abcjs-n3",
-    "m": 3,
+    "measure": 3,
     "pitch": [
      "C4"
     ],
@@ -244,7 +244,9 @@
      8.09
     ]
    }
-  ]
+  ],
+  "beams": [],
+  "ties": []
  },
  "renderer": {
   "name": "abcjs",

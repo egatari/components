@@ -1,14 +1,15 @@
 // m-score's score data (its `static sc`), without a browser, on the abcjs fixtures (components/score/fixtures/*.json):
 //   1. the frozen SVG is read into a tree of allowed elements and attributes only (no script, style, title, foreign
 //      content, event handlers, links or colours other than currentColor / none), entities decoded
-//   2. abcMap parsing and errors (pitch names, tempo, dur, by)
+//   2. abcMap parsing and errors (pitch names, tempo, dur, measure, beams, ties, by); the fixtures have the §4.1 fields
 //   3. step grouping: one note, chord or rest per step (by="note"), one measure per step (by="measure")
 //   4. sound events: pitch, dur in seconds from beats and tempo, chords at one t, notes of a measure at their beat,
 //      rests and tie continuations silent, a tied note sounding on through the next note (past the end of its step)
 //   5. which notes each SVG element appears with (every note found; bar lines with the last note of their measure,
-//      beams with the first note under them, ties with the note they end on)
-//   6. note names (solfa, abc, iroha; chords top to bottom) and their placement under the noteheads (x from the box,
-//      a crowded name moves down a row, nothing overlaps); the readable layer's text
+//      the k-th beam path with the first note of abcMap.beams[k], tie paths with the note they end on from abcMap.ties;
+//      a record that does not match the SVG is reported)
+//   6. note names (solfa, abc, iroha; chords top to bottom) and their placement under the noteheads (x from the box;
+//      a measure with a collision zigzags all its names, odd notes up and even notes down; nothing overlaps); the readable layer's text
 //   7. the demo carries the fixtures unchanged
 //   node tools/test-score.mjs
 import fs from 'node:fs';
@@ -56,7 +57,7 @@ for (const [name, fx] of Object.entries(FX)) {
 
 // ---- 2. abcMap ----
 const map = (notes, tempo = 120) => ({ tempo, notes });
-const N = (o) => ({ cls: 'abcjs-v0 abcjs-mm0 abcjs-n0', m: 0, pitch: ['C4'], beat: 0, dur: 1, ...o });
+const N = (o) => ({ cls: 'abcjs-v0 abcjs-mm0 abcjs-n0', measure: 0, pitch: ['C4'], beat: 0, dur: 1, ...o });
 throws(() => SC.plan(map([N({ pitch: ['H4'] })]), 'note'), /pitch "H4" is not a pitch/, 'H4 is not a pitch');
 throws(() => SC.plan(map([N({})], 0), 'note'), /tempo/, 'tempo must be > 0');
 throws(() => SC.plan(map([N({ dur: 0 })]), 'note'), /dur must be > 0/, 'dur must be > 0');
@@ -64,6 +65,15 @@ throws(() => SC.plan(map([N({ cls: 'note0' })]), 'note'), /cls must be abcjs cla
 throws(() => SC.plan(map([]), 'note'), /notes is empty/, 'no notes');
 throws(() => SC.plan(map([N({})]), 'bar'), /by="bar"/, 'by must be note or measure');
 throws(() => SC.plan(null, 'note'), /abcMap is missing/, 'no abcMap');
+throws(() => SC.plan(map([N({ measure: undefined, m: 0 })]), 'note'), /measure must be/, 'the field is measure (not m)');
+throws(() => SC.plan({ ...map([N({}), N({})]), beams: [[1, 0]] }, 'note'), /beams must be lists of increasing note indices/, 'beams: increasing indices');
+throws(() => SC.plan({ ...map([N({}), N({})]), ties: [[0, 5]] }, 'note'), /ties must be/, 'ties: indices inside notes');
+throws(() => SC.plan({ ...map([N({}), N({})]), ties: [[0]] }, 'note'), /ties must be/, 'ties: at least two notes');
+eq(SC.plan({ ...map([N({}), N({ beat: 1 })]), ties: [[0, 1]] }, 'note').sound, [1, 0], 'ties alone (without tie: true) make the second note a continuation: the first sounds 2 beats at 120');
+for (const [name, fx] of Object.entries(FX)) ok(fx.abcMap.notes.every((x) => 'measure' in x && !('m' in x)) && Array.isArray(fx.abcMap.beams) && Array.isArray(fx.abcMap.ties), `${name}: fixture has measure, beams and ties (§4.1 of 2026-10-26)`);
+eq(FX.kaeru.abcMap.beams, [[22, 23, 24, 25], [26, 27, 28, 29]], 'kaeru: the build recorded the two beam groups of measure 7');
+eq(FX.rhythm.abcMap.beams, [[2, 3], [7, 8], [9, 10]], 'rhythm: three beam groups');
+eq(FX.rhythm.abcMap.ties, [[11, 12]], 'rhythm: one tie');
 eq(SC.parsePitch('F#4').midi, 66, 'F#4 = 66');
 eq(SC.parsePitch('Bb3').midi, 58, 'Bb3 = 58');
 eq(SC.parsePitch('C##4').midi, 62, 'C##4 = 62');
@@ -111,6 +121,7 @@ for (const [name, fx] of Object.entries(FX)) {
   eq(a.parts.filter((p) => p.note).length, pl.notes.length, `${name}: one element per note`);
   const lastOf = {};
   pl.notes.forEach((x) => { lastOf[x.m] = x.i; });
+  eq(a.mismatch, [], `${name}: beams and ties in abcMap match the beam and tie paths of abcSvg`);
   const bars = a.parts.filter((p) => /\babcjs-bar\b/.test(p.node.a.class || ''));
   ok(bars.length >= Object.keys(lastOf).length && bars.every((b) => b.i === lastOf[SC.where(b.node.a.class.split(' ')).mm]), `${name}: bar lines appear with the last note of their measure`);
   const fixed = a.parts.filter((p) => p.i === null).map((p) => p.node.a.class || '');
@@ -119,9 +130,12 @@ for (const [name, fx] of Object.entries(FX)) {
 {
   const pl = SC.plan(FX.kaeru.abcMap, 'note'), a = SC.assign(SC.parseSvg(FX.kaeru.abcSvg), pl);
   const beams = a.parts.filter((p) => /abcjs-beam-elem/.test(p.node.a.class || '')).map((p) => p.i);
-  eq(beams, [22, 26], 'kaeru: the two beams appear with the first eighth note under each');
+  eq(beams, [22, 26], 'kaeru: the k-th beam path appears with the first note of beams[k]');
   const pr = SC.plan(FX.rhythm.abcMap, 'note'), ar = SC.assign(SC.parseSvg(FX.rhythm.abcSvg), pr);
-  eq(ar.parts.filter((p) => /abcjs-tie/.test(p.node.a.class || '')).map((p) => p.i), [12], 'rhythm: the tie appears with the note it ends on');
+  eq(ar.parts.filter((p) => /abcjs-tie/.test(p.node.a.class || '')).map((p) => p.i), [12], 'rhythm: the tie appears with the note it ends on (from ties)');
+  eq(ar.parts.filter((p) => /abcjs-beam-elem/.test(p.node.a.class || '')).map((p) => p.i), [2, 7, 9], 'rhythm: three beams, each with its first note');
+  const bad = SC.assign(SC.parseSvg(FX.rhythm.abcSvg), SC.plan({ ...FX.rhythm.abcMap, beams: [[2, 3]] }, 'note'));
+  ok(bad.mismatch.length === 1 && /beams: 1 in abcMap, 3 in abcSvg/.test(bad.mismatch[0]), 'a build record that does not match the SVG is reported (' + bad.mismatch[0] + ')');
 }
 
 // ---- 6. names ----
@@ -136,10 +150,29 @@ eq(SC.names(r, 'solfa').length, 11, 'rhythm: no names for the 2 rests and the ti
 const est = (s, size) => [...s].length * size;
 const overlaps = (labels) => labels.some((x, i) => labels.some((y, j) => j > i && x.row === y.row && Math.abs(x.x - y.x) < (est(x.s, 26) + est(y.s, 26)) / 2));
 const kn = SC.names(SC.plan(FX.kaeru.abcMap, 'note'), 'solfa');
-const pk = SC.place(kn, 1.6, 0, 26, est);
-ok(!pk.overlap && !overlaps(pk.labels) && pk.rows >= 2, `kaeru at 1.6×: the crowded eighth-note names move to lower rows, none overlap (rows ${pk.rows})`);
+// zigzag: a measure with any collision puts all its names in a zigzag (1st, 3rd, … on the upper row, 2nd, 4th, … on the lower);
+// measures without collisions stay on one row
+// kaeru has two staff lines (notes 0–13 and 14–32); the part places each line's names on its own, as here
+const kl1 = kn.filter((x) => x.i <= 13), kl2 = kn.filter((x) => x.i >= 14);
+for (const sc of [1.4, 1.6, 1.75]) {
+  const p1 = SC.place(kl1, sc, 0, 26, est), pk = SC.place(kl2, sc, 0, 26, est);
+  const m7 = pk.labels.filter((x) => x.i >= 22 && x.i <= 29).map((x) => x.row);
+  eq([p1.zig, pk.zig], [[], [6]], `kaeru at ${sc}×: only measure 7 (the eighth notes) is crowded`);
+  eq(m7, [0, 1, 0, 1, 0, 1, 0, 1], `kaeru at ${sc}×: measure 7's names zigzag, odd notes up, even notes down`);
+  ok(p1.labels.concat(pk.labels.filter((x) => x.i < 22 || x.i > 29)).every((x) => x.row === 0), `kaeru at ${sc}×: every other measure stays on one row`);
+  ok(!pk.overlap && !overlaps(pk.labels) && !overlaps(p1.labels) && pk.rows === 2 && p1.rows === 1, `kaeru at ${sc}×: no names overlap; 2 rows on the second line, 1 on the first`);
+}
+{
+  // a made-up measure where only the last two names collide: the whole measure zigzags, not just the colliding name
+  const it = [0, 100, 200, 300, 330].map((x, i) => ({ i, m: 0, x, rows: [{ s: 'ファ' }] })).concat([{ i: 5, m: 1, x: 500, rows: [{ s: 'ド' }] }]);
+  const pz = SC.place(it, 1, 0, 26, est);
+  eq(pz.labels.map((x) => x.row), [0, 1, 0, 1, 0, 0], 'one collision at the end of a measure zigzags the whole measure; the next measure stays on one row');
+  // chords: the lower half of the zigzag starts below the measure's tallest chord
+  const ch = [0, 20].map((x, i) => ({ i, m: 0, x, rows: [{ s: 'ソ' }, { s: 'ミ' }, { s: 'ド' }] }));
+  eq(SC.place(ch, 1, 0, 26, est).labels.map((x) => x.row), [0, 1, 2, 3, 4, 5], 'crowded chords: the second chord\'s names start below the first chord\'s');
+}
 const pd = SC.place(SC.names(d, 'solfa'), 1.38, 0, 26, est);
-ok(pd.rows === 1 && !pd.overlap, 'doremi at 1.38×: one row of names');
+ok(pd.rows === 1 && !pd.overlap && pd.zig.length === 0, 'doremi at 1.38×: one row of names, no zigzag');
 ok(SC.place(kn, 0.3, 0, 26, est).overlap, 'too small: the overlap is reported (the part warns)');
 eq(SC.place(cn, 2, 10, 26, est).labels.map((x) => x.row).slice(0, 3), [0, 1, 2], 'a chord takes one row per note');
 eq(SC.readable(kM, 'solfa', true).split('｜').slice(0, 2), ['ド レ ミ ファ', 'ミ レ ド'], 'readable layer: kaeru begins 「ド レ ミ ファ｜ミ レ ド」');

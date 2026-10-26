@@ -6,7 +6,7 @@
   "notes": [
    {
     "cls": "abcjs-v0 abcjs-mm0 abcjs-n0",
-    "m": 0,
+    "measure": 0,
     "pitch": [
      "C4",
      "E4",
@@ -23,7 +23,7 @@
    },
    {
     "cls": "abcjs-v0 abcjs-mm0 abcjs-n1",
-    "m": 0,
+    "measure": 0,
     "pitch": [
      "F4",
      "A4",
@@ -40,7 +40,7 @@
    },
    {
     "cls": "abcjs-v0 abcjs-mm1 abcjs-n0",
-    "m": 1,
+    "measure": 1,
     "pitch": [
      "G4",
      "B4",
@@ -57,7 +57,7 @@
    },
    {
     "cls": "abcjs-v0 abcjs-mm1 abcjs-n1",
-    "m": 1,
+    "measure": 1,
     "pitch": [
      "C4",
      "E4",
@@ -72,7 +72,9 @@
      23.63
     ]
    }
-  ]
+  ],
+  "beams": [],
+  "ties": []
  },
  "renderer": {
   "name": "abcjs",
