@@ -5,7 +5,12 @@
 // 段階 j（1〜円の数）で j 番目の円。数字は円が縮みきってから出る（count="true" で縮みに合わせて数え上げる）
 // 円の大きさ：scale="fixed"（既定。見やすい決まった比）か "area"（面積を値に比例。小さすぎる円は最小の大きさにする）
 // 配置：layout="bottom"（既定。下端をそろえる）か "center"（同心）。円の名前・値・根拠（basis）は右に引き出し線で書く
-DECK.define("m-market", class extends DECK.MotionElement {
+// 2.0（Egatari spec §6.1 の部品）：base の MotionElement・el・mtext・prog・lerp・previewOpacity を使い、プレイヤーのグローバルは使わない
+egatariParts.define({name: "market", version: "2.0.0", requires: {base: "1.0.0"}, element: "m-market"}, function(deps){
+"use strict";
+var base = deps.base;
+return class extends base.MotionElement {
+  static partName = "market";   // the registry name (define meta name), for report prefixes
   // データの形（kit/shape.js）。円は外から順
   static shape = {
     schema: {type: "object", additionalProperties: false, required: ["rings"], properties: {
@@ -21,8 +26,8 @@ DECK.define("m-market", class extends DECK.MotionElement {
     count:  {type: "bool", default: false, doc: "値の数字を縮みに合わせて数え上げる"},
   };
   get steps(){ return this.getAttribute("steps") !== null ? +this.getAttribute("steps") : ((this.data || {}).rings || []).length; }
-  mount(){
-    var P = this.props, D = DECK, self = this, R = (this.data || {}).rings || [];
+  mount(ctx){
+    var P = this.props, D = base, self = this, R = (this.data || {}).rings || [];
     this.style.display = "block"; this.style.position = "relative";
     var W = this.clientWidth, H = this.clientHeight;
     var svg = D.el("svg", {viewBox: "0 0 " + W + " " + H, width: W, height: H, style: "display:block;overflow:visible"}, this);
@@ -63,10 +68,9 @@ DECK.define("m-market", class extends DECK.MotionElement {
   }
   duration(k){ return k >= 1 ? this.props.dur + (this.props.count ? 0 : 0.35) : 0; }
   render(k, t, ctx){
-    var P = this.props, D = DECK, self = this, n = this.rings.length;
+    var P = this.props, D = base, self = this, n = this.rings.length;
     // 先の段階を薄く見せる表示（授業の表示）：後の段階の円と名前・数字を、最後の形でテーマの --preview-opacity の濃さに
-    var preview = !!(ctx && (ctx.preview || ctx.mode === "lecture")), PV = 1;
-    if (preview){ PV = parseFloat(getComputedStyle(this).getPropertyValue("--preview-opacity")); if (!(PV >= 0 && PV <= 1)) PV = 0.45; }
+    var preview = !!ctx.preview, PV = preview ? base.previewOpacity(this) : 1;
     this.rings.forEach(function(o){
       var j = o.i + 1, ahead = preview && j > k;
       var e = j < k || ahead ? 1 : j > k ? 0 : D.prog(t, 0, P.dur);
@@ -80,4 +84,5 @@ DECK.define("m-market", class extends DECK.MotionElement {
       o.g.setAttribute("opacity", lo.toFixed(3));
     });
   }
+};
 });
