@@ -7,24 +7,12 @@
 // 札の幅は cols（既定は札の数、4 まで）で決める。数字と単位の幅は字数から見積もって中央にそろえる（字の読み込みを待たない）
 // 見せ方（docs/conventions.md §1）：count（数え上げ、既定）・rise（最後の値のまま少し小さい大きさから戻る）・flip（右の桁から 1 桁ずつ
 // めくれて止まる）・underline（出たあと数字の下に線を引く）。段階の数・長さ・合図・最後の中身はどれも同じ
-// ---- BEGIN egatari-variant (source: tools/variant.js; copy with `node tools/variant-sync.mjs`; do not edit inside a component) ----
-// Choosing a presentation variant (Egatari spec §8.4, docs/conventions.md §1). A component lists its variant names in
-// `static variants` (the first is the default) and calls VARIANT.of(this) once, in mount. The variant is the component's
-// `variant` attribute when it names one of them, otherwise the first name. There is no seed: lessons do not carry one
-// (spec §8.4 since egatari-spec 28d8801), and `seed` / `data-egatari-seed` are not read.
-// The choice is a pure function of the attribute: the picture still depends on (i, k, t) only.
-var VARIANT = (function(){
-  "use strict";
-  function of(el){
-    var tag = el.tagName.toLowerCase(), C = customElements.get(tag), names = (C && C.variants) || [], v = el.getAttribute("variant");
-    if (v !== null && names.indexOf(v) >= 0) return v;
-    if (v !== null) console.warn(tag + ' variant="' + v + '" is not one of ' + names.join(", ") + " (the first, " + (names[0] || "none") + ", is used)");
-    return names[0] || null;
-  }
-  return {of: of};
-})();
-// ---- END egatari-variant ----
-DECK.define("m-kpi", class extends DECK.MotionElement {
+// 2.0（Egatari spec §6.1 の部品）：base の MotionElement・el・mtext・prog・lerp・clamp・variant・previewOpacity を使い、プレイヤーのグローバルは使わない
+egatariParts.define({name: "kpi", version: "2.0.0", requires: {base: "1.0.0"}, element: "m-kpi"}, function(deps){
+"use strict";
+var base = deps.base;
+return class extends base.MotionElement {
+  static partName = "kpi";   // the registry name (define meta name), for report prefixes
   static variants = ["count", "rise", "flip", "underline"];
   // データの形（kit/shape.js）
   static shape = {
@@ -58,12 +46,12 @@ DECK.define("m-kpi", class extends DECK.MotionElement {
       return {c: c, step: step, at: c.at !== undefined ? c.at : +((j - 1) * P.stagger).toFixed(3)};
     }));
   }
-  mount(){
-    var P = this.props, D = DECK, self = this, pl = this.plan();
-    var vr = this.variant = VARIANT.of(this);
+  mount(ctx){
+    var P = this.props, D = base, self = this, pl = this.plan();
+    var vr = this.variant = base.variant(this);
     // count="false"（数えない）が見せ方より強い：数える見せ方なら rise にする
     if (!P.count && (vr === "count" || vr === "flip")){
-      console.info('m-kpi: count="false", so the variant "' + vr + '" is shown as "rise"');
+      console.info('[kpi] count="false", so the variant "' + vr + '" is shown as "rise"');
       vr = this.variant = "rise";
     }
     this.style.display = "block"; this.style.position = "relative";
@@ -129,10 +117,9 @@ DECK.define("m-kpi", class extends DECK.MotionElement {
     return c.length ? c.sort(function(a, b){ return a - b; }) : null;
   }
   render(k, t, ctx){
-    var P = this.props, D = DECK, self = this;
+    var P = this.props, D = base, self = this;
     // 先の段階を薄く見せる表示（授業の表示）：後の段階の札を最後の値で、テーマの --preview-opacity の濃さに（動かさない）
-    var preview = !!(ctx && (ctx.preview || ctx.mode === "lecture")), PV = 1;
-    if (preview){ PV = parseFloat(getComputedStyle(this).getPropertyValue("--preview-opacity")); if (!(PV >= 0 && PV <= 1)) PV = 0.45; }
+    var preview = !!ctx.preview, PV = preview ? base.previewOpacity(this) : 1;
     this.cards.forEach(function(o){
       var s = o.o.step, at = o.o.at, ahead = preview && s > k;
       var tt = s < k || ahead ? Infinity : s > k ? -1 : t;   // この札の段階の中の時刻（-1 = まだ）
@@ -142,7 +129,7 @@ DECK.define("m-kpi", class extends DECK.MotionElement {
       var vr = self.variant, span = P.count ? P.dur : 0.45;
       if (vr === "count"){
         // 数え上げ：ease-out（初めに速く）。t = Infinity なら最後の値
-        var c = tt < 0 ? 0 : tt === Infinity || !P.count ? 1 : D.clamp01((tt - at) / P.dur);
+        var c = tt < 0 ? 0 : tt === Infinity || !P.count ? 1 : D.clamp((tt - at) / P.dur);
         var q = 1 - Math.pow(1 - c, 3), v = D.lerp(o.from, o.o.c.value, q);
         o.num.textContent = (o.o.c.prefix || "") + self.fmt(c >= 1 ? o.o.c.value : v, o.dg);
       } else if (vr === "rise"){
@@ -156,11 +143,11 @@ DECK.define("m-kpi", class extends DECK.MotionElement {
         o.digits.forEach(function(d){
           var off = 0;
           if (d.d !== null){
-            var w = len / (d.n + 1), st = t0 + d.j * w, e = tt < 0 ? 0 : tt === Infinity ? 1 : D.clamp01((tt - st) / (2 * w));
+            var w = len / (d.n + 1), st = t0 + d.j * w, e = tt < 0 ? 0 : tt === Infinity ? 1 : D.clamp((tt - st) / (2 * w));
             var shown = e >= 1 ? d.d : Math.min(d.d, Math.floor(e * (d.d + 1))), frac = (e * (d.d + 1)) % 1;
             d.ts.textContent = String(shown);
             // めくれる桁は上から少し（字の 0.12）下りて止まる
-            off = e > 0 && e < 1 ? -(1 - D.ease(frac)) * o.size * 0.12 : 0;
+            off = e > 0 && e < 1 ? -(1 - D.prog(frac, 0, 1)) * o.size * 0.12 : 0;
           }
           d.ts.setAttribute("dy", (off - prev).toFixed(1));
           prev = off;
@@ -176,4 +163,5 @@ DECK.define("m-kpi", class extends DECK.MotionElement {
       if (o.gd) o.gd.setAttribute("opacity", (tt < 0 ? 0 : D.prog(tt, at + (P.count ? P.dur : 0.45) * 0.85, 0.4)).toFixed(3));
     });
   }
+};
 });
