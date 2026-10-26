@@ -4,7 +4,8 @@
 //    "renderer": {"name": "abcjs", "version": "6.7.2"}}
 // （JSON の終わり）</m-score>
 // 楽譜を描くのは組み立て（作り手。部品庫 2.0 の「組み立てのときの描画」）：作者の書いた abc を abcjs（add_classes）で描き、
-// abcSvg（abcjs の SVG。class はそのまま）と abcMap（音符ごとの class・小節 measure・音の高さ・拍・長さ（四分音符 = 1）・符頭の箱、連桁 beams とタイ ties の音符の組）を足して渡す。
+// abcSvg（abcjs の SVG。class はそのまま）と abcMap（音符ごとの class・小節 measure・音の高さ・拍・長さ（四分音符 = 1）・符頭の箱、連桁 beams、タイとスラーの弧 arcs）を足して渡す。
+// 描いた弧の線には組み立てが data-arc="k" を付ける（arcs[].n）。パーツは弧の線を data-arc だけで選ぶ
 // 再生のときに abcjs は持たない。この部品は abcSvg を読み、許した要素と属性だけで組み直して（スクリプト・外への参照・色は入らない）、
 // abcjs の class（abcjs-mm…・abcjs-n…）で段階ごとに出す。五線・音部記号・調号・拍子は段階 0 から見える
 // 段階：by="note"（既定）は音符・和音・休符 1 つ、by="measure" は 1 小節。休符とタイでつながった音は鳴らさずに進む
@@ -45,7 +46,7 @@ var SC = (function(){
     x: NUM, y: NUM, x1: NUM, y1: NUM, x2: NUM, y2: NUM, cx: NUM, cy: NUM, r: NUM, rx: NUM, ry: NUM, width: NUM, height: NUM,
     "stroke-width": NUM, "font-size": NUM, "font-style": /^(normal|italic)$/, "font-weight": /^(normal|bold|\d{3})$/,
     "font-family": /^[\w\s,'"-]{0,80}$/, "text-anchor": /^(start|middle|end)$/, fill: /^(none|currentColor)$/, stroke: /^(none|currentColor)$/,
-    "class": /^[\w\s-]*$/, viewBox: /^[\d\s.,eE+\-]*$/
+    "class": /^[\w\s-]*$/, "data-arc": /^\d{1,6}$/, viewBox: /^[\d\s.,eE+\-]*$/
   };
   var ENT = {amp: "&", lt: "<", gt: ">", quot: "\"", apos: "'"};
   function decode(s){
@@ -119,24 +120,36 @@ var SC = (function(){
         return q;
       });
       if (!(n.measure >= 0) || Math.floor(n.measure) !== n.measure) throw new Error("m-score: abcMap.notes[" + i + "].measure must be the measure number (0, 1, …)");
-      return {i: i, cls: n.cls.trim().split(/\s+/), m: n.measure, beat: n.beat || 0, dur: n.dur, box: n.box || null, tie: n.tie === true && p.length > 0, p: p, raw: n};
+      return {i: i, cls: n.cls.trim().split(/\s+/), m: n.measure, beat: n.beat || 0, dur: n.dur, box: n.box || null, tie: false, p: p, raw: n};
     });
-    // 連桁とタイ：組み立てが記録した音符の番号の組（beams・ties）
-    var groups = function(key, min){
-      var g = map[key] === undefined ? [] : map[key];
-      if (!Array.isArray(g) || !g.every(function(x){ return Array.isArray(x) && x.length >= min && x.every(function(j, q){ return Math.floor(j) === j && j >= 0 && j < notes.length && (q === 0 || j > x[q - 1]); }); }))
-        throw new Error("m-score: abcMap." + key + " must be lists of increasing note indices (such as [[4, 5, 6, 7]])");
-      return g;
-    };
-    var beams = groups("beams", 1), ties = groups("ties", 2), slurs = groups("slurs", 2);
-    // タイの先（鳴らし直さない）：ties の 2 番目から。tie: true もそう扱う
-    ties.forEach(function(x){ x.slice(1).forEach(function(j){ if (notes[j].p.length) notes[j].tie = true; }); });
-    // タイ：つながった先の分も鳴らす（鳴るのは始めの音符だけ）
+    // 連桁：組み立てが記録した音符の番号の組（beams）
+    var beams = map.beams === undefined ? [] : map.beams;
+    if (!Array.isArray(beams) || !beams.every(function(x){ return Array.isArray(x) && x.length >= 1 && x.every(function(j, q){ return Math.floor(j) === j && j >= 0 && j < notes.length && (q === 0 || j > x[q - 1]); }); }))
+      throw new Error("m-score: abcMap.beams must be lists of increasing note indices (such as [[4, 5, 6, 7]])");
+    // 弧（タイとスラー）：{kind, from, to, pitch?（タイは音の高さごと）, n（描いた線の data-arc）}
+    var arcs = map.arcs === undefined ? [] : map.arcs, byN = {};
+    if (!Array.isArray(arcs)) throw new Error("m-score: abcMap.arcs must be a list of {kind, from, to, pitch, n}");
+    var qOf = function(i, s){ var t = parsePitch(s); if (!t) return -1; for (var q = 0; q < notes[i].p.length; q++) if (notes[i].p[q].midi === t.midi) return q; return -1; };
+    arcs.forEach(function(a, k){
+      var msg = "m-score: abcMap.arcs[" + k + "]";
+      if (!a || (a.kind !== "tie" && a.kind !== "slur")) throw new Error(msg + ".kind must be \"tie\" or \"slur\"");
+      if (!(Math.floor(a.from) === a.from && Math.floor(a.to) === a.to && a.from >= 0 && a.from < a.to && a.to < notes.length)) throw new Error(msg + ": from and to must be note indices with from < to");
+      if (!(Math.floor(a.n) === a.n && a.n >= 0) || byN[a.n]) throw new Error(msg + ".n must be a number used once (the data-arc of its drawn line)");
+      if (a.kind === "tie" && (qOf(a.from, a.pitch) < 0 || qOf(a.to, a.pitch) < 0)) throw new Error(msg + ": a tie needs a pitch (such as \"C4\") that both notes have");
+      byN[a.n] = a;
+    });
+    // タイの先の音の高さ（鳴らし直さない）：kind "tie" の弧の to と pitch。held[i][q]
+    var held = notes.map(function(n){ return n.p.map(function(){ return false; }); }), next = {};
+    arcs.forEach(function(a){ if (a.kind !== "tie") return; held[a.to][qOf(a.to, a.pitch)] = true; next[a.from + ":" + qOf(a.from, a.pitch)] = a; });
+    notes.forEach(function(n, i){ n.p.forEach(function(p, q){ p.held = held[i][q]; }); n.tie = n.p.length > 0 && n.p.every(function(p){ return p.held; }); });
+    // 鳴る秒：音の高さごとに、タイでつながる先の音符の分まで（鳴るのは始めの音符だけ）
     var sound = notes.map(function(n, i){
-      if (!n.p.length || n.tie) return 0;
-      var d = n.dur;
-      for (var j = i + 1; j < notes.length && notes[j].tie; j++) d += notes[j].dur;
-      return d * spb;
+      return n.p.map(function(p, q){
+        if (p.held) return 0;
+        var d = n.dur, a = next[i + ":" + q], guard = 0;
+        while (a && guard++ < notes.length){ d += notes[a.to].dur; a = next[a.to + ":" + qOf(a.to, a.pitch)]; }
+        return d * spb;
+      });
     });
     var steps = [], stepOf = [], at = [];
     if (by === "note") notes.forEach(function(n){ stepOf[n.i] = steps.length + 1; at[n.i] = 0; steps.push({notes: [n.i], len: n.dur * spb}); });
@@ -148,7 +161,7 @@ var SC = (function(){
       last.len = Math.max(last.len, at[n.i] + n.dur * spb);
     });
     steps.forEach(function(s){ s.len = +s.len.toFixed(6); delete s.b0; });
-    return {tempo: map.tempo, spb: spb, notes: notes, steps: steps, stepOf: stepOf, at: at, sound: sound, beams: beams, ties: ties, slurs: slurs};
+    return {tempo: map.tempo, spb: spb, notes: notes, steps: steps, stepOf: stepOf, at: at, sound: sound, beams: beams, arcs: arcs, byN: byN};
   }
   // 段階 k の音：音の高さ 1 つに 1 つの note（和音は同じ t）。休符・タイの先は鳴らない
   function events(pl, k){
@@ -156,10 +169,10 @@ var SC = (function(){
     if (!s) return out;
     s.notes.forEach(function(i){
       var n = pl.notes[i];
-      if (!pl.sound[i]) return;
-      n.p.forEach(function(p){
+      n.p.forEach(function(p, q){
+        if (!pl.sound[i][q]) return;
         var name = p.letter + p.acc + p.oct;
-        out.push({t: +pl.at[i].toFixed(6), sound: "note", pitch: /^[A-G][#b]?-?\d$/.test(name) ? name : p.midi, dur: +pl.sound[i].toFixed(6), vel: 0.7});
+        out.push({t: +pl.at[i].toFixed(6), sound: "note", pitch: /^[A-G][#b]?-?\d$/.test(name) ? name : p.midi, dur: +pl.sound[i][q].toFixed(6), vel: 0.7});
       });
     });
     return out;
@@ -171,7 +184,7 @@ var SC = (function(){
     if (mode === "none") return out;
     pl.notes.forEach(function(n){
       if (!n.p.length || n.tie || !n.box) return;
-      var ps = n.p.slice().sort(function(a, b){ return b.midi - a.midi; });
+      var ps = n.p.filter(function(p){ return !p.held; }).sort(function(a, b){ return b.midi - a.midi; });
       out.push({i: n.i, m: n.m, x: n.box[0] + n.box[2] / 2, rows: ps.map(function(p, r){ return {s: label(p, mode), r: r}; })});
     });
     return out;
@@ -215,48 +228,20 @@ var SC = (function(){
     var bars = [], cur = null, lastM;
     pl.notes.forEach(function(n){
       if (!cur || n.m !== lastM){ cur = []; bars.push(cur); lastM = n.m; }
-      cur.push(n.tie ? "〜" : !n.p.length ? (ja ? "休み" : "rest") : n.p.length > 1 ? (ja ? "（" : "(") + n.p.map(function(p){ return label(p, mode); }).join("・") + (ja ? "）" : ")") : label(n.p[0], mode));
+      var lb = function(p){ return p.held ? "〜" : label(p, mode); };
+      cur.push(n.tie ? "〜" : !n.p.length ? (ja ? "休み" : "rest") : n.p.length > 1 ? (ja ? "（" : "(") + n.p.map(lb).join("・") + (ja ? "）" : ")") : lb(n.p[0]));
     });
     return bars.map(function(b){ return b.join(" "); }).join("｜");
   }
   // 要素がどの小節・何番目の音符か（abcjs の class から）
   function where(list){ return {v: num(list, /^abcjs-v(\d+)$/), mm: num(list, /^abcjs-mm(\d+)$/), n: num(list, /^abcjs-n(\d+)$/), l: num(list, /^abcjs-l(\d+)$/), m: num(list, /^abcjs-m(\d+)$/)}; }
-  // タイとスラーの path が abcjs の SVG に並ぶ順（abcjs 6.7.2 の write/creation/abstract-engraver.js による）。
-  // abcjs は弧を作った順に描く。段（abcjs-l…）ごとに：
-  //   1. 前の段から続く弧の切れ端（段の頭で作り直す）：スラーが先（始まりの順）、次にタイ（始まりの音符の順、和音は低い音から）
-  //   2. この段で始まる弧を、始まりの音符の順に。1 つの音符では、音の高さごとに（低い音から）その高さのタイ、
-  //      いちばん低い高さのタイの後にその音符から始まるスラー
-  // 弧が段をまたぐと、始まりの段から終わりの段まで、段ごとに 1 つずつ切れ端がある。
-  // タイは つなぎ 1 つ × 音の高さの数（つなぎの先の音符の高さの数）。lineOf[i] は音符 i の段。
-  // → {段: [{kind: "tie" | "slur", from, to, r（和音の何番目の高さ）, show（一緒に出す音符：タイは先、スラーは最初）}]}
-  function arcOrder(pl, lineOf){
-    var arcs = [], out = {};
-    pl.ties.forEach(function(x){
-      for (var q = 1; q < x.length; q++) for (var r = 0; r < Math.max(1, pl.notes[x[q]].p.length); r++)
-        arcs.push({kind: "tie", from: x[q - 1], to: x[q], r: r, show: x[q]});
-    });
-    pl.slurs.forEach(function(x){ arcs.push({kind: "slur", from: x[0], to: x[x.length - 1], r: 0, show: x[0]}); });
-    var L = function(i){ return lineOf[i] || 0; };
-    // 1 つの音符の中の順：タイ r=0、スラー、タイ r=1、r=2 …
-    var within = function(a){ return a.kind === "slur" ? 1 : a.r === 0 ? 0 : a.r + 1; };
-    var lines = {};
-    arcs.forEach(function(a){ for (var l = L(a.from); l <= L(a.to); l++) lines[l] = true; });
-    Object.keys(lines).map(Number).sort(function(a, b){ return a - b; }).forEach(function(l){
-      var cont = arcs.filter(function(a){ return L(a.from) < l && l <= L(a.to); }).sort(function(a, b){
-        return (a.kind === b.kind ? 0 : a.kind === "slur" ? -1 : 1) || a.from - b.from || a.r - b.r;
-      });
-      var start = arcs.filter(function(a){ return L(a.from) === l; }).sort(function(a, b){ return a.from - b.from || within(a) - within(b); });
-      out[l] = cont.concat(start);
-    });
-    return out;
-  }
   // 楽譜の木の要素を、どの音符と一緒に出すか決める（DOM を使わない）。
   // → [{node, i（音符の番号。null なら段階 0 から見える）, note: 音符・休符そのものか}]。
   // 音符・休符：abcMap の cls が全部ある要素。小節線：その小節の最後の音符と。
   // 連桁（abcjs-beam-elem）：abcjs は連桁 1 組を 1 つの path に描き、beams の順に並ぶので、k 番目の path を beams[k] の最初の音符と。
-  // タイとスラー（どちらも class abcjs-slur。段をまたぐスラーの切れ端は abcjs-tie になる）：arcOrder の順に段ごとに並ぶので、
-  // タイは つなぎの先の音符と、スラーは最初の音符と。
-  // 数が合わなければ（組み立ての記録と SVG が違う）、その小節の最初の音符と出し、mismatch で知らせる。
+  // 弧（タイ・スラー）の線：組み立てが付けた data-arc="k" で arcs の n を引き、タイは to の音符と、スラーは from の音符と。
+  // data-arc の無い線・知らない k は、そのほかの要素と同じに扱い、mismatch で知らせる。
+  // 連桁の数が beams と合わなければ、その小節の最初の音符と出し、mismatch で知らせる。
   // そのほかの abcjs-mm… の要素：その小節の最初の音符と。
   // 五線・音部記号・調号・拍子・速度（abcjs-staff・abcjs-staff-extra・abcjs-tempo）と、小節のないものは段階 0 から
   function assign(tree, pl){
@@ -270,13 +255,18 @@ var SC = (function(){
       }
       return null;
     };
-    var beamEls = [], arcEls = {}, lineOfNote = {};
+    var beamEls = [], mismatch = [];
     (function walk(node){
       node.kids.forEach(function(k){
         var list = cls(k);
         if (list.indexOf("abcjs-note") >= 0 || list.indexOf("abcjs-rest") >= 0){
           var j = find(list);
-          if (j !== null){ used[j] = true; lineOfNote[j] = where(list).l || 0; out.push({node: k, i: j, note: true}); return; }
+          if (j !== null){ used[j] = true; out.push({node: k, i: j, note: true}); return; }
+        }
+        if (k.a["data-arc"] !== undefined){
+          var a = pl.byN[+k.a["data-arc"]];
+          if (a){ out.push({node: k, i: a.kind === "tie" ? a.to : a.from}); return; }
+          mismatch.push("data-arc=\"" + k.a["data-arc"] + "\" is not an n of abcMap.arcs");
         }
         var w = where(list), ms = w.mm !== null ? byMeasure[w.mm] : null;
         if (list.indexOf("abcjs-staff") >= 0 || list.indexOf("abcjs-staff-extra") >= 0 || list.indexOf("abcjs-tempo") >= 0){ out.push({node: k, i: null}); return; }
@@ -285,24 +275,16 @@ var SC = (function(){
         if (list.indexOf("abcjs-bar") >= 0) i = ms[ms.length - 1];
         var part = {node: k, i: i};
         if (list.indexOf("abcjs-beam-elem") >= 0) beamEls.push(part);
-        else if (list.indexOf("abcjs-slur") >= 0){ var l = where(list).l || 0; (arcEls[l] = arcEls[l] || []).push(part); }
+        else if (list.indexOf("abcjs-slur") >= 0 && k.a["data-arc"] === undefined) mismatch.push("an arc line in abcSvg has no data-arc");
         out.push(part);
       });
     })(tree);
-    var mismatch = [];
     if (beamEls.length === pl.beams.length) beamEls.forEach(function(p, q){ p.i = pl.beams[q][0]; });
     else mismatch.push("beams: " + pl.beams.length + " in abcMap, " + beamEls.length + " in abcSvg");
-    var want = arcOrder(pl, lineOfNote);
-    Object.keys(arcEls).forEach(function(l){
-      var e = arcEls[l], w = want[l] || [];
-      if (e.length === w.length) e.forEach(function(p, q){ p.i = w[q].show; });
-      else mismatch.push("ties and slurs on staff line " + l + ": " + w.length + " paths expected from abcMap, " + e.length + " in abcSvg");
-    });
-    Object.keys(want).forEach(function(l){ if (!arcEls[l]) mismatch.push("ties and slurs on staff line " + l + ": " + want[l].length + " paths expected from abcMap, 0 in abcSvg"); });
     var missing = pl.notes.filter(function(n){ return !used[n.i]; }).map(function(n){ return n.i; });
     return {parts: out, missing: missing, mismatch: mismatch};
   }
-  return {arcOrder: arcOrder, place: place, parseSvg: parseSvg, parsePitch: parsePitch, label: label, plan: plan, events: events, names: names, readable: readable, assign: assign, where: where};
+  return {place: place, parseSvg: parseSvg, parsePitch: parsePitch, label: label, plan: plan, events: events, names: names, readable: readable, assign: assign, where: where};
 })();
 
 var FS = 26, ROW = 30;   // 名前の字（24 px 以上）と行の高さ
@@ -318,9 +300,10 @@ DECK.define("m-score", class extends DECK.MotionElement {
         tempo: {type: "number"},
         notes: {type: "array", minItems: 1, items: {type: "object", required: ["cls", "measure", "pitch", "beat", "dur"], properties: {
           cls: {type: "string"}, measure: {type: "integer"}, pitch: {type: "array", items: {type: "string"}}, beat: {type: "number"}, dur: {type: "number"},
-          box: {type: "array", items: {type: "number"}}, tie: {type: "boolean"}}}},
-        beams: {type: "array", items: {type: "array", items: {type: "integer"}}}, ties: {type: "array", items: {type: "array", items: {type: "integer"}}},
-        slurs: {type: "array", items: {type: "array", items: {type: "integer"}}}}}}},
+          box: {type: "array", items: {type: "number"}}}}},
+        beams: {type: "array", items: {type: "array", items: {type: "integer"}}},
+        arcs: {type: "array", items: {type: "object", required: ["kind", "from", "to", "n"], properties: {
+          kind: {type: "string", enum: ["tie", "slur"]}, from: {type: "integer"}, to: {type: "integer"}, pitch: {type: "string"}, n: {type: "integer"}}}}}}}},
     example: {abc: "X:1\nM:4/4\nL:1/4\nQ:1/4=96\nK:C\nC D E F |]"},
     note: {en: "write abc only; the build adds abcSvg and abcMap", ja: "abc だけを書く（abcSvg・abcMap は組み立てが足す）"},
   };

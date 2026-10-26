@@ -246,8 +246,7 @@
    }
   ],
   "beams": [],
-  "ties": [],
-  "slurs": []
+  "arcs": []
  },
  "renderer": {
   "name": "abcjs",

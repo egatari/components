@@ -1,15 +1,15 @@
 // m-score's score data (its `static sc`), without a browser, on the abcjs fixtures (components/score/fixtures/*.json):
 //   1. the frozen SVG is read into a tree of allowed elements and attributes only (no script, style, title, foreign
 //      content, event handlers, links or colours other than currentColor / none), entities decoded
-//   2. abcMap parsing and errors (pitch names, tempo, dur, measure, beams, ties, by); the fixtures have the §4.1 fields
+//   2. abcMap parsing and errors (pitch names, tempo, dur, measure, beams, arcs, by); held pitches from tie arcs; the fixtures have the §4.1 fields
 //   3. step grouping: one note, chord or rest per step (by="note"), one measure per step (by="measure")
 //   4. sound events: pitch, dur in seconds from beats and tempo, chords at one t, notes of a measure at their beat,
 //      rests and tie continuations silent, a tied note sounding on through the next note (past the end of its step)
 //   5. which notes each SVG element appears with (every note found; bar lines with the last note of their measure,
-//      the k-th beam path with the first note of abcMap.beams[k], tie paths with the note they end on from abcMap.ties;
+//      the k-th beam path with the first note of abcMap.beams[k], arc lines by data-arc;
 //      a record that does not match the SVG is reported)
-//   5b. ties and slurs on the test-only fixture fixtures/ties.json (chords, a chain, across a line break): the order abcjs
-//      draws their pieces (SC.arcOrder), checked against the classes abcjs writes on each piece
+//   5b. ties and slurs on the test-only fixture fixtures/ties.json (chords, a chain, across a line break, one pitch of a
+//      chord): arc lines picked by data-arc only, checked against the classes abcjs writes on each piece; sound per pitch
 //   6. note names (solfa, abc, iroha; chords top to bottom) and their placement under the noteheads (x from the box;
 //      a measure with a collision zigzags all its names, odd notes up and even notes down; nothing overlaps); the readable layer's text
 //   7. the demo carries the fixtures unchanged
@@ -72,14 +72,22 @@ throws(() => SC.plan(map([N({})]), 'bar'), /by="bar"/, 'by must be note or measu
 throws(() => SC.plan(null, 'note'), /abcMap is missing/, 'no abcMap');
 throws(() => SC.plan(map([N({ measure: undefined, m: 0 })]), 'note'), /measure must be/, 'the field is measure (not m)');
 throws(() => SC.plan({ ...map([N({}), N({})]), beams: [[1, 0]] }, 'note'), /beams must be lists of increasing note indices/, 'beams: increasing indices');
-throws(() => SC.plan({ ...map([N({}), N({})]), ties: [[0, 5]] }, 'note'), /ties must be/, 'ties: indices inside notes');
-throws(() => SC.plan({ ...map([N({}), N({})]), ties: [[0]] }, 'note'), /ties must be/, 'ties: at least two notes');
-throws(() => SC.plan({ ...map([N({}), N({})]), slurs: [[1]] }, 'note'), /slurs must be/, 'slurs: at least two notes');
-eq(SC.plan({ ...map([N({}), N({ beat: 1 })]), ties: [[0, 1]] }, 'note').sound, [1, 0], 'ties alone (without tie: true) make the second note a continuation: the first sounds 2 beats at 120');
-for (const [name, fx] of Object.entries({ ...FX, ties: TIES })) ok(fx.abcMap.notes.every((x) => 'measure' in x && !('m' in x)) && Array.isArray(fx.abcMap.beams) && Array.isArray(fx.abcMap.ties) && Array.isArray(fx.abcMap.slurs), `${name}: fixture has measure, beams and ties (§4.1 of 2026-10-26)`);
+const A = (arcs, notes = [N({}), N({ beat: 1 })]) => ({ ...map(notes), arcs });
+throws(() => SC.plan(A([{ kind: 'bind', from: 0, to: 1, n: 0 }]), 'note'), /kind must be "tie" or "slur"/, 'arcs: kind tie or slur');
+throws(() => SC.plan(A([{ kind: 'slur', from: 1, to: 0, n: 0 }]), 'note'), /from < to/, 'arcs: from before to');
+throws(() => SC.plan(A([{ kind: 'slur', from: 0, to: 5, n: 0 }]), 'note'), /from < to/, 'arcs: indices inside notes');
+throws(() => SC.plan(A([{ kind: 'slur', from: 0, to: 1, n: 0 }, { kind: 'slur', from: 0, to: 1, n: 0 }]), 'note'), /\.n must be a number used once/, 'arcs: n used once');
+throws(() => SC.plan(A([{ kind: 'tie', from: 0, to: 1, n: 0 }]), 'note'), /a tie needs a pitch/, 'arcs: a tie needs its pitch');
+throws(() => SC.plan(A([{ kind: 'tie', from: 0, to: 1, pitch: 'E4', n: 0 }]), 'note'), /a tie needs a pitch .* that both notes have/, 'arcs: the tie\'s pitch is in both notes');
+eq(SC.plan(A([{ kind: 'tie', from: 0, to: 1, pitch: 'C4', n: 0 }]), 'note').sound, [[1], [0]], 'a tie arc makes its pitch at `to` a continuation: the first note sounds 2 beats at 120');
+eq(SC.plan(A([{ kind: 'tie', from: 0, to: 1, pitch: 'C4', n: 0 }], [N({ pitch: ['C4', 'E4'] }), N({ beat: 1, pitch: ['C4', 'E4'] })]), 'note').sound, [[1, 0.5], [0, 0.5]],
+  'a tie on one pitch of a chord: only that pitch is held, the other pitch sounds again');
+eq(SC.plan(A([{ kind: 'slur', from: 0, to: 1, n: 0 }]), 'note').sound, [[0.5], [0.5]], 'a slur does not change the sound');
+ok(SC.plan(map([N({ tie: true }), N({ beat: 1, tie: true })]), 'note').sound[1][0] === 0.5, 'the old note-level tie: true is not read');
+for (const [name, fx] of Object.entries({ ...FX, ties: TIES })) ok(fx.abcMap.notes.every((x) => 'measure' in x && !('m' in x) && !('tie' in x)) && Array.isArray(fx.abcMap.beams) && Array.isArray(fx.abcMap.arcs) && !('ties' in fx.abcMap) && !('slurs' in fx.abcMap), `${name}: fixture has measure, beams and arcs, no tie / ties / slurs (§4.1)`);
 eq(FX.kaeru.abcMap.beams, [[22, 23, 24, 25], [26, 27, 28, 29]], 'kaeru: the build recorded the two beam groups of measure 7');
 eq(FX.rhythm.abcMap.beams, [[2, 3], [7, 8], [9, 10]], 'rhythm: three beam groups');
-eq(FX.rhythm.abcMap.ties, [[11, 12]], 'rhythm: one tie');
+eq(FX.rhythm.abcMap.arcs, [{ kind: 'tie', from: 11, to: 12, pitch: 'G4', n: 0 }], 'rhythm: one tie arc');
 eq(SC.parsePitch('F#4').midi, 66, 'F#4 = 66');
 eq(SC.parsePitch('Bb3').midi, 58, 'Bb3 = 58');
 eq(SC.parsePitch('C##4').midi, 62, 'C##4 = 62');
@@ -111,7 +119,7 @@ eq(r.notes[6].p.length, 0, 'rhythm note 7 is a rest');
 eq(SC.events(r, 7), [], 'a rest is silent');
 eq(r.steps[6].len, q, 'a rest step lasts its length');
 eq(SC.events(r, 3), [{ t: 0, sound: 'note', pitch: 'G4', dur: +(q / 2).toFixed(6), vel: 0.7 }], 'an eighth note lasts half a beat');
-ok(r.notes[12].tie, 'rhythm note 13 continues the tie');
+ok(r.notes[12].tie && r.notes[12].p[0].held, 'rhythm note 13 continues the tie (from the tie arc)');
 eq(SC.events(r, 12)[0].dur, +(3 * q).toFixed(6), 'the tied half note sounds on through the next quarter (3 beats)');
 eq(r.steps[11].len, 2 * q, '… while its step lasts 2 beats (it sounds past the end of the step)');
 eq(SC.events(r, 13), [], 'the tie continuation does not sound again');
@@ -127,7 +135,7 @@ for (const [name, fx] of Object.entries(FX)) {
   eq(a.parts.filter((p) => p.note).length, pl.notes.length, `${name}: one element per note`);
   const lastOf = {};
   pl.notes.forEach((x) => { lastOf[x.m] = x.i; });
-  eq(a.mismatch, [], `${name}: beams and ties in abcMap match the beam and tie paths of abcSvg`);
+  eq(a.mismatch, [], `${name}: beams match the beam paths, every arc line has a known data-arc`);
   const bars = a.parts.filter((p) => /\babcjs-bar\b/.test(p.node.a.class || ''));
   ok(bars.length >= Object.keys(lastOf).length && bars.every((b) => b.i === lastOf[SC.where(b.node.a.class.split(' ')).mm]), `${name}: bar lines appear with the last note of their measure`);
   const fixed = a.parts.filter((p) => p.i === null).map((p) => p.node.a.class || '');
@@ -138,47 +146,55 @@ for (const [name, fx] of Object.entries(FX)) {
   const beams = a.parts.filter((p) => /abcjs-beam-elem/.test(p.node.a.class || '')).map((p) => p.i);
   eq(beams, [22, 26], 'kaeru: the k-th beam path appears with the first note of beams[k]');
   const pr = SC.plan(FX.rhythm.abcMap, 'note'), ar = SC.assign(SC.parseSvg(FX.rhythm.abcSvg), pr);
-  eq(ar.parts.filter((p) => /abcjs-tie/.test(p.node.a.class || '')).map((p) => p.i), [12], 'rhythm: the tie appears with the note it ends on (from ties)');
+  eq(ar.parts.filter((p) => p.node.a['data-arc'] !== undefined).map((p) => p.i), [12], 'rhythm: the tie line (data-arc 0) appears with the note it leads to');
   eq(ar.parts.filter((p) => /abcjs-beam-elem/.test(p.node.a.class || '')).map((p) => p.i), [2, 7, 9], 'rhythm: three beams, each with its first note');
   const bad = SC.assign(SC.parseSvg(FX.rhythm.abcSvg), SC.plan({ ...FX.rhythm.abcMap, beams: [[2, 3]] }, 'note'));
   ok(bad.mismatch.length === 1 && /beams: 1 in abcMap, 3 in abcSvg/.test(bad.mismatch[0]), 'a build record that does not match the SVG is reported (' + bad.mismatch[0] + ')');
 }
 
-// ---- 5b. ties and slurs (fixtures/ties.json, test only): ties in chords, a chain of ties, a tie and a slur from one note,
-// a chord tie and a slur across a line break (abcjs draws each in two pieces). The order rule is SC.arcOrder; the classes abcjs
-// writes on each piece (abcjs-start-m…-n…, abcjs-end-m…-n… or -edge, abcjs-tie / abcjs-legato) are the independent check here
+// ---- 5b. ties and slurs (fixtures/ties.json, test only): ties in a chord, a chain of ties, a tie and a slur from one note,
+// a chord tie and a slur across a line break (drawn in two pieces), a tie on one pitch of a chord ([C-EG] [CEG]).
+// The part picks arc lines only by data-arc; the classes abcjs writes on each piece are the independent check here
 {
   const fx = TIES, pl = SC.plan(fx.abcMap, 'note');
-  eq(fx.abcMap.ties, [[0, 1], [2, 3, 4], [5, 6], [10, 11], [13, 14]], 'ties: chord tie, chain of three, tie under a slur, chord tie across the line break, plain tie');
-  eq(fx.abcMap.slurs, [[5, 6, 7, 8], [10, 11, 12]], 'slurs: one on the first line, one across the line break');
+  const ak = (a) => a.kind + ' ' + a.from + '→' + a.to + (a.pitch ? ' ' + a.pitch : '');
+  eq(fx.abcMap.arcs.map(ak), ['tie 0→1 C4', 'tie 0→1 E4', 'tie 2→3 G4', 'tie 3→4 G4', 'tie 5→6 A4', 'slur 5→8', 'tie 10→11 C5', 'tie 10→11 G4', 'slur 10→12', 'tie 13→14 C5', 'tie 15→16 C4'],
+    'arcs: a tie per pitch (chord, chain, under a slur, across the line break, one pitch of a chord) and two slurs');
+  eq(fx.abcMap.arcs.map((a) => a.n), fx.abcMap.arcs.map((_, k) => k), 'arcs: n numbers them');
   eq(SC.events(pl, 1).map((e) => [e.pitch, e.dur]), [['C4', 2.5], ['E4', 2.5]], 'a tied chord sounds both notes for both halves (4 beats at 96 = 2.5 s)');
   eq(SC.events(pl, 2), [], '… and its continuation is silent');
   eq(SC.events(pl, 3).map((e) => e.dur), [2.5], 'a chain of ties (2 + 1 + 1 beats) sounds once for 4 beats');
   eq([SC.events(pl, 4), SC.events(pl, 5)], [[], []], '… the rest of the chain is silent');
   eq(SC.events(pl, 11).map((e) => [e.pitch, e.dur]), [['G4', 2.5], ['C5', 2.5]], 'a chord tied across the line break sounds on through the next line');
+  eq(SC.events(pl, 16).map((e) => [e.pitch, e.dur]), [['C4', 2.5], ['E4', 1.25], ['G4', 1.25]], '[C-EG]: C sounds for both chords, E and G for their own half note');
+  eq(SC.events(pl, 17).map((e) => [e.pitch, e.dur]), [['E4', 1.25], ['G4', 1.25]], '[CEG] after [C-EG]: E and G sound again, C does not');
+  eq(SC.names(pl, 'solfa').filter((n) => n.i === 16)[0].rows.map((x) => x.s), ['ソ', 'ミ'], 'no name under the held C of the second chord');
+  ok(SC.readable(pl, 'solfa', true).endsWith('（ド・ミ・ソ） （〜・ミ・ソ）'), 'readable layer: the held pitch of a chord is 〜');
   const tree = SC.parseSvg(fx.abcSvg), a = SC.assign(tree, pl);
-  eq([a.mismatch, a.missing], [[], []], 'every tie and slur path is accounted for');
-  // the note at (line, m, n) from the note elements' classes
+  eq([a.mismatch, a.missing], [[], []], 'every arc line has a data-arc of abcMap.arcs');
+  const lines = a.parts.filter((p) => /abcjs-slur/.test(p.node.a.class || ''));
+  ok(lines.length === 13 && lines.every((p) => p.node.a['data-arc'] !== undefined), `the build tagged all ${lines.length} arc lines (the hidden duplicate slur line was dropped)`);
+  const byArc = {};
+  lines.forEach((p) => { (byArc[p.node.a['data-arc']] = byArc[p.node.a['data-arc']] || []).push(p.i); });
+  eq(Object.keys(byArc).sort((x, y) => x - y).map((k) => k + ':' + byArc[k].join(',')), ['0:1', '1:1', '2:3', '3:4', '4:6', '5:5', '6:11,11', '7:11,11', '8:10', '9:14', '10:16'],
+    'each arc\'s lines appear with its note: ties with `to`, slurs with `from`; the chord tie across the break has 2 lines a pitch, the slur across it only its second line');
+  // independent check: abcjs's own classes on the lines that name both ends
   const at = {};
   a.parts.filter((p) => p.note).forEach((p) => { const w = SC.where(p.node.a.class.split(' ')); at[w.l + ':' + w.m + ':' + w.n] = p.i; });
-  const arcs = a.parts.filter((p) => /abcjs-slur/.test(p.node.a.class || ''));
-  const got = arcs.map((p) => p.i);
-  eq(got, [1, 1, 3, 4, 6, 5, 11, 10, 11, 10, 11, 11, 14], 'each piece appears with its note: ties with the note they lead to, slurs with their first note');
   let checked = 0;
-  arcs.forEach((p) => {
+  lines.forEach((p) => {
     const c = p.node.a.class, w = SC.where(c.split(' '));
     const st = /abcjs-start-m(\d+)-n(\d+)/.exec(c), en = /abcjs-end-m(\d+)-n(\d+)/.exec(c);
-    if (/abcjs-legato/.test(c) && st) { checked++; ok(p.i === at[w.l + ':' + st[1] + ':' + st[2]], `slur piece ${c}: with its first note`); }
-    if (/abcjs-tie/.test(c) && st && en) { checked++; ok(p.i === at[w.l + ':' + en[1] + ':' + en[2]], `tie piece ${c}: with the note it ends on`); }
+    if (/abcjs-legato/.test(c) && st) { checked++; ok(p.i === at[w.l + ':' + st[1] + ':' + st[2]], `slur line ${c}: with its first note`); }
+    if (/abcjs-tie/.test(c) && st && en) { checked++; ok(p.i === at[w.l + ':' + en[1] + ':' + en[2]], `tie line ${c}: with the note it ends on`); }
   });
-  ok(checked === 7, `the 7 pieces whose classes name both ends agree with abcjs's classes (${checked})`);
-  const order = SC.arcOrder(pl, { 0: 0, 1: 0, 2: 0, 3: 0, 4: 0, 5: 0, 6: 0, 7: 0, 8: 0, 9: 0, 10: 0, 11: 1, 12: 1, 13: 1, 14: 1 });
-  eq(order[0].map((x) => x.kind + x.from + (x.kind === 'tie' ? '.' + x.r : '')), ['tie0.0', 'tie0.1', 'tie2.0', 'tie3.0', 'tie5.0', 'slur5', 'tie10.0', 'slur10', 'tie10.1'],
-    'line 1: by start note; at one note the lowest pitch\'s tie, then the slur, then the other pitches\' ties');
-  eq(order[1].map((x) => x.kind + x.from + (x.kind === 'tie' ? '.' + x.r : '')), ['slur10', 'tie10.0', 'tie10.1', 'tie13.0'],
-    'line 2: the pieces continued from line 1 first (slurs, then ties low to high), then the arcs starting on line 2');
-  const noSlurs = SC.assign(tree, SC.plan({ ...fx.abcMap, slurs: [] }, 'note'));
-  ok(noSlurs.mismatch.length === 2 && noSlurs.mismatch.every((m) => /ties and slurs on staff line [01]/.test(m)), 'a record without the slurs does not match the SVG on either line: reported');
+  ok(checked === 8, `the 8 lines whose classes name both ends agree with abcjs's classes (${checked})`);
+  // the part reads nothing but data-arc: without it, the arc lines are reported, never guessed from class or order
+  const bare = SC.parseSvg(fx.abcSvg.replace(/ data-arc="\d+"/g, ''));
+  const b2 = SC.assign(bare, pl);
+  ok(b2.mismatch.length === 13 && b2.mismatch.every((m) => /no data-arc/.test(m)), 'arc lines without data-arc are reported, one by one');
+  const wrong = SC.assign(tree, SC.plan({ ...fx.abcMap, arcs: fx.abcMap.arcs.slice(0, 5) }, 'note'));
+  ok(wrong.mismatch.some((m) => /data-arc="7" is not an n of abcMap.arcs/.test(m)), 'a data-arc without its arc is reported');
   ok(demoHas('kaeru') && !demoHas('ties'), 'the ties fixture is a test fixture only, not in the demo');
 }
 
