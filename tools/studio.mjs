@@ -1,11 +1,12 @@
-// The tests build each component's demo with a pinned release of Egatari Studio (tools/studio.json):
+// The tests build each component's demo with a pinned commit of Egatari Studio (tools/studio.json):
 // its build (kit/build.mjs), runtime (kit/deck.js, kit/shape.js), themes, fonts and browser launcher.
 // This keeps the harness small: nothing of Studio is copied into this repository.
 //
 //   node tools/studio.mjs          fetch the pinned Studio into .studio/ (if needed) and overlay this repository's components
 //   import { studio } from './studio.mjs'; const S = await studio();   same, from a test
 //
-// .studio/ is a shallow clone of the pinned tag (its commit is checked), with `npm ci` run in it.
+// tools/studio.json pins a full commit sha ("commit"); "ref" (or "tag") only names where it came from, for messages.
+// .studio/ is a shallow fetch of exactly that commit (checked after checkout), with `npm ci` run in it.
 // The overlay replaces Studio's own copy of the components with the files in components/ here:
 //   - Studio up to v0.4.x reads components from <studio>/components/<name>/
 //   - later Studio reads them from vendor/components/<name>/<version>/ with components.lock.json; the overlay then
@@ -50,13 +51,25 @@ function fetchStudio(dir) {
     try { return run('git', ['rev-parse', 'HEAD'], dir) === PIN.commit && fs.existsSync(path.join(dir, 'node_modules', 'playwright-core')); } catch { return false; }
   };
   if (fs.existsSync(dir) && ok()) return;
+  if (!/^[0-9a-f]{40}$/.test(PIN.commit || '')) throw new Error(`studio: tools/studio.json "commit" must be a full 40-hex sha, got ${JSON.stringify(PIN.commit)}`);
   fs.rmSync(dir, { recursive: true, force: true });
-  console.log(`studio: cloning ${PIN.repository} ${PIN.tag} into ${path.relative(ROOT, dir) || dir}`);
-  run('git', ['-c', 'advice.detachedHead=false', 'clone', '--quiet', '--depth', '1', '--branch', PIN.tag, PIN.repository, dir], ROOT);
+  console.log(`studio: fetching ${PIN.repository} ${pinLabel()} into ${path.relative(ROOT, dir) || dir}`);
+  // a shallow fetch of the exact commit (GitHub serves any reachable sha), whatever branch or tag it is on
+  fs.mkdirSync(dir, { recursive: true });
+  run('git', ['init', '--quiet'], dir);
+  run('git', ['remote', 'add', 'origin', PIN.repository], dir);
+  run('git', ['fetch', '--quiet', '--depth', '1', '--no-tags', 'origin', PIN.commit], dir);
+  run('git', ['-c', 'advice.detachedHead=false', 'checkout', '--quiet', '--detach', 'FETCH_HEAD'], dir);
   const head = run('git', ['rev-parse', 'HEAD'], dir);
-  if (head !== PIN.commit) throw new Error(`studio: ${PIN.tag} is ${head}, expected ${PIN.commit} (tags are never moved: stop and check)`);
+  if (head !== PIN.commit) throw new Error(`studio: fetched ${head}, expected ${PIN.commit} (stop and check)`);
   console.log('studio: npm ci');
   run('npm', ['ci', '--no-audit', '--no-fund', '--ignore-scripts'], dir);
+}
+
+// "v0.4.3 (8419183)" or "main@03eaf06"
+export function pinLabel() {
+  const short = PIN.commit.slice(0, 7);
+  return PIN.tag ? `${PIN.tag} (${short})` : `${PIN.ref || 'commit'}@${short}`;
 }
 
 function overlay(dir) {
@@ -108,5 +121,5 @@ export async function studio() {
 
 if (process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
   const s = await studio();
-  console.log(`studio: ${PIN.tag} (${PIN.commit.slice(0, 7)}) at ${s.dir}, ${componentNames().length} components overlaid (${s.layout})`);
+  console.log(`studio: ${pinLabel()} at ${s.dir}, ${componentNames().length} components overlaid (${s.layout})`);
 }

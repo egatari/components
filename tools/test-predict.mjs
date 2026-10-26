@@ -1,25 +1,27 @@
 // m-predict: viewer input (Egatari spec §8.4 "Viewer input", Studio contract §3), built with the pinned Egatari Studio.
 //   1. +1 / −1 / a typed number / input(choice, count) change the counts and the bars at once; never below 0; bad input() ignored
 //   2. the counts persist while the viewer stays on the slide (spec §8.4, 241770f): forward to the answer step and back; an autoplay
-//      toggle or deck:pos on the same slide keep them; entering from another slide or ctx.reset restores the author's (egatari-input)
+//      toggle or deck:pos on the same slide keep them; ctx.reset keeps them (spec §8.4: it MUST NOT clear viewer input); entering
+//      from another slide (deck:pos, for a player without ctx.entered) or ctx.entered restores the author's (egatari-input)
 //   3. ?mode=video: no buttons or fields, input() and clicks change nothing
 //   4. print (media emulation): no buttons shown, the author's counts as text; afterwards the screen keeps the viewer's counts
 //   5. the learner's own prediction: marked, kept into the answer step and told right or wrong there, reset on entering the slide
 //   6. live (a fake ctx.live passed to render): counts shown only when poll(id) gives an array; never in video
 //   7. keyboard: + − and the arrows on a focused counter change the count, the slide does not move
-//   8. digits typed into the field do not move slides (Studio #69): skipped until the pinned Studio is v0.5.0 or later
+//   8. digits typed into the field do not move slides (Studio #69; the pinned Studio has it)
+//   9. real clicks with the pinned Studio, whose step entry passes ctx.reset to a part the viewer touched: +1 and a prediction
+//      clicked at step 1 are kept at the answer step and on going back; a jump to another slide and back clears them
 //   node tools/test-predict.mjs [work folder]
 import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
-import { studio, ROOT, PIN } from './studio.mjs';
+import { studio, ROOT } from './studio.mjs';
 
 const S = await studio();
 const work = path.resolve(process.argv[2] || fs.mkdtempSync(path.join(os.tmpdir(), 'test-predict-')));
 fs.mkdirSync(work, { recursive: true });
 let fails = 0;
 const ok = (cond, msg) => { console.log((cond ? 'ok   ' : 'FAIL ') + msg); if (!cond) fails++; };
-const skip = (msg) => console.log('skip ' + msg);
 
 const out = path.join(work, 'demo.out.html');
 S.build(path.join(ROOT, 'components', 'predict', 'demo.html'), out);
@@ -106,7 +108,11 @@ try {
       __ev.length = 0;
       DECK.go(1, 0, false); DECK.go(0, 1, false); o.noDirtyEv = __ev.length;   // nothing changed: no event
       c.input(0, 30); __ev.length = 0;
-      c.render(1, Infinity, { mode: 'talk', reset: true }); o.ctxReset = c.counts().join(); o.ctxEv = __ev.map((x) => x.join());
+      c.render(1, Infinity, { mode: 'talk', reset: true }); o.ctxReset = c.counts().join(); o.ctxResetEv = __ev.length;
+      c.render(1, Infinity, { mode: 'talk', entered: false }); o.notEntered = c.counts().join();
+      c.render(1, Infinity, { mode: 'talk', entered: true }); o.ctxEntered = c.counts().join(); o.ctxEv = __ev.map((x) => x.join());
+      // once the player passes ctx.entered, deck:pos no longer resets
+      c.input(0, 30); __ev.length = 0; DECK.go(1, 0, false); DECK.go(0, 1, false); o.posIgnored = c.counts().join();
       return o;
     });
     const V = '30,9,11';
@@ -117,7 +123,10 @@ try {
     ok(r.otherSlide === AUTHOR.join() && r.otherShown === '17人,2人,11人', 'entering the slide from another slide restores the author\'s counts');
     ok(r.otherEv.length === 1 && r.otherEv[0] === AUTHOR.join(), 'that reset dispatches egatari-input with the author\'s counts');
     ok(r.noDirtyEv === 0, 'entering the slide without viewer changes dispatches nothing');
-    ok(r.ctxReset === AUTHOR.join() && r.ctxEv.length === 1 && r.ctxEv[0] === AUTHOR.join(), 'render(k, t, {reset: true}) restores the author\'s counts and dispatches egatari-input');
+    ok(r.ctxReset === '30,2,11' && r.ctxResetEv === 0, 'render(k, t, {reset: true}) keeps the viewer\'s counts and dispatches nothing');
+    ok(r.notEntered === '30,2,11', 'render(k, t, {entered: false}) keeps them');
+    ok(r.ctxEntered === AUTHOR.join() && r.ctxEv.length === 1 && r.ctxEv[0] === AUTHOR.join(), 'render(k, t, {entered: true}) restores the author\'s counts and dispatches egatari-input');
+    ok(r.posIgnored === '30,2,11', 'once the player passes ctx.entered, entering by deck:pos alone does not reset');
     await page.close();
   }
 
@@ -227,19 +236,39 @@ try {
     await page.close();
   }
 
-  // ---- 8. digits typed into the field (Studio #69, in v0.5.0)
+  // ---- 8. digits typed into the field (Studio #69)
   {
-    const [maj, min] = PIN.tag.replace(/^v/, '').split('.').map(Number);
-    if (maj > 0 || min >= 5) {
-      const { page } = await open();
-      await page.evaluate(() => DECK.go(0, 1, false));
-      const f = page.locator('m-predict').first().locator('.pd-num').nth(0);
-      await f.focus(); await f.selectText();
-      await page.keyboard.type('3'); await page.keyboard.press('Enter');
-      const st = await page.evaluate(() => ({ s: DECK.state(), c: DECK.slides[0]._comps[0].counts()[0] }));
-      ok(st.s.slide === 1 && st.s.step === 1 && st.c === 3, 'digits and Enter typed into the field set the count and do not jump to a page');
-      await page.close();
-    } else skip(`digits typed into the field must not move slides: needs Studio #69 (v0.5.0); the pinned Studio is ${PIN.tag}`);
+    const { page } = await open();
+    await page.evaluate(() => DECK.go(0, 1, false));
+    const f = page.locator('m-predict').first().locator('.pd-num').nth(0);
+    await f.focus(); await f.selectText();
+    await page.keyboard.type('3'); await page.keyboard.press('Enter');
+    const st = await page.evaluate(() => ({ s: DECK.state(), c: DECK.slides[0]._comps[0].counts()[0] }));
+    ok(st.s.slide === 1 && st.s.step === 1 && st.c === 3, 'digits and Enter typed into the field set the count and do not jump to a page');
+    await page.close();
+  }
+
+  // ---- 9. real clicks: touch, next step, answer step (the pinned Studio passes ctx.reset to the touched part on each step entry)
+  {
+    const { page, errors } = await open();
+    await page.evaluate(() => DECK.go(0, 1, false));
+    const comp = page.locator('m-predict').first();
+    await comp.locator('.pd-ctl').nth(0).locator('button').nth(1).click();   // +1 on 重い球
+    await comp.locator('.pd-pick').nth(0).click();                           // my prediction: 重い球 (wrong)
+    const read = () => page.evaluate(() => { const c = DECK.slides[0]._comps[0]; return { counts: c.counts().join(), shown: __shown(c).join(), dot: c.rows.map((x) => x.dot.getAttribute('opacity')).join(), note: c.noteEl.textContent, pos: DECK.state().step }; });
+    const a = await read();
+    await page.evaluate(() => DECK.go(0, 2, false));
+    const b = await read();
+    await page.evaluate(() => DECK.go(0, 1, false));
+    const c = await read();
+    ok(a.counts === '18,2,11' && a.dot === '1,0,0', 'real clicks at step 1: +1 and the prediction are set');
+    ok(b.pos === 2 && b.counts === '18,2,11' && b.shown === '18人,2人,11人' && b.dot === '1,0,0' && /^予想ははずれ/.test(b.note), 'real clicks: the answer step keeps the count and the prediction, told wrong');
+    ok(c.counts === '18,2,11' && c.dot === '1,0,0', 'real clicks: going back to step 1 keeps them');
+    await page.evaluate(() => { DECK.go(1, 0, false); DECK.go(0, 2, false); });
+    const d = await read();
+    ok(d.counts === AUTHOR.join() && d.dot === '0,0,0' && !/^予想/.test(d.note), 'real clicks: a jump to another slide and back clears them');
+    ok(errors.length === 0, 'real clicks: no console error' + (errors.length ? ': ' + errors[0] : ''));
+    await page.close();
   }
 } finally { await browser.close(); }
 console.log(fails ? `\nFAIL: ${fails}` : '\nOK');

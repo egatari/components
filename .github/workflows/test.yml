@@ -17,7 +17,8 @@ permissions:
 
 jobs:
   # npm test: lint, CATALOG.md, release tarball (deterministic), unit tests, and every demo built and checked in a browser
-  # with the pinned Egatari Studio (tools/studio.json; fetched into .studio/ by tools/studio.mjs).
+  # with the pinned Egatari Studio commit (tools/studio.json, a full sha; shallow-fetched by sha into .studio/ by tools/studio.mjs),
+  # and Studio's own checker (kit/check.mjs) on every demo (tools/test-studio-check.mjs).
   # Browser: Studio's kit/browser.mjs tries CHROME_PATH, then Google Chrome, then Microsoft Edge, then Playwright's Chromium.
   test:
     runs-on: ${{ matrix.os }}
