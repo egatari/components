@@ -5,13 +5,11 @@
 //   node tools/test-keyboard.mjs
 import fs from 'node:fs';
 import path from 'node:path';
-import vm from 'node:vm';
 import { ROOT } from './studio.mjs';
+import { partClass } from './parts.mjs';
 
-const classes = {};
-const DECK = { define: (tag, C) => { classes[tag] = C; }, MotionElement: class {} };
-vm.runInNewContext(fs.readFileSync(path.join(ROOT, 'components', 'keyboard', 'index.js'), 'utf8'), { DECK, console, Math, String, JSON, Number, Array, Object, Error });
-const KB = classes['m-keyboard'].kb;
+// the class through a stub registry (keyboard 2.0.0 is an egatariParts.define part)
+const KB = partClass(fs.readFileSync(path.join(ROOT, 'components', 'keyboard', 'index.js'), 'utf8')).kb;
 
 let fail = 0, n = 0;
 const near = (a, b) => Math.abs(a - b) < 1e-9;
