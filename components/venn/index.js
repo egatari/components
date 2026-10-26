@@ -69,6 +69,8 @@ var VARIANT = (function(){
   return {of: of, pick: pick, seed: seed, rng: rng, hash: hash};
 })();
 // ---- END egatari-variant ----
+// 形の要素ごとに、書き直すと形が作り直される属性（render の終わりで使う）
+var SHAPE_GEOM = {rect: "width", circle: "r", ellipse: "rx", path: "d", line: "x1", polyline: "points", polygon: "points"};
 DECK.define("m-venn", class MVenn extends DECK.MotionElement {
   static variants = ["fade", "draw"];
   // データの形（kit/shape.js）
@@ -222,6 +224,8 @@ DECK.define("m-venn", class MVenn extends DECK.MotionElement {
       text(gt, k, true);
       return {g: g, gt: gt, step: n + (each ? j + 1 : 1)};
     });
+    // 形の一覧（render の終わりに形を作り直すため。下の render を見る）
+    this.shapes = [].slice.call(svg.querySelectorAll("rect,circle,ellipse,path,line,polyline,polygon"));
   }
   duration(k){
     return k >= 1 && k <= this.steps ? this.props.dur : 0;
@@ -257,5 +261,9 @@ DECK.define("m-venn", class MVenn extends DECK.MotionElement {
       o.g.setAttribute("opacity", pr(o.step, 0, F * 0.6).toFixed(3));
       o.gt.setAttribute("opacity", pr(o.step, F * 0.4, F * 0.6).toFixed(3));
     });
+    // 形を作り直す（同じ値を書き直すだけで、DOM は変わらない）。Chrome は、変わっていない形を近くの変化のために塗り直す（ラスタライズし直す）と、
+    // 2 回目からその形の輪郭（曲線の縁）を別の方法で描き、縁の画素が数十個変わる（ソフトウェアの GPU、CI の Linux・Windows）。
+    // 何回塗り直されたかは呼び出しの間にコマが描かれたかで決まるので、作り直さないと同じ (k, t) でも呼び出しの順と時刻で画素が変わる（docs/contract.md §3）
+    this.shapes.forEach(function(e){ var a = SHAPE_GEOM[e.localName], v = e.getAttribute(a); if (v !== null) e.setAttribute(a, v); });
   }
 });
