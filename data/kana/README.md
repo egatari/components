@@ -1,7 +1,7 @@
 # Kana stroke data (ひらがな・カタカナ)
 
-Original stroke data for 166 kana, meant to feed a future stroke-order component (`m-kakijun`). It is not a
-component yet:
+Original stroke data for 166 kana, used by the stroke-order component `m-kakijun` (`components/kakijun/`; its
+index.js carries a compact copy written by `tools/kana-embed.mjs`, and `tools/test-kakijun.mjs` checks the copy):
 
 - the 92 basic kana (ひらがな 46 + カタカナ 46);
 - 濁音・半濁音: が〜ぼ, ぱ〜ぽ, ガ〜ボ, パ〜ポ and ヴ (51);
@@ -17,7 +17,7 @@ Not included: ゐ ゑ ヰ ヱ (historical kana), the vertical-writing form of �
 | `../../tools/kana-sheet.mjs` | Rebuilds the sheet: `node tools/kana-sheet.mjs --pdf` (run `node tools/studio.mjs` once first for the browser) |
 | `../../tools/test-kana-data.mjs` | Validates `kana.json`: `node tools/test-kana-data.mjs` (not yet in `test-all`) |
 | `../../tools/kana-path.mjs` | Small SVG path reader shared by the scripts |
-| `proto.html` | Prototype of the stroke-by-stroke reveal over the font Egatari Kana, derived from Klee One (all 166 characters). Built by `node tools/kana-proto.mjs`; needs the font subset at `data/kana/font/EgatariKana-SemiBold-kana.woff2` (gitignored, not in the repository yet; see "The font") or `?font=<url>`; `?place=tate` shows small kana in vertical-writing placement |
+| `proto.html` | Prototype of the stroke-by-stroke reveal over the font Egatari Kana, derived from Klee One (all 166 characters). Built by `node tools/kana-proto.mjs`; needs the font subset at `data/kana/font/EgatariKana-SemiBold-kana.woff2` (gitignored as a file; the font is in the repository only inside `components/kakijun/index.js`, see "The font") or `?font=<url>`; `?place=tate` shows small kana in vertical-writing placement |
 | `../../tools/kana-proto-check.mjs` | Measures the reveal in headless Chrome (coverage, leaks onto later strokes) and renders frames: `node tools/kana-proto-check.mjs OUTDIR --frames` |
 
 ## Licence and provenance
@@ -163,8 +163,10 @@ lies inside the right quarter (all 22 pass).
 ## The font: Egatari Kana (derived from Klee One, SIL OFL 1.1)
 
 The part shows the glyphs of a font **derived from Klee One** (Fontworks Inc., SIL Open Font License 1.1, version
-1.100, from github.com/google/fonts `ofl/kleeone`, commit 130fcfb0ff422fec96b335616b2ca99f91914792). It is not in the
-repository yet; the prototype loads it from `data/kana/font/` (gitignored).
+1.100, from github.com/google/fonts `ofl/kleeone`, commit 130fcfb0ff422fec96b335616b2ca99f91914792). The part `m-kakijun`
+carries it as a base64 WOFF2 inside `components/kakijun/index.js` (with `components/kakijun/OFL.txt` and the
+repository's `NOTICE`); as a file it is not in the repository, and the prototype loads it from `data/kana/font/`
+(gitignored). `tools/kana-embed.mjs` writes it into the part from there (sha256 checked).
 
 - Family **Egatari Kana**, PostScript name `EgatariKana-SemiBold` (files `EgatariKana-SemiBold-kana.woff2` and
   `EgatariKana-Regular-kana.woff2`), so it cannot shadow or collide with Klee One on the same page and does not

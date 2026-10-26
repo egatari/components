@@ -88,7 +88,9 @@ for (const name of names) {
         for (let a = 0; a < boxes.length; a++) for (let b = a + 1; b < boxes.length; b++) {
           const p = boxes[a].r, q = boxes[b].r, ox = Math.min(p.right, q.right) - Math.max(p.left, q.left), oy = Math.min(p.bottom, q.bottom) - Math.max(p.top, q.top);
           const same = boxes[a].s === boxes[b].s && Math.abs(p.left - q.left) < 1 && Math.abs(p.top - q.top) < 1;
-          if (!same && ox > 2 && oy > 4) out.push(`overlap: "${boxes[a].s}" / "${boxes[b].s}"`);
+          // a glyph drawn as the figure itself (m-kakijun's character, data-glyph) is not a label: labels may sit on it
+          const glyph = boxes[a].e.hasAttribute('data-glyph') || boxes[b].e.hasAttribute('data-glyph');
+          if (!same && !glyph && ox > 2 && oy > 4) out.push(`overlap: "${boxes[a].s}" / "${boxes[b].s}"`);
         }
         // 部品が印を付けた線と箱：軸の線（line.axis）を横切る字、ほかの箱（rect.box）に 4px より近い字（その箱の中の字は除く）
         const vis2 = (e) => { for (let x = e; x && x !== sl; x = x.parentElement) { const o = +(x.getAttribute && x.getAttribute('opacity') || getComputedStyle(x).opacity); if (o < 0.5) return false; } return true; };

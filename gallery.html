@@ -73,10 +73,10 @@ document.addEventListener("DOMContentLoaded", function(){
 <div id="stage">
 
 <section class="slide">
-  <h2>部品の一覧（30 個、105 枚）</h2>
+  <h2>部品の一覧（31 個、109 枚）</h2>
   <div class="body">
     <p>部品ごとに、説明の 1 枚と見本のスライドが続きます。→ で段階を進めます。</p>
-    <p>m-hissan（新しい）　m-numberline（新しい）　m-tape（新しい）　m-boxplot（変わった）　m-compare（変わった）　m-cycle（変わった）　m-fishbone（変わった）　m-hist（変わった）　m-map-japan（変わった）　m-menu（変わった）　m-pie（変わった）　m-predict（変わった）　m-scatter（変わった）　m-timeline（変わった）　m-timer（変わった）　m-tree（変わった）　m-venn（変わった）　m-bars　m-codetree　m-collect　m-curves　m-flow　m-gendai　m-kanbun　m-kobun　m-kpi　m-market　m-quad　m-seq　m-sweep</p>
+    <p>m-hissan（新しい）　m-kakijun（新しい）　m-numberline（新しい）　m-tape（新しい）　m-boxplot（変わった）　m-compare（変わった）　m-cycle（変わった）　m-fishbone（変わった）　m-hist（変わった）　m-map-japan（変わった）　m-menu（変わった）　m-pie（変わった）　m-predict（変わった）　m-scatter（変わった）　m-timeline（変わった）　m-timer（変わった）　m-tree（変わった）　m-venn（変わった）　m-bars　m-codetree　m-collect　m-curves　m-flow　m-gendai　m-kanbun　m-kobun　m-kpi　m-market　m-quad　m-seq　m-sweep</p>
   </div>
 </section>
 
@@ -114,6 +114,42 @@ document.addEventListener("DOMContentLoaded", function(){
     <m-hissan expr="851÷23" kari="on" style="height:440px"></m-hissan>
   </div>
   <div class="concl"><span>→ 仮の商が大きすぎたら、1 小さくしてやり直す</span></div>
+</section>
+
+<section class="slide">
+  <h2>m-kakijun（新しい、v1.10.0）</h2>
+  <div class="body">
+    <p>かな（ひらがな・カタカナ）の書き順。字を 1 画ずつ、書く順と向きのとおりに書いて見せる</p>
+    <ul>
+      <li>伝えたいこと：手順・工程</li>
+      <li>見せ方：draw・pen</li>
+      <li>系列：国語　見本のスライド：3 枚</li>
+    </ul>
+  </div>
+</section>
+
+<section class="slide">
+  <h2>ひらがなの書き順：あさ</h2>
+  <div class="body">
+    <m-kakijun text="あさ" ends="on" style="height:400px"></m-kakijun>
+  </div>
+  <div class="concl"><span>→ 「あ」の 3 画目は、結びを作ってから右へはらう</span></div>
+</section>
+
+<section class="slide">
+  <h2>濁点のあるカタカナ：ガム</h2>
+  <div class="body">
+    <m-kakijun text="ガム" style="height:400px"></m-kakijun>
+  </div>
+  <div class="concl"><span>→ 濁点は、字を書き終えてから左上から右下へ 2 つ</span></div>
+</section>
+
+<section class="slide">
+  <h2>縦書きの小さい字：きょう</h2>
+  <div class="body">
+    <m-kakijun text="きょう" writing="tate" size="180" style="height:440px"></m-kakijun>
+  </div>
+  <div class="concl"><span>→ 縦書きの「ょ」は、ます目の右上に小さく書く</span></div>
 </section>
 
 <section class="slide">

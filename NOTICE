@@ -1,0 +1,15 @@
+Egatari components
+Copyright (c) 2026 Gendo Kumoi. Licensed under the MIT License (see LICENSE).
+
+This repository also contains third-party material under other licences:
+
+components/kakijun/index.js — the font "Egatari Kana", embedded as a base64 WOFF2 data URI
+  Egatari Kana — derived from Klee One (SIL Open Font License 1.1).
+  Copyright 2020 The Klee Project Authors (https://github.com/fontworks-fonts/Klee).
+  A subset of Klee One SemiBold 1.100 (the kana of data/kana/kana.json and a few punctuation marks), renamed;
+  no glyph outline was changed (FONTLOG: data/kana/README.md, "The font").
+  Licensed under the SIL Open Font License, Version 1.1: components/kakijun/OFL.txt
+  The font is not under the MIT License. The stroke data (data/kana/kana.json and its copy in index.js) is original
+  work and is under the MIT License.
+
+components/map-japan/index.js — map data derived from Natural Earth (public domain).

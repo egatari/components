@@ -4,6 +4,17 @@ Versions follow [README.md § Releases and versions](README.md#releases-and-vers
 
 ## Unreleased
 
+### Added
+
+- `m-kakijun` (series kokugo 国語, purpose `process`; not in the free pack for now): stroke order (書き順) of kana. `text="あさ"` (ひらがな・カタカナ, 濁音・半濁音, small kana, ー; 166 characters), one step per character with its strokes drawn one by one within the step (about 0.6 s a stroke, scaled by length; `per="stroke"`: one step per stroke; cues at each stroke start). The glyph is the font Egatari Kana (derived from Klee One, SIL OFL 1.1, embedded in index.js as a base64 WOFF2, about 40 KB; `components/kakijun/OFL.txt`, `NOTICE`) shown through a mask built from our own centrelines (wide brush along the drawn part, guards along the rest sized from the data's measured ink widths `w`, narrow brush on top; as `data/kana/proto.html`). `grid="cross" | "none"` (box with dashed 十字 guides), `ghost` (unwritten strokes faint), `nums` (circled stroke numbers at each start, 24 px, placed off each other, off the ink and without crossing leaders), `ends="on"` (とめ・はね・はらい at each end, 24 px, with a dotted leader when moved away), `writing="tate"` (top to bottom, columns right to left, boxes of a column touching; small kana in the upper-right quarter, lower-left in horizontal writing), `size`. A character without data warns and is drawn plainly in the theme font. Readable layer: characters, stroke counts and endings; accessible name 「あさ（書き順）」. Under `ctx.preview`, later steps at the theme's `--preview-opacity` (0.45 without it). Variants `draw`, `pen` (no fade: the order and direction are the content). The whole part is about 104 KB
+- `tools/kana-embed.mjs`: writes the compact stroke data (count, d, end, w, place) and the font into `components/kakijun/index.js`; `--check` compares the data with `data/kana/kana.json` and the font block's sha256
+- `tools/test-kakijun.mjs` (in `tools/test-all.mjs`): embedded data equals the json, paths only M L Q C, every character's final state shows ≥ 99 % of its glyph, small kana inside their quarter in both writings, steps, unknown characters, the accessible name and readable layer use real kana
+- `NOTICE`: lists the font's licence (SIL OFL 1.1) next to the repository's MIT licence
+
+### Changed
+
+- `tools/test-components.mjs`: a text marked `data-glyph` (a glyph drawn as the figure itself, m-kakijun's characters) is left out of the label-overlap check; its size and position are still checked
+
 ### Later (candidates, not in this release)
 
 - `m-compare` `by="row"`; an "outside every set" region for `m-venn`; a project-plan demo for `m-timeline` lanes
