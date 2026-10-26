@@ -7,28 +7,16 @@
 //       build="whole" は全部を 1 段階で。項目の show で段階を指定できる
 // kind="tape"（既定、テープ図）か "line"（線分図）
 // 見せ方（docs/conventions.md §1）：fade（フェード、既定）・grow（テープが左から伸び、括弧と矢印は線を引く）
-(function(){
-// ---- BEGIN egatari-variant (source: tools/variant.js; copy with `node tools/variant-sync.mjs`; do not edit inside a component) ----
-// Choosing a presentation variant (Egatari spec §8.4, docs/conventions.md §1). A component lists its variant names in
-// `static variants` (the first is the default) and calls VARIANT.of(this) once, in mount. The variant is the component's
-// `variant` attribute when it names one of them, otherwise the first name. There is no seed: lessons do not carry one
-// (spec §8.4 since egatari-spec 28d8801), and `seed` / `data-egatari-seed` are not read.
-// The choice is a pure function of the attribute: the picture still depends on (i, k, t) only.
-var VARIANT = (function(){
-  "use strict";
-  function of(el){
-    var tag = el.tagName.toLowerCase(), C = customElements.get(tag), names = (C && C.variants) || [], v = el.getAttribute("variant");
-    if (v !== null && names.indexOf(v) >= 0) return v;
-    if (v !== null) console.warn(tag + ' variant="' + v + '" is not one of ' + names.join(", ") + " (the first, " + (names[0] || "none") + ", is used)");
-    return names[0] || null;
-  }
-  return {of: of};
-})();
-// ---- END egatari-variant ----
+// 2.0（Egatari spec §6.1 の部品）：base の MotionElement・el・mtext・prog・variant・previewOpacity を使い、プレイヤーのグローバルは使わない。
+// データや大きさの問題は ctx.report で知らせる（1.x の console.warn の代わり）
+egatariParts.define({name: "tape", version: "2.0.0", requires: {base: "1.0.0"}, element: "m-tape"}, function(deps){
+"use strict";
+var base = deps.base;
 var est = function(s, size){ return [...String(s)].reduce(function(a, c){ return a + (c === " " ? 0.3 : /[\u0000-ɏ]/.test(c) ? 0.56 : 1); }, 0) * size; };
 var TONES = /^(term|emph|muted|accent2|fg|series-[1-4])$/;
 var UNK = ["?", "□"];
-DECK.define("m-tape", class extends DECK.MotionElement {
+return class extends base.MotionElement {
+  static partName = "tape";   // the registry name (define meta name), for report prefixes
   static variants = ["fade", "grow"];
   static shape = {
     schema: {type: "object", additionalProperties: false, required: ["rows"], properties: {
@@ -57,24 +45,24 @@ DECK.define("m-tape", class extends DECK.MotionElement {
     if (this._plan) return this._plan;
     var d = this.data || {}, P = this.props, notes = [];
     var rows = d.rows.map(function(r, i){
-      r.segs.forEach(function(s){ if (s.unknown !== undefined && UNK.indexOf(s.unknown) < 0) notes.push('m-tape: unknown "' + s.unknown + '" is not "?" or "□" ("?" is used)'); if (!(s.v > 0)) throw new Error("m-tape: a segment's v must be a positive number (" + s.v + ")"); });
+      r.segs.forEach(function(s){ if (s.unknown !== undefined && UNK.indexOf(s.unknown) < 0) notes.push('[tape] unknown "' + s.unknown + '" is not "?" or "□" ("?" is used)'); if (!(s.v > 0)) throw new Error("m-tape: a segment's v must be a positive number (" + s.v + ")"); });
       return {i: i, o: r};
     });
     var R = rows.length;
     var braces = (d.brace || []).filter(function(b){
-      if (b.row < 0 || b.row >= R){ notes.push("m-tape: brace row " + b.row + " does not exist (ignored)"); return false; }
+      if (b.row < 0 || b.row >= R){ notes.push("[tape] brace row " + b.row + " does not exist (ignored)"); return false; }
       var n = rows[b.row].o.segs.length;
-      if (b.from < 0 || b.to >= n || b.from > b.to){ notes.push("m-tape: brace from " + b.from + " to " + b.to + " is not a segment range of row " + b.row + " (0 to " + (n - 1) + ")"); return false; }
-      if (b.side !== undefined && b.side !== "above" && b.side !== "below"){ notes.push('m-tape: brace side "' + b.side + '" is not above or below'); }
+      if (b.from < 0 || b.to >= n || b.from > b.to){ notes.push("[tape] brace from " + b.from + " to " + b.to + " is not a segment range of row " + b.row + " (0 to " + (n - 1) + ")"); return false; }
+      if (b.side !== undefined && b.side !== "above" && b.side !== "below"){ notes.push('[tape] brace side "' + b.side + '" is not above or below'); }
       return true;
     }).map(function(b){ return {o: b, row: b.row, side: b.side === "below" ? "below" : "above"}; });
     var times = (d.times || []).filter(function(x){
       var ok = x.from >= 0 && x.from < R && x.to >= 0 && x.to < R && x.from !== x.to;
-      if (!ok) notes.push("m-tape: times from " + x.from + " to " + x.to + " needs two different rows (ignored)");
+      if (!ok) notes.push("[tape] times from " + x.from + " to " + x.to + " needs two different rows (ignored)");
       return ok;
     }).map(function(x){ return {o: x}; });
     var build = P.build;
-    if (["steps", "rows", "whole"].indexOf(build) < 0){ notes.push('m-tape: build="' + build + '" is not steps, rows or whole (steps is used)'); build = "steps"; }
+    if (["steps", "rows", "whole"].indexOf(build) < 0){ notes.push('[tape] build="' + build + '" is not steps, rows or whole (steps is used)'); build = "steps"; }
     var sh = function(o){ return Number.isInteger(o.show) && o.show >= 1 ? o.show : null; };
     var k = 0;
     rows.forEach(function(r){ r.st = sh(r.o) || (build === "whole" ? 1 : ++k); });
@@ -84,12 +72,12 @@ DECK.define("m-tape", class extends DECK.MotionElement {
     return (this._plan = {rows: rows, braces: braces, times: times, steps: steps, notes: notes});
   }
   duration(k){ return k >= 1 && k <= this.plan().steps ? this.props.dur : 0; }
-  mount(){
-    var P = this.props, D = DECK, pl = this.plan();
-    this.variant = VARIANT.of(this);
-    pl.notes.forEach(function(n){ console.warn(n); });
+  mount(ctx){
+    var P = this.props, D = base, pl = this.plan();
+    this.variant = base.variant(this);
+    pl.notes.forEach(function(n){ ctx.report("data", n); });
     var line = P.kind === "line";
-    if (P.kind !== "tape" && P.kind !== "line") console.warn('m-tape: kind="' + P.kind + '" is not tape or line (tape is used)');
+    if (P.kind !== "tape" && P.kind !== "line") ctx.report("data", '[tape] kind="' + P.kind + '" is not tape or line (tape is used)');
     this.style.display = "block";
     var W = this.clientWidth, H = this.clientHeight, dur = P.dur, grow = this.variant === "grow";
     var svg = D.el("svg", {viewBox: "0 0 " + W + " " + H, width: W, height: H, style: "display:block;overflow:visible"}, this);
@@ -135,7 +123,7 @@ DECK.define("m-tape", class extends DECK.MotionElement {
       r.h = r.above + r.tapeH + r.below;
     });
     var need = rows.reduce(function(a, r){ return a + r.h; }, 0) + 24 * (rows.length - 1) + 8;
-    if (need > H + 1) console.warn("m-tape: the element (" + W + "×" + H + " px) is too small; it needs about " + Math.ceil(need) + " px of height");
+    if (need > H + 1) ctx.report("size", "[tape] the element (" + W + "×" + H + " px) is too small; it needs about " + Math.ceil(need) + " px of height");
     var gap = rows.length > 1 ? Math.min(60, 24 + Math.max(0, H - need) / (rows.length + 1)) : 0;
     var total = rows.reduce(function(a, r){ return a + r.h; }, 0) + gap * (rows.length - 1);
     var y = Math.max(4, (H - total) / 2);
@@ -202,8 +190,8 @@ DECK.define("m-tape", class extends DECK.MotionElement {
     if (grow) items.forEach(function(it){ if (it.kind === "line") it.el.setAttribute("pathLength", 1); });
   }
   render(k, t, ctx){
-    var D = DECK, lecture = ctx && (ctx.preview || ctx.mode === "lecture"), grow = this.variant === "grow", FAINT = 0.45;
-    if (lecture){ var pv = parseFloat(getComputedStyle(this).getPropertyValue("--preview-opacity")); FAINT = pv >= 0 && pv <= 1 ? pv : 0.45; }   // 先の段階の薄さ：テーマの --preview-opacity（ないときは 0.45）
+    var D = base, lecture = !!ctx.preview, grow = this.variant === "grow", FAINT = 0.45;
+    if (lecture) FAINT = base.previewOpacity(this);   // 先の段階の薄さ：テーマの --preview-opacity（ないときは 0.45）
     this.items.forEach(function(it){
       var e = it.st < k ? 1 : it.st > k ? (lecture ? -1 : 0) : D.prog(t, it.at, it.len), op;
       if (e < 0){ op = FAINT; e = 1; } else op = e;
@@ -217,5 +205,5 @@ DECK.define("m-tape", class extends DECK.MotionElement {
       it.el.setAttribute("opacity", op.toFixed(3));
     });
   }
+};
 });
-})();
