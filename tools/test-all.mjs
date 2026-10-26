@@ -25,6 +25,8 @@
 //  11. codetree-dom    m-codetree's DOM and pixels do not depend on the order of render calls (tools/test-codetree-dom.mjs)
 //      dom-order      every part's DOM at (k, end) is byte-identical straight and after seeking k+1, 0, k, in the talk and lecture views (tools/test-dom-order.mjs)
 //      raster-history m-tree / m-venn / m-numberline: the pixels of a step do not depend on how often it was drawn before, nor on a click and ctx.reset (tools/test-raster-history.mjs)
+//      syntax         m-syntax: reading the mark-up (roles, nested brackets, arrows, parts of speech, errors), steps, and in a browser the arrow ends,
+//                     brackets beside their words across a wrapped line, console.warn for errors (tools/test-syntax.mjs)
 //      timeline-gantt m-timeline's after arrows (ends, right angles, no band crossed), progress width, today line position, unit ticks (tools/test-timeline-gantt.mjs)
 //  12. shape            wrong-shaped data and refused expressions: inline placeholder and DECK.componentErrors, no exception (tools/test-shape.mjs)
 //  13. default-variant the default (first) variant of every component with variants is pixel-identical to the last release (tools/test-default-variant.mjs)
@@ -75,6 +77,7 @@ const TESTS = [
   ['test-codetree-dom', ['tools/test-codetree-dom.mjs', path.join(tmp, 'codetree-dom')]],
   ['test-dom-order', ['tools/test-dom-order.mjs', path.join(tmp, 'dom-order')]],
   ['test-raster-history', ['tools/test-raster-history.mjs', path.join(tmp, 'raster-history')]],
+  ['test-syntax', ['tools/test-syntax.mjs', path.join(tmp, 'syntax')]],
   ['test-timeline-gantt', ['tools/test-timeline-gantt.mjs', path.join(tmp, 'timeline-gantt')]],
   ['test-shape', ['tools/test-shape.mjs', path.join(tmp, 'shape')]],
   ['test-default-variant', ['tools/test-default-variant.mjs', path.join(tmp, 'default-variant')]],

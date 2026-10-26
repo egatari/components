@@ -19,10 +19,10 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 export const NAME_RE = /^[a-z][a-z0-9-]{0,63}$/;
-export const SERIES = ['common', 'academic', 'business', 'kokugo', 'info', 'social', 'music'];
+export const SERIES = ['common', 'academic', 'business', 'kokugo', 'info', 'social', 'music', 'english'];
 // How a series is named to people (CATALOG.md, gallery). The ids above never change; `common` is 標準パーツ / Standard parts,
-// `kokugo` 国語 / Japanese, `music` 音楽 / Music (subject series, like kokugo)
-export const SERIES_LABEL = { common: '標準パーツ', academic: '数理・統計', business: 'ビジネス', kokugo: '国語', info: '情報', social: '地図（社会）', music: '音楽' };
+// `kokugo` 国語 / Japanese, `music` 音楽 / Music, `english` 英語 / English (subject series, like kokugo)
+export const SERIES_LABEL = { common: '標準パーツ', academic: '数理・統計', business: 'ビジネス', kokugo: '国語', info: '情報', social: '地図（社会）', music: '音楽', english: '英語' };
 // Components released before demo.html was required (do not add to this list)
 const NO_DEMO = new Set([]);
 
