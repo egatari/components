@@ -155,11 +155,11 @@ document.addEventListener("DOMContentLoaded", function(){
 <section class="slide">
   <h2>1200 円の 2/3 はいくら（2 本の数直線）</h2>
   <div class="body">
-    <m-numberline build="ticks,links,jumps,marks" style="height:490px">
+    <m-numberline build="ticks,links,jumps,marks" style="height:440px">
       <script type="application/json">{"lines": [{"from": 0, "to": 1200, "step": 400, "label": "代金", "unit": "円", "labels": [0, 1200]},
                  {"from": 0, "to": 1, "step": "1/3", "label": "割合"}],
         "link": [[1200, 1], [800, "2/3"]],
-        "jumps": [{"from": 1, "to": "2/3", "line": 1, "label": "×2/3"}, {"from": 1200, "to": 800, "label": "×2/3", "show": 4}],
+        "jumps": [{"from": 1200, "to": 800, "label": "×2/3"}],
         "marks": [{"at": 800, "kind": "box"}]}</script>
     </m-numberline>
   </div>

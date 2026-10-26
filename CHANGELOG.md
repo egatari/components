@@ -12,6 +12,7 @@ Versions follow [README.md § Releases and versions](README.md#releases-and-vers
 
 - `m-tree`, `m-venn`, `m-numberline`: the same step could come out with tens of different edge pixels (rounded box corners, circles, arcs) depending on how often it had been drawn before, so Egatari Studio's determinism check, its call-order check and test-step-reset failed now and then on CI's Linux and Windows (#1101). The DOM was always the same: Chrome draws an SVG shape that is rasterized again without being rebuilt (because something near it changed) with a different outline from its second raster on, on a software GPU, and how often that happened depended on the frames painted between calls. `render` now rebuilds the part's shapes at its end (the same attribute values; the DOM and a single render's pixels are unchanged). m-tree and m-venn had this since their first release (v1.9.1 behaves the same)
 - `tools/test-raster-history.mjs` (in `tools/test-all.mjs`): for each demo step of the three parts, the pixels after the step was drawn again several times and after a click with ctx.reset equal those of a fresh draw
+- `m-numberline` demo: the 2本の数直線 slide overflowed the slide body by 47 px in Egatari Studio's checker (the part needed 478 px with arcs on both lines). It now shows the ×2/3 arc on the price line only, at 440 px; the part is unchanged
 
 ### Later (candidates, not in this release)
 
