@@ -1,6 +1,6 @@
 ---
 name: m-map-world
-version: 1.13.0
+version: 2.0.0
 series: social
 summary: 世界の国・地域の地図（太平洋が中央）。国や州の強調、区分と値の塗り分け、点、矢印を段階ごとに出す
 steps: 項目の step の最大（既定 1）。地図そのものは段階 0 から出ている
