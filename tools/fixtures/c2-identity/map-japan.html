@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="ja" data-theme="default">
+<head>
+<meta charset="utf-8">
+<title>m-map-japan: small boxes and the inset redraw (tools/test-c2-identity.mjs)</title>
+<!-- Cases the demo does not reach: the 小笠原諸島 inset that does not fit (mount draws again without it; 2.0: draw(ctx, true)),
+     layout="true", pieces dropped from small elements, a value below the first class (each was a console.warn in 1.x
+     and is a ctx.report in 2.0; the DOM must stay the same). From tools/test-map-territory.mjs and tools/test-map-small.mjs. -->
+</head>
+<body>
+<div id="stage">
+
+<section class="slide noconcl">
+  <h2>islands="all" in 260×160 (the inset is left out: drawn again without it)</h2>
+  <div class="body">
+    <m-map-japan islands="all" style="width:260px;height:160px">
+      <script type="application/json">{"regions": [{"group": "kinki", "tone": "term", "step": 1}, {"id": "01", "step": 2}]}</script>
+    </m-map-japan>
+  </div>
+</section>
+
+<section class="slide noconcl">
+  <h2>islands="all" in 300×200 (the inset fits)</h2>
+  <div class="body">
+    <m-map-japan islands="all" style="width:300px;height:200px">
+      <script type="application/json">{"regions": [{"group": "kinki", "tone": "term", "step": 1}, {"id": "01", "step": 2}]}</script>
+    </m-map-japan>
+  </div>
+</section>
+
+<section class="slide noconcl">
+  <h2>layout="true" with the four extremities</h2>
+  <div class="body">
+    <m-map-japan layout="true" labels="none" variant="sweep" style="height:440px">
+      <script type="application/json">{"points": [{"lon": 148.7522, "lat": 45.5572, "label": "択捉島（北端）", "step": 1}, {"lon": 153.9867, "lat": 24.2831, "label": "南鳥島（東端）", "step": 2}, {"lon": 136.0697, "lat": 20.4253, "label": "沖ノ鳥島（南端）", "step": 3}, {"lon": 122.9325, "lat": 24.4514, "label": "与那国島（西端）", "step": 4}]}</script>
+    </m-map-japan>
+  </div>
+</section>
+
+<section class="slide noconcl">
+  <h2>choropleth with a value below the first class, small</h2>
+  <div class="body">
+    <m-map-japan legend="人口" unit="万人" show="value" variant="draw" style="height:300px">
+      <script type="application/json">{"values": {"13": 1405, "14": 924, "27": 884, "23": 754, "11": 734, "01": 522, "47": 147, "31": 55}, "classes": [100, 300, 500, 800], "regions": [{"id": "13", "label": "東京", "step": 2}]}</script>
+    </m-map-japan>
+  </div>
+</section>
+
+<section class="slide noconcl">
+  <h2>points in a small box</h2>
+  <div class="body">
+    <m-map-japan  style="height:240px">
+      <script type="application/json">{"points": [{"lon": 141.35, "lat": 43.06, "label": "札幌", "step": 1}, {"lon": 139.69, "lat": 35.68, "label": "東京", "step": 1}, {"lon": 139.64, "lat": 35.44, "label": "横浜", "step": 1}, {"lon": 135.5, "lat": 34.69, "label": "大阪", "step": 2}]}</script>
+    </m-map-japan>
+  </div>
+</section>
+
+</div>
+</body>
+</html>
