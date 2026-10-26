@@ -11,6 +11,9 @@
 //   - Studio up to v0.4.x reads components from <studio>/components/<name>/
 //   - later Studio reads them from vendor/components/<name>/<version>/ with components.lock.json; the overlay then
 //     writes version "0.0.0-test" and makes it the default in the lock
+// Migrated element parts (2.0 parts with an element, e.g. m-bars): the pinned Studio has no parts registry, so the overlay
+// writes, as their index.js, the registry shim with the parts they require and the part itself (tools/parts.mjs c2Bundle).
+// The 1.x tests then build, play and check them through the shim's bridge to DECK. Library parts are not overlaid.
 // Environment: EGATARI_STUDIO=<path> uses an existing Studio checkout instead (it is overlaid in place, so use a scratch copy).
 import fs from 'node:fs';
 import path from 'node:path';
@@ -18,7 +21,7 @@ import { execFileSync } from 'node:child_process';
 import { createHash } from 'node:crypto';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 import { normalizeEol, toCrlf } from './identity.mjs';
-import { isLibraryDir } from './parts.mjs';
+import { isLibraryDir, migratedNames, c2Bundle } from './parts.mjs';
 
 export const ROOT = path.dirname(path.dirname(fileURLToPath(import.meta.url)));
 export const PIN = JSON.parse(fs.readFileSync(path.join(ROOT, 'tools', 'studio.json'), 'utf8'));
@@ -79,7 +82,9 @@ export function pinLabel() {
 }
 
 function overlay(dir) {
-  const names = componentNames();
+  const names = componentNames(), migrated = new Set(migratedNames(ROOT));
+  // the code Studio reads for a component: its index.js, or for a migrated part the shim bundle
+  const codeOf = (name) => migrated.has(name) ? Buffer.from(c2Bundle(ROOT, name)) : fs.readFileSync(path.join(ROOT, 'components', name, 'index.js'));
   const lockFile = path.join(dir, 'components.lock.json');
   const copy = (name, dest) => {
     fs.rmSync(dest, { recursive: true, force: true });
@@ -87,6 +92,7 @@ function overlay(dir) {
       fs.mkdirSync(path.dirname(path.join(dest, f)), { recursive: true });
       fs.copyFileSync(path.join(ROOT, 'components', name, f), path.join(dest, f));
     }
+    if (migrated.has(name)) fs.writeFileSync(path.join(dest, 'index.js'), codeOf(name));
   };
   if (fs.existsSync(lockFile)) {
     // Studio with vendored components
@@ -94,7 +100,7 @@ function overlay(dir) {
     lock.components ||= {};
     for (const name of names) {
       copy(name, path.join(dir, 'vendor', 'components', name, TEST_VERSION));
-      const code = normalizeEol(fs.readFileSync(path.join(ROOT, 'components', name, 'index.js')));
+      const code = normalizeEol(codeOf(name));
       const sha = createHash('sha256').update(code).digest('hex'), crlf = createHash('sha256').update(toCrlf(code)).digest('hex');
       const c = lock.components[name] ||= { default: TEST_VERSION, versions: [], sha256: {} };
       c.default = TEST_VERSION;

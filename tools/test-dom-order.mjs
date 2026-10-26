@@ -5,11 +5,14 @@
 // The components' DOM (outerHTML of every part on the slide: tags, attribute strings and text, byte for byte) must be equal.
 // No pixels and no tolerance: a stale attribute (one set by an earlier render and not set again) or a differently written
 // style string fails. Built with the pinned Egatari Studio (tools/studio.mjs).
+// Migrated parts (components 2.0: m-bars, m-menu, …) run through the registry shim, as the overlay serves them
+// (tools/studio.mjs, tools/parts.mjs c2Bundle); for them this also checks that the part is defined through the registry.
 //   node tools/test-dom-order.mjs [work folder] [--only name,name]
 import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
 import { studio, ROOT, componentNames } from './studio.mjs';
+import { partMetas } from './parts.mjs';
 
 const args = process.argv.slice(2);
 const oi = args.indexOf('--only');
@@ -44,6 +47,11 @@ try {
     const dom = (p, si) => p.evaluate((si) => DECK.slides[si]._comps.map((c) => c.outerHTML).join('\n'), si);
     const seek = (p, si, k) => p.evaluate(([si, k]) => DECK.seek(si, k, Infinity), [si, k]);
     await open(pages[0], 'talk');
+    const meta = partMetas(ROOT)[name];
+    if (meta && meta.element) {
+      const st = await pages[0].evaluate((key) => window.EGATARI_PARTS_SHIM ? EGATARI_PARTS_SHIM.status(key) : 'no registry', `${name}@${meta.version}`);
+      ok(st === 'ok', `m-${name}: ${name}@${meta.version} runs through the registry shim (${st})`);
+    }
     const slides = await pages[0].evaluate(() => DECK.slides.map((s, i) => ({ i, max: s._max, comps: s._comps.length })).filter((s) => s.comps > 0));
     const cases = [];
     for (const mode of MODES) for (const s of slides) for (let k = 0; k <= s.max; k++) cases.push({ mode, si: s.i, k, max: s.max });

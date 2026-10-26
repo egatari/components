@@ -149,24 +149,74 @@ function dataProblem(e){
   return (e._shapeProblem = p || null);
 }
 function up(e, name){ return Reflect.get(Object.getPrototypeOf(e), name, e); }
-// Installed on every instance (own properties, so they come before the part's own steps, mount, render, duration, cues):
-// with data that fits, they pass straight to the part; otherwise steps is the attribute steps (else 0), mount reports the
-// problem once through ctx.report(kind, message) and shows the placeholder (like deck.js), and the rest draws nothing
+
+// ---------------------------------------------------------------- containment (spec §6.1 Containment)
+// An exception thrown by the part while the player calls it (steps, mount, render, layout; also duration and cues) does not
+// escape: the first one is kept as the instance's fault, reported once through ctx.report("error", "[<name>] <phase>: <error>")
+// as soon as a ctx is at hand (steps, duration and cues get none: it is reported at the next mount, render or layout), and
+// the element then shows the .m-error placeholder with its text equivalent (aria-label, else its own text). From then on
+// steps is the steps attribute (else 0), and the part is not called again. <name> is the registry name: the tag without m-.
+function partName(e){ var t = e.tagName.toLowerCase(); return t.indexOf("m-") === 0 ? t.slice(2) : t; }
+function errText(x){ return x && x.message !== undefined ? (x.name && x.name !== "Error" ? x.name + ": " : "") + x.message : String(x); }
+function fallbackSteps(e){ var n = stepInt(e.getAttribute("steps"), e.tagName.toLowerCase() + " steps"); return n !== null ? n : 0; }
+function textEquivalent(e){
+  var label = e.getAttribute("aria-label");
+  if (label && label.trim()) return label.trim();
+  var t = compText(e).replace(/\s+/g, " ");
+  return t || "<" + e.tagName.toLowerCase() + ">";
+}
+function fault(e, phase, x, ctx){
+  if (!e._fault) e._fault = {phase: phase, msg: errText(x)};
+  if (ctx) showFault(e, ctx);
+}
+function showFault(e, ctx){
+  if (e._faultShown) return;
+  e._faultShown = true;
+  var text = textEquivalent(e);
+  try { if (ctx && typeof ctx.report === "function") ctx.report("error", "[" + partName(e) + "] " + e._fault.phase + ": " + e._fault.msg); } catch (x) { /* a player's report must not undo containment */ }
+  [].slice.call(e.childNodes).forEach(function(n){ if (!(n.nodeType === 1 && n.localName === "script")) e.removeChild(n); });
+  var box = document.createElement("div");
+  box.className = "m-error"; box.setAttribute("role", "note"); box.setAttribute("data-part-failure", "error");
+  box.textContent = text;
+  e.appendChild(box);
+}
+// Installed on every instance (own properties, so they come before the part's own steps, mount, render, duration, cues,
+// layout): with data that fits, they pass to the part inside try/catch (containment, above); otherwise steps is the
+// attribute steps (else 0), mount reports the problem once through ctx.report(kind, message) and shows the placeholder
+// (like deck.js), and the rest draws nothing
 function guard(e){
   Object.defineProperty(e, "steps", {configurable: true, get: function(){
-    if (!dataProblem(e)) return up(e, "steps");
-    var n = stepInt(e.getAttribute("steps"), e.tagName.toLowerCase() + " steps");
-    return n !== null ? n : 0;
+    if (dataProblem(e) || e._fault) return fallbackSteps(e);
+    try { return up(e, "steps"); } catch (x) { fault(e, "steps", x, null); return fallbackSteps(e); }
   }});
   e.mount = function(ctx){
     var p = dataProblem(e);
-    if (!p) return up(e, "mount").call(e, ctx);
+    if (!p){
+      if (e._fault) return showFault(e, ctx);
+      try { return up(e, "mount").call(e, ctx); } catch (x) { fault(e, "mount", x, ctx); return; }
+    }
     if (!e._shapeReported){ e._shapeReported = true; if (ctx && typeof ctx.report === "function") ctx.report(p.kind, compSummary(p, false)); }
     compPlaceholder(e, p, /^ja\b/i.test((ctx && ctx.lang) || "ja"));
   };
-  e.render = function(k, t, ctx){ if (!dataProblem(e)) return up(e, "render").call(e, k, t, ctx); };
-  e.duration = function(k){ return dataProblem(e) ? 0 : up(e, "duration").call(e, k); };
-  e.cues = function(k){ return dataProblem(e) ? null : up(e, "cues").call(e, k); };
+  e.render = function(k, t, ctx){
+    if (dataProblem(e)) return;
+    if (e._fault) return showFault(e, ctx);
+    try { return up(e, "render").call(e, k, t, ctx); } catch (x) { fault(e, "render", x, ctx); }
+  };
+  e.duration = function(k){
+    if (dataProblem(e) || e._fault) return 0;
+    try { return up(e, "duration").call(e, k); } catch (x) { fault(e, "duration", x, null); return 0; }
+  };
+  e.cues = function(k){
+    if (dataProblem(e) || e._fault) return null;
+    try { return up(e, "cues").call(e, k); } catch (x) { fault(e, "cues", x, null); return null; }
+  };
+  // layout(ctx) is optional (spec §8.4 Layout): wrapped only when the part has one, so that a player sees none otherwise
+  if (typeof up(e, "layout") === "function") e.layout = function(ctx){
+    if (dataProblem(e)) return;
+    if (e._fault) return showFault(e, ctx);
+    try { return up(e, "layout").call(e, ctx); } catch (x) { fault(e, "layout", x, ctx); }
+  };
 }
 
 // ---------------------------------------------------------------- 部品の基底クラス (kit/deck.js)

@@ -25,8 +25,8 @@
 //   - defines a subclass of the part's class whose instances wrap their mount and render (after base's data check has
 //     put its own on the instance) to pass a 2.0 context (spec §8.4) instead of DECK's:
 //     mode ("talk" | "learn" | "video"; DECK's "lecture" is talk with preview), preview, slide (the slide's key, a string),
-//     instant, reset, entered (true on the first render after the slide was entered from another slide; a jump to the
-//     same slide is not detected), lang (deck-meta lang, else <html lang>, else "ja"), slides ([{key, title}], frozen),
+//     instant, reset, entered (true on the first render after the slide was entered from another slide, followed through the
+//     bridged parts' renders and DECK's deck:pos events; a jump to the same slide is not detected), lang (deck-meta lang, else <html lang>, else "ja"), slides ([{key, title}], frozen),
 //     go(slideKey, stepKey?) → DECK.go, visited(slideKey) → DECK.visited (a boolean), report(code, message) → DECK.componentErrors and console.warn, extend (DECK's when
 //     it has one), live (null); ctx.deck is not passed;
 //   - calls the part's layout(ctx), if it has one, when its size changes, when the fonts finish loading and when its
@@ -40,10 +40,12 @@ var parts = Object.create(null), failed = Object.create(null), order = [], failu
 function own(o, k){ return Object.prototype.hasOwnProperty.call(o, k); }
 function msg(e){ return e && e.message !== undefined ? (e.name && e.name !== "Error" ? e.name + ": " : "") + e.message : String(e); }
 
+// What a failure says, in one line, for the console and the fallback's title: the part, what happened, and the consequence
+var CONSEQUENCE = "; it is not defined, and the parts that require it fail too";
 function fail(key, meta, code, message){
   if (!failed[key]) failed[key] = {key: key, code: code, message: message};
   failures.push({key: key, code: code, message: message});
-  console.warn("[egatariParts] " + key + ": " + code + ": " + message);
+  console.warn("[egatariParts] " + key + ": " + code + ": " + message + CONSEQUENCE);
   if (meta && typeof meta.element === "string" && TAG_RE.test(meta.element) && !parts[key]) fallback(meta.element, key, code, message);
 }
 function versionsOf(name){ return Object.keys(parts).filter(function(k){ return k.slice(0, k.lastIndexOf("@")) === name; }); }
@@ -60,7 +62,7 @@ function define(meta, factory){
     if (!own(req, n)) continue;
     var v = req[n], rk = n + "@" + v;
     if (typeof v !== "string" || !EXACT.test(v)) return fail(key, meta, "range", "requires " + n + ": " + JSON.stringify(v) + " is not an exact version");
-    if (failed[rk]) return fail(key, meta, "dependency", rk + " failed (" + failed[rk].code + ")");
+    if (failed[rk]) return fail(key, meta, "dependency", "requires " + rk + ", which failed (" + failed[rk].code + ": " + failed[rk].message + ")");
     if (!parts[rk]){
       var have = versionsOf(n);
       return fail(key, meta, "missing", rk + " is not defined before " + key + (have.length ? " (defined: " + have.join(", ") + "; versions are exact)" : " (parts come in dependency order; a later part is never referred to)"));
@@ -68,13 +70,14 @@ function define(meta, factory){
     deps[n] = parts[rk].value;
   }
   var value;
-  try { value = factory(deps); } catch (e) { return fail(key, meta, "factory", msg(e)); }
+  // spec §6.1 Failure: a throw from the factory is caught at define time; the part stays undefined and its dependants fail
+  try { value = factory(deps); } catch (e) { return fail(key, meta, "factory", "its factory threw " + msg(e)); }
   if (value !== null && (typeof value === "object" || typeof value === "function")) Object.freeze(value);   // spec §6.1: shallowly
   if (meta.element){
     if (typeof value !== "function" || !(value.prototype instanceof HTMLElement)) return fail(key, meta, "element", "the factory did not return a class extending HTMLElement");
+    try { defineElement(meta.element, value); } catch (e) { return fail(key, meta, "element", "customElements.define(" + JSON.stringify(meta.element) + ") threw " + msg(e)); }
     parts[key] = {meta: meta, value: value};
     order.push(key);
-    defineElement(meta.element, value);
     return;
   }
   parts[key] = {meta: meta, value: value};
@@ -100,6 +103,12 @@ function fallback(tag, key, code, message){
       box.textContent = text || "<" + tag + ">";
       box.title = key + ": " + code + ": " + message;
       this.appendChild(box);
+      // the element's own report (spec §6.1 Failure: shown as its text equivalent, and the failure is available to checks)
+      var D = G.DECK, s = this.closest && this.closest(".slide");
+      var rec = {slide: D && D.slides ? D.slides.indexOf(s) : -1, key: s ? (s._key || s.getAttribute("data-key") || s.id || "") : "", tag: tag, phase: "registry", kind: "report", code: "registry",
+        msg: "[" + key.slice(0, key.lastIndexOf("@")) + "] " + key + " is not defined (" + code + ": " + message + ")"};
+      reports.push(rec);
+      if (D && Array.isArray(D.componentErrors)) D.componentErrors.push(rec);
     }
   });
 }
@@ -117,6 +126,12 @@ function reparent(cls){
   Object.setPrototypeOf(c.prototype, DM.prototype);
 }
 var epoch = 0, current = null;
+// The slide the viewer is on, followed through DECK's position events too: a slide is entered again after the viewer was on
+// another slide, also one without 2.0 parts (whose renders the bridge never sees)
+if (G.document && typeof G.document.addEventListener === "function") G.document.addEventListener("deck:pos", function(e){
+  var D = G.DECK, s = D && D.slides && e.detail && D.slides[e.detail.i], key = s && s._key;
+  if (key && key !== current){ current = key; epoch++; }
+});
 function slideKey(s){ return s && typeof s === "object" ? (s._key || s.getAttribute("data-key") || s.id || "") : s; }
 function ctxOf(c, d, first){
   var D = G.DECK, key = slideKey(d && d.slide);

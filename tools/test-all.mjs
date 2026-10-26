@@ -22,7 +22,10 @@
 //      base           components/base gives the same output as the pinned Studio's DECK helpers and tools/variant.js, and its data check
 //                     before mount the same records, placeholder and messages as DECK's (tools/test-base.mjs)
 //      part-shape     components/shape ≡ the pinned Studio's DECK.shape on the components' shapes and altered data (tools/test-part-shape.mjs)
-//      part-plot      components/plot ≡ the pinned Studio's DECK.Plot (tools/test-part-plot.mjs)
+//      part-plot      components/plot ≡ the pinned Studio's DECK.Plot, but for its prefixed clip ids (tools/test-part-plot.mjs)
+//      c2-identity    each migrated element part (2.0, e.g. m-bars, m-menu) draws byte-identical DOM to its v1.13.0 version on the
+//                     v1.13.0 demo, through the registry shim: every step at 35 %, 70 % and its end, talk and preview views,
+//                     and after a tour of every slide (tools/test-c2-identity.mjs; docs/c2-migration.md)
 //      studio-check     Studio's own checker (kit/check.mjs) on each demo.html: no error; warnings other than R-narr-steps listed (tools/test-studio-check.mjs)
 //   8. components       each demo.html: builds, no console errors, screenshots per step, determinism, text ≥ 24px, overlap, outside the slide (tools/test-components.mjs)
 //   9. kanbun-num      m-kanbun's two-digit reading-order numbers stay inside their box and off the character boxes; one-digit numbers unchanged (tools/test-kanbun-num.mjs)
@@ -86,6 +89,7 @@ const TESTS = [
   ['test-base', ['tools/test-base.mjs', path.join(tmp, 'base')]],
   ['test-part-shape', ['tools/test-part-shape.mjs']],
   ['test-part-plot', ['tools/test-part-plot.mjs', path.join(tmp, 'part-plot')]],
+  ['test-c2-identity', ['tools/test-c2-identity.mjs', path.join(tmp, 'c2-identity')]],
   ['test-studio-check', ['tools/test-studio-check.mjs']],
   ['test-components', ['tools/test-components.mjs', '--shots', path.join(tmp, 'shots')]],
   ['test-kakijun', ['tools/test-kakijun.mjs', path.join(tmp, 'kakijun')]],

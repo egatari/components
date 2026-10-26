@@ -78,7 +78,8 @@ try {
       return { bad: [...new Set(bad)], names, dropped: c.dropped || [] };
     }, i);
     ok(bad.bad.length === 0, `${slides[i].name}: sizes ≥ 0, no NaN, inside the element, text ≥ 24 px` + (bad.bad.length ? ': ' + bad.bad.slice(0, 4).join('; ') : ''));
-    if (slides[i].bars) { ok(warnings.some((w) => w.startsWith('m-bars:')), `${slides[i].name}: warns that the element is too small`); continue; }
+    // m-bars 2.0 reports it through ctx.report("size", "[bars] …") (the shim's bridge shows it on the console); 1.x warned "m-bars: …"
+    if (slides[i].bars) { ok(warnings.some((w) => w.startsWith('m-bars:') || /: size: \[bars\] the element \(.*\) is too small/.test(w)), `${slides[i].name}: reports that the element is too small`); continue; }
     const missing = NAMES.filter((n) => !bad.names.includes(n));
     const unwarned = missing.filter((n) => !warnings.some((w) => w.includes(n)));
     ok(unwarned.length === 0, `${slides[i].name}: territory names ${missing.length ? 'missing (' + missing.join('、') + ') ' + (unwarned.length ? 'without a warning' : 'with a warning') : 'all written'}`);

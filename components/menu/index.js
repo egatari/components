@@ -8,11 +8,15 @@
 // 押したときの動き（発表では最終状態へ、自動再生中はそこから続ける、「戻る」）は実行系（kit/deck.js）が受け持つ。
 // 段階：per-step="n" なら札が n 枚ずつ段階ごとに出る（data-from から）。0（既定）なら初めから全部（段階を使わない）。
 // 「見た」の印：このセッションで札の行き先のスライドを開いたら、札の右上に印（保存しない。動画では付けない、印刷に出ない）。
-// 印は発表の操作の側の表示で、DECK.seek(i, k, t) の外（m-kobun の札と同じ扱い）。visited="false" で付けない
+// 印は見ている人の側の状態で、(i, k, t) の外（m-kobun の札と同じ扱い）。visited="false" で付けない
 // 大きさ：札の高さの下限は --mm-h（既定 104px）、間は --mm-gap。CSS の transition は使わない（実時間で動くので、画面が (k, t) で決まらなくなる）
-(function(){
+// 2.0（Egatari spec §6.1 の部品）：base を使い、プレイヤーのグローバルは使わない。札の行き先（# の後ろ、spec §9.1A）はこのパーツが
+// ctx.slides で読み（slideOf）、「見た」は ctx.visited(スライドの鍵)。印はスライドに入ったときの描画（ctx.entered）で付け直す
+// （1.x は DECK の deck:pos を聞いていた。ほかのスライドを見られるのは、このスライドを離れている間だけ）
+egatariParts.define({name: "menu", version: "2.0.0", requires: {base: "1.0.0"}, element: "m-menu"}, function(deps){
 "use strict";
-var D = window.DECK;
+var base = deps.base;
+var CSS_ID = "menu-2-0-0-css";   // the style element this part writes, named with its name and version (spec §6.1 Identifiers)
 var CSS =
   "m-menu{display:grid;gap:var(--mm-gap,18px);grid-template-columns:repeat(var(--mm-cols,3),minmax(0,1fr));grid-auto-rows:minmax(var(--mm-h,104px),auto);align-content:start}" +
   "m-menu>a{position:relative;display:flex;align-items:center;gap:18px;padding:14px 22px;box-sizing:border-box;" +
@@ -33,8 +37,22 @@ var CSS =
 var CHECK = '<svg class="mm-seen" viewBox="0 0 26 26" aria-hidden="true"><path d="M7.5 13.5l3.6 3.6 7.4-8"/></svg>';
 var EXT = '<svg class="mm-ext" viewBox="0 0 20 20" aria-hidden="true"><path d="M8 4H4v12h12v-4M11 3h6v6M17 3l-8 8"/></svg>';
 function cards(el){ return [].filter.call(el.children, function(x){ return x.localName === "a" && x.hasAttribute("href"); }); }
+// 札の行き先のスライドの鍵（spec §9.1A：#<スライドの id>、#<id>:<段階の鍵>。段階の鍵は最後の : で切り、0・1・…（3 桁まで）か concl。
+// 数字だけの #N は 1 から数えたスライドの番号）。読めなければ null。段階が範囲の中かは ctx.slides からはわからないので見ない
+function slideOf(frag, slides){
+  var f = String(frag == null ? "" : frag);
+  try { f = decodeURIComponent(f); } catch (e) { /* the fragment as written */ }
+  if (!f) return null;
+  if (/^[0-9]+$/.test(f)){ var n = +f; return n >= 1 && n <= slides.length ? slides[n - 1].key : null; }
+  var has = function(key){ for (var j = 0; j < slides.length; j++) if (slides[j].key === key) return true; return false; };
+  if (has(f)) return f;
+  var p = f.lastIndexOf(":");
+  if (p <= 0 || !has(f.slice(0, p))) return null;
+  var sk = f.slice(p + 1);
+  return sk === "concl" || /^(0|[1-9][0-9]{0,2})$/.test(sk) ? f.slice(0, p) : null;
+}
 
-D.define("m-menu", class extends D.MotionElement {
+return class extends base.MotionElement {
   static interactive = true;   // 操作できるパーツ（札はリンク。docs/conventions.md §6）
   // データの形（kit/shape.js）：JSON ではなく、子のリンク <a href="#<スライドの id>">題</a>
   static shape = {links: true, example: '<a href="#s-abc123" data-sub="副題">題</a>'};
@@ -53,8 +71,8 @@ D.define("m-menu", class extends D.MotionElement {
     return per > 0 ? Math.ceil(cards(this).length / per) : 0;
   }
   mount(ctx){
-    var P = this.props, self = this, list = cards(this), n = list.length;
-    if (!document.getElementById("m-menu-css")){ var st = document.createElement("style"); st.id = "m-menu-css"; st.textContent = CSS; document.head.appendChild(st); }
+    var P = this.props, list = cards(this), n = list.length;
+    if (!document.getElementById(CSS_ID)){ var st = document.createElement("style"); st.id = CSS_ID; st.textContent = CSS; document.head.appendChild(st); }
     var cols = P.cols > 0 ? P.cols : n <= 3 ? Math.max(1, n) : n === 4 ? 2 : 3;
     this.style.setProperty("--mm-cols", cols);
     this.style.fontSize = P.size + "px";
@@ -76,19 +94,16 @@ D.define("m-menu", class extends D.MotionElement {
       var css = (a.getAttribute("style") || "").trim().replace(/\s*;$/, ""); if (css) css += ";";
       return {a: a, sr: sr, css: css, frag: inDoc ? href.slice(1) : null, ext: !inDoc, step: per ? Math.floor(j / per) + 1 : 0, at: per ? (j % per) * P.stagger : 0};
     });
+    this.ja = String(ctx.lang).startsWith("ja");
     this.visitedOn = P.visited && ctx.mode !== "video";
-    if (this.visitedOn){
-      var upd = function(){ self.markVisited(); };
-      document.addEventListener("deck:pos", upd);
-      upd();
-    }
+    if (this.visitedOn) this.markVisited(ctx);
   }
-  // 「見た」の印（発表の操作の側の表示。DECK.seek の外）
-  markVisited(){
-    var ja = D.ja !== false;
+  // 「見た」の印（見ている人の側の状態。(i, k, t) の外）
+  markVisited(ctx){
+    var ja = this.ja, slides = ctx.slides || [];
     this.cards.forEach(function(c){
       var v = false;
-      if (c.frag !== null && D.resolveFragment && D.visited){ var r = D.resolveFragment(c.frag); v = !r.error && D.visited(r.i); }
+      if (c.frag !== null){ var key = slideOf(c.frag, slides); v = key !== null && ctx.visited(key) === true; }
       c.a.classList.toggle("mm-visited", v);
       c.sr.textContent = (v ? (ja ? "（見た）" : " (visited)") : "") + (c.ext ? (ja ? "（別のファイル）" : " (another file)") : "");
     });
@@ -99,11 +114,13 @@ D.define("m-menu", class extends D.MotionElement {
     return d;
   }
   render(k, t, ctx){
-    var F = this.props.fade, lecture = ctx && (ctx.preview || ctx.mode === "lecture"), FAINT = 0.45;
+    var F = this.props.fade, lecture = !!ctx.preview, FAINT = 0.45;
     // 先の段階の薄さ：テーマの --preview-opacity（ないときは 0.45）
-    if (lecture){ var pv = parseFloat(getComputedStyle(this).getPropertyValue("--preview-opacity")); if (pv >= 0 && pv <= 1) FAINT = pv; }
+    if (lecture) FAINT = base.previewOpacity(this);
+    // 「見た」の印は、ほかのスライドから入ったときに付け直す
+    if (this.visitedOn && ctx.entered) this.markVisited(ctx);
     this.cards.forEach(function(c){
-      var p = c.step < k ? 1 : c.step > k ? 0 : D.prog(t, c.at, F);
+      var p = c.step < k ? 1 : c.step > k ? 0 : base.prog(t, c.at, F);
       if (lecture && p < 1) p = Math.max(p, c.step > k ? FAINT : p);
       // 見えていない札は押せない・選べない・読み上げない
       // 授業の表示で薄く見せている先の札も押せない・選べない（読み上げはする）
@@ -116,5 +133,5 @@ D.define("m-menu", class extends D.MotionElement {
       if (off) c.a.setAttribute("aria-hidden", "true");
     });
   }
+};
 });
-})();

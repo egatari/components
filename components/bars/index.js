@@ -11,7 +11,12 @@
 //              それぞれの値を単位なしで区切りの中に（入るときだけ）書く。系列の名前は最後の組の棒の右（横棒なら最初の組の棒の上）に書く
 // stack="percent"：積み上げ棒の各組を 100 % にそろえ、区切りの中に % を書く（軸は 0〜100 %、端の合計は書かない）
 // 負の値（積み上げでない棒）：値の軸に 0 を含め、0 の基線から下（横棒は左）へ伸ばす。値の数字は棒の端の外側（下・左）に書く
-DECK.define("m-bars", class extends DECK.MotionElement {
+// 2.0（Egatari spec §6.1 の部品）：base の MotionElement・el・mtext・prog・lerp・previewOpacity を使い、プレイヤーのグローバルは使わない。
+// 要素が小さすぎるときは ctx.report で知らせる（1.x の console.warn("m-bars: …") の代わり）
+egatariParts.define({name: "bars", version: "2.0.0", requires: {base: "1.0.0"}, element: "m-bars"}, function(deps){
+"use strict";
+var base = deps.base;
+return class extends base.MotionElement {
   // データの形（kit/shape.js）
   static shape = {
     schema: {type: "object", additionalProperties: false, required: ["groups"], properties: {
@@ -57,8 +62,8 @@ DECK.define("m-bars", class extends DECK.MotionElement {
       .sort(function(a, b){ return a.step - b.step; });
     return (this._plan = {groups: groups, scale: scale});
   }
-  mount(){
-    var P = this.props, D = DECK, self = this, d = this.data || {}, pl = this.plan();
+  mount(ctx){
+    var P = this.props, D = base, self = this, d = this.data || {}, pl = this.plan();
     this.style.display = "block"; this.style.position = "relative";
     var W = this.clientWidth, H = this.clientHeight, hor = P.orient === "h";
     var svg = D.el("svg", {viewBox: "0 0 " + W + " " + H, width: W, height: H, style: "display:block;overflow:visible"}, this);
@@ -99,7 +104,7 @@ DECK.define("m-bars", class extends DECK.MotionElement {
     this.x0 = m.l; this.x1 = W - m.r; this.y0 = m.t; this.y1 = H - m.b;
     // 要素が小さすぎる（高さを書き忘れて 0 px など）：大きさが負にならないように、枠を 0 にして知らせる
     if (this.x1 < this.x0 || this.y1 < this.y0){
-      console.warn("m-bars: the element (" + W + "×" + H + " px) is too small for the bars; give it a size, e.g. style=\"height:380px\"");
+      ctx.report("size", "[bars] the element (" + W + "×" + H + " px) is too small for the bars; give it a size, e.g. style=\"height:380px\"");
       this.x1 = Math.max(this.x0, this.x1); this.y1 = Math.max(this.y0, this.y1);
     }
     this.len = hor ? this.x1 - this.x0 : this.y1 - this.y0;
@@ -225,7 +230,7 @@ DECK.define("m-bars", class extends DECK.MotionElement {
     for (var i = 0; i < this.plan().scale.length; i++){
       var s = this.plan().scale[i];
       if (s.step < k){ m = s.max; lv = i + 1; continue; }
-      if (s.step === k){ e = DECK.prog(t, s.at, P.zoom); from = m; m = Math.exp(DECK.lerp(Math.log(m), Math.log(s.max), e)); return {m: m, lv: i + 1, e: e, from: from}; }
+      if (s.step === k){ e = base.prog(t, s.at, P.zoom); from = m; m = Math.exp(base.lerp(Math.log(m), Math.log(s.max), e)); return {m: m, lv: i + 1, e: e, from: from}; }
       break;
     }
     return {m: m, lv: lv, e: 1, from: null};
@@ -238,11 +243,10 @@ DECK.define("m-bars", class extends DECK.MotionElement {
     return d;
   }
   render(k, t, ctx){
-    var P = this.props, D = DECK, self = this, hor = this.hor;
+    var P = this.props, D = base, self = this, hor = this.hor;
     // 先の段階を薄く見せる表示（授業の表示）：後の段階の棒と数字を、伸びきった形でテーマの --preview-opacity の濃さに。
     // 軸の上限は今の段階のまま。今の上限に収まらない棒（後で上限が動いてから入る棒）は先に見せない（上限で切ると値を読み違える）
-    var preview = !!(ctx && (ctx.preview || ctx.mode === "lecture")), PV = 1;
-    if (preview){ PV = parseFloat(getComputedStyle(this).getPropertyValue("--preview-opacity")); if (!(PV >= 0 && PV <= 1)) PV = 0.45; }
+    var preview = !!ctx.preview, PV = preview ? base.previewOpacity(this) : 1;
     var sc = this.maxAt(k, t), M = sc.m;
     var ahead = function(o, v){ return preview && o.step > k && !(v > M * 1.04); };
     var pos = function(v){ var r = Math.min(v, M * 1.04) / M * self.len; return hor ? self.x0 + r : self.y1 - r; };
@@ -307,7 +311,7 @@ DECK.define("m-bars", class extends DECK.MotionElement {
   }
   // 積み上げ棒：棒の先が 0 から合計まで伸び、下の系列から順に色が満ちる。値の数字は伸びきってから
   renderStack(k, t, pos, ahead, PV){
-    var P = this.props, D = DECK, self = this, hor = this.hor, w = this.bw;
+    var P = this.props, D = base, self = this, hor = this.hor, w = this.bw;
     var len = function(a, b){ return Math.abs(pos(b) - pos(a)); };
     this.stacks.forEach(function(sk){
       var o = sk.o, f = ahead(o, sk.total), e = o.step < k || f ? 1 : o.step > k ? 0 : D.prog(t, o.at, P.dur), top = sk.total * e;
@@ -352,4 +356,5 @@ DECK.define("m-bars", class extends DECK.MotionElement {
       sl.el.setAttribute("opacity", vo.toFixed(3));
     });
   }
+};
 });

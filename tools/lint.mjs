@@ -14,7 +14,7 @@
 // Answers under preview (docs/conventions.md §1.2, spec §8.4): a part whose later steps are an answer declares
 // `static preview = "none";` (the only value) and shows nothing ahead; tools/release.mjs writes it to the manifest.
 // 2.0 parts (components 2.0, spec §6.1) call egatariParts.define({name, version, requires?, element?}, factory): the meta is
-// checked (exact versions, no DECK / import / require; lintMeta), and a library part (no element: base, expr) has its own
+// checked (exact versions, no DECK / window / globalThis / import / require; lintMeta), and a library part (no element: base, expr) has its own
 // README frontmatter (name = folder, version = the meta's, kind: library, summary, requires; lintLibrary) and no demo.html.
 // <name> is a registry name: ^[a-z][a-z0-9-]{0,63}$ (Egatari spec §6). Only regular files; no symbolic links, no out/ in git.
 //   node tools/lint.mjs
@@ -84,6 +84,7 @@ export function lintMeta(name, js, meta) {
   if ('element' in meta && meta.element !== `m-${name}`) errs.push(`${at}: define meta element ${JSON.stringify(meta.element)} must be "m-${name}"`);
   const code = strip(js);
   if (/\bDECK\b/.test(code)) errs.push(`${at}: a 2.0 part must not use DECK (spec §6.1: no globals of the player; use ctx and base)`);
+  if (/(^|[^.\w$])(window|globalThis)\b/m.test(code)) errs.push(`${at}: a 2.0 part must not use window or globalThis (spec §6.1: no globals of the player; the DOM through document and the element)`);
   if (/\brequire\s*\(/.test(code) || /(^|[^.\w$])import\b/m.test(code)) errs.push(`${at}: a 2.0 part must not import or require (spec §6.1)`);
   if ((code.match(/egatariParts\.define\s*\(/g) || []).length !== 1) errs.push(`${at}: a part calls egatariParts.define exactly once`);
   return errs;

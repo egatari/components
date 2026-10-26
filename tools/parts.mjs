@@ -55,3 +55,39 @@ export function dependencyOrder(parts) {
   for (const n of Object.keys(parts).sort()) visit(n);
   return out;
 }
+
+// The 2.0 parts in components/ of root: {name: meta}
+export function partMetas(root) {
+  const base = path.join(root, 'components'), out = {};
+  for (const d of fs.readdirSync(base, { withFileTypes: true })) {
+    const f = path.join(base, d.name, 'index.js');
+    if (!d.isDirectory() || !fs.existsSync(f)) continue;
+    const m = partMeta(fs.readFileSync(f, 'utf8'));
+    if (m) out[d.name] = m;
+  }
+  return out;
+}
+// The migrated element parts (2.0 parts with an element), by folder name
+export function migratedNames(root) { return Object.entries(partMetas(root)).filter(([, m]) => m.element).map(([n]) => n).sort(); }
+// The parts a part needs, itself last, in dependency order (spec §6.1 Order)
+export function requiresClosure(name, metas) {
+  const need = {};
+  const walk = (n) => { if (need[n]) return; if (!metas[n]) throw new Error(`parts: ${n} is not a 2.0 part here`); need[n] = metas[n]; for (const r of Object.keys(metas[n].requires || {})) walk(r); };
+  walk(name);
+  return dependencyOrder(need);
+}
+// TEST ONLY. How a migrated element part is served to the pinned Studio (which has no registry) in place of its 1.x
+// index.js, until Studio hosts 2.0: the registry shim (tools/registry-shim.js), then the parts it requires in dependency
+// order, then the part. Studio writes every component's code into one script after deck.js, so each piece is guarded: the
+// shim is written once per page and each part once (by name@version), whatever other migrated parts the page also uses.
+// Never shipped: tools/release.mjs packs components/<name>/index.js itself.
+export function c2Bundle(root, name) {
+  const metas = partMetas(root), read = (n) => fs.readFileSync(path.join(root, 'components', n, 'index.js'), 'utf8');
+  const shim = fs.readFileSync(path.join(root, 'tools', 'registry-shim.js'), 'utf8');
+  let out = `// TEST ONLY: ${name}@${metas[name].version} through the registry shim (tools/parts.mjs c2Bundle; not a release file)\n`;
+  out += `if (!globalThis.egatariParts) {\n${shim}\n}\n`;
+  for (const n of requiresClosure(name, metas)) {
+    out += `// ---- part ${n}@${metas[n].version}\nif (!EGATARI_PARTS_SHIM.status(${JSON.stringify(`${n}@${metas[n].version}`)})) {\n${read(n)}\n}\n`;
+  }
+  return out;
+}

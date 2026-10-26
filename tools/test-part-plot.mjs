@@ -3,11 +3,15 @@
 // ticks, a box given by id) the drawn SVG is the same markup (outerHTML, with the clip number written as #), and the
 // returned object agrees: W, H, m, x(v), y(v), clip, d(f, a, b, n), poly(pts). The clip paths are numbered by each copy's own
 // counter from 1, as DECK.Plot numbers them.
+// One deliberate deviation is allowed, and only this one: plot's clip ids carry its name and version (plot-1-0-0-clip3 where
+// DECK.Plot writes clip3; spec §6.1 Identifiers). Every id and url(#…) plot writes must have exactly that prefix; with the
+// prefix removed, the markup must equal DECK.Plot's.
 //   node tools/test-part-plot.mjs [work dir]
 import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
 import { ROOT, studio, pinLabel } from './studio.mjs';
+import { partMeta } from './parts.mjs';
 
 let fails = 0;
 const ok = (cond, msg) => { console.log((cond ? 'ok   ' : 'FAIL ') + msg); if (!cond) fails++; };
@@ -29,6 +33,7 @@ const html = fs.readFileSync(out, 'utf8'), end = html.lastIndexOf('</body>');
 const inject = ['tools/registry-shim.js', 'components/shape/index.js', 'components/base/index.js', 'components/plot/index.js'].map((f) => `<script>\n${read(f)}\n</script>\n`).join('');
 fs.writeFileSync(out, html.slice(0, end) + inject + html.slice(end));
 
+const PREFIX = partMeta(read('components/plot/index.js')).name + '-' + partMeta(read('components/plot/index.js')).version.replace(/\./g, '-') + '-';
 const browser = await S.browser.launch();
 try {
   const page = await browser.newPage({ viewport: { width: 1280, height: 720 }, bypassCSP: true });
@@ -37,7 +42,7 @@ try {
   page.on('console', (m) => { if (m.type() === 'error') errors.push(m.text()); });
   await page.goto(S.browser.fileUrl(out) + '?mode=video');
   await page.waitForFunction(() => window.DECK && DECK.ready, null, { timeout: 15000 });
-  const r = await page.evaluate(() => {
+  const r = await page.evaluate((PREFIX) => {
     const P = EGATARI_PARTS_SHIM.get('plot', '1.0.0').Plot, host = document.getElementById('host');
     const n0 = P.n;
     const OPTS = [
@@ -50,7 +55,14 @@ try {
     ];
     const SIZES = [[640, 360], [400, 300], [1000, 420], [200, 150]];
     const F = [(x) => x * x, Math.sin, (x) => 1 / (1 + Math.exp(-x)), (x) => (x < 0 ? -x : 2 * x)];
-    const run = (Plot) => {
+    // plot's ids: the prefix removed after checking that every clip id and reference has it (the documented deviation)
+    let unprefixed = 0, prefixed = 0;
+    const norm = (s, own) => {
+      if (!own) return s.replace(/clip\d+/g, 'clip#');
+      for (const m of s.matchAll(/([\w-]*)clip\d+/g)) { if (m[1] === PREFIX) prefixed++; else unprefixed++; }
+      return s.split(PREFIX + 'clip').join('clip').replace(/clip\d+/g, 'clip#');
+    };
+    const run = (Plot, own) => {
       const res = [];
       let j = 0;
       for (const [w, h] of SIZES) for (const o of OPTS) {
@@ -59,7 +71,7 @@ try {
         const p = Plot(j % 2 ? box : box.id, JSON.parse(JSON.stringify(o)));
         const xs = [o.xr[0], (o.xr[0] + o.xr[1]) / 2, o.xr[1], o.xr[0] - 1], ys = [o.yr[0], (o.yr[0] + o.yr[1]) / 2, o.yr[1]];
         res.push({
-          svg: box.innerHTML.replace(/clip\d+/g, 'clip#'), W: p.W, H: p.H, m: p.m, clip: p.clip.replace(/clip\d+/, 'clip#'), keys: Object.keys(p).join(),
+          svg: norm(box.innerHTML, own), W: p.W, H: p.H, m: p.m, clip: norm(p.clip, own), keys: Object.keys(p).join(),
           x: xs.map(p.x), y: ys.map(p.y), d: F.map((f) => p.d(f, o.xr[0], o.xr[1], 24)), poly: p.poly([[o.xr[0], o.yr[0]], [o.xr[1], o.yr[1]], [(o.xr[0] + o.xr[1]) / 2, o.yr[0]]]),
           id: (box.querySelector('clipPath') || {}).id,
         });
@@ -67,14 +79,17 @@ try {
       }
       return res;
     };
-    const d0 = DECK.Plot.n, a = run(DECK.Plot), b = run(P);
-    return { n: a.length, same: JSON.stringify(a) === JSON.stringify(b), firstDiff: a.findIndex((x, i) => JSON.stringify(x) !== JSON.stringify(b[i])), a0: a[1], b0: b[1],
-      ids: [b[0].id, b[1].id, b[b.length - 1].id], n0, n1: P.n, deckIds: [a[0].id, a[a.length - 1].id], d0, frozenPlot: Object.isFrozen(EGATARI_PARTS_SHIM.get('plot', '1.0.0')) };
-  });
+    const d0 = DECK.Plot.n, a = run(DECK.Plot, false), b = run(P, true);
+    // the raw clipPath id (kept for the id checks below) is compared after normalising, in svg and clip
+    const cmp = (x) => JSON.stringify(x.map(({ id, ...rest }) => rest));
+    return { n: a.length, same: cmp(a) === cmp(b), firstDiff: a.findIndex((x, i) => cmp([x]) !== cmp([b[i]])), a0: a[1], b0: b[1],
+      ids: [b[0].id, b[1].id, b[b.length - 1].id], n0, n1: P.n, deckIds: [a[0].id, a[a.length - 1].id], d0, frozenPlot: Object.isFrozen(EGATARI_PARTS_SHIM.get('plot', '1.0.0')), prefixed, unprefixed };
+  }, PREFIX);
   console.log(`(reference: ${pinLabel()} kit/deck.js DECK.Plot)`);
   ok(errors.length === 0, 'no exception or console error' + (errors.length ? ': ' + errors[0] : ''));
   ok(r.same, `Plot ≡ DECK.Plot: the same SVG markup and returned values on ${r.n} boxes × options` + (r.same ? '' : `\n     first difference at ${r.firstDiff}:\n     DECK ${JSON.stringify(r.a0).slice(0, 600)}\n     plot ${JSON.stringify(r.b0).slice(0, 600)}`));
-  ok(r.n0 === 0 && r.ids[0] === 'clip1' && r.ids[1] === 'clip2' && r.ids[2] === `clip${r.n}` && r.n1 === r.n, `plot numbers its clip paths from clip1 by its own counter, as DECK.Plot does (DECK: ${r.deckIds.join('…')} after ${r.d0} before)`);
+  ok(r.n0 === 0 && r.ids[0] === PREFIX + 'clip1' && r.ids[1] === PREFIX + 'clip2' && r.ids[2] === `${PREFIX}clip${r.n}` && r.n1 === r.n, `plot numbers its clip paths ${PREFIX}clip1, ${PREFIX}clip2, … by its own counter, as DECK.Plot numbers clip1, clip2, … (DECK: ${r.deckIds.join('…')} after ${r.d0} before)`);
+  ok(r.prefixed >= 2 * r.n && r.unprefixed === 0, `every clip id and url(#…) plot writes has the prefix ${PREFIX} (spec §6.1 Identifiers; ${r.prefixed} seen, ${r.unprefixed} without), the one allowed deviation from DECK.Plot`);
   ok(r.frozenPlot, 'the value {Plot} is frozen by the registry');
 } finally { await browser.close(); }
 

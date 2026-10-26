@@ -31,7 +31,15 @@ as deck.js did before mount. When the data does not fit, `steps` is the `steps` 
 `ctx.report(kind, message)` once (kind `shape`, `missing`, `json`, `attr`, `attrJson`, `notText`, `empty`, `notLinks`
 or `noLinks`; the message is deck.js's English summary) and shows deck.js's placeholder (`<div class="m-error"
 role="note">`, in Japanese when `ctx.lang` is `ja`), and `render`, `duration`, `cues` draw nothing. With data that fits,
-nothing changes. Exceptions thrown by a part are not caught here.
+nothing changes.
+
+**Containment** (spec §6.1). An exception the part throws while the player calls it (`steps`, `mount`, `render`,
+`layout`, and also `duration` and `cues`) never escapes. The first one is the instance's fault: it is reported once,
+through `ctx.report("error", "[<name>] <phase>: <error>")` (`<name>` is the tag without `m-`; `steps`, `duration` and
+`cues` get no ctx, so their fault is reported at the next `mount`, `render` or `layout`), the element shows
+`<div class="m-error" role="note" data-part-failure="error">` with its text equivalent (`aria-label`, else its own
+text), `steps` becomes the `steps` attribute (else 0), and the part is not called again. Handlers the part registers
+itself (event listeners) are not wrapped.
 
 Dependencies: base → shape only (shape needs nothing from base, so there is no cycle). `plot` requires base.
 
