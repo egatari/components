@@ -8,7 +8,7 @@
 // 最後の 1 分は時計と棒が --emph。最後の 10 秒は時計が 1 秒おきに薄くなる（注目のため。動画・動きを減らす設定・最後の状態では止まる）
 // 字は部品の中に書かない：<html lang> で日本語か英語の表を選び、データの labels で上書きできる
 // ＋1 分・−1 分（仕様 §8.4 ctx.extend、egatari-spec 485ae54）：実行系が ctx.extend を渡すときだけボタンを出す。延ばした秒数は見る人の状態で、
-//   同じスライドにいるあいだは残り、ほかのスライドから入ったとき・飛んだとき（ctx.reset）に戻る。動画・印刷は作者の秒数
+//   同じスライドにいるあいだは残り、ほかのスライドから入ったとき・飛んだとき（ctx.entered）だけ戻る。ctx.reset ではボタンのフォーカスだけを戻す（仕様 §8.4）。動画・印刷は作者の秒数
 (function(){
 DECK.define("m-timer", class extends DECK.MotionElement {
   static variants = ["fade"];
@@ -107,12 +107,12 @@ DECK.define("m-timer", class extends DECK.MotionElement {
     this._ext = {};
     this.RX = RX; this.W = W;
     if (!this.video){
-      // ctx.reset を渡さない Studio（v0.4.x）のための代わり：ほかのスライドからこのスライドに入ったときだけ戻す（m-predict と同じ）
+      // ctx.entered を渡さない実行系のための代わり：ほかのスライドからこのスライドに入ったときだけ戻す（m-predict と同じ。ctx.entered を受け取ったら使わない）
       var slide = this.closest("section"), mine = function(){ return DECK.slides ? [].indexOf.call(DECK.slides, slide) : -1; };
       document.addEventListener("deck:pos", function(e){
         var i = e.detail && e.detail.i, was = self._posI;
         self._posI = i;
-        if (i === mine() && was !== i && self.reset()) self.redraw();
+        if (!self._hasEntered && i === mine() && was !== i && self.reset()) self.redraw();
       });
       window.addEventListener("beforeprint", function(){ self._printing = true; self.redraw(); });
       window.addEventListener("afterprint", function(){ self._printing = false; self.redraw(); });
@@ -158,6 +158,11 @@ DECK.define("m-timer", class extends DECK.MotionElement {
     if (had) this.dispatchEvent(new CustomEvent("egatari-input", {bubbles: true, detail: {step: this._k, extend: 0}}));
     return had;
   }
+  // 触った跡だけを戻す（ctx.reset）：ボタンのフォーカスを外す。延長（見る人の入力）は残す
+  untouch(){
+    var a = document.activeElement;
+    if (a && a !== this && this.contains(a) && a.blur) a.blur();
+  }
   redraw(){ if (this._k !== undefined) this.render(this._k, this._t, this._ctx); }
   // ＋1 分・−1 分：実行系が ctx.extend を渡したときに初めて作る（渡さない実行系・動画では作らない）
   buttons(){
@@ -179,8 +184,11 @@ DECK.define("m-timer", class extends DECK.MotionElement {
   }
   render(k, t, ctx){
     var D = DECK, L = this.L, P = this.P, n = P.length, run = k >= 1 && P[k - 1];
-    if (ctx && ctx.reset) this.reset();
-    this._k = k; this._t = t; if (ctx) this._ctx = ctx;
+    if (ctx && typeof ctx.entered === "boolean") this._hasEntered = true;
+    if (ctx && ctx.entered === true) this.reset();
+    if (ctx && ctx.reset) this.untouch();
+    // 描き直し（redraw）で reset・entered をもう一度使わないように、それを除いて覚える（extend などはそのまま）
+    this._k = k; this._t = t; if (ctx){ this._ctx = Object.assign({}, ctx); delete this._ctx.reset; delete this._ctx.entered; }
     var hasExt = !this.video && ctx && typeof ctx.extend === "function";
     if (hasExt) this.buttons();
     if (this.btns) this.btns.style.display = hasExt && run ? "" : "none";

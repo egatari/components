@@ -6,7 +6,8 @@
 // （JSON の終わり）</m-predict>
 // 段階：0 = 問いと選択肢（と目盛り）。1 = 数の棒。answer-step（既定 2）= 答え（正しい選択肢に枠と ✓、ほかは薄く、note）
 // 見る人の入力（仕様 §8.4「Viewer input」、Studio の約束事 §3）：選択肢ごとの −1・＋1 と数の欄（発表者が数える）、選択肢の名前を押すと「自分の予想」。
-//   入力は (i, k, t) の外で、同じスライドにいるあいだは（段階を進めても戻っても）残る。ほかのスライドから入ったとき・飛んだとき（ctx.reset）に作者の counts に戻る。
+//   入力は (i, k, t) の外で、同じスライドにいるあいだは（段階を進めても戻っても）残る。ほかのスライドから入ったとき・飛んだとき（ctx.entered）だけ作者の counts に戻る。
+//   ctx.reset（触った部品を段階に入るときに戻す）では、触った跡（欄やボタンのフォーカス）だけを戻し、数と予想は残す（仕様 §8.4）
 //   動画（?mode=video）では操作を作らず、input() も受け付けない。印刷では操作を隠し、作者の数を字で出す
 // live（拡張 live §2.5）：poll="p1" と書き、ctx.live があれば ctx.live.poll("p1") の数（number[] | null）を棒に出す。
 //   見せてよいか（先生が見せると決めたか、3 人以上か）は実行系が決める。部品は配列が来たときだけ出し、動画・印刷では出さない
@@ -159,14 +160,13 @@ DECK.define("m-predict", class extends DECK.MotionElement {
         ctl.appendChild(f);
         ctl.appendChild(bt("+1", 1, "1 増やす"));
       });
-      // 古い実行系（段階に入るときに ctx.reset を渡さないもの）でも、段階に入り直すと戻るように。印刷の前にも戻す
-      // ctx.reset を渡さない実行系（Studio v0.4.x）のための代わり：ほかのスライドからこのスライドに入ったときだけ戻す。
-      // 自動再生の切り替え・発表者の画面とのつながり・同じスライドの中の段階の移りでは戻さない
+      // ctx.entered を渡さない実行系のための代わり：ほかのスライドからこのスライドに入ったときだけ戻す。
+      // 自動再生の切り替え・発表者の画面とのつながり・同じスライドの中の段階の移りでは戻さない。ctx.entered を一度でも受け取ったら使わない
       var slide = this.closest("section"), mine = function(){ return DECK.slides ? [].indexOf.call(DECK.slides, slide) : -1; };
       this._onPos = function(e){
         var i = e.detail && e.detail.i, was = self._posI;
         self._posI = i;
-        if (i === mine() && was !== i && self.reset()) self.redraw();
+        if (!self._hasEntered && i === mine() && was !== i && self.reset()) self.redraw();
       };
       document.addEventListener("deck:pos", this._onPos);
       // 印刷は作者の値で描く（画面の数は消さない。afterprint で戻す）
@@ -227,6 +227,11 @@ DECK.define("m-predict", class extends DECK.MotionElement {
     if (had) this.emit();
     return true;
   }
+  // 触った跡だけを戻す（ctx.reset）：部品の中のフォーカスを外す（欄は今の数を出し直す）。数と予想（見る人の入力）は残す
+  untouch(){
+    var a = document.activeElement;
+    if (a && a !== this && this.contains(a) && a.blur) a.blur();
+  }
   redraw(){ if (this._k !== undefined) this.render(this._k, this._t, this._ctx); }
   duration(k){
     var a = this.aStep, d = 0;
@@ -237,8 +242,11 @@ DECK.define("m-predict", class extends DECK.MotionElement {
   render(k, t, ctx){
     var self = this, P = this.props, D = DECK, G = this.g, dd = this.data, n = this.rows.length, vr = this.variant;
     var a = this.aStep;
-    // ほかのスライドから入ったとき・飛んだとき（ctx.reset）は、見る人の状態を捨てる。同じスライドの中の段階の移りでは残す
-    if (ctx && ctx.reset) this.reset();
+    // ほかのスライドから入ったとき・飛んだとき（ctx.entered）だけ、見る人の状態を捨てる。同じスライドの中の段階の移りでは残す。
+    // ctx.reset（触った部品が段階に入るとき）は触った跡だけを戻し、見る人の入力は消さない（仕様 §8.4）
+    if (ctx && typeof ctx.entered === "boolean") this._hasEntered = true;
+    if (ctx && ctx.entered === true) this.reset();
+    if (ctx && ctx.reset) this.untouch();
     this._k = k; this._t = t; this._ctx = ctx ? {mode: ctx.mode, preview: ctx.preview, live: ctx.live} : undefined;
     // 数：live の集計（実行系が見せてよいと渡したときだけ）→ 見る人の数 → 作者の数
     var live = null;

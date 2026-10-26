@@ -26,3 +26,12 @@ Only the maintainer releases. To withdraw a release, add it to `yanked.json` (wi
 5. In Egatari Studio: `npm run components:update -- vX.Y.Z`, then Studio's tests, then a pull request there.
 
 The tarball is deterministic (`tools/tar.mjs`: sorted entries, fixed modes and times, no user names, fixed gzip header), so `node tools/release.mjs X.Y.Z` on the tagged commit gives the same file again (with the same Node major version; zlib may compress differently in another). The manifest's per-file sha256 values do not depend on compression.
+
+## Moving the Studio pin
+
+The tests build, run and check every demo with one commit of Egatari Studio, pinned in `tools/studio.json` (now `03eaf0607598b993eb020f8e619caa53526bc771`, Studio's `main` on 2026-10-26; before that, the v0.4.3 tag's commit `8419183`). A release is tested with the pin it has; moving the pin is its own change, not part of a release.
+
+1. Resolve the full sha: `git ls-remote https://github.com/egatari/egatari-studio main` (or a tag: `refs/tags/vX.Y.Z^{}`). Write it to `commit` (all 40 characters) and say where it came from in `ref` (or `tag`); `tools/studio.mjs` refuses a short sha.
+2. `rm -rf .studio && npm test`. `tools/studio.mjs` fetches exactly that commit (a shallow fetch by sha), checks `HEAD` against it and runs `npm ci` there. Newer Studio (after v0.4.x, including the current pin) reads components from `vendor/components/<name>/<version>/` with `components.lock.json`; the overlay writes the components here as version `0.0.0-test` and makes it the default.
+3. If Studio's `playwright-core` version changed (its `package-lock.json`), change the version in `.github/workflows/test.yml` to match.
+4. Tests that compare with the previous release (`tools/test-default-variant.mjs`) build both sides with the same pinned Studio, so a new pin does not by itself make them differ. If screenshots of a step differ only through the runtime while the component DOM is identical, handle it as `tools/test-components.mjs` handles renderer differences (pass with a note); never loosen a DOM check.

@@ -258,7 +258,7 @@ purposes: change, compare
 | `m-seq` | spread |
 | `m-sweep` | parameter |
 | `m-codetree` | hierarchy, process |
-| `m-kanbun` `m-kobun` `m-gendai` | text-structure |
+| `m-kanbun` `m-kobun` `m-gendai` `m-syntax` | text-structure |
 | `m-keyboard` | music |
 | `m-compare` | compare |
 | `m-timeline` | timeline |

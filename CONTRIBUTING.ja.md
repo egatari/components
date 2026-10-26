@@ -33,7 +33,7 @@
 
 - [ ] `index.js` が `<m-<名前>>` を定義し、[部品の約束事](https://github.com/egatari/egatari-studio/blob/main/docs/contract.ja.md)に従う：`render(k, t)` は段階と時刻だけで画面を決める（`setTimeout`・`requestAnimationFrame`・`Date`・シードのない乱数を使わない。`t = Infinity` が最終状態）、色はテーマの変数だけ（`var(--term)` `var(--emph)` `var(--muted)` `var(--accent2)` `var(--line)` `var(--fg)` `var(--series-1..4)`）、データの形を `static shape` で宣言、デッキ固有の文言・数値を持たない
 - [ ] コードを実行する書き方がない（`npm test` の `tools/scan-code.mjs`）：`eval`・`Function`・`constructor`・文字列のタイマー・`import`・`innerHTML` などを使わない。作者が書く式は JavaScript として実行せず `tools/expr.js` で計算する（`node tools/expr-sync.mjs` で写し、その `USERS` に部品を足す。[SECURITY.md](SECURITY.md)）
-- [ ] `README.md`：frontmatter の `name`・`series`（`common`＝標準パーツ・`academic`・`business`・`kokugo`・`info`・`social`・`music`）・`summary`・`steps`・`props` と、いつ使うかの本文
+- [ ] `README.md`：frontmatter の `name`・`series`（`common`＝標準パーツ・`academic`・`business`・`kokugo`・`info`・`social`・`music`・`english`）・`summary`・`steps`・`props` と、いつ使うかの本文
 - [ ] `demo.html`：1〜3 枚の見本のデッキ（見せ方の種類があれば、それを並べた 1 枚を足す）。文章とデータは自作・パブリックドメイン・架空のもの
 - [ ] `tools/test-shape.mjs` に形の違うデータの例を 1 行
 - [ ] `node tools/catalog.mjs` で CATALOG.md を作り直す（手で直さない）
@@ -50,7 +50,7 @@ node tools/test-all.mjs --only test-components
 node tools/test-components.mjs bars        # 見本 1 つ（画像は components/bars/out/shots/）
 ```
 
-試験は、固定した版の Egatari Studio（`tools/studio.json`、`tools/studio.mjs` が `.studio/` に取ってくる）で見本を組みます。手元の Studio で試すときは `EGATARI_STUDIO=<作業用の写しのパス>` を指定します（ここの部品をそこへ写します）。Studio が部品の約束事を変えたら、固定する版をそれを含む Studio のリリースに移します。タグは付け替えないので、固定した版はいつも同じコードです。
+試験は、固定したコミットの Egatari Studio（`tools/studio.json` にコミットの sha をすべて書く。`tools/studio.mjs` が `.studio/` に取ってきて、checkout の後に確かめる）で見本を組みます。手元の Studio で試すときは `EGATARI_STUDIO=<作業用の写しのパス>` を指定します（ここの部品をそこへ写します）。Studio が部品の約束事を変えたら、固定するコミットをそれを含む Studio のコミット（リリースのタグのコミット、または `main` のコミット）に移します。sha はいつも同じコードです。手順は RELEASING.md の「Moving the Studio pin」。
 
 ## リリース
 

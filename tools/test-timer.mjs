@@ -4,8 +4,11 @@
 //   3. strings: Japanese and English decks (<html lang>), and the labels override
 //   4. no +1/−1 min buttons without ctx.extend (Studio v0.4.3 has none)
 //   5. with a fake ctx.extend (spec §8.4, egatari-spec 485ae54): ±60 is asked, the remaining time follows, a returned total is used,
-//      −1 min stops at 0:00, + and − keys on a focused button, the extension persists across steps on the slide and resets on
-//      ctx.reset and on entering the slide from another slide; egatari-input is dispatched
+//      −1 min stops at 0:00, + and − keys on a focused button, the extension persists across steps on the slide and on ctx.reset
+//      (spec §8.4: ctx.reset MUST NOT clear viewer input; only focus is dropped), and resets on ctx.entered and, for a player
+//      without ctx.entered, on entering the slide from another slide (deck:pos); egatari-input is dispatched
+//   5b. real clicks in the pinned Studio (whose step entry passes ctx.reset to a touched part): +1 min clicked at step 1 is kept
+//      after going to step 2 and back; a jump to another slide and back clears it
 //   6. video: no buttons, the author's seconds; print: buttons hidden, the author's seconds, the screen keeps the extension
 //   node tools/test-timer.mjs [work folder]
 import fs from 'node:fs';
@@ -121,23 +124,34 @@ try {
       const c = __c(0), o = { clock: c.clock.textContent };
       DECK.go(0, 2, false); DECK.go(0, 1, false); c.render(1, 10, __X); o.back = c.clock.textContent;
       DECK.autoplay(true); DECK.autoplay(false); DECK.go(0, 1, false); c.render(1, 10, __X); o.auto = c.clock.textContent;
-      __tot = 0; c.render(1, 10, { mode: 'talk', extend: __X.extend, reset: true }); o.reset = c.clock.textContent;   // the player resets its total when it passes ctx.reset
+      c.render(1, 10, { mode: 'talk', extend: __X.extend, reset: true }); o.reset = c.clock.textContent;   // the player keeps its total on ctx.reset
+      c.render(1, 10, __X); o.afterReset = c.clock.textContent;
       c.render(1, 10, __X); c.extend(60); DECK.go(1, 0, false); __tot = 0; DECK.go(0, 1, false); c.render(1, 10, __X); o.otherSlide = c.clock.textContent;
+      // a player that passes ctx.entered: the extension is cleared on that render only (the player clears its own total on entry)
+      c.extend(60); o.beforeEntered = c.clock.textContent;
+      __tot = 0; c.render(1, 10, { ...__X, entered: true }); o.entered = c.clock.textContent;
+      c.extend(60); c.render(1, 10, { ...__X, entered: false }); o.notEntered = c.clock.textContent;
+      // with ctx.entered known, deck:pos no longer resets (the player says when the slide is entered)
+      DECK.go(1, 0, false); DECK.go(0, 1, false); c.render(1, 10, __X); o.posIgnored = c.clock.textContent;
+      __tot = 0; c.render(1, 10, { ...__X, entered: true });
       c.render(1, 80, __X); c.extend(-60); o.stop = c.clock.textContent; o.stopCall = __calls[__calls.length - 1];
-      c.render(1, 10, { mode: 'talk', reset: true });
+      c.render(1, 10, { mode: 'talk', entered: true });
       c.render(1, 10, { mode: 'talk', extend: () => 30 }); c.extend(60); o.returned = c.clock.textContent;
       return o;
     });
     ok(r.clock === '0:20', 'the − key: back to 0:20');
     ok(r.back === '0:20', 'the extension persists across steps on the same slide');
     ok(r.auto === '0:20', 'an autoplay toggle does not reset it');
-    ok(r.reset === '1:20', 'ctx.reset restores the author\'s 90 s');
-    ok(r.otherSlide === '1:20', 'entering the slide from another slide restores the author\'s 90 s');
+    ok(r.reset === '0:20' && r.afterReset === '0:20', 'ctx.reset keeps the extension (viewer input, spec §8.4)');
+    ok(r.otherSlide === '1:20', 'entering the slide from another slide (deck:pos, no ctx.entered) restores the author\'s 90 s');
+    ok(r.beforeEntered === '2:20' && r.entered === '1:20', 'ctx.entered restores the author\'s 90 s');
+    ok(r.notEntered === '2:20', 'entered: false keeps the extension');
+    ok(r.posIgnored === '2:20', 'once the player passes ctx.entered, deck:pos does not reset');
     ok(r.stop === '0:00' && r.stopCall === -10, '−1 min with 10 s left ends the phase now (asks −10, not −60)');
     ok(r.returned === '1:50', 'a total returned by ctx.extend is used (30 s: 90 + 30 − 10)');
     ok(errors.length === 0, 'no console error' + (errors.length ? ': ' + errors[0] : ''));
     // print: buttons hidden, the author's seconds; the screen keeps the extension afterwards
-    await page.evaluate(() => { const c = __c(0); __tot = 0; c.render(1, 10, { mode: 'talk', reset: true }); c.render(1, 10, __X); c.extend(60); });
+    await page.evaluate(() => { const c = __c(0); __tot = 0; c.render(1, 10, { mode: 'talk', entered: true }); c.render(1, 10, __X); c.extend(60); });
     await page.evaluate(() => window.dispatchEvent(new Event('beforeprint')));
     await page.emulateMedia({ media: 'print' });
     r = await page.evaluate(() => { const c = __c(0); c.render(1, 10, __X); return { vis: [...document.querySelectorAll('m-timer button')].filter((e) => e.getBoundingClientRect().width > 0).length, clock: c.clock.textContent }; });
@@ -146,6 +160,25 @@ try {
     await page.evaluate(() => window.dispatchEvent(new Event('afterprint')));
     r = await page.evaluate(() => { const c = __c(0); c.render(1, 10, __X); return c.clock.textContent; });
     ok(r === '2:20', 'after printing, the screen keeps the extension');
+    await page.close();
+  }
+
+  // ---- 5b. real clicks with the pinned Studio's step entry (ctx.reset on a touched part); a fake ctx.extend that returns nothing,
+  // so the component keeps the total itself
+  {
+    const { page, errors } = await open(out);
+    await page.evaluate(() => { window.__Y = { mode: 'talk', extend: () => undefined }; DECK.go(0, 1, false); __c(0).render(1, 10, __Y); });
+    await page.locator('m-timer').first().locator('button').nth(1).click();
+    const clock = () => page.evaluate(() => { const c = __c(0); c.render(1, 10, __Y); return c.clock.textContent; });
+    const a = await clock();
+    await page.evaluate(() => DECK.go(0, 2, false));
+    await page.evaluate(() => DECK.go(0, 1, false));
+    const b = await clock();
+    await page.evaluate(() => { DECK.go(1, 0, false); DECK.go(0, 1, false); });
+    const c = await clock();
+    ok(a === '2:20' && b === '2:20', `real click: +1 min at step 1 is kept after step 2 and back (${a}, ${b})`);
+    ok(c === '1:20', `real click: a jump to another slide and back clears it (${c})`);
+    ok(errors.length === 0, 'real clicks: no console error' + (errors.length ? ': ' + errors[0] : ''));
     await page.close();
   }
 

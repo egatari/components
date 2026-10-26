@@ -73,101 +73,103 @@ document.addEventListener("DOMContentLoaded", function(){
 <div id="stage">
 
 <section class="slide">
-  <h2>部品の一覧（32 個、114 枚）</h2>
+  <h2>部品の一覧（33 個、115 枚）</h2>
   <div class="body">
     <p>部品ごとに、説明の 1 枚と見本のスライドが続きます。→ で段階を進めます。</p>
-    <p>m-kakijun（新しい）　m-keyboard（新しい）　m-bars（変わった）　m-boxplot（変わった）　m-codetree（変わった）　m-collect（変わった）　m-compare（変わった）　m-curves（変わった）　m-cycle（変わった）　m-fishbone（変わった）　m-flow（変わった）　m-gendai（変わった）　m-hissan（変わった）　m-hist（変わった）　m-kanbun（変わった）　m-kobun（変わった）　m-kpi（変わった）　m-map-japan（変わった）　m-market（変わった）　m-menu（変わった）　m-numberline（変わった）　m-pie（変わった）　m-predict（変わった）　m-quad（変わった）　m-scatter（変わった）　m-seq（変わった）　m-sweep（変わった）　m-tape（変わった）　m-timeline（変わった）　m-timer（変わった）　m-tree（変わった）　m-venn（変わった）</p>
+    <p>m-syntax（新しい）　m-predict（変わった）　m-timer（変わった）　m-bars　m-boxplot　m-codetree　m-collect　m-compare　m-curves　m-cycle　m-fishbone　m-flow　m-gendai　m-hissan　m-hist　m-kakijun　m-kanbun　m-keyboard　m-kobun　m-kpi　m-map-japan　m-market　m-menu　m-numberline　m-pie　m-quad　m-scatter　m-seq　m-sweep　m-tape　m-timeline　m-tree　m-venn</p>
   </div>
 </section>
 
 <section class="slide">
-  <h2>m-kakijun（新しい、v1.11.0）</h2>
+  <h2>m-syntax（新しい、v1.12.0）</h2>
   <div class="body">
-    <p>かな（ひらがな・カタカナ）の書き順。字を 1 画ずつ、書く順と向きのとおりに書いて見せる</p>
+    <p>英文の構造：S V O C M の記号、句と節の括弧、修飾の矢印、品詞、それから和訳</p>
     <ul>
-      <li>伝えたいこと：手順・工程</li>
-      <li>見せ方：draw・pen</li>
-      <li>系列：国語　見本のスライド：3 枚</li>
+      <li>伝えたいこと：文章の構造</li>
+      <li>見せ方：fade・draw</li>
+      <li>系列：英語　見本のスライド：0 枚</li>
     </ul>
   </div>
 </section>
 
 <section class="slide">
-  <h2>ひらがなの書き順：あさ</h2>
+  <h2>m-predict（変わった、v1.12.0）</h2>
   <div class="body">
-    <m-kakijun text="あさ" ends="on" style="height:400px"></m-kakijun>
-  </div>
-  <div class="concl"><span>→ 「あ」の 3 画目は、結びを作ってから右へはらう</span></div>
-</section>
-
-<section class="slide">
-  <h2>濁点のあるカタカナ：ガム</h2>
-  <div class="body">
-    <m-kakijun text="ガム" style="height:400px"></m-kakijun>
-  </div>
-  <div class="concl"><span>→ 濁点は、字を書き終えてから左上から右下へ 2 つ</span></div>
-</section>
-
-<section class="slide">
-  <h2>縦書きの小さい字：きょう</h2>
-  <div class="body">
-    <m-kakijun text="きょう" writing="tate" size="140" nums="off" style="height:440px"></m-kakijun>
-  </div>
-  <div class="concl"><span>→ 縦書きの「ょ」は、ます目の右上に小さく書く</span></div>
-</section>
-
-<section class="slide">
-  <h2>m-keyboard（新しい、v1.11.0）</h2>
-  <div class="body">
-    <p>ピアノの鍵盤。音階・和音・半音と全音を光らせて音も鳴らす</p>
+    <p style="margin:0 0 10px;line-height:1.3"><span style="display:inline-block;font-size:27px;font-weight:700;color:var(--fg);border:2px dashed var(--accent2);border-radius:8px;padding:0 12px">操作できる / Interactive</span></p>
+    <p style="border:3px dashed var(--accent2);border-radius:10px;padding:10px 16px">予想してから答えを開く。選択肢ごとの人数を棒で見せ、答えの段階で正解に枠（見る人が押して操作できる）</p>
     <ul>
-      <li>伝えたいこと：音楽（音の高さ・和音・リズム）</li>
-      <li>見せ方：light・press・rise</li>
-      <li>系列：音楽　見本のスライド：3 枚</li>
+      <li>伝えたいこと：予想してから確かめる</li>
+      <li>見せ方：fade・draw</li>
+      <li>系列：標準パーツ　見本のスライド：3 枚</li>
     </ul>
   </div>
 </section>
 
 <section class="slide">
-  <h2>ハ長調の音階（ドレミファソラシド）</h2>
+  <h2>予想してみよう：落ちる速さ</h2>
   <div class="body">
-    <m-keyboard aria-label="ドから上のドまで、白い鍵盤を 1 つずつ順にひく" style="height:400px">
-      <script type="application/json">{"range": "C4-C5", "names": "solfa", "steps": [
-        {"keys": ["C4", "D4", "E4", "F4", "G4", "A4", "B4", "C5"], "t": [0, 0.6, 1.2, 1.8, 2.4, 3.0, 3.6, 4.2], "label": "ドから上のドまで、1 つずつ"}]}</script>
-    </m-keyboard>
+    <p class="ia-badge" style="margin:0 0 10px;line-height:1.3"><span style="display:inline-block;font-size:27px;font-weight:700;color:var(--fg);border:2px dashed var(--accent2);border-radius:8px;padding:0 12px">操作できる</span></p>
+    <m-predict unit="人" style="height:390px">
+      <script type="application/json">{
+        "question": "同じ高さから落とすと、重い球と軽い球のどちらが先に着く？",
+        "choices": [{"label": "重い球"}, {"label": "軽い球"}, {"label": "同時"}],
+        "answer": 2,
+        "counts": [17, 2, 11],
+        "note": "空気の抵抗が小さければ、重さによらず同時に着く（ガリレオ）"
+      }</script>
+    </m-predict>
   </div>
-  <div class="concl"><span>→ 白い鍵盤だけを順にひくと、ハ長調の音階になる</span></div>
+  <div class="concl"><span>→ 落ちる速さは重さで決まらない（人数は架空の例）</span></div>
 </section>
 
 <section class="slide">
-  <h2>主要三和音（Ⅰ・Ⅳ・Ⅴ）</h2>
+  <h2>予想してみよう：小数のかけ算</h2>
   <div class="body">
-    <m-keyboard variant="press" aria-label="ハ長調の主要三和音：ドミソ、ファラド、ソシレ" style="height:400px">
-      <script type="application/json">{"range": "C4-C6", "steps": [
-        {"keys": ["C4", "E4", "G4"], "label": "Ⅰ　主和音（ドミソ）"},
-        {"keys": ["F4", "A4", "C5"], "label": "Ⅳ　下属和音（ファラド）", "tone": "accent2"},
-        {"keys": ["G4", "B4", "D5"], "label": "Ⅴ　属和音（ソシレ）", "tone": "term"}]}</script>
-    </m-keyboard>
+    <m-predict unit="人" poll="p1" style="height:440px">
+      <script type="application/json">{
+        "question": "0.1 × 0.1 はいくつ？",
+        "choices": [{"label": "0.1"}, {"label": "0.01"}, {"label": "0.2"}, {"label": "1"}],
+        "answer": 1,
+        "counts": [12, 10, 6, 2],
+        "note": "0.1 は 10 分の 1。10 分の 1 の 10 分の 1 は 100 分の 1"
+      }</script>
+    </m-predict>
   </div>
-  <div class="concl"><span>→ どの和音も、鍵盤を 1 つおきに 3 つ重ねる</span></div>
+  <div class="concl"><span>→ 1 より小さい数をかけると、もとの数より小さくなる（人数は架空の例）</span></div>
 </section>
 
 <section class="slide">
-  <h2>オクターブと半音・全音</h2>
+  <h2>見せ方の種類（variant）</h2>
   <div class="body">
-    <m-keyboard variant="rise" aria-label="ドと上のドがオクターブ。ミとファ、ドとド♯は半音、ドとレは全音" style="height:400px">
-      <script type="application/json">{"range": "C4-C5", "steps": [
-        {"keys": ["C4", "C5"], "t": [0, 0.8], "label": "オクターブ：ドから上のドまで"},
-        {"keys": ["E4", "F4"], "t": [0, 0.8], "label": "半音：となりの鍵盤（ミとファ）"},
-        {"keys": ["C4", "C#4"], "t": [0, 0.8], "label": "半音：となりの鍵盤（ドとド♯）"},
-        {"keys": ["C4", "D4"], "t": [0, 0.8], "label": "全音：半音 2 つ分（ドとレ）"}]}</script>
-    </m-keyboard>
+    <div style="display:grid;grid-template-columns:190px 1fr;gap:20px 16px;align-items:center;font-size:27px">
+      <div>フェード<br>（fade）</div>
+      <m-predict variant="fade" unit="人" style="height:210px">
+        <script type="application/json">{"choices": [{"label": "A"}, {"label": "B"}], "answer": 0, "counts": [8, 5]}</script>
+      </m-predict>
+      <div>線を引く<br>（draw）</div>
+      <m-predict variant="draw" unit="人" style="height:210px">
+        <script type="application/json">{"choices": [{"label": "A"}, {"label": "B"}], "answer": 0, "counts": [8, 5]}</script>
+      </m-predict>
+    </div>
   </div>
-  <div class="concl"><span>→ 1 オクターブは半音 12 個。全音は半音 2 つ分</span></div>
+  <div class="concl"><span>→ 書かなければ最初の見せ方（fade）になる。人数は架空</span></div>
 </section>
 
 <section class="slide">
-  <h2>m-bars（変わった、v1.11.0）</h2>
+  <h2>m-timer（変わった、v1.12.0）</h2>
+  <div class="body">
+    <p style="margin:0 0 10px;line-height:1.3"><span style="display:inline-block;font-size:27px;font-weight:700;color:var(--fg);border:2px dashed var(--accent2);border-radius:8px;padding:0 12px">操作できる / Interactive</span></p>
+    <p style="border:3px dashed var(--accent2);border-radius:10px;padding:10px 16px">グループワークの進行タイマー。区切りごとに残り時間を大きく数え、区切りの一覧で今の区切りを示す（見る人が押して操作できる）</p>
+    <ul>
+      <li>伝えたいこと：時間を区切る</li>
+      <li>見せ方：fade</li>
+      <li>系列：標準パーツ　見本のスライド：0 枚</li>
+    </ul>
+  </div>
+</section>
+
+<section class="slide">
+  <h2>m-bars</h2>
   <div class="body">
     <p>棒を段階ごとに 0 から伸ばす（縦棒・横棒・組の棒・積み上げ棒）。値の軸の上限を段階で広げて「軸を突き抜ける伸び」も見せられる</p>
     <ul>
@@ -249,7 +251,7 @@ document.addEventListener("DOMContentLoaded", function(){
 </section>
 
 <section class="slide">
-  <h2>m-boxplot（変わった、v1.11.0）</h2>
+  <h2>m-boxplot</h2>
   <div class="body">
     <p>箱ひげ図。値を並べ、中央値・四分位数を求める手順のとおりに組み立てる。群を並べて比べる</p>
     <ul>
@@ -299,7 +301,7 @@ document.addEventListener("DOMContentLoaded", function(){
 </section>
 
 <section class="slide">
-  <h2>m-codetree（変わった、v1.11.0）</h2>
+  <h2>m-codetree</h2>
   <div class="body">
     <p>符号の木で 2 値の系列を 1 語ずつ復号する（MH 符号）。ランは画素の升目に伸びる</p>
     <ul>
@@ -311,7 +313,7 @@ document.addEventListener("DOMContentLoaded", function(){
 </section>
 
 <section class="slide">
-  <h2>m-collect（変わった、v1.11.0）</h2>
+  <h2>m-collect</h2>
   <div class="body">
     <p>並んだ札（回答など）が動いて縮み、少数の箱（要約）にまとまる</p>
     <ul>
@@ -334,7 +336,7 @@ document.addEventListener("DOMContentLoaded", function(){
 </section>
 
 <section class="slide">
-  <h2>m-compare（変わった、v1.11.0）</h2>
+  <h2>m-compare</h2>
   <div class="body">
     <p>2 つ（3 つまで）を横に並べて比べる表。一方の列、もう一方の列、それから行ごとの違い</p>
     <ul>
@@ -406,7 +408,7 @@ document.addEventListener("DOMContentLoaded", function(){
 </section>
 
 <section class="slide">
-  <h2>m-curves（変わった、v1.11.0）</h2>
+  <h2>m-curves</h2>
   <div class="body">
     <p>同じ座標軸に線を 1 本ずつ引く（線の名前は凡例でなく線の端に直接書く）</p>
     <ul>
@@ -458,7 +460,7 @@ document.addEventListener("DOMContentLoaded", function(){
 </section>
 
 <section class="slide">
-  <h2>m-cycle（変わった、v1.11.0）</h2>
+  <h2>m-cycle</h2>
   <div class="body">
     <p>循環の図。段階の箱を円の上に 12 時から時計回りに並べ、円に沿った矢印でつなぐ（最後から最初へ戻る矢印も）</p>
     <ul>
@@ -528,7 +530,7 @@ document.addEventListener("DOMContentLoaded", function(){
 </section>
 
 <section class="slide">
-  <h2>m-fishbone（変わった、v1.11.0）</h2>
+  <h2>m-fishbone</h2>
   <div class="body">
     <p>原因と結果の図（特性要因図・フィッシュボーン図）を、大骨 1 本ずつ組み立て、最後に結果（頭）を出す。座標は書かず、配置は部品が決める</p>
     <ul>
@@ -615,7 +617,7 @@ document.addEventListener("DOMContentLoaded", function(){
 </section>
 
 <section class="slide">
-  <h2>m-flow（変わった、v1.11.0）</h2>
+  <h2>m-flow</h2>
   <div class="body">
     <p>流れ図の箱と矢印を段階ごとに出して、図を組み立てる</p>
     <ul>
@@ -675,7 +677,7 @@ document.addEventListener("DOMContentLoaded", function(){
 </section>
 
 <section class="slide">
-  <h2>m-gendai（変わった、v1.11.0）</h2>
+  <h2>m-gendai</h2>
   <div class="body">
     <p>現代文の読解の図：傍線・二重傍線を引き、指示語から指す内容へ矢印、段落を役割（主張・具体例・対比）の枠で囲んで線でつなぐ</p>
     <ul>
@@ -687,7 +689,7 @@ document.addEventListener("DOMContentLoaded", function(){
 </section>
 
 <section class="slide">
-  <h2>m-hissan（変わった、v1.11.0）</h2>
+  <h2>m-hissan</h2>
   <div class="body">
     <p>筆算（たし算・ひき算・かけ算・わり算、小数も）。式を書けば、部品が教科書の手順で計算して書く</p>
     <ul>
@@ -723,7 +725,7 @@ document.addEventListener("DOMContentLoaded", function(){
 </section>
 
 <section class="slide">
-  <h2>m-hist（変わった、v1.11.0）</h2>
+  <h2>m-hist</h2>
   <div class="body">
     <p>ヒストグラム・度数折れ線・ドットプロット。平均値・中央値・最頻値の線も</p>
     <ul>
@@ -770,7 +772,43 @@ document.addEventListener("DOMContentLoaded", function(){
 </section>
 
 <section class="slide">
-  <h2>m-kanbun（変わった、v1.11.0）</h2>
+  <h2>m-kakijun</h2>
+  <div class="body">
+    <p>かな（ひらがな・カタカナ）の書き順。字を 1 画ずつ、書く順と向きのとおりに書いて見せる</p>
+    <ul>
+      <li>伝えたいこと：手順・工程</li>
+      <li>見せ方：draw・pen</li>
+      <li>系列：国語　見本のスライド：3 枚</li>
+    </ul>
+  </div>
+</section>
+
+<section class="slide">
+  <h2>ひらがなの書き順：あさ</h2>
+  <div class="body">
+    <m-kakijun text="あさ" ends="on" style="height:400px"></m-kakijun>
+  </div>
+  <div class="concl"><span>→ 「あ」の 3 画目は、結びを作ってから右へはらう</span></div>
+</section>
+
+<section class="slide">
+  <h2>濁点のあるカタカナ：ガム</h2>
+  <div class="body">
+    <m-kakijun text="ガム" style="height:400px"></m-kakijun>
+  </div>
+  <div class="concl"><span>→ 濁点は、字を書き終えてから左上から右下へ 2 つ</span></div>
+</section>
+
+<section class="slide">
+  <h2>縦書きの小さい字：きょう</h2>
+  <div class="body">
+    <m-kakijun text="きょう" writing="tate" size="140" nums="off" style="height:440px"></m-kakijun>
+  </div>
+  <div class="concl"><span>→ 縦書きの「ょ」は、ます目の右上に小さく書く</span></div>
+</section>
+
+<section class="slide">
+  <h2>m-kanbun</h2>
   <div class="body">
     <p>白文に返り点・送り仮名を付け、訓読の順に字をたどり（返り点で上へ戻るところに弧）、書き下し文にする（縦書き）</p>
     <ul>
@@ -818,7 +856,57 @@ document.addEventListener("DOMContentLoaded", function(){
 </section>
 
 <section class="slide">
-  <h2>m-kobun（変わった、v1.11.0）</h2>
+  <h2>m-keyboard</h2>
+  <div class="body">
+    <p>ピアノの鍵盤。音階・和音・半音と全音を光らせて音も鳴らす</p>
+    <ul>
+      <li>伝えたいこと：音楽（音の高さ・和音・リズム）</li>
+      <li>見せ方：light・press・rise</li>
+      <li>系列：音楽　見本のスライド：3 枚</li>
+    </ul>
+  </div>
+</section>
+
+<section class="slide">
+  <h2>ハ長調の音階（ドレミファソラシド）</h2>
+  <div class="body">
+    <m-keyboard aria-label="ドから上のドまで、白い鍵盤を 1 つずつ順にひく" style="height:400px">
+      <script type="application/json">{"range": "C4-C5", "names": "solfa", "steps": [
+        {"keys": ["C4", "D4", "E4", "F4", "G4", "A4", "B4", "C5"], "t": [0, 0.6, 1.2, 1.8, 2.4, 3.0, 3.6, 4.2], "label": "ドから上のドまで、1 つずつ"}]}</script>
+    </m-keyboard>
+  </div>
+  <div class="concl"><span>→ 白い鍵盤だけを順にひくと、ハ長調の音階になる</span></div>
+</section>
+
+<section class="slide">
+  <h2>主要三和音（Ⅰ・Ⅳ・Ⅴ）</h2>
+  <div class="body">
+    <m-keyboard variant="press" aria-label="ハ長調の主要三和音：ドミソ、ファラド、ソシレ" style="height:400px">
+      <script type="application/json">{"range": "C4-C6", "steps": [
+        {"keys": ["C4", "E4", "G4"], "label": "Ⅰ　主和音（ドミソ）"},
+        {"keys": ["F4", "A4", "C5"], "label": "Ⅳ　下属和音（ファラド）", "tone": "accent2"},
+        {"keys": ["G4", "B4", "D5"], "label": "Ⅴ　属和音（ソシレ）", "tone": "term"}]}</script>
+    </m-keyboard>
+  </div>
+  <div class="concl"><span>→ どの和音も、鍵盤を 1 つおきに 3 つ重ねる</span></div>
+</section>
+
+<section class="slide">
+  <h2>オクターブと半音・全音</h2>
+  <div class="body">
+    <m-keyboard variant="rise" aria-label="ドと上のドがオクターブ。ミとファ、ドとド♯は半音、ドとレは全音" style="height:400px">
+      <script type="application/json">{"range": "C4-C5", "steps": [
+        {"keys": ["C4", "C5"], "t": [0, 0.8], "label": "オクターブ：ドから上のドまで"},
+        {"keys": ["E4", "F4"], "t": [0, 0.8], "label": "半音：となりの鍵盤（ミとファ）"},
+        {"keys": ["C4", "C#4"], "t": [0, 0.8], "label": "半音：となりの鍵盤（ドとド♯）"},
+        {"keys": ["C4", "D4"], "t": [0, 0.8], "label": "全音：半音 2 つ分（ドとレ）"}]}</script>
+    </m-keyboard>
+  </div>
+  <div class="concl"><span>→ 1 オクターブは半音 12 個。全音は半音 2 つ分</span></div>
+</section>
+
+<section class="slide">
+  <h2>m-kobun</h2>
   <div class="body">
     <p style="margin:0 0 10px;line-height:1.3"><span style="display:inline-block;font-size:27px;font-weight:700;color:var(--fg);border:2px dashed var(--accent2);border-radius:8px;padding:0 12px">操作できる / Interactive</span></p>
     <p style="border:3px dashed var(--accent2);border-radius:10px;padding:10px 16px">古文を語に切り（スラッシュ）、品詞で色を分けて 1 文ずつ見せ、最後に現代語訳と並べる。助動詞を押すと活用表と意味（見る人が押して操作できる）</p>
@@ -831,7 +919,7 @@ document.addEventListener("DOMContentLoaded", function(){
 </section>
 
 <section class="slide">
-  <h2>m-kpi（変わった、v1.11.0）</h2>
+  <h2>m-kpi</h2>
   <div class="body">
     <p>大きな数字の札（KPI）を段階ごとに出す。数字は数え上げ、下に増減の矢印と一言</p>
     <ul>
@@ -897,7 +985,7 @@ document.addEventListener("DOMContentLoaded", function(){
 </section>
 
 <section class="slide">
-  <h2>m-map-japan（変わった、v1.11.0）</h2>
+  <h2>m-map-japan</h2>
   <div class="body">
     <p>日本の 47 都道府県の地図。地域の強調、統計の塗り分け、点、矢印、経度・緯度の重ね描きを段階ごとに出す</p>
     <ul>
@@ -1011,7 +1099,7 @@ document.addEventListener("DOMContentLoaded", function(){
 </section>
 
 <section class="slide">
-  <h2>m-market（変わった、v1.11.0）</h2>
+  <h2>m-market</h2>
   <div class="body">
     <p>市場規模の入れ子の円（TAM / SAM / SOM）。外の円から 1 つずつ、前の円の大きさから縮んで現れる</p>
     <ul>
@@ -1055,7 +1143,7 @@ document.addEventListener("DOMContentLoaded", function(){
 </section>
 
 <section class="slide">
-  <h2>m-menu（変わった、v1.11.0）</h2>
+  <h2>m-menu</h2>
   <div class="body">
     <p style="margin:0 0 10px;line-height:1.3"><span style="display:inline-block;font-size:27px;font-weight:700;color:var(--fg);border:2px dashed var(--accent2);border-radius:8px;padding:0 12px">操作できる / Interactive</span></p>
     <p style="border:3px dashed var(--accent2);border-radius:10px;padding:10px 16px">スライドへのリンクの札を格子に並べる（目次・単元の選び方）。札はふつうの &lt;a href="#&lt;スライドの id&gt;"&gt;、行ったスライドの札に「見た」の印（見る人が押して操作できる）</p>
@@ -1102,7 +1190,7 @@ document.addEventListener("DOMContentLoaded", function(){
 </section>
 
 <section class="slide">
-  <h2>m-numberline（変わった、v1.11.0）</h2>
+  <h2>m-numberline</h2>
   <div class="body">
     <p>数直線。点・□・ジャンプ・不等式の範囲・0.1 の拡大。2 本で比例数直線</p>
     <ul>
@@ -1168,7 +1256,7 @@ document.addEventListener("DOMContentLoaded", function(){
 </section>
 
 <section class="slide">
-  <h2>m-pie（変わった、v1.11.0）</h2>
+  <h2>m-pie</h2>
   <div class="body">
     <p>円グラフとドーナツグラフ。切れの名前と値・割合は、大きい切れなら中に、小さい切れなら外に引き出し線で書く</p>
     <ul>
@@ -1236,70 +1324,7 @@ document.addEventListener("DOMContentLoaded", function(){
 </section>
 
 <section class="slide">
-  <h2>m-predict（変わった、v1.11.0）</h2>
-  <div class="body">
-    <p style="margin:0 0 10px;line-height:1.3"><span style="display:inline-block;font-size:27px;font-weight:700;color:var(--fg);border:2px dashed var(--accent2);border-radius:8px;padding:0 12px">操作できる / Interactive</span></p>
-    <p style="border:3px dashed var(--accent2);border-radius:10px;padding:10px 16px">予想してから答えを開く。選択肢ごとの人数を棒で見せ、答えの段階で正解に枠（見る人が押して操作できる）</p>
-    <ul>
-      <li>伝えたいこと：予想してから確かめる</li>
-      <li>見せ方：fade・draw</li>
-      <li>系列：標準パーツ　見本のスライド：3 枚</li>
-    </ul>
-  </div>
-</section>
-
-<section class="slide">
-  <h2>予想してみよう：落ちる速さ</h2>
-  <div class="body">
-    <p class="ia-badge" style="margin:0 0 10px;line-height:1.3"><span style="display:inline-block;font-size:27px;font-weight:700;color:var(--fg);border:2px dashed var(--accent2);border-radius:8px;padding:0 12px">操作できる</span></p>
-    <m-predict unit="人" style="height:390px">
-      <script type="application/json">{
-        "question": "同じ高さから落とすと、重い球と軽い球のどちらが先に着く？",
-        "choices": [{"label": "重い球"}, {"label": "軽い球"}, {"label": "同時"}],
-        "answer": 2,
-        "counts": [17, 2, 11],
-        "note": "空気の抵抗が小さければ、重さによらず同時に着く（ガリレオ）"
-      }</script>
-    </m-predict>
-  </div>
-  <div class="concl"><span>→ 落ちる速さは重さで決まらない（人数は架空の例）</span></div>
-</section>
-
-<section class="slide">
-  <h2>予想してみよう：小数のかけ算</h2>
-  <div class="body">
-    <m-predict unit="人" poll="p1" style="height:440px">
-      <script type="application/json">{
-        "question": "0.1 × 0.1 はいくつ？",
-        "choices": [{"label": "0.1"}, {"label": "0.01"}, {"label": "0.2"}, {"label": "1"}],
-        "answer": 1,
-        "counts": [12, 10, 6, 2],
-        "note": "0.1 は 10 分の 1。10 分の 1 の 10 分の 1 は 100 分の 1"
-      }</script>
-    </m-predict>
-  </div>
-  <div class="concl"><span>→ 1 より小さい数をかけると、もとの数より小さくなる（人数は架空の例）</span></div>
-</section>
-
-<section class="slide">
-  <h2>見せ方の種類（variant）</h2>
-  <div class="body">
-    <div style="display:grid;grid-template-columns:190px 1fr;gap:20px 16px;align-items:center;font-size:27px">
-      <div>フェード<br>（fade）</div>
-      <m-predict variant="fade" unit="人" style="height:210px">
-        <script type="application/json">{"choices": [{"label": "A"}, {"label": "B"}], "answer": 0, "counts": [8, 5]}</script>
-      </m-predict>
-      <div>線を引く<br>（draw）</div>
-      <m-predict variant="draw" unit="人" style="height:210px">
-        <script type="application/json">{"choices": [{"label": "A"}, {"label": "B"}], "answer": 0, "counts": [8, 5]}</script>
-      </m-predict>
-    </div>
-  </div>
-  <div class="concl"><span>→ 書かなければ最初の見せ方（fade）になる。人数は架空</span></div>
-</section>
-
-<section class="slide">
-  <h2>m-quad（変わった、v1.11.0）</h2>
+  <h2>m-quad</h2>
   <div class="body">
     <p>2 軸の位置づけ（ポジショニングマップ・SWOT 風の 4 象限）に、点を段階ごとに 1 つずつ置く</p>
     <ul>
@@ -1351,7 +1376,7 @@ document.addEventListener("DOMContentLoaded", function(){
 </section>
 
 <section class="slide">
-  <h2>m-scatter（変わった、v1.11.0）</h2>
+  <h2>m-scatter</h2>
   <div class="body">
     <p>散布図。点の組（系列）を段階ごとに出し、そのあと傾向の線（最小二乗の直線か、書いた 2 点）を引く</p>
     <ul>
@@ -1413,7 +1438,7 @@ document.addEventListener("DOMContentLoaded", function(){
 </section>
 
 <section class="slide">
-  <h2>m-seq（変わった、v1.11.0）</h2>
+  <h2>m-seq</h2>
   <div class="body">
     <p>観測を 1 つずつ加え、分布と数値が更新されていく様子を見せる（前の分布は薄く残す）</p>
     <ul>
@@ -1435,7 +1460,7 @@ document.addEventListener("DOMContentLoaded", function(){
 </section>
 
 <section class="slide">
-  <h2>m-sweep（変わった、v1.11.0）</h2>
+  <h2>m-sweep</h2>
   <div class="body">
     <p>パラメータを動かして関数の形の変化を見せる（前の形は灰色で残す）</p>
     <ul>
@@ -1465,7 +1490,7 @@ document.addEventListener("DOMContentLoaded", function(){
 </section>
 
 <section class="slide">
-  <h2>m-tape（変わった、v1.11.0）</h2>
+  <h2>m-tape</h2>
   <div class="body">
     <p>テープ図・線分図。全体や部分を括弧で括り、わからない量は □ か ?。行から行へ「2 倍」の矢印</p>
     <ul>
@@ -1521,7 +1546,7 @@ document.addEventListener("DOMContentLoaded", function(){
 </section>
 
 <section class="slide">
-  <h2>m-timeline（変わった、v1.11.0）</h2>
+  <h2>m-timeline</h2>
   <div class="body">
     <p>年表。出来事を時間の軸の上に 1 つずつ出す。期間は帯にして、重なる期間は段を分けて積む。end は含まない（"1912" は 1912 年の初め）</p>
     <ul>
@@ -1613,20 +1638,7 @@ document.addEventListener("DOMContentLoaded", function(){
 </section>
 
 <section class="slide">
-  <h2>m-timer（変わった、v1.11.0）</h2>
-  <div class="body">
-    <p style="margin:0 0 10px;line-height:1.3"><span style="display:inline-block;font-size:27px;font-weight:700;color:var(--fg);border:2px dashed var(--accent2);border-radius:8px;padding:0 12px">操作できる / Interactive</span></p>
-    <p style="border:3px dashed var(--accent2);border-radius:10px;padding:10px 16px">グループワークの進行タイマー。区切りごとに残り時間を大きく数え、区切りの一覧で今の区切りを示す（見る人が押して操作できる）</p>
-    <ul>
-      <li>伝えたいこと：時間を区切る</li>
-      <li>見せ方：fade</li>
-      <li>系列：標準パーツ　見本のスライド：0 枚</li>
-    </ul>
-  </div>
-</section>
-
-<section class="slide">
-  <h2>m-tree（変わった、v1.11.0）</h2>
+  <h2>m-tree</h2>
   <div class="body">
     <p>階層・分類の木（組織図、生物の分類など）を、根から 1 段ずつ組み立てる。座標は書かず、配置は部品が決める</p>
     <ul>
@@ -1711,7 +1723,7 @@ document.addEventListener("DOMContentLoaded", function(){
 </section>
 
 <section class="slide">
-  <h2>m-venn（変わった、v1.11.0）</h2>
+  <h2>m-venn</h2>
   <div class="body">
     <p>2 つか 3 つの集合の円（ベン図）。集合を 1 つずつ出し、最後に重なりを強めてその中の項目を出す</p>
     <ul>

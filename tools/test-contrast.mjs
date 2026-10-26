@@ -11,9 +11,6 @@ import { ROOT, studio } from './studio.mjs';
 const S = await studio();
 const THEMES = ['default', 'kokugo', 'business'];
 const MIN = 4.5;
-// Known theme issue (Egatari Studio's themes, not these components): the business theme's --emph on its --emph-tint is
-// about 4.34:1. Reported for the theme, listed here and not counted as a component failure; remove when the theme is fixed
-const THEME_KNOWN = { business: ['--emph'] };
 const names = process.argv.slice(2).length ? process.argv.slice(2) : fs.readdirSync(path.join(ROOT, 'components')).filter((n) => fs.existsSync(path.join(ROOT, 'components', n, 'demo.html')));
 const b = await S.browser.launch();
 let fail = 0;
@@ -87,9 +84,7 @@ for (const name of names) for (const theme of THEMES) {
     return out;
   });
   await p.close();
-  const below = res.filter((x) => x.cr < x.min), known = (THEME_KNOWN[theme] || []);
-  const themeLow = below.filter((x) => known.includes(x.token)), low = below.filter((x) => !known.includes(x.token));
-  if (themeLow.length) console.log(`theme ${name} (${theme}): ${themeLow.length} text(s) in ${known.join(', ')} below ${MIN}:1 (theme issue, not counted): ${[...new Set(themeLow.map((x) => x.cr))].join(', ')}:1`);
+  const low = res.filter((x) => x.cr < x.min);
   const nOut = res.filter((x) => x.min === 3).length, nText = res.length - nOut;
   if (low.length) { fail++; console.log(`FAIL ${name} (${theme}): ${low.length} of ${res.length} texts / outlines below ${MIN}:1 (texts) or 3:1 (outlines)`); for (const x of low) console.log(`   s${x.slide} "${x.txt}" ${x.fill} opacity ${x.op} → ${x.cr}:1`); }
   else console.log(`ok   ${name} (${theme}): ${nText} texts${nOut ? `, ${nOut} outlines (3:1)` : ''}`);
