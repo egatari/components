@@ -45,6 +45,7 @@ const WRONG = {
   'm-keyboard': '<script type="application/json">{"range": "C4-C6", "steps": [{"notes": ["C4", "E4", "G4"]}]}</script>',
   'm-tape': '<script type="application/json">{"rows": [{"label": "みかん", "segments": [{"v": 8}]}]}</script>',
   'm-syntax': '<script type="application/json">{"sentences": ["[S We] [V run]."]}</script>',
+  'm-heatmap': '<script type="application/json">{"rows": ["ねこ", "いぬ"], "cols": ["ねこ", "いぬ"], "data": [[45, 5], [6, 44]]}</script>',
   // データを属性だけで受け取る部品は、要素ごと書く（digits は整数の JSON）
   'm-hissan': '<m-hissan aria-label="m-hissan の図" expr="7÷3" digits="2けた" style="height:300px"></m-hissan>',
   'm-kakijun': '<m-kakijun aria-label="m-kakijun の図" text="あさ" size="大きめ" style="height:300px"></m-kakijun>',

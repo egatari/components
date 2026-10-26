@@ -28,6 +28,8 @@
 //      raster-history m-tree / m-venn / m-numberline: the pixels of a step do not depend on how often it was drawn before, nor on a click and ctx.reset (tools/test-raster-history.mjs)
 //      syntax         m-syntax: reading the mark-up (roles, nested brackets, arrows, parts of speech, errors), steps, and in a browser the arrow ends,
 //                     brackets beside their words across a wrapped line, console.warn for errors (tools/test-syntax.mjs)
+//      heatmap        m-heatmap's colour scale, row normalisation, label thinning and steps (no browser); every cell's number
+//                     ≥ 4.5:1 against its own cell in the three themes, numbers off above 12×12, the readable table (tools/test-heatmap.mjs)
 //      timeline-gantt m-timeline's after arrows (ends, right angles, no band crossed), progress width, today line position, unit ticks (tools/test-timeline-gantt.mjs)
 //  12. shape            wrong-shaped data and refused expressions: inline placeholder and DECK.componentErrors, no exception (tools/test-shape.mjs)
 //  13. default-variant the default (first) variant of every component with variants is pixel-identical to the last release (tools/test-default-variant.mjs)
@@ -81,6 +83,7 @@ const TESTS = [
   ['test-raster-history', ['tools/test-raster-history.mjs', path.join(tmp, 'raster-history')]],
   ['test-syntax', ['tools/test-syntax.mjs', path.join(tmp, 'syntax')]],
   ['test-timeline-gantt', ['tools/test-timeline-gantt.mjs', path.join(tmp, 'timeline-gantt')]],
+  ['test-heatmap', ['tools/test-heatmap.mjs', path.join(tmp, 'heatmap')]],
   ['test-shape', ['tools/test-shape.mjs', path.join(tmp, 'shape')]],
   ['test-default-variant', ['tools/test-default-variant.mjs', path.join(tmp, 'default-variant')]],
   ['test-preview', ['tools/test-preview.mjs', path.join(tmp, 'preview')]],
