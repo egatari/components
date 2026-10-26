@@ -15,7 +15,8 @@ import os from 'node:os';
 import path from 'node:path';
 import vm from 'node:vm';
 import { ROOT, studio, libraryNames } from './studio.mjs';
-import { partMeta } from './parts.mjs';
+import { partMeta, dependencyOrder } from './parts.mjs';
+import { lintMeta } from './lint.mjs';
 
 let fails = 0;
 const ok = (cond, msg) => { console.log((cond ? 'ok   ' : 'FAIL ') + msg); if (!cond) fails++; };
@@ -106,19 +107,47 @@ function sandbox() {
   ok(new (defined.get('m-ok'))().who === '1.0.0' && S.status('m-ok@1.1.0') === 'ok' && new (S.get('m-ok', '1.1.0'))().who === '1.1.0', 'an element is defined once: the first version keeps the name, the second is kept under its name@version');
   ok(f['m-notclass@1.0.0'] && f['m-notclass@1.0.0'].code === 'element', 'an element part whose factory returns no element class fails');
 }
+// freezing (spec §6.1: the registry freezes each value shallowly; parts must not modify another part's exports)
+{
+  const { run, S } = sandbox();
+  run(`
+    egatariParts.define({name: "lib", version: "1.0.0"}, function(){ return {n: 1, inner: {m: 1}, f: function(){ return 1; }}; });
+    egatariParts.define({name: "writer", version: "1.0.0", requires: {lib: "1.0.0"}}, function(d){ "use strict"; d.lib.n = 2; return {}; });
+    egatariParts.define({name: "adder", version: "1.0.0", requires: {lib: "1.0.0"}}, function(d){ "use strict"; d.lib.extra = 1; return {}; });
+    egatariParts.define({name: "sloppy", version: "1.0.0", requires: {lib: "1.0.0"}}, function(d){ d.lib.f = null; delete d.lib.n; return {}; });
+    egatariParts.define({name: "deep", version: "1.0.0", requires: {lib: "1.0.0"}}, function(d){ "use strict"; d.lib.inner.m = 5; return {}; });
+    egatariParts.define({name: "m-cls", version: "1.0.0", element: "m-cls"}, function(){ return class extends HTMLElement { static variants = ["a"]; }; });
+  `);
+  const lib = S.get('lib', '1.0.0'), f = Object.fromEntries(S.failures().map((x) => [x.key, x]));
+  ok(Object.isFrozen(lib) && lib.n === 1 && !('extra' in lib) && typeof lib.f === 'function', 'a part\'s value is frozen: another part cannot change, add or delete its members');
+  ok(f['writer@1.0.0'] && f['writer@1.0.0'].code === 'factory' && /TypeError/.test(f['writer@1.0.0'].message) && f['adder@1.0.0'] && f['adder@1.0.0'].code === 'factory', 'a strict-mode factory that writes to a dependency fails (TypeError), and is recorded');
+  ok(S.status('sloppy@1.0.0') === 'ok' && lib.n === 1, 'a sloppy-mode write is ignored');
+  ok(S.status('deep@1.0.0') === 'ok' && lib.inner.m === 5 && !Object.isFrozen(lib.inner), 'the freeze is shallow (as specified)');
+  ok(Object.isFrozen(S.get('m-cls', '1.0.0')), 'an element part\'s class is frozen too (its statics stay as declared)');
+}
+// lint of 2.0 metas: the registry name is the folder, element the tag
+{
+  const js = (n, e) => `egatariParts.define({name: "${n}", version: "2.0.0", requires: {base: "1.0.0"}, element: "${e}"}, f);`;
+  const errs = (n, e) => lintMeta('bars', js(n, e), partMeta(js(n, e)));
+  ok(errs('bars', 'm-bars').length === 0 && errs('m-bars', 'm-bars').some((x) => /folder name/.test(x)) && errs('bars', 'm-bar').some((x) => /must be "m-bars"/.test(x)), 'lint: name is the folder (bars) and element the tag (m-bars)');
+  ok(lintMeta('bars', 'egatariParts.define({name: "bars", version: "2.0.0", requires: {base: "^1.0.0"}, element: "m-bars"}, f); DECK.el;', { name: 'bars', version: '2.0.0', requires: { base: '^1.0.0' }, element: 'm-bars' }).length === 2, 'lint: a range in requires and DECK in the code are refused');
+}
 // the library parts of this repository load through the registry
 {
   const { run, S } = sandbox();
-  const libs = libraryNames();
-  ok(libs.includes('base') && libs.includes('expr'), `library parts: ${libs.join(', ')}`);
+  const metas = Object.fromEntries(libraryNames().map((n) => [n, partMeta(read(`components/${n}/index.js`))]));
+  const libs = dependencyOrder(metas);
+  ok(['shape', 'base', 'plot', 'expr'].every((n) => libs.includes(n)) && libs.indexOf('shape') < libs.indexOf('base') && libs.indexOf('base') < libs.indexOf('plot'), `library parts in dependency order: ${libs.join(', ')} (base → shape, plot → base)`);
   for (const n of libs) {
     const js = read(`components/${n}/index.js`), m = partMeta(js);
     run(js, `components/${n}/index.js`);
     ok(S.status(`${n}@${m.version}`) === 'ok', `${n}@${m.version} defines without failure in dependency order`);
   }
-  const base = S.get('base', '2.0.0');
+  const base = S.get('base', '1.0.0');
   ok(base && Object.keys(base).join() === 'MotionElement,el,lerp,prog,clamp,mtext,variant,previewOpacity', 'base returns exactly {MotionElement, el, lerp, prog, clamp, mtext, variant, previewOpacity}');
-  const ex = S.get('expr', '2.0.0');
+  ok(['shape', 'base', 'plot', 'expr'].every((n) => Object.isFrozen(S.get(n, '1.0.0'))), 'every library part\'s value is frozen by the registry');
+  ok(Object.keys(S.get('shape', '1.0.0')).join() === 'check,describe,gotOf,typeOf,dataLike,near,brief' && Object.keys(S.get('plot', '1.0.0')).join() === 'Plot', 'shape returns DECK.shape\'s members, plot returns {Plot}');
+  const ex = S.get('expr', '1.0.0');
   const ref = vm.createContext({ Math, Object, Array, SyntaxError, Error, Number, String });
   vm.runInContext(read('tools/expr.js') + '\nthis.EXPR = EXPR;', ref);
   const same = ['u*u + c', 'Math.exp(-c*u)', 'x >= 0 ? 0.9*x : -0.1*x', '2 ** 3 ** c'].every((src) => {
@@ -134,7 +163,7 @@ function sandbox() {
 const S = await studio();
 const work = path.resolve(process.argv[2] || fs.mkdtempSync(path.join(os.tmpdir(), 'test-registry-')));
 fs.mkdirSync(work, { recursive: true });
-const PROBE = `egatariParts.define({name: "m-c2probe", version: "0.0.1", requires: {base: "2.0.0"}, element: "m-c2probe"}, function(d){
+const PROBE = `egatariParts.define({name: "c2probe", version: "0.0.1", requires: {base: "1.0.0"}, element: "m-c2probe"}, function(d){
   var base = d.base;
   return class extends base.MotionElement {
     static props = {label: {type: "string", default: "既定"}};
@@ -150,7 +179,7 @@ const PROBE = `egatariParts.define({name: "m-c2probe", version: "0.0.1", require
     }
   };
 });`;
-const FAILING = `egatariParts.define({name: "m-c2fail", version: "0.0.1", requires: {base: "2.0.0"}, element: "m-c2fail"}, function(){ throw new Error("probe failure"); });`;
+const FAILING = `egatariParts.define({name: "c2fail", version: "0.0.1", requires: {base: "1.0.0"}, element: "m-c2fail"}, function(){ throw new Error("probe failure"); });`;
 fs.writeFileSync(path.join(work, 'deck.html'), `<!DOCTYPE html>
 <html lang="en" data-theme="default">
 <head><meta charset="utf-8"><title>registry</title></head>
@@ -163,7 +192,7 @@ fs.writeFileSync(path.join(work, 'deck.html'), `<!DOCTYPE html>
 const out = path.join(work, 'deck.out.html');
 try { S.build(path.join(work, 'deck.html'), out); ok(true, 'build the deck with the pinned Studio'); } catch (e) { ok(false, 'build: ' + String(e.stderr || e.message)); }
 const html = fs.readFileSync(out, 'utf8'), end = html.lastIndexOf('</body>');
-const inject = [SHIM, read('components/base/index.js'), PROBE, FAILING].map((s) => `<script>\n${s}\n</script>\n`).join('');
+const inject = [SHIM, read('components/shape/index.js'), read('components/base/index.js'), PROBE, FAILING].map((s) => `<script>\n${s}\n</script>\n`).join('');
 fs.writeFileSync(out, html.slice(0, end) + inject + html.slice(end));
 const browser = await S.browser.launch();
 try {
@@ -186,19 +215,23 @@ try {
     await new Promise((res) => requestAnimationFrame(() => requestAnimationFrame(res)));
     await new Promise((res) => setTimeout(res, 50));
     const log2 = JSON.parse(JSON.stringify(p._log.slice(log1.length)));
+    const text = p.querySelector('text') && p.querySelector('text').textContent, other = getComputedStyle(document.getElementById('other')).opacity;
+    const vis = [p._ctx.visited('s-first'), p._ctx.visited('s-probe'), p._ctx.visited('nowhere')];
+    p._ctx.go('s-probe');
+    vis.push(p._ctx.visited('s-probe'));
     const went = p._ctx.go('s-first');
     const pos = DECK.state();
     const f = document.getElementById('failing');
-    return { i, max: DECK.slides[i]._max, inComps: DECK.slides[i]._comps.includes(p), failInComps: DECK.slides[i]._comps.includes(f), log1, log2, went, pos,
-      text: p.querySelector('text') && p.querySelector('text').textContent, slides: p._ctx.slides, frozen: Object.isFrozen(p._ctx.slides),
+    return { i, max: DECK.slides[i]._max, inComps: DECK.slides[i]._comps.includes(p), failInComps: DECK.slides[i]._comps.includes(f), log1, log2, went, pos, vis,
+      text, slides: p._ctx.slides, frozen: Object.isFrozen(p._ctx.slides),
       fail: { box: !!f.querySelector('.m-error'), text: (f.querySelector('.m-error') || {}).textContent, script: !!f.querySelector('script') },
-      other: getComputedStyle(document.getElementById('other')).opacity,
+      other,
       reports: EGATARI_PARTS_SHIM.reports(), errs: DECK.componentErrors.map((x) => ({ tag: x.tag, kind: x.kind, code: x.code })), failures: EGATARI_PARTS_SHIM.failures(), bridged: EGATARI_PARTS_SHIM.bridged() };
   });
   ok(errors.length === 0, 'no exception or console error' + (errors.length ? ': ' + errors[0] : ''));
   ok(r.bridged && r.inComps && !r.failInComps, 'the 2.0 part is one of DECK\'s components on its slide (bridged); the failed one is not');
   ok(r.max === 2, `the slide's steps come from the part (max ${r.max})`);
-  ok(r.log1[0][0] === 'mount' && r.log1[0][1] === 'entered,go,instant,lang,live,mode,preview,report,reset,slide,slides', `mount gets the 2.0 ctx and no deck (${r.log1[0][1]})`);
+  ok(r.log1[0][0] === 'mount' && r.log1[0][1] === 'entered,go,instant,lang,live,mode,preview,report,reset,slide,slides,visited', `mount gets the 2.0 ctx and no deck (${r.log1[0][1]})`);
   const renders = r.log1.filter((x) => x[0] === 'render');
   ok(renders.length >= 3 && renders.every((x) => x[3] === 's-probe' && x[4] === 'video' && x[5] === false && x[7] === 'en' && x[8] === false && x[9] === 2), 'render gets slide = the key, mode, preview, lang from <html lang>, slides, and no ctx.deck');
   ok(renders[0][6] === true && renders.slice(1).every((x) => x[6] === false), 'entered is true on the first render after entering the slide, false after');
@@ -207,11 +240,12 @@ try {
   ok(r.reports.length === 1 && r.reports[0].code === 'probe' && r.errs.some((x) => x.tag === 'm-c2probe' && x.kind === 'report' && x.code === 'probe'), 'ctx.report reaches DECK.componentErrors');
   ok(r.log2.length >= 2 && r.log2[0][0] === 'layout' && r.log2[0][1] === 's-probe' && r.log2[1][0] === 'render' && r.log2[1][1] === 2, 'a size change calls layout(ctx) and then render at the last (k, t)');
   ok(r.went === true && r.pos.slide === 1, 'ctx.go(slideKey) moves the deck');
+  ok(JSON.stringify(r.vis) === '[true,false,false,true]', `ctx.visited(slideKey) is DECK.visited as a boolean: shown slide true, not yet shown false, unknown false, true after going there (${JSON.stringify(r.vis)})`);
   ok(r.frozen && r.slides.map((s) => s.key + ':' + s.title).join() === 's-first:First,s-probe:Probe', 'ctx.slides is [{key, title}], read-only');
   ok(r.fail.box && r.fail.text === 'the text equivalent of the failing part' && r.fail.script, 'a failing element part shows its text equivalent (aria-label) and keeps its data');
-  ok(r.failures.some((x) => x.key === 'm-c2fail@0.0.1' && x.code === 'factory'), 'its failure is recorded');
+  ok(r.failures.some((x) => x.key === 'c2fail@0.0.1' && x.code === 'factory'), 'its failure is recorded');
   ok(r.other === '1', 'the rest of the slide still steps (the data-step item is shown at step 2)');
-  ok(warns.some((w) => /m-c2fail@0\.0\.1: factory: probe failure/.test(w)), 'and warned on the console');
+  ok(warns.some((w) => /c2fail@0\.0\.1: factory: probe failure/.test(w)), 'and warned on the console');
 } finally { await browser.close(); }
 
 console.log(fails ? `\n${fails} failure(s)` : '\ntest-registry: ok');

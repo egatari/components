@@ -39,3 +39,19 @@ export function partMeta(js) {
 
 export const isLibrary = (js) => { const m = partMeta(js); return !!m && !m.element; };
 export const isLibraryDir = (dir) => fs.existsSync(path.join(dir, 'index.js')) && isLibrary(fs.readFileSync(path.join(dir, 'index.js'), 'utf8'));
+// The order a producer writes parts in (spec §6.1 Order): every part after the parts it requires. parts: {name: meta}
+// (one version per name, as in this repository). Throws on a cycle or a requirement that is not among the parts.
+export function dependencyOrder(parts) {
+  const out = [], state = {};
+  const visit = (n, from) => {
+    if (state[n] === 2) return;
+    if (state[n] === 1) throw new Error(`parts: a cycle through ${n}`);
+    if (!parts[n]) throw new Error(`parts: ${from} requires ${n}, which is not a part here`);
+    state[n] = 1;
+    for (const r of Object.keys(parts[n].requires || {}).sort()) visit(r, n);
+    state[n] = 2;
+    out.push(n);
+  };
+  for (const n of Object.keys(parts).sort()) visit(n);
+  return out;
+}

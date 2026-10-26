@@ -21,7 +21,9 @@ export const ALLOW = {
   'components/menu/index.js': { insertAdjacentHTML: 1 },   // the constant SVG icons CHECK and EXT (no author data)
   // MotionElement reads the static declarations of the part's class (steps, props), variant its static variants (spec §8.4
   // Declarations in the component); a value is read, nothing is called. Any other use of .constructor stays refused
-  'components/base/index.js': { 'constructor.steps': 1, 'constructor.props': 1, 'constructor.variants': 1 },
+  // compProblem (deck.js's data check) reads the class once (var C = c.constructor) and then C.props and C.shape;
+  // dataProblem reads constructor.shape for the record
+  'components/base/index.js': { 'constructor.steps': 1, 'constructor.props': 1, 'constructor.variants': 1, 'constructor.shape': 1, constructor: 1 },
 };
 const NAMES = new Set(['eval', 'Function', 'constructor', 'import']);
 const TIMERS = new Set(['setTimeout', 'setInterval', 'setImmediate', 'execScript']);
@@ -76,7 +78,7 @@ export function tokens(src) {
 }
 
 export function scanText(src, rel) {
-  const found = [], sinks = {};
+  const found = [], sinks = Object.create(null);
   const t = tokens(src);
   for (let j = 0; j < t.length; j++) {
     const x = t[j], prev = t[j - 1], next = t[j + 1];
@@ -85,6 +87,10 @@ export function scanText(src, rel) {
     const field = t[j + 2], after = t[j + 3];
     if (x.k === 'id' && x.s === 'constructor' && prev && prev.s === '.' && next && next.s === '.' && field && field.k === 'id' && field.s !== 'constructor'
       && !(after && (after.s === '(' || after.s === '[' || after.s === '.'))) { const key = 'constructor.' + field.s; sinks[key] = (sinks[key] || 0) + 1; continue; }
+    // a class's own constructor(){…} (a method definition, not a reach to Function)
+    if (x.k === 'id' && x.s === 'constructor' && prev && /^[{};]$/.test(prev.s) && next && next.s === '(') continue;
+    // a plain read of an object's class (var C = c.constructor;) where ALLOW lists it, counted exactly
+    if (x.k === 'id' && x.s === 'constructor' && prev && prev.s === '.' && Object.hasOwn(ALLOW[rel] || {}, 'constructor') && next && /^[,;)]$/.test(next.s)) { sinks.constructor = (sinks.constructor || 0) + 1; continue; }
     if (x.k === 'id' && NAMES.has(x.s)) {
       // a property named in an object literal or a class body (x.import, { eval: 1 }) is still refused: keep the rule simple
       found.push(`${at}: ${x.s === 'constructor' ? '.constructor (reaches Function)' : x.s === 'import' ? 'import (dynamic import or module code)' : x.s}`);
@@ -100,7 +106,7 @@ export function scanText(src, rel) {
     }
     if (x.k === 'id' && HTML_SINKS.has(x.s)) { sinks[x.s] = (sinks[x.s] || 0) + 1; }
   }
-  const allow = ALLOW[rel] || {};
+  const allow = Object.assign(Object.create(null), ALLOW[rel]);
   for (const [s, k] of Object.entries(sinks)) if (k > (allow[s] || 0)) found.push(`${rel}: ${s} used ${k} time(s), ${allow[s] || 0} allowed (tools/scan-code.mjs ALLOW)`);
   for (const [s, k] of Object.entries(allow)) if ((sinks[s] || 0) < k) found.push(`${rel}: ALLOW lists ${k} ${s} but there are ${sinks[s] || 0} (tighten the list)`);
   return found;

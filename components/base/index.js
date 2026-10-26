@@ -1,7 +1,10 @@
-// base 2.0.0: the shared base class and helpers of Egatari components 2.0 (a library part, Egatari spec §6.1).
-// Element parts require it ({base: "2.0.0"}) and receive what this factory returns:
+// base 1.0.0: the shared base class and helpers of Egatari components 2.0 (a library part, Egatari spec §6.1).
+// Element parts require it ({base: "1.0.0"}) and receive what this factory returns:
 //   {MotionElement, el, lerp, prog, clamp, mtext, variant, previewOpacity}
 // It uses no import, no network and no global of the player (spec §6.1): only the DOM, getComputedStyle and console.
+// It requires shape (the data-shape checker): MotionElement checks the part's data against its declared shape before the
+// part counts its steps or mounts (spec §6.1 "Data shapes"; players no longer do). The dependency runs base → shape only:
+// shape is pure and needs nothing from base, so there is no cycle.
 //
 // Provenance: MotionElement, el, mtext, lerp, prog and clamp (with the private ease and stepInt) are copied from
 // Egatari Studio's kit/deck.js (https://github.com/egatari/egatari-studio, commit 03eaf0607598b993eb020f8e619caa53526bc771,
@@ -9,10 +12,12 @@
 // Copyright (c) 2026 Gendo Kumoi, the same owner and licence as this repository. They are kept as close to that code as
 // possible so that a part moved from DECK to base draws the same DOM (tools/test-base.mjs compares them with the pinned
 // Studio's DECK). variant is tools/variant.js's VARIANT.of, taking the names instead of looking the tag up again;
-// previewOpacity is the --preview-opacity read the parts used to write themselves.
-egatariParts.define({name: "base", version: "2.0.0", requires: {}}, function(){
+// previewOpacity is the --preview-opacity read the parts used to write themselves. The data check (compText, compProblem,
+// compSummary, compPlaceholder) is deck.js's, with DECK.shape → the shape part and DECK.ja → ctx.lang.
+egatariParts.define({name: "base", version: "1.0.0", requires: {shape: "1.0.0"}}, function(deps){
 "use strict";
 var NS = "http://www.w3.org/2000/svg";
+var SH = deps.shape;
 
 // ---------------------------------------------------------------- 時間の部品 (kit/deck.js)
 function clamp01(x){ return x < 0 ? 0 : x > 1 ? 1 : x; }
@@ -64,8 +69,109 @@ function mtext(parent, x, y, str, attrs){
   return t;
 }
 
+// ---------------------------------------------------------------- 部品のデータの形 (kit/deck.js; spec §6.1 Data shapes)
+// static shape（形は shape パーツが確かめる）と、static props の json の値の shape。違えば知らせの札を出し、描かない
+function compText(c){
+  var t = "";
+  [].forEach.call(c.childNodes, function(n){ if (!(n.nodeType === 1 && n.localName === "script")) t += n.textContent; });
+  return t.trim();
+}
+function compProblem(c){
+  var C = c.constructor, decl = C.props || {}, sh = C.shape;
+  for (var name in decl){
+    var d = decl[name], a = c.getAttribute(name);
+    if (d.type !== "json" || a === null) continue;
+    var v;
+    try { v = JSON.parse(a); } catch (e) { return {kind: "attrJson", attr: name, msg: String(e && e.message || e), example: JSON.stringify(d.default)}; }
+    var ea = d.shape && SH ? SH.check(d.shape, v) : null;
+    if (ea) return Object.assign({kind: "attr", attr: name, example: JSON.stringify(d.example !== undefined ? d.example : d.default)}, ea);
+  }
+  var data;
+  try { data = c.data; } catch (e) { return {kind: "json", msg: String(e && e.message || e)}; }
+  if (!sh || !SH) return null;
+  if (sh.text){ if (data !== null) return {kind: "notText"}; if (!compText(c)) return {kind: "empty"}; return null; }
+  if (sh.links){ if (data !== null) return {kind: "notLinks"}; if (!c.querySelector("a[href]")) return {kind: "noLinks"}; return null; }
+  if (sh.schema){
+    if (data === null) return {kind: "missing"};
+    var e2 = SH.check(sh.schema, data);
+    if (e2 && e2.path === "" && e2.why === "type" && SH.typeOf(data) === "object" && [].concat(sh.schema.type)[0] === "array"){
+      // 配列のはずが object：よくある書き方（{"series": [...], "xr": [...]}）なら、どれが属性で、どの配列が中身かを言う
+      var ks = Object.keys(data);
+      e2.keys = ks;
+      e2.attrKeys = ks.filter(function(k){ return Object.prototype.hasOwnProperty.call(decl, k); });
+      // 中身らしい配列：object の並び（{"series": [{…}]}）を先に、なければ属性でない配列
+      var arr = ks.filter(function(k){ return Array.isArray(data[k]); });
+      e2.arrayKey = arr.filter(function(k){ return SH.typeOf(data[k][0]) === "object"; })[0] || arr.filter(function(k){ return e2.attrKeys.indexOf(k) < 0; })[0] || null;
+      var it = e2.arrayKey && data[e2.arrayKey][0];
+      if (it && SH.typeOf(it) === "object" && sh.schema.items){ var ei = SH.check(sh.schema.items, it, "[0]"); if (ei) e2.inner = ei; }
+    }
+    if (e2) return Object.assign({kind: "shape"}, e2);
+  }
+  return null;
+}
+function compSummary(r, ja){
+  var at = r.path ? r.path : (ja ? "データ" : "data");
+  switch (r.kind){
+    case "shape": return r.why === "required" ? (ja ? at + " がない（" + r.expected + "）" : at + " is missing (" + r.expected + ")")
+      : r.why === "unknown" ? (ja ? "知らない欄 " + r.key : "unknown field " + r.key)
+      : r.why === "anyOf" ? (ja ? (r.path || "データ") + " に " + r.expected + " がない" : (r.path || "data") + " needs " + r.expected)
+      : (ja ? at + "：" + r.expected + " のはずが " + r.got : at + ": expected " + r.expected + ", got " + r.got);
+    case "missing": return ja ? "データ（子の <script type=\"application/json\">）がない" : "no data (child <script type=\"application/json\">)";
+    case "json": return (ja ? "データの JSON が読めない：" : "the data is not valid JSON: ") + r.msg;
+    case "attrJson": return (ja ? "属性 " + r.attr + " の JSON が読めない：" : "attribute " + r.attr + " is not valid JSON: ") + r.msg;
+    case "attr": return (ja ? "属性 " + r.attr + (r.path ? " の " + r.path : "") + "：" + r.expected + " のはずが " + r.got : "attribute " + r.attr + (r.path ? " at " + r.path : "") + ": expected " + r.expected + ", got " + r.got);
+    case "notText": return ja ? "JSON ではなく要素の中の字で書く" : "write it as text inside the element, not JSON";
+    case "empty": return ja ? "中身の字がない" : "no text inside";
+    case "notLinks": return ja ? "JSON ではなく子の <a href> で書く" : "write it as child <a href> links, not JSON";
+    case "noLinks": return ja ? "子の <a href> がない" : "no child <a href> links";
+    default: return (ja ? "描けない：" : "cannot draw: ") + r.msg;
+  }
+}
+function compPlaceholder(c, r, ja){
+  [].slice.call(c.childNodes).forEach(function(n){ if (!(n.nodeType === 1 && n.localName === "script")) c.removeChild(n); });
+  var box = document.createElement("div");
+  box.className = "m-error"; box.setAttribute("role", "note");
+  box.textContent = "<" + r.tag + "> " + (ja ? "のデータの形が違う：" : "data problem: ") + compSummary(r, ja);
+  c.appendChild(box);
+}
+
+// The element's data problem (compProblem with the record fields deck.js's compFail added), checked once, or null
+function dataProblem(e){
+  if (e._shapeDone) return e._shapeProblem;
+  e._shapeDone = true;
+  var p = compProblem(e);
+  if (p){
+    var sh = e.constructor.shape || {};
+    p = Object.assign({tag: e.tagName.toLowerCase(), label: e.getAttribute("aria-label") || "", phase: "data"}, p);
+    if (sh.schema && p.shape === undefined) p.shape = SH.brief(sh.schema);
+    if (sh.example !== undefined && p.example === undefined) p.example = typeof sh.example === "string" ? sh.example : JSON.stringify(sh.example);
+  }
+  return (e._shapeProblem = p || null);
+}
+function up(e, name){ return Reflect.get(Object.getPrototypeOf(e), name, e); }
+// Installed on every instance (own properties, so they come before the part's own steps, mount, render, duration, cues):
+// with data that fits, they pass straight to the part; otherwise steps is the attribute steps (else 0), mount reports the
+// problem once through ctx.report(kind, message) and shows the placeholder (like deck.js), and the rest draws nothing
+function guard(e){
+  Object.defineProperty(e, "steps", {configurable: true, get: function(){
+    if (!dataProblem(e)) return up(e, "steps");
+    var n = stepInt(e.getAttribute("steps"), e.tagName.toLowerCase() + " steps");
+    return n !== null ? n : 0;
+  }});
+  e.mount = function(ctx){
+    var p = dataProblem(e);
+    if (!p) return up(e, "mount").call(e, ctx);
+    if (!e._shapeReported){ e._shapeReported = true; if (ctx && typeof ctx.report === "function") ctx.report(p.kind, compSummary(p, false)); }
+    compPlaceholder(e, p, /^ja\b/i.test((ctx && ctx.lang) || "ja"));
+  };
+  e.render = function(k, t, ctx){ if (!dataProblem(e)) return up(e, "render").call(e, k, t, ctx); };
+  e.duration = function(k){ return dataProblem(e) ? 0 : up(e, "duration").call(e, k); };
+  e.cues = function(k){ return dataProblem(e) ? null : up(e, "cues").call(e, k); };
+}
+
 // ---------------------------------------------------------------- 部品の基底クラス (kit/deck.js)
 class MotionElement extends HTMLElement {
+  constructor(){ super(); guard(this); }
   get steps(){ var a = stepInt(this.getAttribute("steps"), this.tagName.toLowerCase() + " steps"); return a !== null ? a : (this.constructor.steps || 1); }
   get from(){ var a = stepInt(this.getAttribute("data-from"), this.tagName.toLowerCase() + " data-from", 1); return a !== null ? a : 1; }
   // static props の宣言に従って属性を読む

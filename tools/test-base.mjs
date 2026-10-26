@@ -8,6 +8,11 @@
 //                         mount / render / duration / cues, the warnings, and props / data caching
 //   variant(el)         ≡ VARIANT.of(el) of tools/variant.js (names from static variants, or passed), with the same warnings
 //   previewOpacity(el)  ≡ the read the parts write today (parseFloat of --preview-opacity, else 0.45) for set, unset and bad values
+//   the data check      MotionElement's check before mount (spec §6.1 Data shapes; with the shape part) ≡ what DECK did for
+//                       the same classes and data (setupSlide → compProblem / compFail): the same problem record (kind, path,
+//                       why, expected, got, key, near, shape, example, …), the same placeholder text, the same fallback steps,
+//                       the report message ≡ DECK's console summary; and with data that fits, the part's own steps / mount /
+//                       render / duration / cues run unchanged
 //   node tools/test-base.mjs [work dir]
 import fs from 'node:fs';
 import os from 'node:os';
@@ -18,6 +23,50 @@ let fails = 0;
 const ok = (cond, msg) => { console.log((cond ? 'ok   ' : 'FAIL ') + msg); if (!cond) fails++; };
 const read = (rel) => fs.readFileSync(path.join(ROOT, rel), 'utf8');
 
+// The data-check cases: a class declaration (static shape, props) and the element's attributes and children
+const CASES = [
+  ['ok', 'schema', '', '<script type="application/json">{"groups": [{"label": "a", "value": 1}, {"label": "b", "value": 2}]}</script>'],
+  ['type', 'schema', '', '<script type="application/json">{"groups": {"label": "a"}}</script>'],
+  ['array-not-object', 'schema', '', '<script type="application/json">[{"label": "a", "value": 1}]</script>'],
+  ['required', 'schema', '', '<script type="application/json">{"groups": [{"value": 1}]}</script>'],
+  ['unknown-near', 'schema', '', '<script type="application/json">{"groups": [{"label": "a", "valu": 1}]}</script>'],
+  ['enum', 'schema', '', '<script type="application/json">{"groups": [{"label": "a", "value": 1, "tone": "red"}]}</script>'],
+  ['minItems', 'schema', '', '<script type="application/json">{"groups": []}</script>'],
+  ['maxItems', 'schema', 'steps="3"', '<script type="application/json">{"groups": [{"label": "a", "value": 1}, {"label": "b", "value": 1}, {"label": "c", "value": 1}, {"label": "d", "value": 1}, {"label": "e", "value": 1}]}</script>'],
+  ['unit-ok', 'schema', '', '<script type="application/json">{"groups": [{"label": "a", "value": 1}], "unit": "円"}</script>'],
+  ['number-string', 'schema', 'steps="2"', '<script type="application/json">{"groups": [{"label": "a", "value": "1.5"}]}</script>'],
+  ['missing', 'schema', '', ''],
+  ['json', 'schema', '', '<script type="application/json">{"groups": [</script>'],
+  ['attrJson', 'schema', 'range="[0,"', '<script type="application/json">{"groups": [{"label": "a", "value": 1}]}</script>'],
+  ['attr', 'schema', 'range="[0, &quot;x&quot;]"', '<script type="application/json">{"groups": [{"label": "a", "value": 1}]}</script>'],
+  ['text-ok', 'text', '', '春はあけぼの'],
+  ['notText', 'text', '', '<script type="application/json">["a"]</script>'],
+  ['empty', 'text', '', '  '],
+  ['links-ok', 'links', '', '<a href="#s-a">A</a>'],
+  ['notLinks', 'links', '', '<script type="application/json">[]</script>'],
+  ['noLinks', 'links', '', '<span>no link</span>'],
+];
+const CLASSES = `
+var SCHEMA = {schema: {type: "object", required: ["groups"], additionalProperties: false,
+  properties: {groups: {type: "array", minItems: 1, maxItems: 4, items: {type: "object", required: ["label"], additionalProperties: false,
+    properties: {label: {type: "string"}, value: {type: "number"}, values: {type: "array", items: {type: "number"}}, tone: {enum: ["emph", "term"]}}}},
+    unit: {type: "string"}, max: {type: "number"}}}, example: {groups: [{label: "1 年目", value: 3}]}};
+var SHAPES = {schema: SCHEMA, text: {text: true, example: "本文"}, links: {links: true, example: "<a href=\\"#s\\">目次</a>"}};
+var KINDS = ${JSON.stringify(CASES.map((c) => c[1]))};
+function make(Base, kind){
+  return class extends Base {
+    static shape = SHAPES[kind];
+    static props = {range: {type: "json", default: [0, 1], shape: {type: "array", minItems: 2, maxItems: 2, items: {type: "number"}}}, unit: {type: "string", default: ""}};
+    get steps(){ return this.data && this.data.groups ? this.data.groups.length : 1; }
+    mount(ctx){ this._mounted = (this._mounted || 0) + 1; this.setAttribute("data-mounted", "1"); }
+    render(k, t, ctx){ this._rendered = (this._rendered || 0) + 1; }
+    duration(k){ return 1.25; }
+    cues(k){ return [0.5]; }
+  };
+}
+var BASE = EGATARI_PARTS_SHIM.get("base", "1.0.0");
+KINDS.forEach(function(kind, i){ customElements.define("x-d" + i, make(DECK.MotionElement, kind)); customElements.define("x-b" + i, make(BASE.MotionElement, kind)); });
+`;
 const S = await studio();
 const work = path.resolve(process.argv[2] || fs.mkdtempSync(path.join(os.tmpdir(), 'test-base-')));
 fs.mkdirSync(work, { recursive: true });
@@ -26,13 +75,14 @@ fs.writeFileSync(path.join(work, 'deck.html'), `<!DOCTYPE html>
 <head><meta charset="utf-8"><title>base</title></head>
 <body><div id="stage">
 <section class="slide noconcl" id="s-a"><h2>base</h2><div class="body"><div id="host"></div></div></section>
+<section class="slide noconcl" id="s-g"><h2>data</h2><div class="body">${CASES.map((c, i) => `<x-d${i} id="d${i}" aria-label="${c[0]}" ${c[2]}>${c[3]}</x-d${i}>`).join('\n')}</div></section>
 </div></body></html>
 `);
 const out = path.join(work, 'deck.out.html');
 S.build(path.join(work, 'deck.html'), out);
 // the shim and base after the deck's own scripts (deck.js), before the load event; tools/variant.js as the reference
 const html = fs.readFileSync(out, 'utf8'), end = html.lastIndexOf('</body>');
-const inject = [read('tools/registry-shim.js'), read('components/base/index.js'), read('tools/variant.js') + '\nwindow.VARIANT = VARIANT;'].map((s) => `<script>\n${s}\n</script>\n`).join('');
+const inject = [read('tools/registry-shim.js'), read('components/shape/index.js'), read('components/base/index.js'), read('tools/variant.js') + '\nwindow.VARIANT = VARIANT;', CLASSES].map((s) => `<script>\n${s}\n</script>\n`).join('');
 fs.writeFileSync(out, html.slice(0, end) + inject + html.slice(end));
 
 const browser = await S.browser.launch();
@@ -40,11 +90,12 @@ try {
   const page = await browser.newPage({ viewport: { width: 1280, height: 720 }, bypassCSP: true });
   const errors = [];
   page.on('pageerror', (e) => errors.push(e.message));
-  page.on('console', (m) => { if (m.type() === 'error') errors.push(m.text()); });
+  const pageWarns = [];
+  page.on('console', (m) => { if (m.type() === 'error') errors.push(m.text()); if (m.type() === 'warning') pageWarns.push(m.text()); });
   await page.goto(S.browser.fileUrl(out) + '?mode=video');
   await page.waitForFunction(() => window.DECK && DECK.ready, null, { timeout: 15000 });
   const r = await page.evaluate(() => {
-    const B = EGATARI_PARTS_SHIM.get('base', '2.0.0'), res = {};
+    const B = EGATARI_PARTS_SHIM.get('base', '1.0.0'), res = {};
     res.keys = Object.keys(B);
     const same = (a, b) => Object.is(a, b);
     const host = document.getElementById('host');
@@ -100,6 +151,8 @@ try {
       const cached = (() => { try { return e.props === e.props && (e.data === e.data); } catch (x) { return 'throws'; } })();
       const out = [e.steps, e.from, props, data, cached, e.mount({}), e.render(1, 0, {}), e.duration(1), e.cues(1), err];
       const pl = mk(`x-${kind}-plain`, c);
+      // DECK reads every component's data when it sets up a slide (compProblem), as base's data check does: read it here first
+      try { pl.data; } catch (x) { /* compared through props/data above */ }
       out.push(pl.steps, pl.from, JSON.stringify(pl.props));
       out.push(warnLog.slice(w0).map(strip));
       e.remove(); pl.remove();
@@ -141,6 +194,27 @@ try {
     outer.remove();
     return res;
   });
+  // the data check: DECK checked the x-d<i> elements of slide s-g when it started; base checks x-b<i> made from the same source
+  const D = await page.evaluate((cases) => {
+    const pick = (r) => { const o = {}; for (const k of Object.keys(r).sort()) if (!['slide', 'key', 'id', 'index', 'tag', 'label', 'phase', 'dataLike'].includes(k)) o[k] = r[k]; return JSON.parse(JSON.stringify(o)); };
+    const host = document.getElementById('host');
+    return cases.map((c, i) => {
+      const d = document.getElementById('d' + i), rec = DECK.componentErrors.find((x) => x.tag === 'x-d' + i) || null;
+      const tmp = document.createElement('div');
+      tmp.innerHTML = `<x-b${i} aria-label="${c[0]}" ${c[2]}>${c[3]}</x-b${i}>`;
+      const b = tmp.firstElementChild; host.appendChild(b);
+      const reports = [];
+      const ctx = { lang: 'ja', mode: 'video', preview: false, slide: 's-a', instant: true, reset: false, entered: true, slides: [], go() {}, visited() { return false; }, report: (code, message) => reports.push([code, message]) };
+      const steps = b.steps;
+      b.mount(ctx); b.mount(ctx);
+      const ren = b.render(1, Infinity, ctx), dur = b.duration(1), cues = b.cues(1);
+      const out = { name: c[0], deck: { problem: rec && pick(rec), steps: d.steps, text: (d.querySelector('.m-error') || {}).textContent || null, mounted: d.hasAttribute('data-mounted') },
+        base: { problem: b._shapeProblem && pick(b._shapeProblem), steps, text: (b.querySelector('.m-error') || {}).textContent || null, mounted: b.hasAttribute('data-mounted'),
+          reports, rendered: b._rendered || 0, mountedTimes: b._mounted || 0, dur, cues: JSON.stringify(cues) } };
+      b.remove();
+      return out;
+    });
+  }, CASES);
   console.log(`(reference: ${pinLabel()} kit/deck.js DECK.*, tools/variant.js VARIANT.of)`);
   ok(errors.length === 0, 'no exception or console error' + (errors.length ? ': ' + errors[0] : ''));
   ok(r.keys.join() === 'MotionElement,el,lerp,prog,clamp,mtext,variant,previewOpacity', `base returns exactly ${r.keys.join(', ')}`);
@@ -152,6 +226,20 @@ try {
   ok(r.variant.bad.length === 0 && r.variant.warned > 0, `variant(el) ≡ variant(el, names) ≡ VARIANT.of(el), with the same warnings (${r.variant.n} cases)` + (r.variant.bad.length ? ': ' + JSON.stringify(r.variant.bad[0]) : ''));
   ok(r.variantOwn, 'variant reads the element\'s own class (static variants) or the names passed, not customElements by tag');
   ok(r.preview.bad.length === 0 && r.preview.inherited === 0.2, `previewOpacity ≡ the parts' own read (${r.preview.n} values; unset → ${r.preview.unsetIs}; inherited from an ancestor)` + (r.preview.bad.length ? ': ' + JSON.stringify(r.preview.bad) : ''));
+  const norm = (t, i, k) => t && t.split(`x-${k}${i}`).join('x-?');
+  let dataOk = 0;
+  D.forEach((x, i) => {
+    const dp = JSON.stringify(x.deck.problem), bp = JSON.stringify(x.base.problem);
+    const bad = x.deck.problem !== null;
+    const warn = bad ? pageWarns.find((w) => w.startsWith(`[deck] x-d${i} (s-g): `)) : null;
+    const same = dp === bp && x.deck.steps === x.base.steps && norm(x.deck.text, i, 'd') === norm(x.base.text, i, 'b') && x.deck.mounted === x.base.mounted
+      && (bad ? x.base.reports.length === 1 && x.base.reports[0][0] === x.deck.problem.kind && warn === `[deck] x-d${i} (s-g): ${x.base.reports[0][1]}` && x.base.rendered === 0 && x.base.dur === 0 && x.base.cues === 'null'
+        : x.base.reports.length === 0 && x.base.mountedTimes === 2 && x.base.rendered === 1 && x.base.dur === 1.25 && x.base.cues === '[0.5]');
+    if (same) dataOk++;
+    else console.log(`     ${x.name}: DECK ${JSON.stringify(x.deck)}\n     ${' '.repeat(x.name.length)}  base ${JSON.stringify(x.base)}\n     warn ${warn}`);
+  });
+  const nBad = D.filter((x) => x.deck.problem).length;
+  ok(dataOk === D.length && nBad >= 14, `the data check ≡ DECK's: ${D.length} cases (${nBad} that do not fit: the same record, placeholder text, fallback steps, report kind and message = DECK's console summary; nothing drawn; ${D.length - nBad} that fit: the part's own steps, mount, render, duration and cues)`);
 } finally { await browser.close(); }
 
 console.log(fails ? `\n${fails} failure(s)` : '\ntest-base: ok');

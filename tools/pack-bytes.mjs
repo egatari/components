@@ -2,7 +2,8 @@
 // and kit/core/llm-pack-assemble.mjs in Studio), counted the way Studio's dev counts it for release notes:
 //   - the README body outside <!-- llm: omit --> blocks, without lines that mention demo.html, examples/, tools/ or the
 //     motion-components skill (Studio drops those: the AI cannot open them);
-//   - the frontmatter's name, summary and steps;
+//   - the frontmatter's name, summary and steps (never its version: line, the part's own version (components 2.0), which
+//     Studio's pack generator leaves out as well; a library part (base, shape, plot, expr) is not in the pack at all);
 //   - each prop's type, default and doc in `static props`;
 //   - the `static shape` summary (kit/shape.js brief of the schema, plus its note).
 // All in UTF-8 bytes. The schema summary uses kit/shape.js of the pinned Egatari Studio (tools/studio.mjs, fetched on first use).
@@ -39,7 +40,7 @@ function count(r, name) {
   const text = md.replace(/\r\n?/g, '\n');
   const m = text.match(/^---\n([\s\S]*?)\n---\n?([\s\S]*)$/);
   const fm = {};
-  if (m) for (const line of m[1].split('\n')) { const x = line.match(/^([\w-]+):\s*(.*)$/); if (x) fm[x[1]] = x[2].trim(); }
+  if (m) for (const line of m[1].split('\n')) { const x = line.match(/^([\w-]+):\s*(.*)$/); if (x && x[1] !== 'version') fm[x[1]] = x[2].trim(); }
   const body = (m ? m[2] : text).replace(/<!--\s*llm:\s*omit\s*-->[\s\S]*?<!--\s*llm:\s*end\s*-->/g, '')
     .split('\n').filter((ln) => !/demo\.html|examples\/|tools\/|motion-components スキル/.test(ln)).join('\n').replace(/\n{3,}/g, '\n\n').trim();
   let cls = null;

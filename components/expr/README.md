@@ -1,12 +1,12 @@
 ---
 name: expr
-version: 2.0.0
+version: 1.0.0
 kind: library
 summary: 2.0 のパーツが属性やデータに書かれた式を計算するための、算術だけの安全な式の評価器（コードとしては動かさない）。教材の作者が直接は書かない
 ---
 
 **2.0 alpha (branch `c2-base`; not for lessons).** A library part (Egatari spec §6.1): it defines no element. A part that
-evaluates expressions written in its attributes or data requires it as `requires: {expr: "2.0.0"}` (Egatari spec §6:
+evaluates expressions written in its attributes or data requires it as `requires: {expr: "1.0.0"}` (Egatari spec §6:
 such parts MUST restrict what the expressions can do) and receives
 
 ```js

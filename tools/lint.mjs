@@ -21,7 +21,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { partMeta, EXACT } from './parts.mjs';
+import { partMeta, EXACT, dependencyOrder } from './parts.mjs';
 
 export const NAME_RE = /^[a-z][a-z0-9-]{0,63}$/;
 export const SERIES = ['common', 'academic', 'business', 'kokugo', 'info', 'social', 'music', 'english'];
@@ -79,6 +79,9 @@ export function lintMeta(name, js, meta) {
     if (typeof v !== 'string' || !EXACT.test(v)) errs.push(`${at}: requires ${n}: ${JSON.stringify(v)} is not an exact version (ranges live only in a library's sources, spec §6.1)`);
   }
   if ('element' in meta && !/^[a-z][a-z0-9]*-[a-z0-9-]*$/.test(meta.element || '')) errs.push(`${at}: define meta element ${JSON.stringify(meta.element)} is not a custom element name`);
+  // the registry name is the folder name (bars), element is the tag (m-bars)
+  if ('element' in meta && meta.name !== name) errs.push(`${at}: define meta name ${JSON.stringify(meta.name)} must be the folder name ${JSON.stringify(name)} (the tag goes in element)`);
+  if ('element' in meta && meta.element !== `m-${name}`) errs.push(`${at}: define meta element ${JSON.stringify(meta.element)} must be "m-${name}"`);
   const code = strip(js);
   if (/\bDECK\b/.test(code)) errs.push(`${at}: a 2.0 part must not use DECK (spec §6.1: no globals of the player; use ctx and base)`);
   if (/\brequire\s*\(/.test(code) || /(^|[^.\w$])import\b/m.test(code)) errs.push(`${at}: a 2.0 part must not import or require (spec §6.1)`);
@@ -185,6 +188,18 @@ export function lint(root) {
     const declared = sv ? [...sv[1].matchAll(/["']([^"']+)["']/g)].map((x) => x[1]) : [];
     if (declared.join() !== list(f.variants).join()) errs.push(`components/${name}/README.md: variants (${f.variants || 'none'}) differ from static variants in index.js (${declared.join(', ') || 'none'})`);
   }
+  // 2.0 parts: every requirement is a part here at that exact version, and there is a dependency order (no cycle)
+  const metas = {};
+  for (const d of fs.readdirSync(base, { withFileTypes: true })) {
+    const f = path.join(base, d.name, 'index.js');
+    if (!d.isDirectory() || !fs.existsSync(f)) continue;
+    try { const m = partMeta(fs.readFileSync(f, 'utf8')); if (m) metas[d.name] = m; } catch { /* reported above */ }
+  }
+  for (const [n, m] of Object.entries(metas)) for (const [r, v] of Object.entries(m.requires || {})) {
+    if (!metas[r]) errs.push(`components/${n}/index.js: requires ${r}, which is not a 2.0 part in components/`);
+    else if (metas[r].version !== v) errs.push(`components/${n}/index.js: requires ${r}@${v}, but components/${r} is ${metas[r].version}`);
+  }
+  try { dependencyOrder(metas); } catch (e) { if (!/not a part here/.test(e.message)) errs.push(e.message); }
   return errs;
 }
 

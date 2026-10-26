@@ -1,8 +1,10 @@
 Egatari components
 Copyright (c) 2026 Gendo Kumoi. Licensed under the MIT License (see LICENSE).
 
-components/base/index.js — MotionElement, el, mtext, lerp, prog and clamp (with ease and stepInt) are copied from Egatari
-Studio's kit/deck.js (https://github.com/egatari/egatari-studio, commit 03eaf0607598b993eb020f8e619caa53526bc771).
+components/base/index.js, components/plot/index.js, components/shape/index.js — copied from Egatari Studio
+(https://github.com/egatari/egatari-studio, commit 03eaf0607598b993eb020f8e619caa53526bc771): base's MotionElement, el,
+mtext, lerp, prog and clamp (with ease and stepInt) and its data check (compText, compProblem, compSummary,
+compPlaceholder) and plot's Plot from kit/deck.js; shape from kit/shape.js.
   Copyright (c) 2026 Gendo Kumoi. MIT License, the same owner and licence as this repository (no further notice needed).
 
 This repository also contains third-party material under other licences:

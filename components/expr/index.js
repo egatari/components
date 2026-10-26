@@ -1,11 +1,11 @@
-// expr 2.0.0: the safe arithmetic expression evaluator of Egatari components 2.0 (a library part, Egatari spec §6.1).
-// Parts that evaluate expressions written in attributes or data require it ({expr: "2.0.0"}) and receive what this factory
+// expr 1.0.0: the safe arithmetic expression evaluator of Egatari components 2.0 (a library part, Egatari spec §6.1).
+// Parts that evaluate expressions written in attributes or data require it ({expr: "1.0.0"}) and receive what this factory
 // returns: {compile(src, {name, vars, funcs, bareMath}), FUNCS, CONSTS, MAX_LEN, MAX_DEPTH} (the EXPR object below).
 // Spec §6: registry components that evaluate expressions written in attributes MUST restrict what they can do; this one
 // parses and evaluates a tree and never runs text as code. The block between the BEGIN/END lines is tools/expr.js, the
 // one source (tools/expr-sync.mjs keeps it equal; 1.x parts m-sweep and m-curves carry their own copy until they move to 2.0).
 // It uses no import, no network and no global of the player (spec §6.1).
-egatariParts.define({name: "expr", version: "2.0.0", requires: {}}, function(){
+egatariParts.define({name: "expr", version: "1.0.0", requires: {}}, function(){
 "use strict";
 // ---- BEGIN egatari-expr (source: tools/expr.js; copy with `node tools/expr-sync.mjs`; do not edit inside a component) ----
 // A safe arithmetic expression evaluator (Egatari spec §6: a component that evaluates an expression written in an attribute

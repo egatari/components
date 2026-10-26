@@ -5,8 +5,9 @@
 // load and test 2.0 parts before Egatari Studio writes the real registry. It follows the behaviour §6.1 defines:
 //   - one global for parts, egatariParts, with define(meta, factory) and nothing else;
 //     meta = {name, version, requires?, element?}; requires maps part names to EXACT versions (no ranges)
-//   - factory(deps) is called with {<required name>: <what that part's factory returned>} and the result is kept under
-//     name@version; two versions of one part both stay, each under its own name@version
+//   - factory(deps) is called with {<required name>: <what that part's factory returned>} and the result is frozen
+//     (shallowly: parts MUST NOT modify another part's exports) and kept under name@version; two versions of one part both
+//     stay, each under its own name@version
 //   - parts come in dependency order: a part that requires one not defined before it fails (a forward reference is
 //     refused, and defining the required part later does not revive it); only the exact version matches
 //   - an element part's returned class is defined as the custom element `element`, only if that name is not defined yet
@@ -21,11 +22,12 @@
 // window load event), the shim
 //   - links the part's base class (base.MotionElement, whose parent is HTMLElement) under DECK.MotionElement, so that the
 //     DECK seek loop finds and drives it; base's own steps, from, props, data and methods still win (they are its own);
-//   - defines a subclass of the part's class whose mount and render pass a 2.0 context (spec §8.4) instead of DECK's:
+//   - defines a subclass of the part's class whose instances wrap their mount and render (after base's data check has
+//     put its own on the instance) to pass a 2.0 context (spec §8.4) instead of DECK's:
 //     mode ("talk" | "learn" | "video"; DECK's "lecture" is talk with preview), preview, slide (the slide's key, a string),
 //     instant, reset, entered (true on the first render after the slide was entered from another slide; a jump to the
 //     same slide is not detected), lang (deck-meta lang, else <html lang>, else "ja"), slides ([{key, title}], frozen),
-//     go(slideKey, stepKey?) → DECK.go, report(code, message) → DECK.componentErrors and console.warn, extend (DECK's when
+//     go(slideKey, stepKey?) → DECK.go, visited(slideKey) → DECK.visited (a boolean), report(code, message) → DECK.componentErrors and console.warn, extend (DECK's when
 //     it has one), live (null); ctx.deck is not passed;
 //   - calls the part's layout(ctx), if it has one, when its size changes, when the fonts finish loading and when its
 //     slide becomes the current one, and then renders it again at its last (k, t).
@@ -67,6 +69,7 @@ function define(meta, factory){
   }
   var value;
   try { value = factory(deps); } catch (e) { return fail(key, meta, "factory", msg(e)); }
+  if (value !== null && (typeof value === "object" || typeof value === "function")) Object.freeze(value);   // spec §6.1: shallowly
   if (meta.element){
     if (typeof value !== "function" || !(value.prototype instanceof HTMLElement)) return fail(key, meta, "element", "the factory did not return a class extending HTMLElement");
     parts[key] = {meta: meta, value: value};
@@ -109,7 +112,7 @@ function reparent(cls){
   if (!DM || cls.prototype instanceof DM) return;
   var c = cls;
   while (c && Object.getPrototypeOf(c) !== HTMLElement) c = Object.getPrototypeOf(c);
-  if (!c || c === Function.prototype) return;
+  if (!c || c === Function.prototype || Object.isFrozen(c)) return;   // a part's own class extending HTMLElement is frozen: not bridged
   Object.setPrototypeOf(c, DM);
   Object.setPrototypeOf(c.prototype, DM.prototype);
 }
@@ -130,6 +133,7 @@ function ctxOf(c, d, first){
     entered: entered,
     lang: (D.META && typeof D.META.lang === "string" && D.META.lang) || document.documentElement.lang || "ja",
     slides: slidesOf(),
+    visited: function(sk){ return typeof D.visited === "function" ? !!D.visited(String(sk)) : false; },
     go: function(sk, stk){ var i = (D.slides || []).findIndex(function(s){ return s._key === sk; }); if (i < 0) return false; var s = D.slides[i]; var k = stk === undefined ? 0 : stk === "concl" ? s._cstep : +stk; D.go(i, k); return true; },
     report: function(code, message){
       var rec = {slide: (D.slides || []).findIndex(function(s){ return s._key === key; }), key: key, tag: c.tagName.toLowerCase(), phase: "report", kind: "report", code: String(code), msg: String(message)};
@@ -151,12 +155,13 @@ function slidesOf(){
 function bridged(cls){
   reparent(cls);
   var B = class extends cls {
-    mount(d){
-      var r = super.mount(ctxOf(this, d, true));
-      if (typeof this.layout === "function") watchLayout(this);
-      return r;
+    constructor(){
+      super();
+      // whatever mount / render this instance has now (base's data check, or the part's own) gets the 2.0 ctx
+      var m = this.mount, r = this.render;
+      this.mount = function(d){ var x = m.call(this, ctxOf(this, d, true)); if (typeof this.layout === "function") watchLayout(this); return x; };
+      this.render = function(k, t, d){ this.__last = [k, t, d]; return r.call(this, k, t, ctxOf(this, d, false)); };
     }
-    render(k, t, d){ this.__last = [k, t, d]; return super.render(k, t, ctxOf(this, d, false)); }
   };
   return B;
 }
