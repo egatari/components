@@ -4,6 +4,11 @@ Versions follow [README.md § Releases and versions](README.md#releases-and-vers
 
 ## Unreleased
 
+### Fixed
+
+- `m-map-japan` `variant="draw"`: at step 0 the 1.11.0 determinism fix wrote `opacity="0"` on the hidden areas' paths; that alone made Chrome draw the map's names with grayscale instead of LCD (subpixel) anti-aliasing on Linux and Windows, so the default-variant check found step 0 of the variants demo different from v1.10.0. Areas not yet shown now get back the attributes they had after mount (removed, not written as 0); the DOM at step 0 equals v1.10.0's and later steps are unchanged
+- `.gitattributes`: `data/** -text`, so a Windows checkout keeps `data/kana/` byte-identical to the copies in `components/kakijun/` (`tools/kana-embed.mjs --check` failed there)
+
 ### Later (candidates, not in this release)
 
 - `m-compare` `by="row"`; an "outside every set" region for `m-venn`; planned-vs-actual bars for `m-timeline`
