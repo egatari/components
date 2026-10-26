@@ -1,6 +1,6 @@
 // Text contrast (docs/conventions.md §2.3): in the final state of every demo slide, every SVG text of a component reaches
 // at least 4.5:1 against what is under it (its fill and accumulated opacity, over the filled shapes drawn before it,
-// over --bg), in each of Egatari Studio's themes (the demo is built once per theme). Shapes a component marks with
+// over --bg; a text with a 2–3 px halo, paint-order: stroke, counts against its halo colour), in each of Egatari Studio's themes (the demo is built once per theme). Shapes a component marks with
 // class="outline" (graphical outlines that carry meaning, e.g. m-hist's second group drawn dashed over the first) reach 3:1
 // against what is around them (WCAG 1.4.11).
 //   node tools/test-contrast.mjs [name …]
@@ -54,7 +54,16 @@ for (const name of names) for (const theme of THEMES) {
         const fill = rgb(getComputedStyle(e).fill), eff = fill.map((v, j) => v * op + bg[j] * (1 - op));
         const tokens = {}; for (const k of ['--emph', '--term', '--fg', '--muted']) tokens[k] = rgb(getComputedStyle(document.documentElement).getPropertyValue(k).trim()).join();
         const token = Object.keys(tokens).find((k) => tokens[k] === fill.join()) || '';
-        out.push({ slide: i, txt: txt.slice(0, 24), fill: getComputedStyle(e).fill, token, op: +op.toFixed(2), cr: +cr(eff, bg).toFixed(2), min: 4.5 });
+        // A halo (a 2–3 px stroke painted under the fill, paint-order: stroke; m-heatmap's numbers on mid-lightness cells) is what
+        // is directly around the glyphs: the text then counts against the halo colour (over what is under it) instead
+        const es = getComputedStyle(e), hw = parseFloat(es.strokeWidth);
+        let against = bg, halo = false;
+        if (es.stroke && es.stroke !== 'none' && /^stroke/.test(es.paintOrder) && hw >= 2 && hw <= 3) {
+          const so = +es.strokeOpacity, hc = rgb(es.stroke);
+          against = hc.map((v, j) => v * so + bg[j] * (1 - so)); halo = true;
+        }
+        const eff2 = fill.map((v, j) => v * op + against[j] * (1 - op));
+        out.push({ slide: i, txt: txt.slice(0, 24) + (halo ? ' (halo)' : ''), fill: es.fill, token, op: +op.toFixed(2), cr: +cr(eff2, against).toFixed(2), min: 4.5 });
       }
       // Outlines a component marks with class="outline" (e.g. m-hist's bars, the second group dashed over the first):
       // the stroke on its top edge (30 % from the left) reaches 3:1 (WCAG 1.4.11) against what is around it there, i.e. --bg and

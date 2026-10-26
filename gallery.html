@@ -73,11 +73,58 @@ document.addEventListener("DOMContentLoaded", function(){
 <div id="stage">
 
 <section class="slide">
-  <h2>部品の一覧（33 個、115 枚）</h2>
+  <h2>部品の一覧（34 個、119 枚）</h2>
   <div class="body">
     <p>部品ごとに、説明の 1 枚と見本のスライドが続きます。→ で段階を進めます。</p>
-    <p>m-syntax（新しい）　m-predict（変わった）　m-timer（変わった）　m-bars　m-boxplot　m-codetree　m-collect　m-compare　m-curves　m-cycle　m-fishbone　m-flow　m-gendai　m-hissan　m-hist　m-kakijun　m-kanbun　m-keyboard　m-kobun　m-kpi　m-map-japan　m-market　m-menu　m-numberline　m-pie　m-quad　m-scatter　m-seq　m-sweep　m-tape　m-timeline　m-tree　m-venn</p>
+    <p>m-heatmap（新しい）　m-syntax（新しい）　m-predict（変わった）　m-timer（変わった）　m-bars　m-boxplot　m-codetree　m-collect　m-compare　m-curves　m-cycle　m-fishbone　m-flow　m-gendai　m-hissan　m-hist　m-kakijun　m-kanbun　m-keyboard　m-kobun　m-kpi　m-map-japan　m-market　m-menu　m-numberline　m-pie　m-quad　m-scatter　m-seq　m-sweep　m-tape　m-timeline　m-tree　m-venn</p>
   </div>
+</section>
+
+<section class="slide">
+  <h2>m-heatmap（新しい、v1.12.0）</h2>
+  <div class="body">
+    <p>ヒートマップ。値で塗ったセルの格子（混同行列・相関行列・注意の重み）</p>
+    <ul>
+      <li>伝えたいこと：比べる（量・特徴）・2 つの量の関係</li>
+      <li>見せ方：fade・sweep</li>
+      <li>系列：数理・統計　見本のスライド：3 枚</li>
+    </ul>
+  </div>
+</section>
+
+<section class="slide">
+  <h2>動物の写真の分類：混同行列（架空）</h2>
+  <div class="body">
+    <m-heatmap normalize="row" show="both" diag="on" xl="予測" yl="正解" aria-label="架空の分類器の混同行列（各 50 枚）" style="height:440px">
+      <script type="application/json">{"rows": ["ねこ", "いぬ", "うさぎ"], "cols": ["ねこ", "いぬ", "うさぎ"], "values": [[45, 3, 2], [6, 38, 6], [1, 4, 45]]}</script>
+    </m-heatmap>
+  </div>
+  <div class="concl"><span>→ 正解の行ごとに、どのクラスと間違えたかを読む</span></div>
+</section>
+
+<section class="slide">
+  <h2>点数とスマホの時間の相関（架空の 40 人）</h2>
+  <div class="body">
+    <m-heatmap scale="diverging" range="[-1,1]" digits="2" aria-label="架空の 40 人の、試験の点数とスマホの時間の相関行列" style="height:440px">
+      <script type="application/json">{"rows": ["数学", "理科", "英語", "スマホ"], "cols": ["数学", "理科", "英語", "スマホ"], "values": [[1, 0.68, 0.41, -0.35], [0.68, 1, 0.3, -0.28], [0.41, 0.3, 1, -0.52], [-0.35, -0.28, -0.52, 1]]}</script>
+    </m-heatmap>
+  </div>
+  <div class="concl"><span>→ 0 から離れるほど濃く、正と負は色で分かれる</span></div>
+</section>
+
+<section class="slide">
+  <h2>見せ方の種類（variant）：注意の重み（架空）</h2>
+  <div class="body">
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:0 36px">
+      <m-heatmap variant="fade" digits="2" xl="フェード（fade、既定）" aria-label="架空の注意の重み（fade）" style="height:430px">
+        <script type="application/json">{"rows": ["猫", "が", "魚", "を"], "cols": ["猫", "が", "魚", "を"], "values": [[0.62, 0.1, 0.2, 0.08], [0.45, 0.3, 0.15, 0.1], [0.12, 0.05, 0.71, 0.12], [0.08, 0.04, 0.58, 0.3]], "highlight": [[2, 2], [3, 2]]}</script>
+      </m-heatmap>
+      <m-heatmap variant="sweep" digits="2" xl="左上から（sweep）" aria-label="架空の注意の重み（sweep）" style="height:430px">
+        <script type="application/json">{"rows": ["猫", "が", "魚", "を"], "cols": ["猫", "が", "魚", "を"], "values": [[0.62, 0.1, 0.2, 0.08], [0.45, 0.3, 0.15, 0.1], [0.12, 0.05, 0.71, 0.12], [0.08, 0.04, 0.58, 0.3]], "highlight": [[2, 2], [3, 2]]}</script>
+      </m-heatmap>
+    </div>
+  </div>
+  <div class="concl"><span>→ 全体を出してから、強調するセルを 1 つずつ囲む</span></div>
 </section>
 
 <section class="slide">
