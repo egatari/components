@@ -219,13 +219,20 @@ DECK.define("m-sweep", class extends DECK.MotionElement {
     this.lab = D.mtext(p.svg, p.m.l + 10, 30, "", {fill: "var(--emph)", "font-size": 27});
   }
   duration(k){ return k >= 1 ? this.props.dur : 0; }
-  render(k, t){
-    var P = this.props, V = P.values;
+  render(k, t, ctx){
+    var P = this.props, V = P.values, preview = !!(ctx && (ctx.preview || ctx.mode === "lecture")), PV = 0;
+    // 先を薄く見せる表示：後の段階で動いていく先の値の線を、強調の色でテーマの --preview-opacity（なければ 0.45）で描く
+    if (preview){ PV = parseFloat(getComputedStyle(this).getPropertyValue("--preview-opacity")); if (!(PV >= 0 && PV <= 1)) PV = 0.45; }
     var to = V[Math.min(k, V.length - 1)], from = k >= 1 ? V[k - 1] : to;
     var c = DECK.lerp(from, to, DECK.prog(t, 0, P.dur));
     this.cur.setAttribute("d", this.p.d(this.g(c), P.xr[0], P.xr[1], 300));
     this.lab.textContent = P.param + " = " + c.toFixed(P.digits);
-    V.forEach(function(v, i){ this.ghosts[i].setAttribute("opacity", i < k && v !== c ? 1 : 0); }, this);
+    V.forEach(function(v, i){
+      var e = this.ghosts[i], ahead = preview && i > k && v !== c, col = ahead ? "var(--emph)" : "var(--line)";
+      // style は DECK.el と同じ書き方で書く（style.stroke に代入すると "stroke: var(--x);" になり、作った直後と字が変わる）
+      e.setAttribute("style", "stroke:" + col + ";");
+      e.setAttribute("opacity", ahead ? PV : i < k && v !== c ? 1 : 0);
+    }, this);
   }
 });
 })();

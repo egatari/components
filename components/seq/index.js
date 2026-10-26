@@ -70,8 +70,11 @@ DECK.define("m-seq", class extends DECK.MotionElement {
     for (var j = 0; j <= s[1] - s[0]; j++) out.push(+(j * this.props.slot).toFixed(4));
     return out;
   }
-  render(k, t){
+  render(k, t, ctx){
     var D = DECK, S = this.data.steps, p = this.p, slot = this.props.slot;
+    var preview = !!(ctx && (ctx.preview || ctx.mode === "lecture")), PV = 1;
+    if (preview){ PV = parseFloat(getComputedStyle(this).getPropertyValue("--preview-opacity")); if (!(PV >= 0 && PV <= 1)) PV = 0.45; }
+
     // 今の更新の番号 idx と、その更新の進み具合 e（0 なら一つ前の状態、1 なら更新後）
     var idx = 0, e = 1, tm = 0;
     if (k >= 1){
@@ -85,11 +88,22 @@ DECK.define("m-seq", class extends DECK.MotionElement {
     var d = p.poly(this.pts(dens));
     this.cur.setAttribute("d", d);
     this.area.setAttribute("d", d + "L" + p.x(this.data.xs[this.data.xs.length - 1]).toFixed(1) + "," + p.y(0).toFixed(1) + "L" + p.x(this.data.xs[0]).toFixed(1) + "," + p.y(0).toFixed(1) + "Z");
-    var G = this.props.ghosts;
-    this.ghostEls.forEach(function(g, i){ g.setAttribute("opacity", i < idx && i >= idx - G ? 1 : 0); });
-    this.dots.forEach(function(c, i){ if (c) c.setAttribute("opacity", i < idx ? 1 : 0); });
+    var G = this.props.ghosts, last = this.updates, end = this.span(k)[1];
+    // 先の段階を薄く見せる表示（授業の表示）：後の段階の終わりの分布を今の線の色で、後の観測の点とともに、
+    // テーマの --preview-opacity の濃さに（途中の分布は重ねない）
+    var ahead = function(i){ return preview && i > Math.max(idx, k >= 1 ? end : 0); };
+    this.ghostEls.forEach(function(g, i){
+      var f = ahead(i) && i === last;
+      var col = f ? "var(--term)" : "var(--line)";
+      // style は DECK.el と同じ書き方で書く（style.stroke に代入すると "stroke: var(--x);" になり、作った直後と字が変わる）
+      g.setAttribute("style", "stroke:" + col + ";");
+      g.setAttribute("opacity", f ? PV : i < idx && i >= idx - G ? 1 : 0);
+    });
+    this.dots.forEach(function(c, i){ if (c) c.setAttribute("opacity", ahead(i) ? PV : i < idx ? 1 : 0); });
     var mo = b.mark !== undefined && idx > 0 ? D.prog(tm, 0, 0.25) : 0;
-    if (b.mark !== undefined){ var mx = p.x(b.mark); this.markLine.setAttribute("x1", mx); this.markLine.setAttribute("x2", mx); this.markLab.setAttribute("x", mx); }
+    // 印のない段階では作った直後の位置（0）に戻す（前の段階の位置を残さない。docs/contract.md §3）
+    var mx = b.mark !== undefined ? p.x(b.mark) : 0;
+    this.markLine.setAttribute("x1", mx); this.markLine.setAttribute("x2", mx); this.markLab.setAttribute("x", mx);
     this.markLine.setAttribute("opacity", mo.toFixed(3));
     this.markLab.setAttribute("opacity", mo.toFixed(3));
     this.rows.forEach(function(r){

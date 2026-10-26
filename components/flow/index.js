@@ -138,12 +138,16 @@ DECK.define("m-flow", class extends DECK.MotionElement {
     this.edges.forEach(function(o){ o.pulses.forEach(function(q){ if (q.k === k && q.at > 0 && c.indexOf(q.at) < 0) c.push(q.at); }); });
     return c.length ? c.sort(function(a, b){ return a - b; }) : null;
   }
-  render(k, t){
-    var P = this.props, D = DECK;
-    var pr = function(step, at, dur){ return step < k ? 1 : step > k ? 0 : D.prog(t, at, dur); };
+  render(k, t, ctx){
+    var P = this.props, D = DECK, preview = !!(ctx && (ctx.preview || ctx.mode === "lecture")), PV = 0;
+    // 先を薄く見せる表示：後の段階の箱と矢印（名前・金額も）を、最後の形のままテーマの --preview-opacity（なければ 0.45）で描く。
+    // pulse の点は今の段階のものだけ
+    if (preview){ PV = parseFloat(getComputedStyle(this).getPropertyValue("--preview-opacity")); if (!(PV >= 0 && PV <= 1)) PV = 0.45; }
+    var ahead = function(step){ return preview && step > k; };
+    var pr = function(step, at, dur){ return step < k || ahead(step) ? 1 : step > k ? 0 : D.prog(t, at, dur); };
     this.nodes.forEach(function(o){
       var e = pr(o.step, o.at, P.fade), s = D.lerp(0.92, 1, e);
-      o.g.setAttribute("opacity", e.toFixed(3));
+      o.g.setAttribute("opacity", ahead(o.step) ? PV.toFixed(3) : e.toFixed(3));
       o.g.setAttribute("transform", "translate(" + o.cx + " " + o.cy + ") scale(" + s.toFixed(4) + ") translate(" + (-o.cx) + " " + (-o.cy) + ")");
     });
     this.edges.forEach(function(o){
@@ -156,7 +160,7 @@ DECK.define("m-flow", class extends DECK.MotionElement {
       // 矢じりは線が 20px 伸びるまでに大きくなる（始めに箱からはみ出さない）
       var hs = Math.min(1, e * L / 20);
       o.head.setAttribute("transform", "translate(" + tx.toFixed(2) + " " + ty.toFixed(2) + ") rotate(" + o.ang.toFixed(2) + ") scale(" + hs.toFixed(4) + ")");
-      o.g.setAttribute("opacity", e > 0 ? 1 : 0);
+      o.g.setAttribute("opacity", ahead(o.step) ? PV : e > 0 ? 1 : 0);
       var lo = pr(o.step, o.at + P.draw * 0.8, 0.3).toFixed(3);
       if (o.lab) o.lab.setAttribute("opacity", lo);
       if (o.amt) o.amt.setAttribute("opacity", lo);

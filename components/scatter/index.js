@@ -10,61 +10,19 @@
 (function(){
 // ---- BEGIN egatari-variant (source: tools/variant.js; copy with `node tools/variant-sync.mjs`; do not edit inside a component) ----
 // Choosing a presentation variant (Egatari spec §8.4, docs/conventions.md §1). A component lists its variant names in
-// `static variants` (index 0 is variant 0) and calls VARIANT.of(this) once, in mount. The choice reads, in order:
-//   the component's `variant` attribute (a name) → its `seed` attribute → `data-egatari-seed` on the root element → 0.
-// Seed 0 gives variant 0. Any other seed s gives the name v with the largest h("<s>|<tag>|<v>") (highest random weight),
-// so every instance of a component in one lesson shows the same variant, components choose independently, and adding a
-// variant later changes only the lessons where the new one wins. h is FNV-1a followed by the mixing of kit/deck.js's rng.
-// The choice is a pure function of these values: the picture still depends on (i, k, t) only.
+// `static variants` (the first is the default) and calls VARIANT.of(this) once, in mount. The variant is the component's
+// `variant` attribute when it names one of them, otherwise the first name. There is no seed: lessons do not carry one
+// (spec §8.4 since egatari-spec 28d8801), and `seed` / `data-egatari-seed` are not read.
+// The choice is a pure function of the attribute: the picture still depends on (i, k, t) only.
 var VARIANT = (function(){
   "use strict";
-  function mix(h){
-    h = Math.imul(h ^ (h >>> 15), 2246822507);
-    h = Math.imul(h ^ (h >>> 13), 3266489909);
-    return (h ^ (h >>> 16)) >>> 0;
-  }
-  function hash(s){
-    var h = 2166136261;
-    for (var i = 0; i < s.length; i++){ h ^= s.charCodeAt(i); h = Math.imul(h, 16777619); }
-    return mix(h);
-  }
-  // A seed is a decimal integer 0 ≤ N < 2^32. Anything else is warned about and ignored (null)
-  function seedOf(v, what){
-    if (v === null || v === undefined) return null;
-    var s = String(v).trim();
-    if (/^\d{1,10}$/.test(s) && +s < 4294967296) return +s;
-    console.warn(what + "=" + JSON.stringify(v) + " is not an integer 0 ≤ N < 2^32 (ignored)");
-    return null;
-  }
-  // The variant name for seed s among names (for tools and tests; components call of)
-  function pick(s, tag, names){
-    if (!names.length) return null;
-    if (!s) return names[0];
-    var best = names[0], bh = -1;
-    names.forEach(function(v){ var x = hash(s + "|" + tag + "|" + v); if (x > bh){ bh = x; best = v; } });
-    return best;
-  }
-  // The effective seed of a component element (0 when nothing is written)
-  function seed(el){
-    var tag = el.tagName.toLowerCase(), s = seedOf(el.getAttribute("seed"), tag + " seed");
-    if (s === null) s = seedOf(document.documentElement.getAttribute("data-egatari-seed"), "data-egatari-seed");
-    return s === null ? 0 : s;
-  }
   function of(el){
     var tag = el.tagName.toLowerCase(), C = customElements.get(tag), names = (C && C.variants) || [], v = el.getAttribute("variant");
-    if (v !== null){
-      if (names.indexOf(v) >= 0) return v;
-      console.warn(tag + ' variant="' + v + '" is not one of ' + names.join(", ") + " (variant 0 is used)");
-      return names[0] || null;
-    }
-    return pick(seed(el), tag, names);
+    if (v !== null && names.indexOf(v) >= 0) return v;
+    if (v !== null) console.warn(tag + ' variant="' + v + '" is not one of ' + names.join(", ") + " (the first, " + (names[0] || "none") + ", is used)");
+    return names[0] || null;
   }
-  // A seeded generator for a variant that needs randomness (0 ≤ x < 1), from the same seed, tag and a key of your own
-  function rng(el, key){
-    var h = hash(seed(el) + "|" + el.tagName.toLowerCase() + "|" + (key || ""));
-    return function(){ h = mix((h + 0x9e3779b9) >>> 0); return h / 4294967296; };
-  }
-  return {of: of, pick: pick, seed: seed, rng: rng, hash: hash};
+  return {of: of};
 })();
 // ---- END egatari-variant ----
 DECK.define("m-scatter", class extends DECK.MotionElement {
@@ -274,7 +232,8 @@ DECK.define("m-scatter", class extends DECK.MotionElement {
     return c.length ? c.sort(function(a, b){ return a - b; }) : null;
   }
   render(k, t, ctx){
-    var P = this.props, D = DECK, vr = this.variant, dur = P.dur, lecture = ctx && (ctx.preview || ctx.mode === "lecture");
+    var P = this.props, D = DECK, vr = this.variant, dur = P.dur, lecture = ctx && (ctx.preview || ctx.mode === "lecture"), FAINT = 0.45;
+    if (lecture){ var pv = parseFloat(getComputedStyle(this).getPropertyValue("--preview-opacity")); FAINT = pv >= 0 && pv <= 1 ? pv : 0.45; }   // 先の段階の薄さ：テーマの --preview-opacity（ないときは 0.45）
     // この部品の段階の中の時刻（-1 = まだ。授業の表示では先の段階を薄く見せる）
     var local = function(o){ return o.step < k ? Infinity : o.step > k ? -1 : t - o.at; };
     var faint = function(o){ return lecture && o.step > k; };
@@ -282,7 +241,7 @@ DECK.define("m-scatter", class extends DECK.MotionElement {
       var o = se.o, tt = local(o), f = faint(o), span = dur * 0.7;
       se.marks.forEach(function(mk){
         var op, sc = 1;
-        if (f){ op = 0.45; }
+        if (f){ op = FAINT; }
         else if (tt < 0){ op = 0; }
         else if (vr === "sweep"){ op = D.prog(tt, mk.rank * (span - 0.2), 0.2); }
         else if (vr === "grow"){ sc = D.prog(tt, 0, span); op = sc > 0 ? Math.min(1, sc * 3) : 0; }
@@ -290,9 +249,9 @@ DECK.define("m-scatter", class extends DECK.MotionElement {
         mk.g.setAttribute("opacity", op.toFixed(3));
         mk.g.setAttribute("transform", "translate(" + mk.cx.toFixed(1) + " " + mk.cy.toFixed(1) + ")" + (sc < 1 ? " scale(" + Math.max(0.001, sc).toFixed(4) + ")" : ""));
       });
-      var lo = f ? 0.45 : tt < 0 ? 0 : D.prog(tt, dur * 0.6, dur * 0.4);
+      var lo = f ? FAINT : tt < 0 ? 0 : D.prog(tt, dur * 0.6, dur * 0.4);
       se.labels.forEach(function(l){ l.setAttribute("opacity", lo.toFixed(3)); });
-      if (se.leg) se.leg.setAttribute("opacity", (f ? 0.45 : tt < 0 ? 0 : D.prog(tt, 0, dur * 0.5)).toFixed(3));
+      if (se.leg) se.leg.setAttribute("opacity", (f ? FAINT : tt < 0 ? 0 : D.prog(tt, 0, dur * 0.5)).toFixed(3));
     });
     this.trends.forEach(function(tr){
       var o = tr.o, tt = local(o), f = faint(o), span = dur * 0.7, A = tr.A, B = tr.B, e = f ? 1 : tt < 0 ? 0 : D.prog(tt, 0, span);
@@ -302,8 +261,8 @@ DECK.define("m-scatter", class extends DECK.MotionElement {
       else op = e;
       tr.line.setAttribute("d", "M" + D.lerp(A[0], B[0], s0).toFixed(1) + "," + D.lerp(A[1], B[1], s0).toFixed(1) + "L" + D.lerp(A[0], B[0], s1).toFixed(1) + "," + D.lerp(A[1], B[1], s1).toFixed(1));
       if (tr.dash) tr.line.setAttribute("stroke-dashoffset", (s0 * tr.len).toFixed(1));
-      tr.line.setAttribute("opacity", (tr.out ? 0 : f ? 0.45 : op).toFixed(3));
-      if (tr.leg) tr.leg.setAttribute("opacity", (f ? 0.45 : tt < 0 ? 0 : D.prog(tt, span, dur * 0.3)).toFixed(3));
+      tr.line.setAttribute("opacity", (tr.out ? 0 : f ? FAINT : op).toFixed(3));
+      if (tr.leg) tr.leg.setAttribute("opacity", (f ? FAINT : tt < 0 ? 0 : D.prog(tt, span, dur * 0.3)).toFixed(3));
     });
   }
 });

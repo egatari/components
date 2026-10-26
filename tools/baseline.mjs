@@ -2,7 +2,7 @@
 // `git describe`, so the answer is the same before and after the release is tagged, and in CI).
 //   version R = package.json; label = vR; base = the newest tag vX.Y.Z with X.Y.Z < R
 //   If no tag is older than R (or there are no tags), base is '' and callers skip what needs it.
-// tools/gallery.mjs marks new and changed components with it; tools/test-seed0.mjs compares variant 0 with base.
+// tools/gallery.mjs marks new and changed components with it; tools/test-default-variant.mjs compares the default variant with base.
 import fs from 'node:fs';
 import path from 'node:path';
 import { execFileSync } from 'node:child_process';

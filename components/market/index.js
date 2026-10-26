@@ -62,17 +62,20 @@ DECK.define("m-market", class extends DECK.MotionElement {
     return (v < 0 ? "−" : "") + i + (s[1] ? "." + s[1] : "") + this.props.unit;
   }
   duration(k){ return k >= 1 ? this.props.dur + (this.props.count ? 0 : 0.35) : 0; }
-  render(k, t){
+  render(k, t, ctx){
     var P = this.props, D = DECK, self = this, n = this.rings.length;
+    // 先の段階を薄く見せる表示（授業の表示）：後の段階の円と名前・数字を、最後の形でテーマの --preview-opacity の濃さに
+    var preview = !!(ctx && (ctx.preview || ctx.mode === "lecture")), PV = 1;
+    if (preview){ PV = parseFloat(getComputedStyle(this).getPropertyValue("--preview-opacity")); if (!(PV >= 0 && PV <= 1)) PV = 0.45; }
     this.rings.forEach(function(o){
-      var j = o.i + 1;
-      var e = j < k ? 1 : j > k ? 0 : D.prog(t, 0, P.dur);
+      var j = o.i + 1, ahead = preview && j > k;
+      var e = j < k || ahead ? 1 : j > k ? 0 : D.prog(t, 0, P.dur);
       // 前の円の大きさ・位置から縮んで今の大きさへ
       o.c.setAttribute("r", D.lerp(o.prev, o.rad, e).toFixed(2));
       o.c.setAttribute("cy", D.lerp(o.pcy, o.cy, e).toFixed(2));
-      o.c.setAttribute("opacity", (j <= k ? Math.min(1, e * 2) : 0).toFixed(3));
+      o.c.setAttribute("opacity", (ahead ? PV : j <= k ? Math.min(1, e * 2) : 0).toFixed(3));
       // 名前と数字：縮みきってから（count なら縮みに合わせて）
-      var lo = P.count ? (j <= k ? Math.min(1, e * 3) : 0) : j < k ? 1 : j > k ? 0 : D.prog(t, P.dur, 0.35);
+      var lo = ahead ? PV : P.count ? (j <= k ? Math.min(1, e * 3) : 0) : j < k ? 1 : j > k ? 0 : D.prog(t, P.dur, 0.35);
       o.val.textContent = self.fmt(P.count ? o.r.value * (j < k ? 1 : e) : o.r.value);
       o.g.setAttribute("opacity", lo.toFixed(3));
     });

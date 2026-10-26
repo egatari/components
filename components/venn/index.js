@@ -12,63 +12,23 @@
 // どちらも長さは dur で、段階の数・長さ・最後の中身は変わらない
 // ---- BEGIN egatari-variant (source: tools/variant.js; copy with `node tools/variant-sync.mjs`; do not edit inside a component) ----
 // Choosing a presentation variant (Egatari spec §8.4, docs/conventions.md §1). A component lists its variant names in
-// `static variants` (index 0 is variant 0) and calls VARIANT.of(this) once, in mount. The choice reads, in order:
-//   the component's `variant` attribute (a name) → its `seed` attribute → `data-egatari-seed` on the root element → 0.
-// Seed 0 gives variant 0. Any other seed s gives the name v with the largest h("<s>|<tag>|<v>") (highest random weight),
-// so every instance of a component in one lesson shows the same variant, components choose independently, and adding a
-// variant later changes only the lessons where the new one wins. h is FNV-1a followed by the mixing of kit/deck.js's rng.
-// The choice is a pure function of these values: the picture still depends on (i, k, t) only.
+// `static variants` (the first is the default) and calls VARIANT.of(this) once, in mount. The variant is the component's
+// `variant` attribute when it names one of them, otherwise the first name. There is no seed: lessons do not carry one
+// (spec §8.4 since egatari-spec 28d8801), and `seed` / `data-egatari-seed` are not read.
+// The choice is a pure function of the attribute: the picture still depends on (i, k, t) only.
 var VARIANT = (function(){
   "use strict";
-  function mix(h){
-    h = Math.imul(h ^ (h >>> 15), 2246822507);
-    h = Math.imul(h ^ (h >>> 13), 3266489909);
-    return (h ^ (h >>> 16)) >>> 0;
-  }
-  function hash(s){
-    var h = 2166136261;
-    for (var i = 0; i < s.length; i++){ h ^= s.charCodeAt(i); h = Math.imul(h, 16777619); }
-    return mix(h);
-  }
-  // A seed is a decimal integer 0 ≤ N < 2^32. Anything else is warned about and ignored (null)
-  function seedOf(v, what){
-    if (v === null || v === undefined) return null;
-    var s = String(v).trim();
-    if (/^\d{1,10}$/.test(s) && +s < 4294967296) return +s;
-    console.warn(what + "=" + JSON.stringify(v) + " is not an integer 0 ≤ N < 2^32 (ignored)");
-    return null;
-  }
-  // The variant name for seed s among names (for tools and tests; components call of)
-  function pick(s, tag, names){
-    if (!names.length) return null;
-    if (!s) return names[0];
-    var best = names[0], bh = -1;
-    names.forEach(function(v){ var x = hash(s + "|" + tag + "|" + v); if (x > bh){ bh = x; best = v; } });
-    return best;
-  }
-  // The effective seed of a component element (0 when nothing is written)
-  function seed(el){
-    var tag = el.tagName.toLowerCase(), s = seedOf(el.getAttribute("seed"), tag + " seed");
-    if (s === null) s = seedOf(document.documentElement.getAttribute("data-egatari-seed"), "data-egatari-seed");
-    return s === null ? 0 : s;
-  }
   function of(el){
     var tag = el.tagName.toLowerCase(), C = customElements.get(tag), names = (C && C.variants) || [], v = el.getAttribute("variant");
-    if (v !== null){
-      if (names.indexOf(v) >= 0) return v;
-      console.warn(tag + ' variant="' + v + '" is not one of ' + names.join(", ") + " (variant 0 is used)");
-      return names[0] || null;
-    }
-    return pick(seed(el), tag, names);
+    if (v !== null && names.indexOf(v) >= 0) return v;
+    if (v !== null) console.warn(tag + ' variant="' + v + '" is not one of ' + names.join(", ") + " (the first, " + (names[0] || "none") + ", is used)");
+    return names[0] || null;
   }
-  // A seeded generator for a variant that needs randomness (0 ≤ x < 1), from the same seed, tag and a key of your own
-  function rng(el, key){
-    var h = hash(seed(el) + "|" + el.tagName.toLowerCase() + "|" + (key || ""));
-    return function(){ h = mix((h + 0x9e3779b9) >>> 0); return h / 4294967296; };
-  }
-  return {of: of, pick: pick, seed: seed, rng: rng, hash: hash};
+  return {of: of};
 })();
 // ---- END egatari-variant ----
+// 形の要素ごとに、書き直すと形が作り直される属性（render の終わりで使う）
+var SHAPE_GEOM = {rect: "width", circle: "r", ellipse: "rx", path: "d", line: "x1", polyline: "points", polygon: "points"};
 DECK.define("m-venn", class MVenn extends DECK.MotionElement {
   static variants = ["fade", "draw"];
   // データの形（kit/shape.js）
@@ -222,6 +182,8 @@ DECK.define("m-venn", class MVenn extends DECK.MotionElement {
       text(gt, k, true);
       return {g: g, gt: gt, step: n + (each ? j + 1 : 1)};
     });
+    // 形の一覧（render の終わりに形を作り直すため。下の render を見る）
+    this.shapes = [].slice.call(svg.querySelectorAll("rect,circle,ellipse,path,line,polyline,polygon"));
   }
   duration(k){
     return k >= 1 && k <= this.steps ? this.props.dur : 0;
@@ -229,8 +191,9 @@ DECK.define("m-venn", class MVenn extends DECK.MotionElement {
   cues(){ return null; }
   render(k, t, ctx){
     var D = DECK, F = this.props.dur, draw = this.variant === "draw", lecture = ctx && (ctx.preview || ctx.mode === "lecture");
-    var dim = 0.5;
-    if (lecture){ var dv = parseFloat(getComputedStyle(document.documentElement).getPropertyValue("--lecture-dim")); if (dv >= 0.45 && dv <= 0.5) dim = dv; }
+    // 先の段階の薄さ：テーマの --preview-opacity（ないときは 0.45）
+    var dim = 0.45;
+    if (lecture){ var dv = parseFloat(getComputedStyle(this).getPropertyValue("--preview-opacity")); if (dv >= 0 && dv <= 1) dim = dv; }
     // 段階 s の中の進み具合（0〜1）：start から len 秒。授業の表示では先の段階を dim の濃さで見せる
     var pr = function(s, start, len){
       var e = s < k ? 1 : s > k ? 0 : D.prog(t, start, len);
@@ -257,5 +220,9 @@ DECK.define("m-venn", class MVenn extends DECK.MotionElement {
       o.g.setAttribute("opacity", pr(o.step, 0, F * 0.6).toFixed(3));
       o.gt.setAttribute("opacity", pr(o.step, F * 0.4, F * 0.6).toFixed(3));
     });
+    // 形を作り直す（同じ値を書き直すだけで、DOM は変わらない）。Chrome は、変わっていない形を近くの変化のために塗り直す（ラスタライズし直す）と、
+    // 2 回目からその形の輪郭（曲線の縁）を別の方法で描き、縁の画素が数十個変わる（ソフトウェアの GPU、CI の Linux・Windows）。
+    // 何回塗り直されたかは呼び出しの間にコマが描かれたかで決まるので、作り直さないと同じ (k, t) でも呼び出しの順と時刻で画素が変わる（docs/contract.md §3）
+    this.shapes.forEach(function(e){ var a = SHAPE_GEOM[e.localName], v = e.getAttribute(a); if (v !== null) e.setAttribute(a, v); });
   }
 });

@@ -13,3 +13,6 @@ table は `[{"run", "white", "black"}]` か `{"white": {"符号": ラン}, …}`
 - data-mark：`ct-bit-3` `ct-cw-2`（2 語目）`ct-w-1101`（白の木の節）`ct-w64`（白の葉 64）`ct-run-1` `ct-bad`
 
 詳しい属性（`move` `fill` `summary` `mark`、JSON の `labels`）は index.js の頭の説明。見本は `demo.html`（ITU-T T.4 の MH 符号表で 11011011111、表にない符号に出会う小さな表）。
+<!-- llm: omit -->
+授業の表示（`ctx.preview`）：先の符号語の下の画素の列とビットの括弧（と名前）を薄く見せる。木の上の先の道は見せない（木の窓と配置が段階ごとに動くので、今の配置に先の道の場所がない）
+<!-- llm: end -->

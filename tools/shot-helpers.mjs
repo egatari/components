@@ -1,4 +1,4 @@
-// Shared by tests that compare screenshots of the same picture taken at different moments (tools/test-seed0.mjs,
+// Shared by tests that compare screenshots of the same picture taken at different moments (tools/test-default-variant.mjs,
 // tools/test-duration.mjs). The runtime's own interface (the control bar, its auto-hide on a real-time timer, toasts) is
 // not part of a component's picture, so it is hidden; and Chrome's rasterization varies by a few anti-aliased pixels
 // between runs on some systems (CI on Linux), so the comparison allows what tools/test-components.mjs's determinism

@@ -12,61 +12,19 @@
 // 箱の動きはどれも 12 px まで。段階の数・長さ・合図・最後の中身はどれも同じ
 // ---- BEGIN egatari-variant (source: tools/variant.js; copy with `node tools/variant-sync.mjs`; do not edit inside a component) ----
 // Choosing a presentation variant (Egatari spec §8.4, docs/conventions.md §1). A component lists its variant names in
-// `static variants` (index 0 is variant 0) and calls VARIANT.of(this) once, in mount. The choice reads, in order:
-//   the component's `variant` attribute (a name) → its `seed` attribute → `data-egatari-seed` on the root element → 0.
-// Seed 0 gives variant 0. Any other seed s gives the name v with the largest h("<s>|<tag>|<v>") (highest random weight),
-// so every instance of a component in one lesson shows the same variant, components choose independently, and adding a
-// variant later changes only the lessons where the new one wins. h is FNV-1a followed by the mixing of kit/deck.js's rng.
-// The choice is a pure function of these values: the picture still depends on (i, k, t) only.
+// `static variants` (the first is the default) and calls VARIANT.of(this) once, in mount. The variant is the component's
+// `variant` attribute when it names one of them, otherwise the first name. There is no seed: lessons do not carry one
+// (spec §8.4 since egatari-spec 28d8801), and `seed` / `data-egatari-seed` are not read.
+// The choice is a pure function of the attribute: the picture still depends on (i, k, t) only.
 var VARIANT = (function(){
   "use strict";
-  function mix(h){
-    h = Math.imul(h ^ (h >>> 15), 2246822507);
-    h = Math.imul(h ^ (h >>> 13), 3266489909);
-    return (h ^ (h >>> 16)) >>> 0;
-  }
-  function hash(s){
-    var h = 2166136261;
-    for (var i = 0; i < s.length; i++){ h ^= s.charCodeAt(i); h = Math.imul(h, 16777619); }
-    return mix(h);
-  }
-  // A seed is a decimal integer 0 ≤ N < 2^32. Anything else is warned about and ignored (null)
-  function seedOf(v, what){
-    if (v === null || v === undefined) return null;
-    var s = String(v).trim();
-    if (/^\d{1,10}$/.test(s) && +s < 4294967296) return +s;
-    console.warn(what + "=" + JSON.stringify(v) + " is not an integer 0 ≤ N < 2^32 (ignored)");
-    return null;
-  }
-  // The variant name for seed s among names (for tools and tests; components call of)
-  function pick(s, tag, names){
-    if (!names.length) return null;
-    if (!s) return names[0];
-    var best = names[0], bh = -1;
-    names.forEach(function(v){ var x = hash(s + "|" + tag + "|" + v); if (x > bh){ bh = x; best = v; } });
-    return best;
-  }
-  // The effective seed of a component element (0 when nothing is written)
-  function seed(el){
-    var tag = el.tagName.toLowerCase(), s = seedOf(el.getAttribute("seed"), tag + " seed");
-    if (s === null) s = seedOf(document.documentElement.getAttribute("data-egatari-seed"), "data-egatari-seed");
-    return s === null ? 0 : s;
-  }
   function of(el){
     var tag = el.tagName.toLowerCase(), C = customElements.get(tag), names = (C && C.variants) || [], v = el.getAttribute("variant");
-    if (v !== null){
-      if (names.indexOf(v) >= 0) return v;
-      console.warn(tag + ' variant="' + v + '" is not one of ' + names.join(", ") + " (variant 0 is used)");
-      return names[0] || null;
-    }
-    return pick(seed(el), tag, names);
+    if (v !== null && names.indexOf(v) >= 0) return v;
+    if (v !== null) console.warn(tag + ' variant="' + v + '" is not one of ' + names.join(", ") + " (the first, " + (names[0] || "none") + ", is used)");
+    return names[0] || null;
   }
-  // A seeded generator for a variant that needs randomness (0 ≤ x < 1), from the same seed, tag and a key of your own
-  function rng(el, key){
-    var h = hash(seed(el) + "|" + el.tagName.toLowerCase() + "|" + (key || ""));
-    return function(){ h = mix((h + 0x9e3779b9) >>> 0); return h / 4294967296; };
-  }
-  return {of: of, pick: pick, seed: seed, rng: rng, hash: hash};
+  return {of: of};
 })();
 // ---- END egatari-variant ----
 (function(){
@@ -260,10 +218,11 @@ DECK.define("m-cycle", class extends DECK.MotionElement {
   }
   render(k, t, ctx){
     var D = DECK, self = this, vr = this.variant, T = this.props.dur, L = this.L;
-    var lecture = !!(ctx && (ctx.preview || ctx.mode === "lecture"));
+    var lecture = !!(ctx && (ctx.preview || ctx.mode === "lecture")), FAINT = 0.45;
+    if (lecture){ var pv = parseFloat(getComputedStyle(this).getPropertyValue("--preview-opacity")); FAINT = pv >= 0 && pv <= 1 ? pv : 0.45; }
     var pr = function(s, start, len){ return s < k ? 1 : s > k ? 0 : D.prog(t, start, len); };
-    // 授業の表示：後の段階は最後の形を薄く（0.45）、今の段階は 0.45 から濃くなる。形は動かさない（どの見せ方でも同じ）
-    var faint = function(s, start, len){ return s < k ? 1 : s > k ? 0.45 : 0.45 + 0.55 * D.prog(t, start, len); };
+    // 授業の表示：後の段階は最後の形を薄く（テーマの --preview-opacity、ないときは 0.45）、今の段階はその薄さから濃くなる。形は動かさない（どの見せ方でも同じ）
+    var faint = function(s, start, len){ return s < k ? 1 : s > k ? FAINT : FAINT + (1 - FAINT) * D.prog(t, start, len); };
     var boxE = {}, arrE = {};
     // 段階ごとの箱と、一緒に出る入ってくる矢印の進み
     // 箱の動きは 12 px まで（docs/conventions.md §1.2：どの見せ方も fade より遠くへ動かさない）
@@ -291,7 +250,8 @@ DECK.define("m-cycle", class extends DECK.MotionElement {
       var r = o.r, v = arrE[r.i] || (lecture ? [1, faint(r.step, r.at, 0.5)] : [pr(r.step, r.at, 0.5), 1]);
       var e = v[0], a = o.a, tc = a.t0 + (a.t1 - a.t0) * e;
       o.g.setAttribute("opacity", e > 0 ? v[1].toFixed(3) : 0);
-      if (e <= 0){ o.path.setAttribute("d", ""); return; }
+      // 見えない矢印も、render が書く属性はすべて書き直す（前の呼び出しの transform を残さない。docs/contract.md §3）
+      if (e <= 0){ o.path.setAttribute("d", ""); o.head.removeAttribute("transform"); return; }
       // 線は矢じりの根元まで（矢じりは 14px、線が 20px 伸びるまでに大きくなる）
       var p = self.pt(tc), sp = Math.hypot(L.rx * Math.sin(tc), L.ry * Math.cos(tc)) || 1;
       var back = Math.min(14 / sp, tc - a.t0), te = tc - back, q0 = self.pt(a.t0), q1 = self.pt(te);

@@ -1,11 +1,13 @@
-// The variant chooser (tools/variant.js, docs/conventions.md §1.4), without a browser:
-// seed 0 gives variant 0; the choice is deterministic and roughly uniform; adding a variant changes only the seeds where the
-// new one wins; attributes are read in the order variant → seed → data-egatari-seed → 0; bad seeds and names warn.
+// The variant chooser (tools/variant.js, docs/conventions.md §1.4), without a browser: a part's variant is its `variant`
+// attribute when that names one of its `static variants`, otherwise the first name. There is no seed (spec §8.4 since
+// egatari-spec 28d8801): `seed` and `data-egatari-seed` are ignored without a warning; an unknown name warns.
+// Checked for every component in tools/variant-sync.mjs USERS, with its own static variants.
 //   node tools/test-variant.mjs
 import fs from 'node:fs';
 import path from 'node:path';
 import vm from 'node:vm';
 import { ROOT } from './studio.mjs';
+import { USERS } from './variant-sync.mjs';
 
 const warns = [];
 const root = { attrs: {}, getAttribute(n) { return n in this.attrs ? this.attrs[n] : null; } };
@@ -13,42 +15,30 @@ const classes = {};
 const ctx = { console: { warn: (m) => warns.push(m) }, document: { documentElement: root }, customElements: { get: (n) => classes[n] }, Math, String, JSON };
 vm.runInNewContext(fs.readFileSync(path.join(ROOT, 'tools', 'variant.js'), 'utf8') + '\nthis.VARIANT = VARIANT;', ctx);
 const V = ctx.VARIANT;
-let fail = 0;
-const ok = (c, m) => { if (!c) { fail++; console.log('FAIL ' + m); } };
+let fail = 0, n = 0;
+const ok = (c, m) => { n++; if (!c) { fail++; console.log('FAIL ' + m); } };
 
-const names = ['count', 'rise', 'flip', 'underline'];
-ok(V.pick(0, 'm-kpi', names) === 'count', 'seed 0 gives variant 0');
-ok(V.pick(7, 'm-kpi', names) === V.pick(7, 'm-kpi', names), 'deterministic');
-const N = 20000, tally = {};
-for (let s = 1; s <= N; s++) { const v = V.pick(s, 'm-kpi', names); tally[v] = (tally[v] || 0) + 1; }
-for (const v of names) ok(Math.abs(tally[v] / N - 0.25) < 0.02, `roughly uniform: ${v} ${(tally[v] / N).toFixed(3)}`);
-let moved = 0;
-for (let s = 1; s <= N; s++) { const a = V.pick(s, 'm-kpi', names), b = V.pick(s, 'm-kpi', [...names, 'new']); if (a !== b) { moved++; ok(b === 'new', 'a change only to the new variant'); } }
-ok(Math.abs(moved / N - 0.2) < 0.02, `adding a 5th variant moves about 1/5 (${(moved / N).toFixed(3)})`);
-let same = 0;
-for (let s = 1; s <= 2000; s++) if (V.pick(s, 'm-kpi', names) === V.pick(s, 'm-bars', names)) same++;
-ok(same / 2000 < 0.4, `components choose independently (${(same / 2000).toFixed(3)} agree)`);
-
-class K { static variants = names; }
-classes['m-kpi'] = K;
-const el = (attrs) => Object.assign(Object.create(K.prototype), { tagName: 'M-KPI', getAttribute: (n) => (n in attrs ? attrs[n] : null) });
-root.attrs = {};
-ok(V.of(el({})) === 'count', 'no seed anywhere: variant 0');
-root.attrs = { 'data-egatari-seed': '7' };
-ok(V.of(el({})) === V.pick(7, 'm-kpi', names), 'lesson seed');
-ok(V.of(el({ seed: '9' })) === V.pick(9, 'm-kpi', names), 'component seed overrides the lesson seed');
-ok(V.of(el({ seed: '0' })) === 'count', 'component seed 0 overrides a lesson seed');
-ok(V.of(el({ seed: '9', variant: 'flip' })) === 'flip', 'variant overrides any seed');
-warns.length = 0;
-ok(V.of(el({ variant: 'spin' })) === 'count' && warns.length === 1, 'unknown variant: warning and variant 0');
-for (const bad of ['-1', '1.5', 'x', '4294967296', '']) {
-  warns.length = 0; root.attrs = { 'data-egatari-seed': bad };
-  ok(V.of(el({})) === 'count' && warns.length === 1, `bad lesson seed ${JSON.stringify(bad)}: warning and seed 0`);
+ok(Object.keys(V).join() === 'of', 'VARIANT has only of (no seed, pick, rng or hash)');
+for (const name of USERS) {
+  const js = fs.readFileSync(path.join(ROOT, 'components', name, 'index.js'), 'utf8');
+  const m = js.match(/static\s+variants\s*=\s*\[([^\]]*)\]/);
+  ok(!!m, `m-${name}: static variants`);
+  if (!m) continue;
+  const names = m[1].split(',').map((s) => s.trim().replace(/^"|"$/g, '')).filter(Boolean);
+  const tag = 'm-' + name;
+  classes[tag] = class { static variants = names; };
+  const el = (attrs) => ({ tagName: tag.toUpperCase(), getAttribute: (k) => (k in attrs ? attrs[k] : null) });
+  warns.length = 0; root.attrs = {};
+  ok(V.of(el({})) === names[0] && !warns.length, `${tag}: nothing written → the first variant, ${names[0]}`);
+  root.attrs = { 'data-egatari-seed': '7' };
+  ok(V.of(el({})) === names[0] && !warns.length, `${tag}: a lesson's data-egatari-seed is ignored`);
+  ok(V.of(el({ seed: '9' })) === names[0] && !warns.length, `${tag}: a seed attribute is ignored`);
+  root.attrs = {};
+  for (const v of names) ok(V.of(el({ variant: v, seed: '3' })) === v && !warns.length, `${tag}: variant="${v}" → ${v}`);
+  ok(V.of(el({ variant: 'spin' })) === names[0] && warns.length === 1, `${tag}: unknown variant: one warning and the first variant`);
 }
-root.attrs = { 'data-egatari-seed': '4294967295' };
-ok(V.seed(el({})) === 4294967295, 'largest seed');
-const r1 = V.rng(el({ seed: '3' }), 'order'), r2 = V.rng(el({ seed: '3' }), 'order');
-const xs = [r1(), r1(), r1()];
-ok(xs.join() === [r2(), r2(), r2()].join() && xs.every((x) => x >= 0 && x < 1), 'seeded generator');
-console.log(fail ? `\n${fail} failure(s)` : 'test-variant: ok');
+classes['m-none'] = class {};
+warns.length = 0;
+ok(V.of({ tagName: 'M-NONE', getAttribute: () => null }) === null && !warns.length, 'a part without variants: null');
+console.log(fail ? `\n${fail} failure(s)` : `test-variant: ok (${n} checks, ${USERS.length} components)`);
 process.exit(fail ? 1 : 0);

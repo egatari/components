@@ -54,6 +54,24 @@
 </section>
 
 <section class="slide">
+  <h2>アプリ開発の工程表（架空）</h2>
+  <div class="body">
+    <m-timeline unit="week" today="2026-11-02" style="height:400px">
+      <script type="application/json">{
+        "nodes": [
+          {"id": "req", "label": "要件定義", "when": "2026-10-05", "end": "2026-10-17", "lane": "設計", "progress": 100},
+          {"id": "ui", "label": "画面設計", "when": "2026-10-17", "end": "2026-11-07", "lane": "設計", "progress": 70, "after": ["req"]},
+          {"id": "dev", "label": "実装", "when": "2026-11-07", "end": "2026-12-05", "lane": "開発", "progress": 10, "after": ["ui"]},
+          {"id": "test", "label": "試験", "when": "2026-12-05", "end": "2026-12-19", "lane": "開発", "after": ["dev"]},
+          {"id": "rel", "label": "公開", "when": "2026-12-21", "lane": "開発", "tone": "emph", "after": ["test"]}
+        ]
+      }</script>
+    </m-timeline>
+  </div>
+  <div class="concl"><span>→ 矢印は「前の作業が終わってから」。画面設計の遅れは実装に響く</span></div>
+</section>
+
+<section class="slide">
   <h2>見せ方の種類（variant）</h2>
   <div class="body">
     <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:0 36px">
@@ -71,7 +89,7 @@
         </m-timeline></div>
     </div>
   </div>
-  <div class="concl"><span>→ 資料のシード値（data-egatari-seed）で 1 つが選ばれる</span></div>
+  <div class="concl"><span>→ 書かなければ最初の見せ方（fade）になる</span></div>
 </section>
 
 </div>

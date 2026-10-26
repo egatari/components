@@ -13,6 +13,7 @@ Only the maintainer releases. To withdraw a release, add it to `yanked.json` (wi
    ```bash
    for n in bars flow menu curves quad kpi; do echo "m-$n $(( $(wc -c < components/$n/README.md) - $(git show vPREV:components/$n/README.md | wc -c) ))"; done
    ```
+   The pack-visible bytes of every part as Studio's dev counts them (README outside `llm: omit`, frontmatter, prop docs, shape summary): `node tools/pack-bytes.mjs --base vPREV`.
 
    ```bash
    git tag -a vX.Y.Z -m "vX.Y.Z" && git push origin vX.Y.Z

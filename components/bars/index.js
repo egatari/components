@@ -204,9 +204,14 @@ DECK.define("m-bars", class extends DECK.MotionElement {
     this.plan().scale.forEach(function(s){ if (s.step === k) d = Math.max(d, s.at + P.zoom + 0.3); });
     return d;
   }
-  render(k, t){
+  render(k, t, ctx){
     var P = this.props, D = DECK, self = this, hor = this.hor;
+    // 先の段階を薄く見せる表示（授業の表示）：後の段階の棒と数字を、伸びきった形でテーマの --preview-opacity の濃さに。
+    // 軸の上限は今の段階のまま。今の上限に収まらない棒（後で上限が動いてから入る棒）は先に見せない（上限で切ると値を読み違える）
+    var preview = !!(ctx && (ctx.preview || ctx.mode === "lecture")), PV = 1;
+    if (preview){ PV = parseFloat(getComputedStyle(this).getPropertyValue("--preview-opacity")); if (!(PV >= 0 && PV <= 1)) PV = 0.45; }
     var sc = this.maxAt(k, t), M = sc.m;
+    var ahead = function(o, v){ return preview && o.step > k && !(v > M * 1.04); };
     var pos = function(v){ var r = Math.min(v, M * 1.04) / M * self.len; return hor ? self.x0 + r : self.y1 - r; };
     // 目盛り：今の上限の組を濃く、動いている間は前の組を薄く
     // 前の組と次の組に同じ値の目盛りがあれば、重ねずに次の組のものだけを濃く出す
@@ -231,16 +236,16 @@ DECK.define("m-bars", class extends DECK.MotionElement {
     if (hor){ this.band.setAttribute("x", this.x0); this.band.setAttribute("width", Math.max(0, pb - this.x0).toFixed(1)); this.band.setAttribute("y", this.y0); this.band.setAttribute("height", this.y1 - this.y0); }
     else { this.band.setAttribute("x", this.x0); this.band.setAttribute("width", this.x1 - this.x0); this.band.setAttribute("y", pb.toFixed(1)); this.band.setAttribute("height", Math.max(0, this.y1 - pb).toFixed(1)); }
     this.band.setAttribute("opacity", bo.toFixed(3));
-    if (this.stacks) return this.renderStack(k, t, pos);
+    if (this.stacks) return this.renderStack(k, t, pos, ahead, PV);
     this.bars.forEach(function(b){
       var o = b.o, at = o.at + 0.1 * b.j;
-      var e = o.step < k ? 1 : o.step > k ? 0 : D.prog(t, at, P.dur);
+      var e = o.step < k || ahead(o, b.v) ? 1 : o.step > k ? 0 : D.prog(t, at, P.dur);
       var v = b.v * e, p = pos(v), w = self.bw;
       if (hor){ b.rect.setAttribute("x", self.x0); b.rect.setAttribute("width", Math.max(0, p - self.x0).toFixed(1)); b.rect.setAttribute("y", (b.c - w / 2).toFixed(1)); b.rect.setAttribute("height", w.toFixed(1)); }
       else { b.rect.setAttribute("x", (b.c - w / 2).toFixed(1)); b.rect.setAttribute("width", w.toFixed(1)); b.rect.setAttribute("y", p.toFixed(1)); b.rect.setAttribute("height", Math.max(0, self.y1 - p).toFixed(1)); }
-      b.rect.setAttribute("opacity", e > 0 ? 1 : 0);
+      b.rect.setAttribute("opacity", ahead(o, b.v) ? PV : e > 0 ? 1 : 0);
       // 値の数字：既定は伸びきってから。count なら伸びに合わせて
-      var vo = P.count ? (e > 0 ? 1 : 0) : o.step < k ? 1 : o.step > k ? 0 : D.prog(t, at + P.dur, 0.35);
+      var vo = ahead(o, b.v) ? PV : P.count ? (e > 0 ? 1 : 0) : o.step < k ? 1 : o.step > k ? 0 : D.prog(t, at + P.dur, 0.35);
       b.val.textContent = self.fmt(P.count ? v : b.v);
       var pe = P.count ? p : pos(b.v);
       if (hor){ b.val.setAttribute("x", (pe + 10).toFixed(1)); b.val.setAttribute("y", (b.c + 9).toFixed(1)); }
@@ -254,18 +259,18 @@ DECK.define("m-bars", class extends DECK.MotionElement {
     });
   }
   // 積み上げ棒：棒の先が 0 から合計まで伸び、下の系列から順に色が満ちる。値の数字は伸びきってから
-  renderStack(k, t, pos){
+  renderStack(k, t, pos, ahead, PV){
     var P = this.props, D = DECK, self = this, hor = this.hor, w = this.bw;
     var len = function(a, b){ return Math.abs(pos(b) - pos(a)); };
     this.stacks.forEach(function(sk){
-      var o = sk.o, e = o.step < k ? 1 : o.step > k ? 0 : D.prog(t, o.at, P.dur), top = sk.total * e;
-      var vo = o.step < k ? 1 : o.step > k ? 0 : D.prog(t, o.at + P.dur, 0.35);
+      var o = sk.o, f = ahead(o, sk.total), e = o.step < k || f ? 1 : o.step > k ? 0 : D.prog(t, o.at, P.dur), top = sk.total * e;
+      var vo = f ? PV : o.step < k ? 1 : o.step > k ? 0 : D.prog(t, o.at + P.dur, 0.35);
       sk.segs.forEach(function(sg, j){
         var a = Math.min(sg.from, top), b = Math.min(sg.from + sg.v, top), pa = pos(a), pb = pos(b), gap = j > 0 && b > a ? 2 : 0;
         var px = Math.max(0, Math.abs(pb - pa) - gap);
         if (hor){ sg.rect.setAttribute("x", (pa + gap).toFixed(1)); sg.rect.setAttribute("width", px.toFixed(1)); sg.rect.setAttribute("y", (sk.c - w / 2).toFixed(1)); sg.rect.setAttribute("height", w.toFixed(1)); }
         else { sg.rect.setAttribute("x", (sk.c - w / 2).toFixed(1)); sg.rect.setAttribute("width", w.toFixed(1)); sg.rect.setAttribute("y", pb.toFixed(1)); sg.rect.setAttribute("height", px.toFixed(1)); }
-        sg.rect.setAttribute("opacity", px > 0 ? 1 : 0);
+        sg.rect.setAttribute("opacity", px > 0 ? (f ? PV : 1) : 0);
         // 区切りの中の値：伸びきった区切りに字が収まるときだけ
         var full = len(sg.from, sg.from + sg.v) - gap, mid = (pos(sg.from) + pos(sg.from + sg.v)) / 2;
         var room = hor ? full >= sg.vw + 12 && w >= 30 : full >= 30 && w >= sg.vw + 8;
@@ -278,13 +283,13 @@ DECK.define("m-bars", class extends DECK.MotionElement {
       var pe = P.count ? pos(top) : pos(sk.total);
       if (hor){ sk.tot.setAttribute("x", (pe + 10).toFixed(1)); sk.tot.setAttribute("y", (sk.c + 9).toFixed(1)); }
       else { sk.tot.setAttribute("x", sk.c.toFixed(1)); sk.tot.setAttribute("y", (pe - 12).toFixed(1)); }
-      sk.tot.setAttribute("opacity", (P.count ? (e > 0 ? 1 : 0) : vo).toFixed(3));
+      sk.tot.setAttribute("opacity", (f ? PV : P.count ? (e > 0 ? 1 : 0) : vo).toFixed(3));
     });
     // 系列の名前：区切りの真ん中。縦に並ぶ名前（縦棒）は 28 px、横に並ぶ名前（横棒）は字の幅より近づけない
     var prev = null;
     this.serLabs.forEach(function(sl){
       var sk = sl.ref, o = sk.o, sg = sl.sg, mid = (pos(sg.from) + pos(sg.from + sg.v)) / 2;
-      var vo = o.step < k ? 1 : o.step > k ? 0 : D.prog(t, o.at + P.dur, 0.35);
+      var vo = ahead(o, sk.total) ? PV : o.step < k ? 1 : o.step > k ? 0 : D.prog(t, o.at + P.dur, 0.35);
       if (hor){
         var x = prev ? Math.max(mid, prev.x + (prev.w + sl.w) / 2 + 12) : mid;
         sl.el.setAttribute("x", x.toFixed(1)); sl.el.setAttribute("y", (sk.c - w / 2 - 10).toFixed(1));

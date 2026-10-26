@@ -414,9 +414,13 @@ D.define("m-codetree", class extends D.MotionElement {
       return {g: g, br: br, sw: sw, tx: tx, r: r};
     });
   }
+  // 色は style 属性に DECK.el と同じ書き方（"fill:var(--x);"）で書く。style.fill に代入すると "fill: var(--x);" になり、
+  // 作った直後と描き直した後で属性の字が変わる（docs/contract.md §3、tools/test-dom-order.mjs）
   // 段階 k の今の道の進み（0〜1 の各辺）と、葉の後の進み
-  render(k, t){
+  render(k, t, ctx){
     var D2 = D, P = this.props, m = this.model(), dec = m.dec, self = this, Lb = m.L;
+    var preview = !!(ctx && (ctx.preview || ctx.mode === "lecture")), PV = 0;
+    if (preview){ PV = parseFloat(getComputedStyle(this).getPropertyValue("--preview-opacity")); if (!(PV >= 0 && PV <= 1)) PV = 0.45; }
     var p = k ? m.plan[k - 1] : null, T = k ? this.times(k) : null;
     var A = k ? this.lay[k - 1] : this.lay[0], B = this.lay[k];
     var mv = k ? D2.prog(t, 0, P.move) : 1;
@@ -489,12 +493,12 @@ D.define("m-codetree", class extends D.MotionElement {
         var top = e.parent === "r", lp = labelAt(a, q, top ? 0.5 : 0.42, top ? 20 : 17);
         e.lab.setAttribute("x", lp.x.toFixed(2)); e.lab.setAttribute("y", lp.y.toFixed(2));
         e.lab.setAttribute("opacity", Math.min(q.op, q.lab, wf(lp.y - 8)).toFixed(3));
-        e.lab.style.fill = onPath[id] ? "var(--emph)" : "var(--muted)";
+        e.lab.setAttribute("style", "fill:" + (onPath[id] ? "var(--emph)" : "var(--muted)") + ";");
         e.lab.setAttribute("font-weight", onPath[id] ? 700 : 400);
       }
       if (e.num){
         var h = !!hit[id];
-        e.num.style.fill = h ? "var(--emph)" : "var(--fg)";
+        e.num.setAttribute("style", "fill:" + (h ? "var(--emph)" : "var(--fg)") + ";");
         e.num.setAttribute("font-weight", h ? 700 : 400);
         // 着いたときに輪が 1 回広がる（最終状態には出ない）
         var u = p && p.type === "tok" && h && t !== Infinity ? (t - T.A) / 0.6 : -1;
@@ -546,7 +550,7 @@ D.define("m-codetree", class extends D.MotionElement {
       var c = j < doneEnd ? "var(--fg)" : j <= readUpTo ? "var(--emph)" : "var(--muted)";
       if (p && p.type === "sum" && dec.error && dec.error.kind !== "dangling" && j >= dec.error.start) c = "var(--emph)";
       if (p && p.type === "tok" && j >= cur.start && j < cur.end && t >= T.F0) c = "var(--fg)";
-      e.style.fill = c;
+      e.setAttribute("style", "fill:" + (c) + ";");
     });
     var po = 0, pj = 0;
     if (cur && T && t !== Infinity){
@@ -560,14 +564,21 @@ D.define("m-codetree", class extends D.MotionElement {
     this.ptr.setAttribute("opacity", po.toFixed(3));
     // 符号語の括弧：読み終えた符号語
     var tokDone = function(i){ if (!p) return 0; if (p.type === "sum" || p.type === "err") return 1; return i < p.tok ? 1 : i === p.tok ? D2.prog(t, T.F0, 0.3) : 0; };
-    this.brk.forEach(function(g, i){ g.setAttribute("opacity", tokDone(i).toFixed(3)); });
+    // 先を薄く見せる表示：後の段階で読む符号語の括弧と、復号する画素を、最後の形のままテーマの --preview-opacity（なければ 0.45）で描く。
+    // 木の道は段階ごとに窓が動くので先は描かない
+    var ahead = function(i){ return preview && (!p || (p.type === "tok" && i > p.tok)); };
+    this.brk.forEach(function(g, i){ g.setAttribute("opacity", ahead(i) ? PV.toFixed(3) : tokDone(i).toFixed(3)); });
     // ---- 画素：葉に着いてから升目を左から塗る
     var fillOf = function(i){ if (!p) return 0; if (p.type === "sum" || p.type === "err") return 1; return i < p.tok ? 1 : i === p.tok ? D2.prog(t, T.F0, P.fill) : 0; };
     var shown = {};   // 符号語ごとの塗った升目の数
     dec.tokens.forEach(function(x, i){ shown[i] = x.kind === "eol" ? 0 : Math.round(x.run * fillOf(i)); });
     this.cells.forEach(function(c){
-      if (c.n >= 0) c.e.setAttribute("opacity", c.n < shown[c.tok] ? 1 : 0);
-      else c.e.setAttribute("width", (shown[c.tok] * self.S.sc).toFixed(2));
+      var ah = ahead(c.tok);
+      if (c.n >= 0) c.e.setAttribute("opacity", ah ? PV : c.n < shown[c.tok] ? 1 : 0);
+      else {
+        c.e.setAttribute("width", ((ah ? c.run : shown[c.tok]) * self.S.sc).toFixed(2));
+        if (ah) c.e.setAttribute("opacity", PV); else c.e.removeAttribute("opacity");
+      }
     });
     // ランの括弧と長さ。字は重ならないように左から順に置く
     var right = -Infinity, S = this.S, G = this.G;
@@ -575,7 +586,8 @@ D.define("m-codetree", class extends D.MotionElement {
       var vis = o.r.toks.filter(function(i){ return shown[i] > 0; });
       if (!vis.length){
         o.g.setAttribute("opacity", 0);
-        o.br.removeAttribute("d"); o.sw.removeAttribute("x"); o.tx.removeAttribute("x"); o.tx.textContent = "";
+        o.br.removeAttribute("d"); o.sw.setAttribute("x", "0"); o.tx.removeAttribute("x");   // 作った直後と同じ（色の升目は x="0" で作る。消すと属性の順が変わる）
+        o.tx.textContent = "";
         return;
       }
       var len = vis.reduce(function(a, i){ return a + shown[i]; }, 0);
@@ -625,7 +637,7 @@ D.define("m-codetree", class extends D.MotionElement {
     this.note[0].textContent = n0; this.note[1].textContent = n1;
     // 前の一言が消えてから次を出す（重ねて入れ替えると読めない）
     this.note[0].setAttribute("opacity", Math.max(0, 1 - 2 * sw).toFixed(3)); this.note[1].setAttribute("opacity", Math.max(0, 2 * sw - 1).toFixed(3));
-    this.note[1].style.fill = p && (p.type === "err" || p.type === "sum") ? "var(--emph)" : "var(--fg)";
+    this.note[1].setAttribute("style", "fill:" + (p && (p.type === "err" || p.type === "sum") ? "var(--emph)" : "var(--fg)") + ";");
   }
 });
 })();

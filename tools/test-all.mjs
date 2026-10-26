@@ -10,17 +10,26 @@
 //      (also tools/test-yanked.mjs: yanked.json becomes manifest.json's `yanked`; tools/test-variant.mjs: the variant choice;
 //       tools/test-stats.mjs: m-hist / m-boxplot mean, median, mode, classes and quartiles by jp / inc / exc;
 //       tools/test-numberline.mjs: m-numberline tick positions and labels, fractions, two lines aligned at 0, range levels and shared part)
-//       tools/test-hissan.mjs: m-hissan's written calculations reproduce plain arithmetic; places in columns, quotient over the right digits)
+//       tools/test-hissan.mjs: m-hissan's written calculations reproduce plain arithmetic; places in columns, quotient over the right digits;
+//       tools/test-keyboard.mjs: m-keyboard's black-key positions and widths, key names, sound events per step, range errors;
+//       tools/test-kakijun.mjs: m-kakijun's embedded stroke data equals data/kana/kana.json and its font block is the Egatari Kana subset;
+//       every one of the 166 characters shows ≥ 99 % of its glyph in the final state; small kana inside their quarter in both writings)
 //   7. studio           fetch Egatari Studio at the pinned tag and overlay these components (tools/studio.mjs)
 //   8. components       each demo.html: builds, no console errors, screenshots per step, determinism, text ≥ 24px, overlap, outside the slide (tools/test-components.mjs)
 //   9. kanbun-num      m-kanbun's two-digit reading-order numbers stay inside their box and off the character boxes; one-digit numbers unchanged (tools/test-kanbun-num.mjs)
 //      kanbun-fit     m-kanbun fits its columns to the element's height and width (size down to 42, kana ≥ 24 px, no overlap) and warns when it cannot (tools/test-kanbun-fit.mjs)
 //  10. kobun-reset     m-kobun's open conjugation card closes on ctx.reset (tools/test-kobun-reset.mjs)
 //      predict        m-predict's viewer input: ±1, typed counts, input(), reset on step entry, video, print, live, keys (tools/test-predict.mjs)
+//      keyboard-preview m-keyboard's lecture preview: later keys faint at the theme's --preview-opacity, no dot (tools/test-keyboard-preview.mjs)
 //      timer          m-timer: duration = sec, the clock, ja/en strings and labels, ctx.extend buttons (fake), video, print (tools/test-timer.mjs)
 //  11. codetree-dom    m-codetree's DOM and pixels do not depend on the order of render calls (tools/test-codetree-dom.mjs)
+//      dom-order      every part's DOM at (k, end) is byte-identical straight and after seeking k+1, 0, k, in the talk and lecture views (tools/test-dom-order.mjs)
+//      raster-history m-tree / m-venn / m-numberline: the pixels of a step do not depend on how often it was drawn before, nor on a click and ctx.reset (tools/test-raster-history.mjs)
+//      timeline-gantt m-timeline's after arrows (ends, right angles, no band crossed), progress width, today line position, unit ticks (tools/test-timeline-gantt.mjs)
 //  12. shape            wrong-shaped data and refused expressions: inline placeholder and DECK.componentErrors, no exception (tools/test-shape.mjs)
-//  13. seed0           variant 0 of every component with variants is pixel-identical to the last release (tools/test-seed0.mjs)
+//  13. default-variant the default (first) variant of every component with variants is pixel-identical to the last release (tools/test-default-variant.mjs)
+//      preview        answers under preview: with ctx.preview a part draws its later steps at --preview-opacity, or declares static preview = "none"
+//                     and draws exactly the same; lecture-view screenshots (tools/test-preview.mjs)
 //  14. duration        every step is complete when its declared length ends (tools/test-duration.mjs)
 //  15. contrast        every component text ≥ 4.5:1 in the default, kokugo and business themes (tools/test-contrast.mjs)
 //  16. classes         choropleth classes evenly spaced in lightness (adjacent ΔL ≥ 0.08), lightest outlined, boundaries drawn (tools/test-classes.mjs)
@@ -51,18 +60,25 @@ const TESTS = [
   ['test-stats', ['tools/test-stats.mjs']],
   ['test-numberline', ['tools/test-numberline.mjs']],
   ['test-hissan', ['tools/test-hissan.mjs']],
+  ['test-keyboard', ['tools/test-keyboard.mjs']],
   ['test-codetree', ['tools/test-codetree.mjs']],
   ['test-kokugo', ['tools/test-kokugo.mjs']],
   ['studio', ['tools/studio.mjs']],
   ['test-components', ['tools/test-components.mjs', '--shots', path.join(tmp, 'shots')]],
+  ['test-kakijun', ['tools/test-kakijun.mjs', path.join(tmp, 'kakijun')]],
   ['test-kanbun-num', ['tools/test-kanbun-num.mjs', path.join(tmp, 'kanbun-num')]],
   ['test-kanbun-fit', ['tools/test-kanbun-fit.mjs', path.join(tmp, 'kanbun-fit')]],
   ['test-kobun-reset', ['tools/test-kobun-reset.mjs', path.join(tmp, 'kobun-reset')]],
   ['test-predict', ['tools/test-predict.mjs', path.join(tmp, 'predict')]],
   ['test-timer', ['tools/test-timer.mjs', path.join(tmp, 'timer')]],
+  ['test-keyboard-preview', ['tools/test-keyboard-preview.mjs', path.join(tmp, 'keyboard-preview')]],
   ['test-codetree-dom', ['tools/test-codetree-dom.mjs', path.join(tmp, 'codetree-dom')]],
+  ['test-dom-order', ['tools/test-dom-order.mjs', path.join(tmp, 'dom-order')]],
+  ['test-raster-history', ['tools/test-raster-history.mjs', path.join(tmp, 'raster-history')]],
+  ['test-timeline-gantt', ['tools/test-timeline-gantt.mjs', path.join(tmp, 'timeline-gantt')]],
   ['test-shape', ['tools/test-shape.mjs', path.join(tmp, 'shape')]],
-  ['test-seed0', ['tools/test-seed0.mjs', path.join(tmp, 'seed0')]],
+  ['test-default-variant', ['tools/test-default-variant.mjs', path.join(tmp, 'default-variant')]],
+  ['test-preview', ['tools/test-preview.mjs', path.join(tmp, 'preview')]],
   ['test-duration', ['tools/test-duration.mjs']],
   ['test-contrast', ['tools/test-contrast.mjs']],
   ['test-classes', ['tools/test-classes.mjs']],

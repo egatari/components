@@ -6,20 +6,20 @@
 
 The 8 components added in v1.2.0 (`m-compare` `m-timeline` `m-fishbone` `m-cycle` `m-scatter` `m-tree` `m-pie` `m-venn`) follow these conventions from the start. Existing components adopt them gradually, without changing how existing lessons look ([1.6](#16-adding-variants-to-an-existing-component)).
 
-Variants and the seed are defined in spec [§8.4](https://github.com/egatari/egatari-spec/blob/main/egatari-1.0.md#84-component-contract-summary). The component contract (`render(k, t)` depends only on the step and the time, colours only through theme variables, and so on) is in Studio's [contract](https://github.com/egatari/egatari-studio/blob/main/docs/contract.md) and in [CONTRIBUTING](../CONTRIBUTING.md). This document adds to it.
+Variants are defined in spec [§8.4](https://github.com/egatari/egatari-spec/blob/main/egatari-1.0.md#84-component-contract-summary). The component contract (`render(k, t)` depends only on the step and the time, colours only through theme variables, and so on) is in Studio's [contract](https://github.com/egatari/egatari-studio/blob/main/docs/contract.md) and in [CONTRIBUTING](../CONTRIBUTING.md). This document adds to it.
 
-1. [Variants and the seed](#1-variants-and-the-seed)
+1. [Variants](#1-variants)
 2. [Box-and-line diagrams](#2-box-and-line-diagrams-timeline-cycle-tree-cause-and-effect)
 3. [Chart components](#3-chart-components)
 4. [Declaring purposes](#4-declaring-purposes)
 5. [Decided and deferred](#5-decided-and-deferred)
 6. [Interactive parts](#6-interactive-parts)
 
-## 1. Variants and the seed
+## 1. Variants
 
 ### 1.1 Why
 
-When a component always appears the same way, every lesson starts to look alike (the number cards always count up). Each component therefore has a few variants, chosen by a seed written in the lesson. **Within a lesson the choice is consistent; across lessons it varies.**
+When a component always appears the same way, every lesson starts to look alike (the number cards always count up). Each component therefore has a few variants. The first one is the default; an author (or the AI writing the lesson) picks another by name with `variant`. There is no lesson seed: until egatari-spec 28d8801 a lesson's `data-egatari-seed` chose among them, and Studio no longer writes it (spec §8.4).
 
 ### 1.2 What a variant may and may not change
 
@@ -37,47 +37,45 @@ Because steps, lengths and cues stay the same, the narration, video timing, capt
 
 - **Motion only guides attention.** No decorative motion (bouncing, spinning or wobbling that keeps going). Every variant finishes moving and stops within its step.
 - **Every variant honours `prefers-reduced-motion`.** With that setting the runtime draws at `t = Infinity` (`kit/deck.js`), so in every variant the final state must be readable on its own. A variant whose final state keeps an attention mark (an underline) may only use marks that make sense in a still picture (an underline saying "this number matters" is fine; a mark that only means something while moving is not).
-- **Lecture view** (previewing later steps; since spec §8.4 a flag, `ctx.preview === true`, while `ctx.mode` is "talk" | "learn" | "video"): a component that shows later steps faintly uses the same faintness in every variant (0.45–0.5, backlog #86). Components test `ctx.preview || ctx.mode === "lecture"`, so they work both with the current bundled player (which passes `ctx.mode === "lecture"`) and with the next one (which passes `ctx.preview`).
-- **Variant 0** is the current rendering for existing components, and the quietest one (fade in) for new components.
+- **Lecture view** (previewing later steps; since spec §8.4 a flag, `ctx.preview === true`, while `ctx.mode` is "talk" | "learn" | "video"). Components test `ctx.preview || ctx.mode === "lecture"`, so they work both with the current bundled player (which passes `ctx.mode === "lecture"`) and with the next one (which passes `ctx.preview`). Under preview (spec §8.4 "Answers under preview", Player P1):
+  - **Every component answers**: it draws the content its later steps would add, in its final state (no motion), at the theme's `--preview-opacity`, the same in every variant. Read it on the element, `parseFloat(getComputedStyle(this).getPropertyValue("--preview-opacity"))`, and fall back to 0.45 only when it is missing; never hard-code the value. Nothing that changes is drawn brighter than that.
+  - The current step renders as usual; earlier steps are complete. Content the component shows at step 0 anyway is unchanged.
+  - Controls stay inert for faint content (no pointer events, not focusable; m-menu's later cards).
+  - **Exempt components** are the ones whose later steps are an answer the audience should work out first: they declare `static preview = "none";` in index.js and show nothing ahead (exactly what they draw without preview). `tools/lint.mjs` reads the flag (the only value is `"none"`) and `tools/release.mjs` writes it to manifest.json as `components.<name>.preview: "none"`, beside `interactive`, `group` and `tile`. Exempt today: `m-predict` (the answer), `m-hissan` (the digits are the computation), `m-timer` (time ahead is not content).
+  - Not exempt: `m-kanbun`'s reading order and `m-kobun`'s parts of speech preview like everything else. For a particular answer (an exercise, one reading order), the author marks the element `data-preview="none"` and the player keeps it hidden; components do nothing for that.
+  - `tools/test-preview.mjs` renders every demo with and without `ctx.preview`: a component that answers draws more at step 0, at `--preview-opacity`; an exempt component draws exactly the same; every component is one or the other.
+- **The first variant (variant 0, the default)** is the current rendering for existing components, and the quietest one (fade in) for new components.
 
 ### 1.3 Attributes
 
 | Where | Syntax | Meaning |
 |---|---|---|
-| Lesson | `<html data-egatari-seed="N">` | The lesson's seed: an integer 0 ≤ N < 2³². A decimal integer on the root element of the lesson source, written once when the lesson is created and preserved on every save; 0 when absent (spec [§8.4](https://github.com/egatari/egatari-spec/blob/main/egatari-1.0.md#84-component-contract-summary)) |
-| Component | `seed="N"` | Overrides the seed for this component only |
-| Component | `variant="name"` | Chooses a variant by name (for example when the author asks for "counting up"). Stronger than any seed |
+| Component | `variant="name"` | Chooses a variant by name (for example when the author asks for "counting up"). Without it, the first variant |
 
-Order: `variant` → the component's `seed` → the lesson's `data-egatari-seed` → 0.
-
-- An unknown `variant` name gives a `console.warn` and variant 0.
-- `seed` and `variant` are common to all components and are not listed in `static props` (no existing component has a prop with either name; checked).
+- An unknown `variant` name gives a `console.warn` and the first variant.
+- `variant` is common to all components and is not listed in `static props`.
+- `seed="N"` on a component and `data-egatari-seed` on the lesson are no longer read (no warning): lessons that still carry them draw the first variant unless they name one.
 
 ### 1.4 How a variant is chosen
 
-A component declares its variant names in order; index 0 is variant 0.
+A component declares its variant names in order; the first is the default (variant 0).
 
 ```js
 static variants = ["count", "rise", "flip", "underline"];
 ```
 
-The README frontmatter lists the same (`variants: count, rise, flip, underline`), so CATALOG.md shows them.
+The README frontmatter lists the same (`variants: count, rise, flip, underline`), so CATALOG.md shows them. The README says the first is the default in a few words (「書かなければ最初の見せ方」).
 
-From a seed s:
-
-1. If s = 0, variant 0.
-2. Otherwise compute h(s, tag name, v) for each variant name v and take the largest. h is the FNV-1a of `"<s>|<tag name>|<v>"` followed by the same mixing as `rng` in `kit/deck.js` (32 bits).
+1. If the component's `variant` attribute names one of its variants, that variant.
+2. Otherwise the first variant.
 
 Consequences:
 
-- **Within a lesson, every instance of a component gets the same variant** (same s and tag name), so the lesson stays consistent. To make one instance different, give it `seed` or `variant`.
-- **Different components choose independently** (the tag name is part of h): a lesson where `m-kpi` counts up does not force a matching style on `m-bars`.
-- **Adding a variant later changes few lessons.** Going from n to n+1 variants changes only the lessons where the new variant wins, about 1/(n+1) of them. Choosing by remainder (s mod n) would change most lessons.
-- A variant name never changes once released (it is part of h). Retiring a variant means removing it from the list, which changes only the lessons that had it.
+- Every instance of a component without `variant` looks the same, in every lesson. A lesson varies its look by naming variants.
+- **Adding a variant never changes a lesson**, as long as it is added after the first. The first variant is never replaced or reordered once released; a released variant name never changes (lessons name it). Retiring a variant other than the first changes only the lessons that name it (they get the first, with a warning).
+- A variant that needs randomness (shuffling the order cards appear in, say) derives it from the data and the attributes, never from `Math.random` (as before).
 
-When a variant needs randomness (shuffling the order cards appear in, say), it uses a seeded generator built from the same h. Never `Math.random` (as before).
-
-### 1.5 How a component reads the seed
+### 1.5 How a component reads its variant
 
 The choice is a small function in `tools/variant.js`, copied into the components that use it the same way as `tools/expr.js` (`node tools/variant-sync.mjs` rewrites a marked block; the tests catch a component that was not synced). Inside the component:
 
@@ -86,16 +84,16 @@ The choice is a small function in `tools/variant.js`, copied into the components
 this.variant = VARIANT.of(this);   // "count" | "rise" | …
 ```
 
-`VARIANT.of` reads the component's `static variants` through `customElements.get(tag)` (component code may not write `.constructor`), then the `variant` attribute → the `seed` attribute → `data-egatari-seed` on `document.documentElement` → 0, and chooses as in 1.4.
+`VARIANT.of` reads the component's `static variants` through `customElements.get(tag)` (component code may not write `.constructor`), then the `variant` attribute, and chooses as in 1.4. `tools/test-variant.mjs` checks every component that has variants.
 
 Alternatively Studio's component base class (`DECK.MotionElement`) could provide the same thing (`this.variant`), which would make the copied function unnecessary. That is a Studio change, to be discussed with dev after v0.4.8. Until then everything stays inside the components library.
 
 ### 1.6 Adding variants to an existing component
 
-- **Variant 0 does not change by a single pixel.** Lessons without a seed (all existing lessons) look the same. The tests compare each demo's screenshots (mid-step and final) with those of the release before the variants were added.
-- A lesson pins its component versions (spec [§6](https://github.com/egatari/egatari-spec/blob/main/egatari-1.0.md#6-components-and-profiles)), so a seeded lesson changes look only when its author moves to a newer release (about 1/(n+1) of them, see 1.4). Updating a component already shows what changes; a variant change is one more thing shown there. Adding variants is a minor version and goes in the CHANGELOG.
+- **The first variant does not change by a single pixel.** Lessons that do not name a variant (all existing lessons, with or without an old seed) look the same. `tools/test-default-variant.mjs` compares each demo's screenshots (mid-step and final) with those of the last release; demo slides that name a variant are compared too.
+- Removing the seed changed nothing for lessons without one: seed 0 always gave the first variant. A lesson that carried a non-zero `data-egatari-seed` (or a `seed` attribute) and pins v1.10.0 or earlier keeps its look; moved to a newer release, it shows the first variant of each part it does not name.
+- A lesson pins its component versions (spec [§6](https://github.com/egatari/egatari-spec/blob/main/egatari-1.0.md#6-components-and-profiles)), so a lesson changes look only when its author moves to a newer release. Adding variants is a minor version and goes in the CHANGELOG.
 - If an existing prop overlaps with a variant, the prop wins. For example `count="false"` on `m-kpi` still means "do not count": if a counting variant (`count`, `flip`) is chosen, the component uses the non-counting one (`rise`) and logs a `console.info` once saying why.
-- In v1.2.0 only `m-kpi` gains variants (it is where the complaint came from); other components follow in later releases.
 
 ### 1.7 Example: `m-kpi`
 
@@ -224,6 +222,7 @@ The purposes a component can serve (shown to people as 「伝えたいこと」 
 | `text-structure` | Structure of a text | Reading order |
 | `contents` | Contents | Whole at once |
 | `parameter` | Varying a parameter | One value at a time |
+| `music` | Music (pitch, chords, rhythm) | One note or chord at a time |
 
 | `deviation` | Deviation, increase and decrease (diverging bars, waterfall) | (reserved; no component yet) |
 | `concept-links` | Concept links (concept map) | (reserved; no component yet) |
@@ -260,6 +259,7 @@ Proposed declarations for existing and v1.2.0 components:
 | `m-sweep` | parameter |
 | `m-codetree` | hierarchy, process |
 | `m-kanbun` `m-kobun` `m-gendai` | text-structure |
+| `m-keyboard` | music |
 | `m-compare` | compare |
 | `m-timeline` | timeline |
 | `m-fishbone` | cause-effect |
@@ -273,8 +273,8 @@ Proposed declarations for existing and v1.2.0 components:
 
 Decided in the standards review (2026-10-24):
 
-1. The lesson seed is `data-egatari-seed` (spec §8.4, egatari-spec 270767a).
-2. Lessons pin component versions (spec §6); a seeded lesson changes look only when moved to a newer release (1.6).
+1. ~~The lesson seed is `data-egatari-seed` (spec §8.4, egatari-spec 270767a).~~ Withdrawn: there is no lesson seed (spec §8.4, egatari-spec 28d8801). A component's variant is its `variant` attribute, otherwise the first (1.4).
+2. Lessons pin component versions (spec §6); a lesson changes look only when moved to a newer release (1.6).
 3. A base-class `this.variant` in Studio comes later, with dev. v1.2.0 uses `tools/variant.js` and `variant-sync`.
 4. This document does not rename the series (standards to dev, with #99).
 5. `purposes.json` lives in this repository (4.2).

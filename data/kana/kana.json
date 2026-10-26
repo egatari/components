@@ -1,0 +1,1800 @@
+{
+ "version": "0.1.0",
+ "box": 100,
+ "license": "MIT",
+ "shapes": "strokes.ofl.json — the stroke outlines and centrelines (from strokesvg, derived from Klee One; SIL OFL 1.1, a separate file). This file (MIT) holds only order, counts, endings, loops, placement and notes; its strokes are in the same order as there.",
+ "sources": {
+  "school-hiragana": {
+   "label": "小学校国語（1年）で一般に指導される平仮名の筆順",
+   "order": "現行の小学校国語・書写の教科書で一般に通用している筆順（作成者の知識による）。特定の教科書の頁とは一字ずつ照合していない（verified: false）。",
+   "count": "画数は公開の一覧（小学生コンパス「ひらがなの書き順 一覧」, https://eleschool-compass.com/contents/kakijun/hiragana.html）と全46字で一致を確認（き4画・さ3画・そ1画・ふ4画・り2画・ゆ2画は教科書の分け方）。"
+  },
+  "school-katakana": {
+   "label": "小学校国語（1年）で一般に指導される片仮名の筆順",
+   "order": "現行の小学校国語・書写の教科書で一般に通用している筆順（作成者の知識による）。特定の教科書の頁とは一字ずつ照合していない（verified: false）。",
+   "count": "画数は公開の一覧（小学生コンパス「カタカナの書き順 一覧」, https://eleschool-compass.com/contents/kakijun/katakana.html）と全46字で一致を確認。"
+  }
+ },
+ "references": [
+  "光村図書『こくご一（上）』p.27（半濁点）・p.37（句点）: 丸は「下中心から時計回り」に書く。半濁点（ぱぴぷぺぽ・パピプペポ）の向きと書き始めの根拠。",
+  "文部省『筆順指導の手びき』（1958）: 教育漢字881字の筆順を示したもの（文化遺産オンラインの解説）。仮名の筆順表は含まないと見られるが、原本の目次では未確認。漢字と共通の原則（上から下へ、左から右へ）の根拠として参照。",
+  "国際交流基金『日本語教育通信』45号「授業のヒント かなの書き方の指導」: 書き順は漢字と同じ原則による、印刷の字体と手書き（教科書体）では さ・ゆ・ふ・り などの形が違う、と説明。字形は教科書体の手書きに合わせた。"
+ ],
+ "chars": {
+  "あ": {
+   "count": 3,
+   "strokes": [
+    {"end": "tome"},
+    {"end": "tome"},
+    {"end": "harai"}
+   ],
+   "source": "school-hiragana",
+   "verified": false
+  },
+  "い": {
+   "count": 2,
+   "strokes": [
+    {"end": "hane"},
+    {"end": "tome"}
+   ],
+   "source": "school-hiragana",
+   "verified": false
+  },
+  "う": {
+   "count": 2,
+   "strokes": [
+    {"end": "tome"},
+    {"end": "harai"}
+   ],
+   "source": "school-hiragana",
+   "verified": false
+  },
+  "え": {
+   "count": 2,
+   "strokes": [
+    {"end": "tome"},
+    {"end": "harai"}
+   ],
+   "source": "school-hiragana",
+   "verified": false
+  },
+  "お": {
+   "count": 3,
+   "strokes": [
+    {"end": "tome"},
+    {"end": "tome"},
+    {"end": "tome"}
+   ],
+   "source": "school-hiragana",
+   "verified": false
+  },
+  "か": {
+   "count": 3,
+   "strokes": [
+    {"end": "hane"},
+    {"end": "tome"},
+    {"end": "tome"}
+   ],
+   "source": "school-hiragana",
+   "verified": false
+  },
+  "き": {
+   "count": 4,
+   "strokes": [
+    {"end": "tome"},
+    {"end": "tome"},
+    {"end": "tome"},
+    {"end": "tome"}
+   ],
+   "source": "school-hiragana",
+   "verified": false,
+   "note": "3画目の終わり（字形では左へ短く折り返す）を「とめ」とした。要確認。"
+  },
+  "く": {
+   "count": 1,
+   "strokes": [
+    {"end": "tome"}
+   ],
+   "source": "school-hiragana",
+   "verified": false
+  },
+  "け": {
+   "count": 3,
+   "strokes": [
+    {"end": "hane"},
+    {"end": "tome"},
+    {"end": "harai"}
+   ],
+   "source": "school-hiragana",
+   "verified": false
+  },
+  "こ": {
+   "count": 2,
+   "strokes": [
+    {"end": "hane"},
+    {"end": "tome"}
+   ],
+   "source": "school-hiragana",
+   "verified": false
+  },
+  "さ": {
+   "count": 3,
+   "strokes": [
+    {"end": "tome"},
+    {"end": "tome"},
+    {"end": "tome"}
+   ],
+   "source": "school-hiragana",
+   "verified": false,
+   "note": "2画目の終わり（字形では左へ短く折り返す）を「とめ」とした。要確認。"
+  },
+  "し": {
+   "count": 1,
+   "strokes": [
+    {"end": "harai"}
+   ],
+   "source": "school-hiragana",
+   "verified": false
+  },
+  "す": {
+   "count": 2,
+   "strokes": [
+    {"end": "tome"},
+    {"end": "harai", "loop": true}
+   ],
+   "source": "school-hiragana",
+   "verified": false
+  },
+  "せ": {
+   "count": 3,
+   "strokes": [
+    {"end": "tome"},
+    {"end": "hane"},
+    {"end": "tome"}
+   ],
+   "source": "school-hiragana",
+   "verified": false
+  },
+  "そ": {
+   "count": 1,
+   "strokes": [
+    {"end": "tome"}
+   ],
+   "source": "school-hiragana",
+   "verified": false
+  },
+  "た": {
+   "count": 4,
+   "strokes": [
+    {"end": "tome"},
+    {"end": "tome"},
+    {"end": "hane"},
+    {"end": "tome"}
+   ],
+   "source": "school-hiragana",
+   "verified": false,
+   "note": "3画目の「はね」は字形ではほとんど見えない。要確認。"
+  },
+  "ち": {
+   "count": 2,
+   "strokes": [
+    {"end": "tome"},
+    {"end": "harai"}
+   ],
+   "source": "school-hiragana",
+   "verified": false
+  },
+  "つ": {
+   "count": 1,
+   "strokes": [
+    {"end": "harai"}
+   ],
+   "source": "school-hiragana",
+   "verified": false
+  },
+  "て": {
+   "count": 1,
+   "strokes": [
+    {"end": "tome"}
+   ],
+   "source": "school-hiragana",
+   "verified": false,
+   "note": "終わりを「とめ」とした。"
+  },
+  "と": {
+   "count": 2,
+   "strokes": [
+    {"end": "tome"},
+    {"end": "tome"}
+   ],
+   "source": "school-hiragana",
+   "verified": false
+  },
+  "な": {
+   "count": 4,
+   "strokes": [
+    {"end": "tome"},
+    {"end": "tome"},
+    {"end": "tome"},
+    {"end": "harai", "loop": true}
+   ],
+   "source": "school-hiragana",
+   "verified": false,
+   "note": "3画目の終わり（字形では左へ短く折り返す）を「とめ」とした。要確認。"
+  },
+  "に": {
+   "count": 3,
+   "strokes": [
+    {"end": "hane"},
+    {"end": "hane"},
+    {"end": "tome"}
+   ],
+   "source": "school-hiragana",
+   "verified": false,
+   "note": "2画目の「はね」は字形ではほとんど見えない。要確認。"
+  },
+  "ぬ": {
+   "count": 2,
+   "strokes": [
+    {"end": "tome"},
+    {"end": "harai", "loop": true}
+   ],
+   "source": "school-hiragana",
+   "verified": false
+  },
+  "ね": {
+   "count": 2,
+   "strokes": [
+    {"end": "tome"},
+    {"end": "harai", "loop": true}
+   ],
+   "source": "school-hiragana",
+   "verified": false
+  },
+  "の": {
+   "count": 1,
+   "strokes": [
+    {"end": "harai"}
+   ],
+   "source": "school-hiragana",
+   "verified": false
+  },
+  "は": {
+   "count": 3,
+   "strokes": [
+    {"end": "hane"},
+    {"end": "tome"},
+    {"end": "harai", "loop": true}
+   ],
+   "source": "school-hiragana",
+   "verified": false
+  },
+  "ひ": {
+   "count": 1,
+   "strokes": [
+    {"end": "harai"}
+   ],
+   "source": "school-hiragana",
+   "verified": false,
+   "note": "終わりを右下への「はらい」とした。"
+  },
+  "ふ": {
+   "count": 4,
+   "strokes": [
+    {"end": "tome"},
+    {"end": "hane"},
+    {"end": "hane"},
+    {"end": "tome"}
+   ],
+   "source": "school-hiragana",
+   "verified": false,
+   "note": "3画目（左の点）は左上から下へ書き、右上へはねる（終わりは「はね」）。0.1.0 では右上から左下へ・とめとしていた。向きと終わりは要確認。"
+  },
+  "へ": {
+   "count": 1,
+   "strokes": [
+    {"end": "harai"}
+   ],
+   "source": "school-hiragana",
+   "verified": false,
+   "note": "終わりを「はらい」とした。「とめ」とする教科書もある。要確認。"
+  },
+  "ほ": {
+   "count": 4,
+   "strokes": [
+    {"end": "hane"},
+    {"end": "tome"},
+    {"end": "tome"},
+    {"end": "harai", "loop": true}
+   ],
+   "source": "school-hiragana",
+   "verified": false
+  },
+  "ま": {
+   "count": 3,
+   "strokes": [
+    {"end": "tome"},
+    {"end": "tome"},
+    {"end": "harai", "loop": true}
+   ],
+   "source": "school-hiragana",
+   "verified": false
+  },
+  "み": {
+   "count": 2,
+   "strokes": [
+    {"end": "tome", "loop": true},
+    {"end": "harai"}
+   ],
+   "source": "school-hiragana",
+   "verified": false
+  },
+  "む": {
+   "count": 3,
+   "strokes": [
+    {"end": "tome"},
+    {"end": "tome", "loop": true},
+    {"end": "tome"}
+   ],
+   "source": "school-hiragana",
+   "verified": false,
+   "note": "2画目の終わりを「とめ」とした。"
+  },
+  "め": {
+   "count": 2,
+   "strokes": [
+    {"end": "tome"},
+    {"end": "harai"}
+   ],
+   "source": "school-hiragana",
+   "verified": false
+  },
+  "も": {
+   "count": 3,
+   "strokes": [
+    {"end": "hane"},
+    {"end": "tome"},
+    {"end": "tome"}
+   ],
+   "source": "school-hiragana",
+   "verified": false,
+   "note": "1画目の終わりを上への「はね」とした。"
+  },
+  "や": {
+   "count": 3,
+   "strokes": [
+    {"end": "hane"},
+    {"end": "tome"},
+    {"end": "tome"}
+   ],
+   "source": "school-hiragana",
+   "verified": false,
+   "note": "2画目の終わり（字形では左へ短く折り返す）を「とめ」とした。1画目の終わりの「はね」も要確認。"
+  },
+  "ゆ": {
+   "count": 2,
+   "strokes": [
+    {"end": "harai"},
+    {"end": "harai"}
+   ],
+   "source": "school-hiragana",
+   "verified": false,
+   "note": "1画目の終わり（左上への小さな折り返し）を「はらい」とした。要確認。"
+  },
+  "よ": {
+   "count": 2,
+   "strokes": [
+    {"end": "tome"},
+    {"end": "harai", "loop": true}
+   ],
+   "source": "school-hiragana",
+   "verified": false
+  },
+  "ら": {
+   "count": 2,
+   "strokes": [
+    {"end": "tome"},
+    {"end": "harai"}
+   ],
+   "source": "school-hiragana",
+   "verified": false,
+   "note": "1画目の終わり（字形では左へ短く折り返す）を「とめ」とした。要確認。"
+  },
+  "り": {
+   "count": 2,
+   "strokes": [
+    {"end": "hane"},
+    {"end": "harai"}
+   ],
+   "source": "school-hiragana",
+   "verified": false
+  },
+  "る": {
+   "count": 1,
+   "strokes": [
+    {"end": "tome"}
+   ],
+   "source": "school-hiragana",
+   "verified": false
+  },
+  "れ": {
+   "count": 2,
+   "strokes": [
+    {"end": "tome"},
+    {"end": "harai"}
+   ],
+   "source": "school-hiragana",
+   "verified": false
+  },
+  "ろ": {
+   "count": 1,
+   "strokes": [
+    {"end": "harai"}
+   ],
+   "source": "school-hiragana",
+   "verified": false
+  },
+  "わ": {
+   "count": 2,
+   "strokes": [
+    {"end": "tome"},
+    {"end": "harai"}
+   ],
+   "source": "school-hiragana",
+   "verified": false
+  },
+  "を": {
+   "count": 3,
+   "strokes": [
+    {"end": "tome"},
+    {"end": "tome"},
+    {"end": "tome"}
+   ],
+   "source": "school-hiragana",
+   "verified": false,
+   "note": "2画目の折れの形。"
+  },
+  "ん": {
+   "count": 1,
+   "strokes": [
+    {"end": "harai"}
+   ],
+   "source": "school-hiragana",
+   "verified": false
+  },
+  "ア": {
+   "count": 2,
+   "strokes": [
+    {"end": "harai"},
+    {"end": "harai"}
+   ],
+   "source": "school-katakana",
+   "verified": false,
+   "note": "1画目の終わりを「はらい」とした。"
+  },
+  "イ": {
+   "count": 2,
+   "strokes": [
+    {"end": "harai"},
+    {"end": "tome"}
+   ],
+   "source": "school-katakana",
+   "verified": false
+  },
+  "ウ": {
+   "count": 3,
+   "strokes": [
+    {"end": "tome"},
+    {"end": "tome"},
+    {"end": "harai"}
+   ],
+   "source": "school-katakana",
+   "verified": false
+  },
+  "エ": {
+   "count": 3,
+   "strokes": [
+    {"end": "tome"},
+    {"end": "tome"},
+    {"end": "tome"}
+   ],
+   "source": "school-katakana",
+   "verified": false
+  },
+  "オ": {
+   "count": 3,
+   "strokes": [
+    {"end": "tome"},
+    {"end": "hane"},
+    {"end": "harai"}
+   ],
+   "source": "school-katakana",
+   "verified": false
+  },
+  "カ": {
+   "count": 2,
+   "strokes": [
+    {"end": "hane"},
+    {"end": "harai"}
+   ],
+   "source": "school-katakana",
+   "verified": false
+  },
+  "キ": {
+   "count": 3,
+   "strokes": [
+    {"end": "tome"},
+    {"end": "tome"},
+    {"end": "tome"}
+   ],
+   "source": "school-katakana",
+   "verified": false
+  },
+  "ク": {
+   "count": 2,
+   "strokes": [
+    {"end": "harai"},
+    {"end": "harai"}
+   ],
+   "source": "school-katakana",
+   "verified": false
+  },
+  "ケ": {
+   "count": 3,
+   "strokes": [
+    {"end": "harai"},
+    {"end": "tome"},
+    {"end": "harai"}
+   ],
+   "source": "school-katakana",
+   "verified": false
+  },
+  "コ": {
+   "count": 2,
+   "strokes": [
+    {"end": "tome"},
+    {"end": "tome"}
+   ],
+   "source": "school-katakana",
+   "verified": false
+  },
+  "サ": {
+   "count": 3,
+   "strokes": [
+    {"end": "tome"},
+    {"end": "tome"},
+    {"end": "harai"}
+   ],
+   "source": "school-katakana",
+   "verified": false
+  },
+  "シ": {
+   "count": 3,
+   "strokes": [
+    {"end": "tome"},
+    {"end": "tome"},
+    {"end": "harai"}
+   ],
+   "source": "school-katakana",
+   "verified": false
+  },
+  "ス": {
+   "count": 2,
+   "strokes": [
+    {"end": "harai"},
+    {"end": "tome"}
+   ],
+   "source": "school-katakana",
+   "verified": false
+  },
+  "セ": {
+   "count": 2,
+   "strokes": [
+    {"end": "hane"},
+    {"end": "tome"}
+   ],
+   "source": "school-katakana",
+   "verified": false,
+   "note": "1画目の折れの終わりを「はね」とした。"
+  },
+  "ソ": {
+   "count": 2,
+   "strokes": [
+    {"end": "tome"},
+    {"end": "harai"}
+   ],
+   "source": "school-katakana",
+   "verified": false
+  },
+  "タ": {
+   "count": 3,
+   "strokes": [
+    {"end": "harai"},
+    {"end": "harai"},
+    {"end": "tome"}
+   ],
+   "source": "school-katakana",
+   "verified": false
+  },
+  "チ": {
+   "count": 3,
+   "strokes": [
+    {"end": "harai"},
+    {"end": "tome"},
+    {"end": "harai"}
+   ],
+   "source": "school-katakana",
+   "verified": false
+  },
+  "ツ": {
+   "count": 3,
+   "strokes": [
+    {"end": "tome"},
+    {"end": "tome"},
+    {"end": "harai"}
+   ],
+   "source": "school-katakana",
+   "verified": false
+  },
+  "テ": {
+   "count": 3,
+   "strokes": [
+    {"end": "tome"},
+    {"end": "tome"},
+    {"end": "harai"}
+   ],
+   "source": "school-katakana",
+   "verified": false
+  },
+  "ト": {
+   "count": 2,
+   "strokes": [
+    {"end": "tome"},
+    {"end": "tome"}
+   ],
+   "source": "school-katakana",
+   "verified": false
+  },
+  "ナ": {
+   "count": 2,
+   "strokes": [
+    {"end": "tome"},
+    {"end": "harai"}
+   ],
+   "source": "school-katakana",
+   "verified": false
+  },
+  "ニ": {
+   "count": 2,
+   "strokes": [
+    {"end": "tome"},
+    {"end": "tome"}
+   ],
+   "source": "school-katakana",
+   "verified": false
+  },
+  "ヌ": {
+   "count": 2,
+   "strokes": [
+    {"end": "harai"},
+    {"end": "tome"}
+   ],
+   "source": "school-katakana",
+   "verified": false
+  },
+  "ネ": {
+   "count": 4,
+   "strokes": [
+    {"end": "tome"},
+    {"end": "harai"},
+    {"end": "tome"},
+    {"end": "tome"}
+   ],
+   "source": "school-katakana",
+   "verified": false
+  },
+  "ノ": {
+   "count": 1,
+   "strokes": [
+    {"end": "harai"}
+   ],
+   "source": "school-katakana",
+   "verified": false
+  },
+  "ハ": {
+   "count": 2,
+   "strokes": [
+    {"end": "harai"},
+    {"end": "tome"}
+   ],
+   "source": "school-katakana",
+   "verified": false
+  },
+  "ヒ": {
+   "count": 2,
+   "strokes": [
+    {"end": "tome"},
+    {"end": "tome"}
+   ],
+   "source": "school-katakana",
+   "verified": false
+  },
+  "フ": {
+   "count": 1,
+   "strokes": [
+    {"end": "harai"}
+   ],
+   "source": "school-katakana",
+   "verified": false
+  },
+  "ヘ": {
+   "count": 1,
+   "strokes": [
+    {"end": "harai"}
+   ],
+   "source": "school-katakana",
+   "verified": false,
+   "note": "終わりを「はらい」とした。「とめ」とする教科書もある。要確認。"
+  },
+  "ホ": {
+   "count": 4,
+   "strokes": [
+    {"end": "tome"},
+    {"end": "hane"},
+    {"end": "tome"},
+    {"end": "tome"}
+   ],
+   "source": "school-katakana",
+   "verified": false
+  },
+  "マ": {
+   "count": 2,
+   "strokes": [
+    {"end": "tome"},
+    {"end": "tome"}
+   ],
+   "source": "school-katakana",
+   "verified": false,
+   "note": "2画目と1画目の交わり方。"
+  },
+  "ミ": {
+   "count": 3,
+   "strokes": [
+    {"end": "tome"},
+    {"end": "tome"},
+    {"end": "tome"}
+   ],
+   "source": "school-katakana",
+   "verified": false
+  },
+  "ム": {
+   "count": 2,
+   "strokes": [
+    {"end": "tome"},
+    {"end": "tome"}
+   ],
+   "source": "school-katakana",
+   "verified": false
+  },
+  "メ": {
+   "count": 2,
+   "strokes": [
+    {"end": "harai"},
+    {"end": "tome"}
+   ],
+   "source": "school-katakana",
+   "verified": false
+  },
+  "モ": {
+   "count": 3,
+   "strokes": [
+    {"end": "tome"},
+    {"end": "tome"},
+    {"end": "tome"}
+   ],
+   "source": "school-katakana",
+   "verified": false
+  },
+  "ヤ": {
+   "count": 2,
+   "strokes": [
+    {"end": "hane"},
+    {"end": "tome"}
+   ],
+   "source": "school-katakana",
+   "verified": false,
+   "note": "1画目の折れの終わりを「はね」とした。"
+  },
+  "ユ": {
+   "count": 2,
+   "strokes": [
+    {"end": "tome"},
+    {"end": "tome"}
+   ],
+   "source": "school-katakana",
+   "verified": false
+  },
+  "ヨ": {
+   "count": 3,
+   "strokes": [
+    {"end": "tome"},
+    {"end": "tome"},
+    {"end": "tome"}
+   ],
+   "source": "school-katakana",
+   "verified": false
+  },
+  "ラ": {
+   "count": 2,
+   "strokes": [
+    {"end": "tome"},
+    {"end": "harai"}
+   ],
+   "source": "school-katakana",
+   "verified": false
+  },
+  "リ": {
+   "count": 2,
+   "strokes": [
+    {"end": "tome"},
+    {"end": "harai"}
+   ],
+   "source": "school-katakana",
+   "verified": false
+  },
+  "ル": {
+   "count": 2,
+   "strokes": [
+    {"end": "harai"},
+    {"end": "harai"}
+   ],
+   "source": "school-katakana",
+   "verified": false,
+   "note": "2画目の終わり（右上へ）を「はらい」とした。「はね」とする見方もある。要確認。"
+  },
+  "レ": {
+   "count": 1,
+   "strokes": [
+    {"end": "harai"}
+   ],
+   "source": "school-katakana",
+   "verified": false,
+   "note": "終わり（右上へ）を「はらい」とした。「はね」とする見方もある。要確認。"
+  },
+  "ロ": {
+   "count": 3,
+   "strokes": [
+    {"end": "tome"},
+    {"end": "tome"},
+    {"end": "tome"}
+   ],
+   "source": "school-katakana",
+   "verified": false
+  },
+  "ワ": {
+   "count": 2,
+   "strokes": [
+    {"end": "tome"},
+    {"end": "harai"}
+   ],
+   "source": "school-katakana",
+   "verified": false
+  },
+  "ヲ": {
+   "count": 3,
+   "strokes": [
+    {"end": "tome"},
+    {"end": "tome"},
+    {"end": "harai"}
+   ],
+   "source": "school-katakana",
+   "verified": false,
+   "note": "筆順（横・横・ノ）を特に確認してほしい字。"
+  },
+  "ン": {
+   "count": 2,
+   "strokes": [
+    {"end": "tome"},
+    {"end": "harai"}
+   ],
+   "source": "school-katakana",
+   "verified": false
+  },
+  "が": {
+   "count": 5,
+   "strokes": [
+    {"end": "hane"},
+    {"end": "tome"},
+    {"end": "tome"},
+    {"end": "tome"},
+    {"end": "tome"}
+   ],
+   "base": "か",
+   "source": "school-hiragana",
+   "verified": false
+  },
+  "ぎ": {
+   "count": 6,
+   "strokes": [
+    {"end": "tome"},
+    {"end": "tome"},
+    {"end": "tome"},
+    {"end": "tome"},
+    {"end": "tome"},
+    {"end": "tome"}
+   ],
+   "base": "き",
+   "source": "school-hiragana",
+   "verified": false,
+   "note": "3画目の終わり（字形では左へ短く折り返す）を「とめ」とした。要確認。"
+  },
+  "ぐ": {
+   "count": 3,
+   "strokes": [
+    {"end": "tome"},
+    {"end": "tome"},
+    {"end": "tome"}
+   ],
+   "base": "く",
+   "source": "school-hiragana",
+   "verified": false
+  },
+  "げ": {
+   "count": 5,
+   "strokes": [
+    {"end": "hane"},
+    {"end": "tome"},
+    {"end": "harai"},
+    {"end": "tome"},
+    {"end": "tome"}
+   ],
+   "base": "け",
+   "source": "school-hiragana",
+   "verified": false
+  },
+  "ご": {
+   "count": 4,
+   "strokes": [
+    {"end": "hane"},
+    {"end": "tome"},
+    {"end": "tome"},
+    {"end": "tome"}
+   ],
+   "base": "こ",
+   "source": "school-hiragana",
+   "verified": false
+  },
+  "ざ": {
+   "count": 5,
+   "strokes": [
+    {"end": "tome"},
+    {"end": "tome"},
+    {"end": "tome"},
+    {"end": "tome"},
+    {"end": "tome"}
+   ],
+   "base": "さ",
+   "source": "school-hiragana",
+   "verified": false,
+   "note": "2画目の終わり（字形では左へ短く折り返す）を「とめ」とした。要確認。"
+  },
+  "じ": {
+   "count": 3,
+   "strokes": [
+    {"end": "harai"},
+    {"end": "tome"},
+    {"end": "tome"}
+   ],
+   "base": "し",
+   "source": "school-hiragana",
+   "verified": false
+  },
+  "ず": {
+   "count": 4,
+   "strokes": [
+    {"end": "tome"},
+    {"end": "harai", "loop": true},
+    {"end": "tome"},
+    {"end": "tome"}
+   ],
+   "base": "す",
+   "source": "school-hiragana",
+   "verified": false
+  },
+  "ぜ": {
+   "count": 5,
+   "strokes": [
+    {"end": "tome"},
+    {"end": "hane"},
+    {"end": "tome"},
+    {"end": "tome"},
+    {"end": "tome"}
+   ],
+   "base": "せ",
+   "source": "school-hiragana",
+   "verified": false
+  },
+  "ぞ": {
+   "count": 3,
+   "strokes": [
+    {"end": "tome"},
+    {"end": "tome"},
+    {"end": "tome"}
+   ],
+   "base": "そ",
+   "source": "school-hiragana",
+   "verified": false
+  },
+  "だ": {
+   "count": 6,
+   "strokes": [
+    {"end": "tome"},
+    {"end": "tome"},
+    {"end": "hane"},
+    {"end": "tome"},
+    {"end": "tome"},
+    {"end": "tome"}
+   ],
+   "base": "た",
+   "source": "school-hiragana",
+   "verified": false,
+   "note": "3画目の「はね」は字形ではほとんど見えない。要確認。"
+  },
+  "ぢ": {
+   "count": 4,
+   "strokes": [
+    {"end": "tome"},
+    {"end": "harai"},
+    {"end": "tome"},
+    {"end": "tome"}
+   ],
+   "base": "ち",
+   "source": "school-hiragana",
+   "verified": false
+  },
+  "づ": {
+   "count": 3,
+   "strokes": [
+    {"end": "harai"},
+    {"end": "tome"},
+    {"end": "tome"}
+   ],
+   "base": "つ",
+   "source": "school-hiragana",
+   "verified": false
+  },
+  "で": {
+   "count": 3,
+   "strokes": [
+    {"end": "tome"},
+    {"end": "tome"},
+    {"end": "tome"}
+   ],
+   "base": "て",
+   "source": "school-hiragana",
+   "verified": false,
+   "note": "終わりを「とめ」とした。"
+  },
+  "ど": {
+   "count": 4,
+   "strokes": [
+    {"end": "tome"},
+    {"end": "tome"},
+    {"end": "tome"},
+    {"end": "tome"}
+   ],
+   "base": "と",
+   "source": "school-hiragana",
+   "verified": false
+  },
+  "ば": {
+   "count": 5,
+   "strokes": [
+    {"end": "hane"},
+    {"end": "tome"},
+    {"end": "harai", "loop": true},
+    {"end": "tome"},
+    {"end": "tome"}
+   ],
+   "base": "は",
+   "source": "school-hiragana",
+   "verified": false
+  },
+  "び": {
+   "count": 3,
+   "strokes": [
+    {"end": "harai"},
+    {"end": "tome"},
+    {"end": "tome"}
+   ],
+   "base": "ひ",
+   "source": "school-hiragana",
+   "verified": false,
+   "note": "終わりを右下への「はらい」とした。"
+  },
+  "ぶ": {
+   "count": 6,
+   "strokes": [
+    {"end": "tome"},
+    {"end": "hane"},
+    {"end": "hane"},
+    {"end": "tome"},
+    {"end": "tome"},
+    {"end": "tome"}
+   ],
+   "base": "ふ",
+   "source": "school-hiragana",
+   "verified": false,
+   "note": "3画目（左の点）は左上から下へ書き、右上へはねる（終わりは「はね」）。0.1.0 では右上から左下へ・とめとしていた。向きと終わりは要確認。"
+  },
+  "べ": {
+   "count": 3,
+   "strokes": [
+    {"end": "harai"},
+    {"end": "tome"},
+    {"end": "tome"}
+   ],
+   "base": "へ",
+   "source": "school-hiragana",
+   "verified": false,
+   "note": "終わりを「はらい」とした。「とめ」とする教科書もある。要確認。"
+  },
+  "ぼ": {
+   "count": 6,
+   "strokes": [
+    {"end": "hane"},
+    {"end": "tome"},
+    {"end": "tome"},
+    {"end": "harai", "loop": true},
+    {"end": "tome"},
+    {"end": "tome"}
+   ],
+   "base": "ほ",
+   "source": "school-hiragana",
+   "verified": false
+  },
+  "ガ": {
+   "count": 4,
+   "strokes": [
+    {"end": "hane"},
+    {"end": "harai"},
+    {"end": "tome"},
+    {"end": "tome"}
+   ],
+   "base": "カ",
+   "source": "school-katakana",
+   "verified": false
+  },
+  "ギ": {
+   "count": 5,
+   "strokes": [
+    {"end": "tome"},
+    {"end": "tome"},
+    {"end": "tome"},
+    {"end": "tome"},
+    {"end": "tome"}
+   ],
+   "base": "キ",
+   "source": "school-katakana",
+   "verified": false
+  },
+  "グ": {
+   "count": 4,
+   "strokes": [
+    {"end": "harai"},
+    {"end": "harai"},
+    {"end": "tome"},
+    {"end": "tome"}
+   ],
+   "base": "ク",
+   "source": "school-katakana",
+   "verified": false
+  },
+  "ゲ": {
+   "count": 5,
+   "strokes": [
+    {"end": "harai"},
+    {"end": "tome"},
+    {"end": "harai"},
+    {"end": "tome"},
+    {"end": "tome"}
+   ],
+   "base": "ケ",
+   "source": "school-katakana",
+   "verified": false
+  },
+  "ゴ": {
+   "count": 4,
+   "strokes": [
+    {"end": "tome"},
+    {"end": "tome"},
+    {"end": "tome"},
+    {"end": "tome"}
+   ],
+   "base": "コ",
+   "source": "school-katakana",
+   "verified": false
+  },
+  "ザ": {
+   "count": 5,
+   "strokes": [
+    {"end": "tome"},
+    {"end": "tome"},
+    {"end": "harai"},
+    {"end": "tome"},
+    {"end": "tome"}
+   ],
+   "base": "サ",
+   "source": "school-katakana",
+   "verified": false
+  },
+  "ジ": {
+   "count": 5,
+   "strokes": [
+    {"end": "tome"},
+    {"end": "tome"},
+    {"end": "harai"},
+    {"end": "tome"},
+    {"end": "tome"}
+   ],
+   "base": "シ",
+   "source": "school-katakana",
+   "verified": false
+  },
+  "ズ": {
+   "count": 4,
+   "strokes": [
+    {"end": "harai"},
+    {"end": "tome"},
+    {"end": "tome"},
+    {"end": "tome"}
+   ],
+   "base": "ス",
+   "source": "school-katakana",
+   "verified": false
+  },
+  "ゼ": {
+   "count": 4,
+   "strokes": [
+    {"end": "hane"},
+    {"end": "tome"},
+    {"end": "tome"},
+    {"end": "tome"}
+   ],
+   "base": "セ",
+   "source": "school-katakana",
+   "verified": false,
+   "note": "1画目の折れの終わりを「はね」とした。"
+  },
+  "ゾ": {
+   "count": 4,
+   "strokes": [
+    {"end": "tome"},
+    {"end": "harai"},
+    {"end": "tome"},
+    {"end": "tome"}
+   ],
+   "base": "ソ",
+   "source": "school-katakana",
+   "verified": false
+  },
+  "ダ": {
+   "count": 5,
+   "strokes": [
+    {"end": "harai"},
+    {"end": "harai"},
+    {"end": "tome"},
+    {"end": "tome"},
+    {"end": "tome"}
+   ],
+   "base": "タ",
+   "source": "school-katakana",
+   "verified": false
+  },
+  "ヂ": {
+   "count": 5,
+   "strokes": [
+    {"end": "harai"},
+    {"end": "tome"},
+    {"end": "harai"},
+    {"end": "tome"},
+    {"end": "tome"}
+   ],
+   "base": "チ",
+   "source": "school-katakana",
+   "verified": false
+  },
+  "ヅ": {
+   "count": 5,
+   "strokes": [
+    {"end": "tome"},
+    {"end": "tome"},
+    {"end": "harai"},
+    {"end": "tome"},
+    {"end": "tome"}
+   ],
+   "base": "ツ",
+   "source": "school-katakana",
+   "verified": false
+  },
+  "デ": {
+   "count": 5,
+   "strokes": [
+    {"end": "tome"},
+    {"end": "tome"},
+    {"end": "harai"},
+    {"end": "tome"},
+    {"end": "tome"}
+   ],
+   "base": "テ",
+   "source": "school-katakana",
+   "verified": false
+  },
+  "ド": {
+   "count": 4,
+   "strokes": [
+    {"end": "tome"},
+    {"end": "tome"},
+    {"end": "tome"},
+    {"end": "tome"}
+   ],
+   "base": "ト",
+   "source": "school-katakana",
+   "verified": false
+  },
+  "バ": {
+   "count": 4,
+   "strokes": [
+    {"end": "harai"},
+    {"end": "tome"},
+    {"end": "tome"},
+    {"end": "tome"}
+   ],
+   "base": "ハ",
+   "source": "school-katakana",
+   "verified": false
+  },
+  "ビ": {
+   "count": 4,
+   "strokes": [
+    {"end": "tome"},
+    {"end": "tome"},
+    {"end": "tome"},
+    {"end": "tome"}
+   ],
+   "base": "ヒ",
+   "source": "school-katakana",
+   "verified": false
+  },
+  "ブ": {
+   "count": 3,
+   "strokes": [
+    {"end": "harai"},
+    {"end": "tome"},
+    {"end": "tome"}
+   ],
+   "base": "フ",
+   "source": "school-katakana",
+   "verified": false
+  },
+  "ベ": {
+   "count": 3,
+   "strokes": [
+    {"end": "harai"},
+    {"end": "tome"},
+    {"end": "tome"}
+   ],
+   "base": "ヘ",
+   "source": "school-katakana",
+   "verified": false,
+   "note": "終わりを「はらい」とした。「とめ」とする教科書もある。要確認。"
+  },
+  "ボ": {
+   "count": 6,
+   "strokes": [
+    {"end": "tome"},
+    {"end": "hane"},
+    {"end": "tome"},
+    {"end": "tome"},
+    {"end": "tome"},
+    {"end": "tome"}
+   ],
+   "base": "ホ",
+   "source": "school-katakana",
+   "verified": false
+  },
+  "ヴ": {
+   "count": 5,
+   "strokes": [
+    {"end": "tome"},
+    {"end": "tome"},
+    {"end": "harai"},
+    {"end": "tome"},
+    {"end": "tome"}
+   ],
+   "base": "ウ",
+   "source": "school-katakana",
+   "verified": false
+  },
+  "ぱ": {
+   "count": 4,
+   "strokes": [
+    {"end": "hane"},
+    {"end": "tome"},
+    {"end": "harai", "loop": true},
+    {"end": "tome"}
+   ],
+   "base": "は",
+   "source": "school-hiragana",
+   "verified": false
+  },
+  "ぴ": {
+   "count": 2,
+   "strokes": [
+    {"end": "harai"},
+    {"end": "tome"}
+   ],
+   "base": "ひ",
+   "source": "school-hiragana",
+   "verified": false,
+   "note": "終わりを右下への「はらい」とした。"
+  },
+  "ぷ": {
+   "count": 5,
+   "strokes": [
+    {"end": "tome"},
+    {"end": "hane"},
+    {"end": "hane"},
+    {"end": "tome"},
+    {"end": "tome"}
+   ],
+   "base": "ふ",
+   "source": "school-hiragana",
+   "verified": false,
+   "note": "3画目（左の点）は左上から下へ書き、右上へはねる（終わりは「はね」）。0.1.0 では右上から左下へ・とめとしていた。向きと終わりは要確認。"
+  },
+  "ぺ": {
+   "count": 2,
+   "strokes": [
+    {"end": "harai"},
+    {"end": "tome"}
+   ],
+   "base": "へ",
+   "source": "school-hiragana",
+   "verified": false,
+   "note": "終わりを「はらい」とした。「とめ」とする教科書もある。要確認。"
+  },
+  "ぽ": {
+   "count": 5,
+   "strokes": [
+    {"end": "hane"},
+    {"end": "tome"},
+    {"end": "tome"},
+    {"end": "harai", "loop": true},
+    {"end": "tome"}
+   ],
+   "base": "ほ",
+   "source": "school-hiragana",
+   "verified": false
+  },
+  "パ": {
+   "count": 3,
+   "strokes": [
+    {"end": "harai"},
+    {"end": "tome"},
+    {"end": "tome"}
+   ],
+   "base": "ハ",
+   "source": "school-katakana",
+   "verified": false
+  },
+  "ピ": {
+   "count": 3,
+   "strokes": [
+    {"end": "tome"},
+    {"end": "tome"},
+    {"end": "tome"}
+   ],
+   "base": "ヒ",
+   "source": "school-katakana",
+   "verified": false
+  },
+  "プ": {
+   "count": 2,
+   "strokes": [
+    {"end": "harai"},
+    {"end": "tome"}
+   ],
+   "base": "フ",
+   "source": "school-katakana",
+   "verified": false
+  },
+  "ペ": {
+   "count": 2,
+   "strokes": [
+    {"end": "harai"},
+    {"end": "tome"}
+   ],
+   "base": "ヘ",
+   "source": "school-katakana",
+   "verified": false,
+   "note": "終わりを「はらい」とした。「とめ」とする教科書もある。要確認。"
+  },
+  "ポ": {
+   "count": 5,
+   "strokes": [
+    {"end": "tome"},
+    {"end": "hane"},
+    {"end": "tome"},
+    {"end": "tome"},
+    {"end": "tome"}
+   ],
+   "base": "ホ",
+   "source": "school-katakana",
+   "verified": false
+  },
+  "ぁ": {
+   "count": 3,
+   "strokes": [
+    {"end": "tome"},
+    {"end": "tome"},
+    {"end": "harai"}
+   ],
+   "base": "あ",
+   "place": {"yoko": [0.6377, 0, 0, 0.6377, -5.87, 34.19], "tate": [0.6377, 0, 0, 0.6377, 44.13, -15.81]},
+   "source": "school-hiragana",
+   "verified": false
+  },
+  "ぃ": {
+   "count": 2,
+   "strokes": [
+    {"end": "hane"},
+    {"end": "tome"}
+   ],
+   "base": "い",
+   "place": {"yoko": [0.7692, 0, 0, 0.7692, -14.92, 25], "tate": [0.7692, 0, 0, 0.7692, 35.08, -25]},
+   "source": "school-hiragana",
+   "verified": false
+  },
+  "ぅ": {
+   "count": 2,
+   "strokes": [
+    {"end": "tome"},
+    {"end": "harai"}
+   ],
+   "base": "う",
+   "place": {"yoko": [0.6875, 0, 0, 0.6875, -7.99, 31.34], "tate": [0.6875, 0, 0, 0.6875, 42.01, -18.66]},
+   "source": "school-hiragana",
+   "verified": false
+  },
+  "ぇ": {
+   "count": 2,
+   "strokes": [
+    {"end": "tome"},
+    {"end": "harai"}
+   ],
+   "base": "え",
+   "place": {"yoko": [0.7131, 0, 0, 0.7131, -10.3, 28.9], "tate": [0.7131, 0, 0, 0.7131, 39.7, -21.1]},
+   "source": "school-hiragana",
+   "verified": false
+  },
+  "ぉ": {
+   "count": 3,
+   "strokes": [
+    {"end": "tome"},
+    {"end": "tome"},
+    {"end": "tome"}
+   ],
+   "base": "お",
+   "place": {"yoko": [0.6622, 0, 0, 0.6622, -8.94, 32.8], "tate": [0.6622, 0, 0, 0.6622, 41.06, -17.2]},
+   "source": "school-hiragana",
+   "verified": false
+  },
+  "っ": {
+   "count": 1,
+   "strokes": [
+    {"end": "harai"}
+   ],
+   "base": "つ",
+   "place": {"yoko": [0.7445, 0, 0, 0.7445, -10.03, 24.48], "tate": [0.7445, 0, 0, 0.7445, 39.97, -25.52]},
+   "source": "school-hiragana",
+   "verified": false
+  },
+  "ゃ": {
+   "count": 3,
+   "strokes": [
+    {"end": "hane"},
+    {"end": "tome"},
+    {"end": "tome"}
+   ],
+   "base": "や",
+   "place": {"yoko": [0.7178, 0, 0, 0.7178, -9.56, 27.99], "tate": [0.7178, 0, 0, 0.7178, 40.44, -22.01]},
+   "source": "school-hiragana",
+   "verified": false,
+   "note": "2画目の終わり（字形では左へ短く折り返す）を「とめ」とした。1画目の終わりの「はね」も要確認。"
+  },
+  "ゅ": {
+   "count": 2,
+   "strokes": [
+    {"end": "harai"},
+    {"end": "harai"}
+   ],
+   "base": "ゆ",
+   "place": {"yoko": [0.6984, 0, 0, 0.6984, -10.8, 29.6], "tate": [0.6984, 0, 0, 0.6984, 39.2, -20.4]},
+   "source": "school-hiragana",
+   "verified": false,
+   "note": "1画目の終わり（左上への小さな折り返し）を「はらい」とした。要確認。"
+  },
+  "ょ": {
+   "count": 2,
+   "strokes": [
+    {"end": "tome"},
+    {"end": "harai", "loop": true}
+   ],
+   "base": "よ",
+   "place": {"yoko": [0.7297, 0, 0, 0.7297, -11.06, 29.29], "tate": [0.7297, 0, 0, 0.7297, 38.94, -20.71]},
+   "source": "school-hiragana",
+   "verified": false
+  },
+  "ゎ": {
+   "count": 2,
+   "strokes": [
+    {"end": "tome"},
+    {"end": "harai"}
+   ],
+   "base": "わ",
+   "place": {"yoko": [0.6875, 0, 0, 0.6875, -9.3, 32.72], "tate": [0.6875, 0, 0, 0.6875, 40.7, -17.28]},
+   "source": "school-hiragana",
+   "verified": false
+  },
+  "ァ": {
+   "count": 2,
+   "strokes": [
+    {"end": "harai"},
+    {"end": "harai"}
+   ],
+   "base": "ア",
+   "place": {"yoko": [0.7395, 0, 0, 0.7395, -11.42, 26.01], "tate": [0.7395, 0, 0, 0.7395, 38.58, -23.99]},
+   "source": "school-katakana",
+   "verified": false,
+   "note": "1画目の終わりを「はらい」とした。"
+  },
+  "ィ": {
+   "count": 2,
+   "strokes": [
+    {"end": "harai"},
+    {"end": "tome"}
+   ],
+   "base": "イ",
+   "place": {"yoko": [0.6984, 0, 0, 0.6984, -6.92, 30.3], "tate": [0.6984, 0, 0, 0.6984, 43.08, -19.7]},
+   "source": "school-katakana",
+   "verified": false
+  },
+  "ゥ": {
+   "count": 3,
+   "strokes": [
+    {"end": "tome"},
+    {"end": "tome"},
+    {"end": "harai"}
+   ],
+   "base": "ウ",
+   "place": {"yoko": [0.6875, 0, 0, 0.6875, -10.61, 32.72], "tate": [0.6875, 0, 0, 0.6875, 39.39, -17.28]},
+   "source": "school-katakana",
+   "verified": false
+  },
+  "ェ": {
+   "count": 3,
+   "strokes": [
+    {"end": "tome"},
+    {"end": "tome"},
+    {"end": "tome"}
+   ],
+   "base": "エ",
+   "place": {"yoko": [0.7297, 0, 0, 0.7297, -11.96, 25.75], "tate": [0.7297, 0, 0, 0.7297, 38.04, -24.25]},
+   "source": "school-katakana",
+   "verified": false
+  },
+  "ォ": {
+   "count": 3,
+   "strokes": [
+    {"end": "tome"},
+    {"end": "hane"},
+    {"end": "harai"}
+   ],
+   "base": "オ",
+   "place": {"yoko": [0.7358, 0, 0, 0.7358, -12.53, 28.94], "tate": [0.7358, 0, 0, 0.7358, 37.47, -21.06]},
+   "source": "school-katakana",
+   "verified": false
+  },
+  "ッ": {
+   "count": 3,
+   "strokes": [
+    {"end": "tome"},
+    {"end": "tome"},
+    {"end": "harai"}
+   ],
+   "base": "ツ",
+   "place": {"yoko": [0.8073, 0, 0, 0.8073, -15.97, 20.71], "tate": [0.8073, 0, 0, 0.8073, 34.03, -29.29]},
+   "source": "school-katakana",
+   "verified": false
+  },
+  "ャ": {
+   "count": 2,
+   "strokes": [
+    {"end": "hane"},
+    {"end": "tome"}
+   ],
+   "base": "ヤ",
+   "place": {"yoko": [0.7333, 0, 0, 0.7333, -10.6, 26.97], "tate": [0.7333, 0, 0, 0.7333, 39.4, -23.03]},
+   "source": "school-katakana",
+   "verified": false,
+   "note": "1画目の折れの終わりを「はね」とした。"
+  },
+  "ュ": {
+   "count": 2,
+   "strokes": [
+    {"end": "tome"},
+    {"end": "tome"}
+   ],
+   "base": "ユ",
+   "place": {"yoko": [0.7496, 0, 0, 0.7496, -12.37, 25], "tate": [0.7496, 0, 0, 0.7496, 37.63, -25]},
+   "source": "school-katakana",
+   "verified": false
+  },
+  "ョ": {
+   "count": 3,
+   "strokes": [
+    {"end": "tome"},
+    {"end": "tome"},
+    {"end": "tome"}
+   ],
+   "base": "ヨ",
+   "place": {"yoko": [0.9483, 0, 0, 0.9483, -21.18, 11.47], "tate": [0.9483, 0, 0, 0.9483, 28.82, -38.53]},
+   "source": "school-katakana",
+   "verified": false
+  },
+  "ヮ": {
+   "count": 2,
+   "strokes": [
+    {"end": "tome"},
+    {"end": "harai"}
+   ],
+   "base": "ワ",
+   "place": {"yoko": [0.7857, 0, 0, 0.7857, -15.07, 23.54], "tate": [0.7857, 0, 0, 0.7857, 34.93, -26.46]},
+   "source": "school-katakana",
+   "verified": false
+  },
+  "ヵ": {
+   "count": 2,
+   "strokes": [
+    {"end": "hane"},
+    {"end": "harai"}
+   ],
+   "base": "カ",
+   "place": {"yoko": [0.6984, 0, 0, 0.6984, -8.03, 32.4], "tate": [0.6984, 0, 0, 0.6984, 41.97, -17.6]},
+   "source": "school-katakana",
+   "verified": false
+  },
+  "ヶ": {
+   "count": 3,
+   "strokes": [
+    {"end": "harai"},
+    {"end": "tome"},
+    {"end": "harai"}
+   ],
+   "base": "ケ",
+   "place": {"yoko": [0.704, 0, 0, 0.704, -9.85, 31.88], "tate": [0.704, 0, 0, 0.704, 40.15, -18.12]},
+   "source": "school-katakana",
+   "verified": false
+  },
+  "ー": {
+   "count": 1,
+   "strokes": [
+    {"end": "tome"}
+   ],
+   "source": "school-katakana",
+   "verified": false,
+   "note": "横書きの長音符（左から右へ一画）。縦書きの形は対象外。"
+  }
+ }
+}

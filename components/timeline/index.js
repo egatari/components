@@ -13,63 +13,23 @@
 // その先に箱が軸の側から 12 px 寄りながら出る。帯は始まりから終わりへ引く）・grow（箱が軸の側から 12 px 寄りながら 0.92 → 1 に大きくなる。
 // 帯は両端が 12 px ずつ伸びる）。箱の動きはどれも 12 px まで。段階の数・長さ・合図・最後の中身はどれも同じ
 // 字の幅は字数から見積もる（字の読み込みを待たない）。入らなければ字を 24px まで縮め、それでも入らなければ console.warn
+// 工程表：node の after（前の作業の id。終わり → 始まりの直角の矢印。あれば作業ごとに 1 段）・progress（0–100 % を濃く塗る）、
+// 属性 today（今日の縦の線）・unit（day・week・month の目盛り。書かなければ今まで通り）。どれも書かなければ描き方は今までと同じ
 // ---- BEGIN egatari-variant (source: tools/variant.js; copy with `node tools/variant-sync.mjs`; do not edit inside a component) ----
 // Choosing a presentation variant (Egatari spec §8.4, docs/conventions.md §1). A component lists its variant names in
-// `static variants` (index 0 is variant 0) and calls VARIANT.of(this) once, in mount. The choice reads, in order:
-//   the component's `variant` attribute (a name) → its `seed` attribute → `data-egatari-seed` on the root element → 0.
-// Seed 0 gives variant 0. Any other seed s gives the name v with the largest h("<s>|<tag>|<v>") (highest random weight),
-// so every instance of a component in one lesson shows the same variant, components choose independently, and adding a
-// variant later changes only the lessons where the new one wins. h is FNV-1a followed by the mixing of kit/deck.js's rng.
-// The choice is a pure function of these values: the picture still depends on (i, k, t) only.
+// `static variants` (the first is the default) and calls VARIANT.of(this) once, in mount. The variant is the component's
+// `variant` attribute when it names one of them, otherwise the first name. There is no seed: lessons do not carry one
+// (spec §8.4 since egatari-spec 28d8801), and `seed` / `data-egatari-seed` are not read.
+// The choice is a pure function of the attribute: the picture still depends on (i, k, t) only.
 var VARIANT = (function(){
   "use strict";
-  function mix(h){
-    h = Math.imul(h ^ (h >>> 15), 2246822507);
-    h = Math.imul(h ^ (h >>> 13), 3266489909);
-    return (h ^ (h >>> 16)) >>> 0;
-  }
-  function hash(s){
-    var h = 2166136261;
-    for (var i = 0; i < s.length; i++){ h ^= s.charCodeAt(i); h = Math.imul(h, 16777619); }
-    return mix(h);
-  }
-  // A seed is a decimal integer 0 ≤ N < 2^32. Anything else is warned about and ignored (null)
-  function seedOf(v, what){
-    if (v === null || v === undefined) return null;
-    var s = String(v).trim();
-    if (/^\d{1,10}$/.test(s) && +s < 4294967296) return +s;
-    console.warn(what + "=" + JSON.stringify(v) + " is not an integer 0 ≤ N < 2^32 (ignored)");
-    return null;
-  }
-  // The variant name for seed s among names (for tools and tests; components call of)
-  function pick(s, tag, names){
-    if (!names.length) return null;
-    if (!s) return names[0];
-    var best = names[0], bh = -1;
-    names.forEach(function(v){ var x = hash(s + "|" + tag + "|" + v); if (x > bh){ bh = x; best = v; } });
-    return best;
-  }
-  // The effective seed of a component element (0 when nothing is written)
-  function seed(el){
-    var tag = el.tagName.toLowerCase(), s = seedOf(el.getAttribute("seed"), tag + " seed");
-    if (s === null) s = seedOf(document.documentElement.getAttribute("data-egatari-seed"), "data-egatari-seed");
-    return s === null ? 0 : s;
-  }
   function of(el){
     var tag = el.tagName.toLowerCase(), C = customElements.get(tag), names = (C && C.variants) || [], v = el.getAttribute("variant");
-    if (v !== null){
-      if (names.indexOf(v) >= 0) return v;
-      console.warn(tag + ' variant="' + v + '" is not one of ' + names.join(", ") + " (variant 0 is used)");
-      return names[0] || null;
-    }
-    return pick(seed(el), tag, names);
+    if (v !== null && names.indexOf(v) >= 0) return v;
+    if (v !== null) console.warn(tag + ' variant="' + v + '" is not one of ' + names.join(", ") + " (the first, " + (names[0] || "none") + ", is used)");
+    return names[0] || null;
   }
-  // A seeded generator for a variant that needs randomness (0 ≤ x < 1), from the same seed, tag and a key of your own
-  function rng(el, key){
-    var h = hash(seed(el) + "|" + el.tagName.toLowerCase() + "|" + (key || ""));
-    return function(){ h = mix((h + 0x9e3779b9) >>> 0); return h / 4294967296; };
-  }
-  return {of: of, pick: pick, seed: seed, rng: rng, hash: hash};
+  return {of: of};
 })();
 // ---- END egatari-variant ----
 (function(){
@@ -81,7 +41,8 @@ DECK.define("m-timeline", class extends DECK.MotionElement {
     schema: {type: "object", additionalProperties: false, required: ["nodes"], properties: {
       nodes: {type: "array", minItems: 1, items: {type: "object", required: ["when"], properties: {
         id: {type: ["string", "integer"]}, label: {type: "string"}, tex: {type: "string"}, note: {type: "string"}, tone: {type: "string"},
-        when: {type: ["number", "string"]}, whenLabel: {type: "string"}, end: {type: ["number", "string"]}, lane: {type: "string"}, step: {type: "integer"}, at: {type: "number"}}}},
+        when: {type: ["number", "string"]}, whenLabel: {type: "string"}, end: {type: ["number", "string"]}, lane: {type: "string"}, step: {type: "integer"}, at: {type: "number"},
+        after: {type: "array", items: {type: ["string", "integer"]}}, progress: {type: "number"}}}},
       edges: {type: "array", items: {type: "object", required: ["from", "to"], properties: {
         from: {type: ["string", "integer"]}, to: {type: ["string", "integer"]}, label: {type: "string"}, tone: {type: "string"}, dash: {type: "boolean"},
         step: {type: "integer"}, at: {type: "number"}}}}}},
@@ -96,6 +57,8 @@ DECK.define("m-timeline", class extends DECK.MotionElement {
     size:       {type: "number", default: 26, doc: "名前の字の大きさ（px。入らなければ 24 まで縮める）"},
     dur:        {type: "number", default: 0.6, doc: "1 つの出来事が現れる秒数"},
     stagger:    {type: "number", default: 0.3, doc: "同じ段階の出来事の出だしのずれ（秒）"},
+    unit:       {type: "string", default: "", doc: "目盛り：day・week・month"},
+    today:      {type: "string", default: "", doc: "今日の線（YYYY-MM-DD）"},
   };
   get steps(){
     if (this.getAttribute("steps") !== null) return +this.getAttribute("steps");
@@ -140,7 +103,19 @@ DECK.define("m-timeline", class extends DECK.MotionElement {
       [a, b].forEach(function(o){ if (o.step === step) at = Math.max(at, o.at + P.dur); });
       return {e: e, a: a, b: b, step: step, at: e.at !== undefined ? e.at : at};
     }).filter(Boolean);
-    return (this._plan = {items: items, edges: edges, axisStep: axisStep === Infinity ? 1 : axisStep});
+    // after（終わり → 始まりの矢印）：期間か節目どうし。矢印は後に出るほう（ふつうは後の作業）の段階で、その作業と一緒に引く
+    var deps = [];
+    items.forEach(function(b){
+      if (b.n.after === undefined) return;
+      (Array.isArray(b.n.after) ? b.n.after : [b.n.after]).forEach(function(id){
+        var a = byId[id];
+        if (!a){ console.warn("m-timeline: after " + JSON.stringify(id) + " is not the id of a node; no arrow"); return; }
+        if (a === b || a.kind === "point" || b.kind === "point"){ console.warn("m-timeline: after " + JSON.stringify(id) + " needs two periods or lane milestones (lane); no arrow"); return; }
+        var w = a.step > b.step ? a : b;
+        deps.push({a: a, b: b, step: w.step, at: w.at});
+      });
+    });
+    return (this._plan = {items: items, edges: edges, deps: deps, axisStep: axisStep === Infinity ? 1 : axisStep});
   }
   mount(){
     var P = this.props, D = DECK, self = this;
@@ -164,6 +139,9 @@ DECK.define("m-timeline", class extends DECK.MotionElement {
     var self = this, P = this.props, hz = this.hz, W = this.W, H = this.H, Lu = hz ? W : H, Lc = hz ? H : W;
     var pl = this.plan(), its = pl.items, ja = this.ja;
     var STEM = 30, ROWG = 10, GAP = 14, LANEG = 6, GROUPG = 16, why = [];
+    // 工程表（after があるとき）：作業ごとに 1 段（書いた順）、段の間を矢印が通れるだけ空ける
+    var gantt = pl.deps.length > 0;
+    if (gantt){ LANEG = 12; GROUPG = 24; }
     var points = its.filter(function(o){ return o.kind === "point"; }), lanesIt = its.filter(function(o){ return o.kind !== "point"; }), hasL = lanesIt.length > 0;
     points.forEach(function(o){
       var lines = [{text: o.n.whenLabel !== undefined ? String(o.n.whenLabel) : fmtTime(o.a, ja), size: 24, fill: tone(o.n.tone), weight: 700}].concat(labelLines(o.n, size, textFill(o.n.tone)));
@@ -184,9 +162,23 @@ DECK.define("m-timeline", class extends DECK.MotionElement {
     // 時刻 → u
     var ts = [];
     its.forEach(function(o){ ts.push(o.a.v); if (o.b) ts.push(o.b.v); });
-    var tmin = Math.min.apply(null, ts), tmax = Math.max.apply(null, ts);
     var uniq = ts.slice().sort(function(a, b){ return a - b; }).filter(function(v, i, a){ return !i || v !== a[i - 1]; });
-    var pad0 = 16, pad1 = 36;
+    // 今日（期間の段があるときだけ）：時間の範囲に入れる（目盛りの元の時刻には入れない）
+    var today = null;
+    if (P.today){
+      today = parseTime(P.today);
+      if (!today) console.warn("m-timeline: today=" + JSON.stringify(P.today) + " is not a time; no today line");
+      else if (!hasL){ console.warn("m-timeline: today needs a period (a node with end); no today line"); today = null; }
+      else ts.push(today.v);
+    }
+    var tmin = Math.min.apply(null, ts), tmax = Math.max.apply(null, ts);
+    var pad0 = gantt ? 30 : 16, pad1 = 36;
+    // 工程表：いちばん後の節目（◆）の名前が右に書けるだけ空ける（矢印が前から入るので）
+    if (gantt && hz) lanesIt.forEach(function(o){
+      if (o.kind !== "ms" || o.a.v < tmax) return;
+      var w = Math.max.apply(null, labelLines(o.n, size).map(function(l){ return l.tex ? texWidth(self, l) : est(l.text, size); }));
+      pad1 = Math.min(Lu * 0.3, Math.max(pad1, 21 + w + (o.n.note ? est("  " + o.n.note, 24) : 0) + 4));
+    });
     if (!hasL && points.length){
       pad0 = Math.min(points[0].eu / 2, Lu * 0.15);
       pad1 = Math.min(points[points.length - 1].eu / 2, Lu * 0.15) + 24;
@@ -194,7 +186,17 @@ DECK.define("m-timeline", class extends DECK.MotionElement {
     var uA = M + pad0, uB = Lu - pad1, even = P.scale === "even";
     var U = function(v){
       if (tmax === tmin) return (uA + uB) / 2;
-      if (even){ var i = uniq.indexOf(v); return uA + (uB - uA) * i / (uniq.length - 1); }
+      if (even){
+        var i = uniq.indexOf(v);
+        if (i < 0){
+          // 使った時刻のあいだ（今日）は前後の時刻のあいだに比例して置く
+          if (v <= uniq[0]) return uA;
+          if (v >= uniq[uniq.length - 1]) return uB;
+          for (i = 1; uniq[i] < v; i++);
+          return uA + (uB - uA) * (i - 1 + (v - uniq[i - 1]) / (uniq[i] - uniq[i - 1])) / (uniq.length - 1);
+        }
+        return uA + (uB - uA) * i / (uniq.length - 1);
+      }
       return uA + (uB - uA) * (v - tmin) / (tmax - tmin);
     };
     points.forEach(function(o){ o.u = U(o.a.v); });
@@ -232,6 +234,14 @@ DECK.define("m-timeline", class extends DECK.MotionElement {
       ws[nl - 1] += o.n.note ? est("  " + o.n.note, 24) : 0;
       var tw = Math.max.apply(null, ws), lb = nl * size * 1.25;
       o.tw = tw; o.lab = lab; o.labs = labs;
+      // 進み（%）：帯の名前の後ろに書けるときだけ書く（24px）
+      o.pct = null; o.showPct = false;
+      if (o.kind === "band" && typeof o.n.progress === "number" && isFinite(o.n.progress)){
+        if (o.n.progress < 0 || o.n.progress > 100) console.warn("m-timeline: progress " + o.n.progress + " is outside 0–100; clamped");
+        o.pct = Math.max(0, Math.min(100, o.n.progress));
+        o.pctText = "  " + (Math.round(o.pct * 10) / 10) + "%";
+      }
+      var twP = o.pct === null ? tw : Math.max(tw, ws[nl - 1] + est(o.pctText, 24));
       // 帯（h）と節目の段の太さ：1 行なら今まで通り 1.7 字
       o.need = Math.max(Math.round(size * 1.7), Math.ceil(lb + (o.kind === "band" ? size * 0.45 : 4)));
       if (o.kind === "band"){
@@ -239,10 +249,13 @@ DECK.define("m-timeline", class extends DECK.MotionElement {
         o.u0 = u0; o.u1 = u1;
         if (hz){
           o.where = tw + 20 <= len ? "in" : u1 + 10 + tw <= Lu ? "after" : u0 - 10 - tw >= M ? "before" : "in";
+          if (o.pct !== null) o.showPct = o.where === "in" ? twP + 20 <= len : o.where === "after" && u1 + 10 + twP <= Lu;
+          if (o.showPct && o.where === "after") o.tw = tw = twP;
           o.lo = o.where === "before" ? u0 - 10 - tw : u0; o.hi = o.where === "after" ? u1 + 10 + tw : u1;
           if (o.where === "in" && tw + 8 > len) why.push("the band \"" + lab.text + "\" is too short for its name");
         } else {
           o.where = th + 8 <= len ? "in" : u1 + 6 + th <= Lu ? "after" : u0 - 6 - th >= M ? "before" : "in";
+          if (o.pct !== null){ o.showPct = true; o.tw = tw = twP; }
           o.lo = o.where === "before" ? u0 - 6 - th : u0; o.hi = o.where === "after" ? u1 + 6 + th : u1;
         }
       } else {
@@ -257,7 +270,8 @@ DECK.define("m-timeline", class extends DECK.MotionElement {
     var lanesExt = 0;
     groups.forEach(function(g, gk){
       g.subs = [];
-      g.items.slice().sort(function(p, q){ return p.lo - q.lo || p.idx - q.idx; }).forEach(function(o){
+      if (gantt) g.items.slice().sort(function(p, q){ return p.idx - q.idx; }).forEach(function(o){ o.group = gk; o.sub = g.subs.length; g.subs.push([o]); });
+      else g.items.slice().sort(function(p, q){ return p.lo - q.lo || p.idx - q.idx; }).forEach(function(o){
         // 前の帯の終わりと次の帯の始まりが同じ時刻で、名前が外に出ていなければ、同じ段に続けて置ける
         var ok = function(sub){
           var last = sub[sub.length - 1];
@@ -278,13 +292,19 @@ DECK.define("m-timeline", class extends DECK.MotionElement {
       g.ext = g.thick.reduce(function(a, b){ return a + b; }, 0) + LANEG * (g.thick.length - 1);
       lanesExt += g.ext + (gk ? GROUPG : 0);
     });
+    var weekends = [], unit = P.unit;
+    if (unit && !/^(day|week|month)$/.test(unit)){ console.warn("m-timeline: unit=\"" + unit + "\" is not day, week or month; automatic ticks"); unit = ""; }
     if (hasL){
-      ticks = makeTicks(its, tmin, tmax, uniq, U, uA, uB, even, ja, hz, M, Lu);
+      if (unit){ var ut = unitTicks(unit, tmin, tmax, U, ja, hz, M, Lu, uA, uB); ticks = ut.ticks; weekends = ut.weekends; }
+      else ticks = makeTicks(its, tmin, tmax, uniq, U, uA, uB, even, ja, hz, M, Lu);
       tickExt = hz ? 50 : 18 + Math.max(0, Math.max.apply(null, ticks.map(function(x){ return est(x.text, 24) * 1.1; }))) + 22;
     }
     // c の配置：全体を中央に
-    var total = hasL ? R.above + tickExt + lanesExt : R.above + R.below + 16;
-    var off = Math.max(0, (Lc - total) / 2), axisC = hasL ? off + R.above : off + R.above + 8;
+    var todayText = ja ? "今日" : "Today", todayExt = !today ? 0 : hz ? 40 : Math.ceil(est(todayText, 24) * 1.05) + 16;
+    // 今日の三角（軸の上）の場所：上に出来事がなければ 14px 空ける
+    var triExt = today && R.above < 14 ? 14 - R.above : 0;
+    var total = hasL ? R.above + triExt + tickExt + lanesExt + todayExt : R.above + R.below + 16;
+    var off = Math.max(0, (Lc - total) / 2), axisC = hasL ? off + R.above + triExt : off + R.above + 8;
     if (!hasL && !R.above) axisC = off + 8;
     if (total > Lc + 0.5) why.push("needs " + Math.ceil(total) + "px across the axis, has " + Lc);
     // 出来事の箱の位置
@@ -303,7 +323,8 @@ DECK.define("m-timeline", class extends DECK.MotionElement {
       g.c1 = c;
     });
     return {fits: !why.length, why: why.join("; "), size: size, points: points, lanesIt: lanesIt, groups: groups, ticks: ticks, M: M, axisC: axisC,
-      axisU0: hasL ? M : 0, axisU1: Lu - 4, hasL: hasL};
+      axisU0: hasL ? M : 0, axisU1: Lu - 4, hasL: hasL, gantt: gantt, LANEG: LANEG, tickExt: tickExt, lanesEnd: c, weekends: weekends,
+      today: today ? {u: U(today.v), text: todayText} : null};
   }
   // (u, c) → [x, y]
   xy(u, c){ return this.hz ? [u, c] : [c, u]; }
@@ -318,11 +339,21 @@ DECK.define("m-timeline", class extends DECK.MotionElement {
       head: D.el("path", {d: "M0,0L-16,-7L-16,7Z", fill: "var(--muted)"}, gAxis), p0: a0, p1: a1, ang: hz ? 0 : 90,
       ticks: D.el("g", {opacity: 0}, gAxis)};
     L.ticks.forEach(function(k){
-      var p = self.xy(k.u, L.axisC), q = self.xy(k.u, L.axisC + 11);
-      D.el("line", {x1: p[0], y1: p[1], x2: q[0], y2: q[1], stroke: "var(--muted)", "stroke-width": 2}, self.axis.ticks);
+      var p = self.xy(k.u, L.axisC), q = self.xy(k.u, L.axisC + (k.minor ? 7 : 11));
+      D.el("line", {x1: p[0], y1: p[1], x2: q[0], y2: q[1], stroke: "var(--muted)", "stroke-width": k.minor ? 1.5 : 2}, self.axis.ticks);
+      if (k.minor) return;
       if (hz) D.el("text", {x: k.x.toFixed(1), y: (L.axisC + 40).toFixed(1), "text-anchor": k.anchor, "font-size": size, fill: "var(--muted)"}, self.axis.ticks).textContent = k.text;
       else D.el("text", {x: (L.axisC + 18).toFixed(1), y: (k.u + 9).toFixed(1), "font-size": size, fill: "var(--muted)"}, self.axis.ticks).textContent = k.text;
     });
+    // 土日（unit="day"）：段の後ろに薄く
+    if (L.weekends.length){
+      this.weekG = D.el("g", {opacity: 0}, gLane);
+      var w0 = L.axisC + L.tickExt - 2;
+      L.weekends.forEach(function(w){
+        var p = self.xy(w[0], w0), q = self.xy(w[1], L.lanesEnd + 2);
+        D.el("rect", {x: Math.min(p[0], q[0]).toFixed(1), y: Math.min(p[1], q[1]).toFixed(1), width: Math.abs(q[0] - p[0]).toFixed(1), height: Math.abs(q[1] - p[1]).toFixed(1), fill: "var(--line)", opacity: 0.3}, self.weekG);
+      });
+    }
     // 段のまとまりの名前と、まとまりの間の線
     this.laneLabels = L.groups.map(function(g, gk){
       var e = D.el("g", {opacity: 0}, gLane);
@@ -365,7 +396,10 @@ DECK.define("m-timeline", class extends DECK.MotionElement {
         o.labs.forEach(function(l, j){
           if (l.tex){ D.svgMath(lg, x, y0 + j * lh, l.tex, {size: size, anchor: anchor, color: "var(--fg)", w: o.tw + 8, h: size * 1.6}).firstChild.style.verticalAlign = "top"; return; }
           var t = D.mtext(lg, x, y0 + j * lh, l.text, {"text-anchor": anchor, "font-size": size, fill: "var(--fg)"});
-          if (j === nl - 1) noteSpan(t);
+          if (j === nl - 1){
+            noteSpan(t);
+            if (o.showPct){ var ps = D.el("tspan", {"font-size": 24, "font-weight": 700, fill: "var(--fg)"}, t); ps.textContent = o.pctText; }
+          }
         });
       };
       if (o.kind === "band"){
@@ -373,6 +407,12 @@ DECK.define("m-timeline", class extends DECK.MotionElement {
         var u0 = o.u0 + 1.5, u1 = Math.max(o.u0 + 3, o.u1 - 1.5);
         r = hz ? {x: u0, y: c0, w: u1 - u0, h: th} : {x: c0, y: u0, w: th, h: u1 - u0};
         rect = D.el("rect", {class: "box", x: r.x.toFixed(1), y: r.y.toFixed(1), width: r.w.toFixed(1), height: r.h.toFixed(1), rx: 8, fill: tint(col, 26), stroke: col, "stroke-width": 2}, g);
+        // 進み（progress）：始まりの側から濃い色で塗る（枠の内側。終わりの側の角は 100% のときだけ丸い）
+        if (o.pct !== null){
+          var pl0 = (u1 - u0) * o.pct / 100;
+          o.progU = [u0, u0 + pl0];
+          if (pl0 > 0) o.progEl = D.el("path", {class: "progress", d: progPath(hz, u0 + 1, c0 + 1, pl0 - 2, th - 2, o.pct >= 100), fill: tint(col, 50)}, g);
+        }
         if (hz){
           var by = c0 + th / 2, lhh = size * 1.25;
           if (o.where === "in") text((u0 + u1) / 2, by, "middle", lhh);
@@ -413,6 +453,40 @@ DECK.define("m-timeline", class extends DECK.MotionElement {
       }
       return {g: g, step: x.step, at: x.at};
     }).filter(Boolean);
+    // after：前の作業の終わりから後の作業の始まりへ、直角に折れる矢印（--muted、3px）。帯を横切らない縦の位置を選ぶ
+    this.deps = [];
+    if (this.plan().deps.length){
+      var gDep = D.el("g", {}, svg);
+      this.deps = this.plan().deps.map(function(x){
+        var pts = routeDep(L, x.a, x.b, size), path = "", len = 0;
+        // 最後の区間は矢じりの分だけ短く（矢じりは最後の区間の向き）
+        var q = pts.map(function(p){ return p.slice(); }), n = q.length, du = Math.sign(pts[n - 1][0] - pts[n - 2][0]), dc = Math.sign(pts[n - 1][1] - pts[n - 2][1]);
+        q[n - 1][0] -= 14 * du; q[n - 1][1] -= 14 * dc;
+        var dxy = self.xy(du, dc), ang = Math.atan2(dxy[1], dxy[0]) * 180 / Math.PI;
+        q.forEach(function(p, j){ var xy = self.xy(p[0], p[1]); path += (j ? "L" : "M") + xy[0].toFixed(1) + "," + xy[1].toFixed(1); if (j) len += Math.abs(p[0] - q[j - 1][0]) + Math.abs(p[1] - q[j - 1][1]); });
+        var g = D.el("g", {class: "dep", opacity: 0}, gDep), end = self.xy(pts[n - 1][0], pts[n - 1][1]);
+        var line = D.el("path", {d: path, fill: "none", stroke: "var(--muted)", "stroke-width": 3, "stroke-linejoin": "round", "stroke-dasharray": len.toFixed(1) + " " + (len + 2).toFixed(1)}, g);
+        var head = D.el("path", {d: "M0,0L-16,-7L-16,7Z", fill: "var(--muted)", transform: "translate(" + end[0].toFixed(1) + " " + end[1].toFixed(1) + ") rotate(" + ang + ")"}, g);
+        return {g: g, line: line, head: head, len: len, step: x.step, at: x.at, pts: pts.map(function(p){ return self.xy(p[0], p[1]); }), from: x.a.n.id, to: x.b.n.id};
+      });
+    }
+    // 今日：期間の段を縦に通る線と「今日」（--accent2）。軸の上には小さな三角。帯と名前の下に描く（帯の字を線が消さない）
+    this.today = null;
+    if (L.today){
+      var gT = D.el("g", {class: "today", opacity: 0}, svg);
+      svg.insertBefore(gT, gBand);
+      var tu = L.today.u, c0 = L.axisC + L.tickExt - 6, c1 = L.lanesEnd + 6;
+      var p0 = this.xy(tu, c0), p1 = this.xy(tu, c1), tri = this.xy(tu, L.axisC - 2);
+      D.el("path", {d: "M0,0L-9,-12L9,-12Z", fill: "var(--accent2)", transform: "translate(" + tri[0].toFixed(1) + " " + tri[1].toFixed(1) + ") rotate(" + (hz ? 0 : -90) + ")"}, gT);
+      var tl = D.el("line", {x1: p0[0].toFixed(1), y1: p0[1].toFixed(1), x2: p1[0].toFixed(1), y2: p1[1].toFixed(1), stroke: "var(--accent2)", "stroke-width": 3}, gT);
+      var tw = est(L.today.text, 24) * 1.05, tt;
+      if (hz){
+        var tx = Math.max(L.M + tw / 2, Math.min(this.W - tw / 2, tu));
+        tt = D.el("text", {x: tx.toFixed(1), y: (c1 + 26).toFixed(1), "text-anchor": "middle", "font-size": 24, "font-weight": 700, fill: "var(--accent2)"}, gT);
+      } else tt = D.el("text", {x: (c1 + 8).toFixed(1), y: (tu + 8).toFixed(1), "font-size": 24, "font-weight": 700, fill: "var(--accent2)"}, gT);
+      tt.textContent = L.today.text;
+      this.today = {g: gT, line: tl, u: tu};
+    }
   }
   duration(k){
     var P = this.props, pl = this.plan(), d = k === pl.axisStep ? 0.5 : 0;
@@ -428,11 +502,12 @@ DECK.define("m-timeline", class extends DECK.MotionElement {
   }
   render(k, t, ctx){
     var D = DECK, P = this.props, self = this, vr = this.variant, T = P.dur, hz = this.hz;
-    var lecture = !!(ctx && (ctx.preview || ctx.mode === "lecture")), pl = this.plan();
+    var lecture = !!(ctx && (ctx.preview || ctx.mode === "lecture")), pl = this.plan(), FAINT = 0.45;
+    if (lecture){ var pv = parseFloat(getComputedStyle(this).getPropertyValue("--preview-opacity")); FAINT = pv >= 0 && pv <= 1 ? pv : 0.45; }
     // 段階 s の、start から len 秒の進み（前の段階なら 1、後の段階なら 0）
     var pr = function(s, start, len){ return s < k ? 1 : s > k ? 0 : D.prog(t, start, len); };
-    // 授業の表示：後の段階は最後の形を薄く（0.45）、今の段階は 0.45 から濃くなる。形は動かさない（どの見せ方でも同じ）
-    var faint = function(s, start){ return s < k ? 1 : s > k ? 0.45 : 0.45 + 0.55 * D.prog(t, start, T); };
+    // 授業の表示：後の段階は最後の形を薄く（テーマの --preview-opacity、ないときは 0.45）、今の段階はその薄さから濃くなる。形は動かさない（どの見せ方でも同じ）
+    var faint = function(s, start){ return s < k ? 1 : s > k ? FAINT : FAINT + (1 - FAINT) * D.prog(t, start, T); };
     // 軸
     var A = this.axis, ea = lecture ? 1 : pr(pl.axisStep, 0, 0.5);
     var ax = D.lerp(A.p0[0], A.p1[0], ea), ay = D.lerp(A.p0[1], A.p1[1], ea);
@@ -492,10 +567,27 @@ DECK.define("m-timeline", class extends DECK.MotionElement {
         var r = o.r, len = hz ? r.w : r.h, l = len * w, p = hz ? r.x : r.y;
         if (grow > 0){ var cut = Math.min(len * 0.15, 2 * OFF) * grow; l = len - cut; p += cut / 2; }
         o.rect.setAttribute(hz ? "x" : "y", p.toFixed(2)); o.rect.setAttribute(hz ? "width" : "height", Math.max(0, l).toFixed(2));
+        // 進みの塗りは見えている帯の中だけ（draw・grow の途中でも帯からはみ出さない）
+        var it = o.o, L = self.L;
+        if (it.progEl){
+          var pe = Math.min(p + l, it.progU[1]), c0p = L.groups[it.group].subC[it.sub], thp = L.groups[it.group].thick[it.sub];
+          it.progEl.setAttribute("d", progPath(hz, p + 1, c0p + 1, pe - p - 2, thp - 2, it.pct >= 100 && pe >= it.progU[1] - 0.01));
+        }
       }
       if (o.dia) o.dia.setAttribute("transform", "translate(" + o.mc[0].toFixed(1) + " " + o.mc[1].toFixed(1) + ")" + (diaS < 1 ? " scale(" + diaS.toFixed(4) + ")" : ""));
     });
     this.edges.forEach(function(o){ o.g.setAttribute("opacity", (lecture ? faint(o.step, o.at) : pr(o.step, o.at, 0.4)).toFixed(3)); });
+    // after の矢印：作業が出る間に、始まりから矢じりへ引く（どの見せ方でも同じ）
+    this.deps.forEach(function(o){
+      var e = lecture ? 1 : pr(o.step, o.at + 0.3 * T, 0.7 * T);
+      o.g.setAttribute("opacity", (lecture ? faint(o.step, o.at) : e > 0 ? 1 : 0).toFixed(3));
+      o.line.setAttribute("stroke-dashoffset", (o.len * (1 - e)).toFixed(2));
+      o.head.setAttribute("opacity", Math.max(0, Math.min(1, (e - 0.85) / 0.15)).toFixed(3));
+    });
+    // 今日の線と土日：軸の目盛りと一緒に
+    var tickO = lecture ? faint(pl.axisStep, 0) : pr(pl.axisStep, 0.2, 0.4);
+    if (this.today) this.today.g.setAttribute("opacity", tickO.toFixed(3));
+    if (this.weekG) this.weekG.setAttribute("opacity", tickO.toFixed(3));
   }
 });
 
@@ -625,9 +717,13 @@ function makeTicks(its, tmin, tmax, uniq, U, uA, uB, even, ja, hz, M, Lu){
       });
     }
   }
-  // 位置と寄せ：両端で外に出ないように。重なるものは間引く
+  return placeTicks(out, hz, M, Lu);
+}
+// 目盛りの字の位置と寄せ：両端で外に出ないように。重なるものは間引く（字のない細かい目盛り minor はそのまま）
+function placeTicks(out, hz, M, Lu){
   var kept = [], last = -Infinity;
   out.forEach(function(k){
+    if (k.minor){ kept.push(k); return; }
     var w = est(k.text, 24);
     if (hz){
       k.x = k.u; k.anchor = "middle";
@@ -643,5 +739,136 @@ function makeTicks(its, tmin, tmax, uniq, U, uA, uB, even, ja, hz, M, Lu){
     kept.push(k);
   });
   return kept;
+}
+// ---- 工程表（after・progress・today・unit）
+// 進みの塗り：(u, c) から長さ len・太さ th。始まりの側の角は丸く、終わりの側は round のときだけ丸い（2 次ベジェの角で、h と v のどちらでも同じ式）
+function progPath(hz, u, c, len, th, round){
+  if (len <= 0) return "";
+  var r0 = Math.min(7, len / 2, th / 2), r1 = round ? r0 : 0, P = function(a, b){ return (hz ? [a, b] : [b, a]).map(function(x){ return x.toFixed(2); }).join(","); };
+  var e = u + len, d = c + th;
+  return "M" + P(u + r0, c) + "L" + P(e - r1, c) + "Q" + P(e, c) + " " + P(e, c + r1) + "L" + P(e, d - r1) + "Q" + P(e, d) + " " + P(e - r1, d) +
+    "L" + P(u + r0, d) + "Q" + P(u, d) + " " + P(u, d - r0) + "L" + P(u, c + r0) + "Q" + P(u, c) + " " + P(u + r0, c) + "Z";
+}
+// 終わり → 始まりの矢印の折れ線（u, c の点の列）。前の作業の終わり（帯の右端の中ほど、または終わり近くの帯の縁から縦に）から、
+// 後の作業の始まり（帯の左端の中ほど）へ、横から入る。候補を順に試し、ほかの作業の帯と名前を横切らない最初のものを選ぶ（なければ
+// 横切る数のいちばん少ないもの）：右端から出て縦に下りる → 縁から縦に出る → 後の作業の段の手前の隙間を通って回り込む（始まりが前の
+// 作業の終わりに近すぎるとき）。名前が帯の右に書いてある前の作業は、縁からだけ出る
+function routeDep(L, a, b, size){
+  var row = function(o){ var g = L.groups[o.group]; return {c0: g.subC[o.sub], c1: g.subC[o.sub] + g.thick[o.sub], first: o.sub === 0, last: o.sub === g.subs.length - 1}; };
+  var A = row(a), B = row(b), ca = (A.c0 + A.c1) / 2, cb = (B.c0 + B.c1) / 2, down = cb >= ca ? 1 : -1;
+  var eu = b.kind === "band" ? b.u0 + 1.5 : b.u0 - 12, uMin = L.M + 4;
+  // b の段の手前（a の側）の隙間の中ほど
+  var cg = down > 0 ? B.c0 - (B.first ? 16 : L.LANEG / 2) : B.c1 + (B.last ? 8 : L.LANEG / 2);
+  var xl = Math.max(uMin, eu - 22);
+  // 縦の区間（u, c の範囲 p〜q）が横切る、ほかの作業の帯と名前（lo〜hi）の数
+  var hits = function(pts){
+    var n = 0;
+    for (var j = 1; j < pts.length; j++){
+      if (Math.abs(pts[j][0] - pts[j - 1][0]) > 0.01) continue;
+      var u = pts[j][0], lo = Math.min(pts[j][1], pts[j - 1][1]), hi = Math.max(pts[j][1], pts[j - 1][1]);
+      L.lanesIt.forEach(function(o){
+        if (o === a || o === b) return;
+        var r = row(o);
+        if (r.c1 > lo + 1 && r.c0 < hi - 1 && u > o.lo - 8 && u < o.hi + 8) n++;
+      });
+    }
+    return n;
+  };
+  var cands = [], side = [], su = a.kind === "band" ? a.u1 - 1.5 : a.u0 + 12, x0 = su + 10;
+  // 縁から：帯の終わりから 20px 手前（同じ日に始まる後の作業にも横から入れる。同じ前の作業からの矢印は縦の線を共にする）、
+  // ふさがっていれば 24・28・12・8px 手前（節目は ◆ の下か上の角）
+  var sc = a.kind === "band" ? (down > 0 ? A.c1 : A.c0) : ca + down * 12, svs = [];
+  if (a.kind === "band") [20, 24, 28, 12, 8].forEach(function(d){ if (a.u1 - 1.5 - d >= a.u0 + 5.5) svs.push(a.u1 - 1.5 - d); });
+  else svs.push(a.u0);
+  if (!svs.length) svs.push((a.u0 + a.u1) / 2);
+  // 後の作業の a の側の縁に、始まりの近くで縦に入る（始まりが前の作業の終わりと同じ日のとき。節目は ◆ の角へ）
+  var eb = b.kind === "band" ? (down > 0 ? B.c0 : B.c1) : cb - down * 12;
+  var topOK = function(x, c){ return Math.abs(eb - c) >= 22 && (b.kind === "band" ? x >= b.u0 + 5.5 && x <= Math.min(b.u1 - 7.5, b.u0 + 25.5) : Math.abs(x - b.u0) < 0.01); };
+  if (a.where !== "after"){
+    if (topOK(x0, ca)) side.push([[su, ca], [x0, ca], [x0, eb]]);
+    if (b.kind === "ms" && b.u0 >= x0) side.push([[su, ca], [b.u0, ca], [b.u0, eb]]);
+  }
+  svs.forEach(function(v){ if (topOK(v, sc)) side.push([[v, sc], [v, eb]]); });
+  // 後の作業の名前が始まりの手前に書いてあれば、横からは入らない
+  if (b.where === "before") cands = cands.concat(side);
+  if (a.where !== "after") for (var u = x0; u <= eu - 22; u += 4) cands.push([[su, ca], [u, ca], [u, cb], [eu, cb]]);
+  svs.forEach(function(v){ if (eu - 22 >= v) cands.push([[v, sc], [v, cb], [eu, cb]]); });
+  if (b.where !== "before") cands = cands.concat(side);
+  if (a.where !== "after") cands.push([[su, ca], [x0, ca], [x0, cg], [xl, cg], [xl, cb], [eu, cb]]);
+  svs.forEach(function(v){ cands.push([[v, sc], [v, cg], [xl, cg], [xl, cb], [eu, cb]]); });
+  var best = null, bh = Infinity;
+  for (var k = 0; k < cands.length; k++){ var h = hits(cands[k]); if (h < bh){ bh = h; best = cands[k]; if (!h) break; } }
+  return best;
+}
+// 日付 ↔ 通しの日（1970-01-01 = 0。グレゴリオ暦。Date は使わない）
+function dnum(y, m, d){
+  y -= m <= 2 ? 1 : 0;
+  var era = Math.floor(y / 400), yoe = y - era * 400, doy = Math.floor((153 * (m + (m > 2 ? -3 : 9)) + 2) / 5) + d - 1;
+  return era * 146097 + yoe * 365 + Math.floor(yoe / 4) - Math.floor(yoe / 100) + doy - 719468;
+}
+function civil(z){
+  z += 719468;
+  var era = Math.floor(z / 146097), doe = z - era * 146097, yoe = Math.floor((doe - Math.floor(doe / 1460) + Math.floor(doe / 36524) - Math.floor(doe / 146096)) / 365);
+  var doy = doe - (365 * yoe + Math.floor(yoe / 4) - Math.floor(yoe / 100)), mp = Math.floor((5 * doy + 2) / 153), d = doy - Math.floor((153 * mp + 2) / 5) + 1, m = mp + (mp < 10 ? 3 : -9);
+  return {y: yoe + era * 400 + (m <= 2 ? 1 : 0), m: m, d: d};
+}
+function yearLen(y){ return (y % 4 === 0 && y % 100 !== 0) || y % 400 === 0 ? 366 : 365; }
+// 年を単位にした時刻（parseTime の v）↔ 通しの日
+function dayOf(v){ var y = Math.floor(v); return dnum(y, 1, 1) + (v - y) * yearLen(y); }
+function vOfDay(z){ var c = civil(z); return c.y + (z - dnum(c.y, 1, 1)) / yearLen(c.y); }
+function weekday(z){ return ((z % 7) + 7 + 4) % 7; }   // 0 = 日曜 … 6 = 土曜
+// unit = day | week | month の目盛り。字の間隔が足りるいちばん細かい刻みを選び（字は 24px のまま）、刻みの間の目盛りは字なしの短い線にする
+function unitTicks(unit, tmin, tmax, U, ja, hz, M, Lu, uA, uB){
+  var z0 = Math.ceil(dayOf(tmin) - 1e-6), z1 = Math.floor(dayOf(tmax) + 1e-6), weekends = [];
+  var gapOK = function(list){
+    for (var j = 1; j < list.length; j++){
+      var need = hz ? (est(list[j - 1].text, 24) + est(list[j].text, 24)) / 2 + 24 : 24 * 1.3 + 10;
+      if (list[j].u - list[j - 1].u < need) return false;
+    }
+    return true;
+  };
+  var md = function(c){ return c.m + "/" + c.d; };
+  var cands = [], best = null;
+  if (unit === "month"){
+    var c0 = civil(z0), c1 = civil(z1), mi0 = c0.y * 12 + c0.m - 1 + (c0.d > 1 ? 1 : 0), mi1 = c1.y * 12 + c1.m - 1;
+    [1, 2, 3, 6, 12, 24, 60, 120].forEach(function(stp){
+      var all = [], lab = [];
+      for (var mi = mi0; mi <= mi1; mi++){
+        var y = Math.floor(mi / 12), m = mi - y * 12 + 1, k = {u: U(vOfDay(dnum(y, m, 1))), y: y, m: m};
+        if ((mi - mi0) % stp === 0) lab.push(k); else all.push({u: k.u, text: "", minor: true});
+      }
+      lab.forEach(function(k, j){ k.text = ja ? (j === 0 || k.m === 1 || stp >= 12 ? k.y + "年" : "") + (stp >= 12 && k.m === 1 ? "" : k.m + "月") : k.y + "-" + (k.m < 10 ? "0" : "") + k.m; });
+      cands.push({lab: lab, minor: all});
+    });
+  } else {
+    var steps = unit === "week" ? [7, 14, 28, 56, 91, 182] : [1, 2, 7, 14, 28, 56];
+    steps.forEach(function(stp){
+      var all = [], lab = [], wk = 0, prev = null;
+      for (var z = z0; z <= z1; z++){
+        var isMon = weekday(z) === 1, u = U(vOfDay(z));
+        if (unit === "week" && !isMon) continue;
+        var on = stp < 7 ? (z - z0) % stp === 0 : isMon && (wk++ % (stp / 7)) === 0;
+        if (on){
+          var c = civil(z);
+          lab.push({u: u, text: unit === "day" && stp < 7 && prev && prev.m === c.m ? String(c.d) : md(c)});
+          prev = c;
+        } else all.push({u: u, text: "", minor: true});
+      }
+      cands.push({lab: lab, minor: all});
+    });
+  }
+  for (var i = 0; i < cands.length && !best; i++) if (gapOK(cands[i].lab)) best = cands[i];
+  best = best || cands[cands.length - 1];
+  // 刻みの間の目盛りは、間隔が 8px 以上あるときだけ
+  var pxMinor = best.minor.length > 1 ? Math.abs(best.minor[1].u - best.minor[0].u) : Infinity;
+  var out = best.lab.concat(pxMinor >= 8 ? best.minor : []).sort(function(p, q){ return p.u - q.u; });
+  if (unit === "day"){
+    // 土日：土曜の始まりから月曜の始まりまで（時間の範囲の中だけ）
+    for (var z = z0 - 1; z <= z1; z++) if (weekday(z) === 6){
+      var p = Math.max(uA, U(vOfDay(z))), q = Math.min(uB, U(vOfDay(z + 2)));
+      if (q > p + 1) weekends.push([p, q]);
+    }
+  }
+  return {ticks: placeTicks(out, hz, M, Lu), weekends: weekends};
 }
 })();

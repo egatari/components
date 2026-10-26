@@ -42,9 +42,11 @@ const WRONG = {
   'm-hist': '<script type="application/json">{"value": [23, 31, 27], "bins": {"start": 15, "width": 5}}</script>',
   'm-boxplot': '<script type="application/json">{"groups": [{"label": "1 組", "data": [3, 5, 6, 7]}]}</script>',
   'm-numberline': '<script type="application/json">{"lines": [{"from": 0, "to": 10}], "marks": [{"value": 3}]}</script>',
+  'm-keyboard': '<script type="application/json">{"range": "C4-C6", "steps": [{"notes": ["C4", "E4", "G4"]}]}</script>',
   'm-tape': '<script type="application/json">{"rows": [{"label": "みかん", "segments": [{"v": 8}]}]}</script>',
   // データを属性だけで受け取る部品は、要素ごと書く（digits は整数の JSON）
   'm-hissan': '<m-hissan aria-label="m-hissan の図" expr="7÷3" digits="2けた" style="height:300px"></m-hissan>',
+  'm-kakijun': '<m-kakijun aria-label="m-kakijun の図" text="あさ" size="大きめ" style="height:300px"></m-kakijun>',
 };
 const comps = componentNames().map((n) => 'm-' + n);
 ok(comps.every((t) => WRONG[t] || t === 'm-sweep'), 'every component has a wrong-shape example in this test');

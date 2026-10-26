@@ -1,6 +1,7 @@
 // The layout of each component (no browser):
 //   components/<name>/index.js     defines <m-<name>> (DECK.define('m-<name>', …))
 //   components/<name>/README.md    frontmatter: name (m-<name>), series, summary, steps, purposes (ids in purposes.json), props,
+//                                  license (optional: an SPDX expression MIT AND <id>, for a part carrying data under another licence),
 //                                  and variants when index.js declares `static variants` (the same names in the same order)
 //   components/<name>/demo.html    a 1–2 slide sample deck (required for new components; m-sweep predates the rule)
 // Interactive parts (操作できるパーツ, docs/conventions.md §6): index.js declares `static interactive = true;` when the viewer can
@@ -9,6 +10,8 @@
 //   a method input(…), addEventListener for click / dblclick / pointer* / mouse* / touch* / key* / input / change,
 //   createElement of a / button / input / select / textarea, or child links as its data (static shape = {links: true, …}).
 // It fails when such a part lacks `static interactive = true`, and when viewerInput is set without interactive.
+// Answers under preview (docs/conventions.md §1.2, spec §8.4): a part whose later steps are an answer declares
+// `static preview = "none";` (the only value) and shows nothing ahead; tools/release.mjs writes it to the manifest.
 // <name> is a registry name: ^[a-z][a-z0-9-]{0,63}$ (Egatari spec §6). Only regular files; no symbolic links, no out/ in git.
 //   node tools/lint.mjs
 import fs from 'node:fs';
@@ -16,9 +19,10 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 export const NAME_RE = /^[a-z][a-z0-9-]{0,63}$/;
-export const SERIES = ['common', 'academic', 'business', 'kokugo', 'info', 'social'];
-// How a series is named to people (CATALOG.md, gallery). The ids above never change; `common` is 標準パーツ / Standard parts
-export const SERIES_LABEL = { common: '標準パーツ', academic: '数理・統計', business: 'ビジネス', kokugo: '国語', info: '情報', social: '地図（社会）' };
+export const SERIES = ['common', 'academic', 'business', 'kokugo', 'info', 'social', 'music'];
+// How a series is named to people (CATALOG.md, gallery). The ids above never change; `common` is 標準パーツ / Standard parts,
+// `kokugo` 国語 / Japanese, `music` 音楽 / Music (subject series, like kokugo)
+export const SERIES_LABEL = { common: '標準パーツ', academic: '数理・統計', business: 'ビジネス', kokugo: '国語', info: '情報', social: '地図（社会）', music: '音楽' };
 // Components released before demo.html was required (do not add to this list)
 const NO_DEMO = new Set([]);
 
@@ -29,12 +33,14 @@ export function flags(js) {
     || /addEventListener\(\s*["'](click|dblclick|pointer\w*|mouse\w*|touch\w*|key\w*|input|change)["']/.test(code)
     || /createElement\(\s*["'](a|button|input|select|textarea)["']/.test(code)
     || /static\s+shape\s*=\s*\{\s*links\s*:\s*true/.test(code);
-  const g = code.match(/static\s+group\s*=\s*"([a-z][a-z0-9-]*)"\s*;/), tm = code.match(/static\s+tile\s*=\s*(\{.*\})\s*;\s*$/m);
+  const g = code.match(/static\s+group\s*=\s*"([a-z][a-z0-9-]*)"\s*;/), pv = code.match(/static\s+preview\s*=\s*"([^"]*)"\s*;/), tm = code.match(/static\s+tile\s*=\s*(\{.*\})\s*;\s*$/m);
   let tile = null, tileError = null;
   if (tm) { try { tile = JSON.parse(tm[1]); } catch (e) { tileError = e.message; } }
   return { interactive: /static\s+interactive\s*=\s*true\s*;/.test(code), viewerInput: /static\s+viewerInput\s*=\s*true\s*;/.test(code), clock: /static\s+clock\s*=\s*true\s*;/.test(code), operable,
-    group: g ? g[1] : null, tile, tileError, tileWritten: !!tm || /static\s+tile\s*=/.test(code) };
+    group: g ? g[1] : null, preview: pv ? pv[1] : null, previewWritten: !!pv || /static\s+preview\s*=/.test(code), tile, tileError, tileWritten: !!tm || /static\s+tile\s*=/.test(code) };
 }
+// SPDX ids a part may name in its README frontmatter license: (with the licence text it must carry)
+export const LICENSES = { MIT: {}, 'OFL-1.1': { file: 'OFL.txt' } };
 export const list = (s) => (s ? s.split(',').map((x) => x.trim()).filter(Boolean) : []);
 // purposes.json: id → entry
 export function purposeIds(root) {
@@ -58,6 +64,7 @@ export function lint(root) {
   const base = path.join(root, 'components');
   const pj = JSON.parse(fs.readFileSync(path.join(root, 'purposes.json'), 'utf8'));
   const seen = new Set();
+  for (const s of SERIES) if (!SERIES_LABEL[s]) errs.push(`tools/lint.mjs: series ${s} has no SERIES_LABEL (how CATALOG.md and the gallery name it)`);
   for (const p of pj.purposes) {
     if (!/^[a-z][a-z-]*$/.test(p.id || '') || seen.has(p.id)) errs.push(`purposes.json: id ${JSON.stringify(p.id)} is not a unique lower-case id`);
     seen.add(p.id);
@@ -94,6 +101,13 @@ export function lint(root) {
     for (const k of ['name', 'series', 'summary', 'steps', 'props']) if (!(k in f)) errs.push(`components/${name}/README.md: frontmatter has no ${k}`);
     if (f.name && f.name !== `m-${name}`) errs.push(`components/${name}/README.md: name is ${f.name}, expected m-${name}`);
     if (f.series && !SERIES.includes(f.series)) errs.push(`components/${name}/README.md: series ${f.series} is not one of ${SERIES.join(', ')}`);
+    // license (optional): an SPDX expression for a part not wholly under the repository's MIT licence, e.g. MIT AND OFL-1.1.
+    // It must name MIT (the code) and only licences from LICENSES; each other licence needs its text in the part's folder
+    if ('license' in f) {
+      const ids = f.license.split(/\s+AND\s+/);
+      if (!ids.every((x) => LICENSES[x]) || !ids.includes('MIT')) errs.push(`components/${name}/README.md: license "${f.license}" is not MIT AND <one of ${Object.keys(LICENSES).filter((x) => x !== 'MIT').join(', ')}>`);
+      for (const x of ids) if (LICENSES[x] && LICENSES[x].file && !fs.existsSync(path.join(dir, LICENSES[x].file))) errs.push(`components/${name}: license ${x} needs ${LICENSES[x].file} in the part's folder`);
+    }
     const ids = purposeIds(root);
     if (!f.purposes) errs.push(`components/${name}/README.md: frontmatter has no purposes`);
     else for (const p of list(f.purposes)) {
@@ -104,6 +118,8 @@ export function lint(root) {
     if (fl.operable && !fl.interactive) errs.push(`components/${name}/index.js: the viewer can operate it (an input() method, a click/pointer/key/input/change listener, a link or control, or links as data): declare static interactive = true;`);
     // groups of parts the user chooses (docs/conventions.md §7): today only "tool"; a tool needs its own new-deck tile
     if (fl.group !== null && fl.group !== 'tool') errs.push(`components/${name}/index.js: static group must be "tool" (the only group so far)`);
+    // answers under preview (docs/conventions.md §1.2, spec §8.4): a part whose later steps are an answer shows nothing ahead and says so
+    if (fl.previewWritten && fl.preview !== 'none') errs.push(`components/${name}/index.js: static preview must be "none" (the only value; leave it out for a part that previews its later steps)`);
     if (fl.tileWritten && !fl.tile) errs.push(`components/${name}/index.js: static tile must be one line of JSON ({"label": {"ja", "en"}, "examples": {"ja", "en"}, "icon"})${fl.tileError ? ': ' + fl.tileError : ''}`);
     if (fl.group === 'tool' && !(fl.tile && fl.tile.label && fl.tile.label.ja && fl.tile.label.en && fl.tile.examples && fl.tile.examples.ja && fl.tile.examples.en && /^[a-z][a-z0-9-]*$/.test(fl.tile.icon || ''))) errs.push(`components/${name}/index.js: a tool (static group = "tool") needs static tile with label.{ja,en}, examples.{ja,en} and icon`);
     if (fl.viewerInput && !fl.interactive) errs.push(`components/${name}/index.js: static viewerInput = true needs static interactive = true`);
