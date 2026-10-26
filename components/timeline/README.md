@@ -1,5 +1,6 @@
 ---
 name: m-timeline
+version: 1.13.0
 series: common
 summary: 年表。出来事を時間の軸の上に 1 つずつ出す。期間は帯にして、重なる期間は段を分けて積む。end は含まない（"1912" は 1912 年の初め）
 steps: 出来事の数（既定は時刻の順に 1 つ = 1 段階。per-step で n 個ずつ、node の step が優先）

@@ -1,5 +1,6 @@
 ---
 name: m-boxplot
+version: 1.13.0
 series: academic
 summary: 箱ひげ図。値を並べ、中央値・四分位数を求める手順のとおりに組み立てる。群を並べて比べる
 steps: steps（既定）：点 → 中央値 → 第1・第3四分位数 → 箱 → ひげ。whole：群 1 つ = 1 段階

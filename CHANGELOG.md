@@ -4,6 +4,22 @@ Versions follow [README.md § Releases and versions](README.md#releases-and-vers
 
 ## Unreleased
 
+### 2.0 alpha.1 (branch; not for lessons)
+
+Components 2.0 starts on the branch `c2-base` (Egatari spec §6.1 parts and their dependencies; design `components-2.0-design.md` §11). No element part changes behaviour: every `index.js` of the 35 components is unchanged, and Studio still sees exactly those 35.
+
+- **`base` 2.0.0** (`components/base/`), a library part: `egatariParts.define({name: "base", version: "2.0.0", requires: {}}, …)` returning exactly `{MotionElement, el, lerp, prog, clamp, mtext, variant, previewOpacity}`. `MotionElement`, `el`, `mtext`, `lerp`, `prog` and `clamp` (DECK's `clamp01`) are copied from the pinned Studio's `kit/deck.js` (MIT, the same owner; NOTICE). `variant(el, names?)` is `VARIANT.of` taking the names (default `el.constructor.variants`) instead of looking the tag up in `customElements`; `previewOpacity(el)` reads `--preview-opacity` with `getComputedStyle`, else 0.45. No DECK, import or player global
+- **`expr` 2.0.0** (`components/expr/`), a library part: the safe expression evaluator of `tools/expr.js` (kept equal by `tools/expr-sync.mjs`, which now also writes it) returned from its factory. `m-sweep` and `m-curves` keep their own copy until they move to 2.0
+- **Per-part versions**: README frontmatter `version:` is required (lint); the 35 1.x parts carry `version: 1.13.0`. `tools/release.mjs` writes `version` into each manifest entry; a library part's entry is `{kind: "library", version, requires, license?, sha256, files}` (no tag). `package.json` keeps the catalogue version. CATALOG.md lists the library parts in a section of their own
+- **Lint for 2.0 parts**: a part calling `egatariParts.define` has a meta of plain values with an exact `version`, exact `requires` (no ranges), a custom element name in `element`, and no `DECK`, `import` or `require`; a library part's README has `name` (the folder), `version` (the meta's), `kind: library`, `summary`, `requires` (as in the meta) and no demo. `tools/scan-code.mjs` allows `components/base/index.js` exactly its three reads of static declarations (`this.constructor.steps`, `.props`, `e.constructor.variants`); any other `.constructor` stays refused
+- **Test-only registry shim** `tools/registry-shim.js` (never in a lesson or a release): `egatariParts.define` with the §6.1 behaviour (dependency order, forward references refused, `name@version` side by side, exact versions, failure of a part and its dependants with a text-equivalent fallback for elements), plus a bridge that lets the pinned Studio's DECK seek loop drive 2.0 element parts with the 2.0 ctx (`lang`, `slides`, slide key, `preview`, `entered`, `go`, `report`, `layout(ctx)`), so that parts can be tested before Studio writes the real registry
+- `tools/studio.mjs`: `componentNames()` is the element parts; `libraryNames()` and `partNames()` are new (library parts are not overlaid into Studio)
+
+#### Tests
+
+- `tools/test-registry.mjs` (in `tools/test-all.mjs`): resolver order, forward-reference refusal, two versions of base coexisting, exact-version matching and refusal of ranges, a factory throw leading to the fallback (and its dependants), element defined once; base and expr load through the registry and expr equals `tools/expr.js`; in a browser, a test 2.0 element part driven by DECK through the bridge (ctx members, no `ctx.deck`, `entered`, `report`, `go`, `layout` then render), and a failing element part showing its text equivalent
+- `tools/test-base.mjs` (in `tools/test-all.mjs`): the parity guarantee for alpha.2 — each base helper equals the pinned Studio's DECK version (`clamp`/`lerp`/`prog` on 1007 inputs with Object.is, including `prog(x, 0, 1)` ≡ `DECK.ease(x)`, `el` and `mtext` by outerHTML, `MotionElement` on 21 attribute/child cases with its warnings), `variant` equals `VARIANT.of` with the same warnings, `previewOpacity` equals the parts' own read
+
 ### Later (candidates, not in this release)
 
 - `m-compare` `by="row"`; an "outside every set" region for `m-venn`; planned-vs-actual bars for `m-timeline`

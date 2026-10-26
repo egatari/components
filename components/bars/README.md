@@ -1,5 +1,6 @@
 ---
 name: m-bars
+version: 1.13.0
 series: common
 summary: 棒を段階ごとに 0 から伸ばす（縦棒・横棒・組の棒・積み上げ棒）。値の軸の上限を段階で広げて「軸を突き抜ける伸び」も見せられる
 steps: 組の step と scale の step の最大（既定は組 1 つ = 1 段階。per-step で n 組ずつ）

@@ -1,5 +1,6 @@
 ---
 name: m-syntax
+version: 1.13.0
 series: english
 summary: 英文の構造：S V O C M の記号、句と節の括弧、修飾の矢印、品詞、それから和訳
 steps: 出てくる要素（S V O C M）を 1 つずつ＋括弧・矢印・和訳（あるものだけ）。build="whole" で 1

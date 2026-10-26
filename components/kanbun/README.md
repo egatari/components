@@ -1,5 +1,6 @@
 ---
 name: m-kanbun
+version: 1.13.0
 series: kokugo
 summary: 白文に返り点・送り仮名を付け、訓読の順に字をたどり（返り点で上へ戻るところに弧）、書き下し文にする（縦書き）
 steps: phases の数（order は句の数だけ。既定：訓点 1＋句の数＋書き下し文 1）

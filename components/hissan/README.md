@@ -1,5 +1,6 @@
 ---
 name: m-hissan
+version: 1.13.0
 series: academic
 summary: 筆算（たし算・ひき算・かけ算・わり算、小数も）。式を書けば、部品が教科書の手順で計算して書く
 steps: ＋−は位ごと、×は 1 段ごと（fine で 1 けたずつ）→たす、÷は商 1 けたごと（per="phase" で たてる・かける・ひく・おろす ごと）

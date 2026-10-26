@@ -1,5 +1,6 @@
 ---
 name: m-kpi
+version: 1.13.0
 series: common
 summary: 大きな数字の札（KPI）を段階ごとに出す。数字は数え上げ、下に増減の矢印と一言
 steps: 札の step の最大（既定は札 1 枚 = 1 段階。per-step で n 枚ずつ）

@@ -11,7 +11,8 @@ const ROOT = path.dirname(path.dirname(fileURLToPath(import.meta.url)));
 export const BEGIN = '// ---- BEGIN egatari-expr ';
 export const END = '// ---- END egatari-expr ----';
 // Components that evaluate expressions written by authors (attribute or data). A new one is added here
-export const USERS = ['curves', 'sweep'];
+// expr is the 2.0 library part (components/expr): the same block inside its egatariParts.define factory
+export const USERS = ['curves', 'sweep', 'expr'];
 
 const lf = (s) => s.replace(/\r\n?/g, '\n');
 export function source(root = ROOT) { return lf(fs.readFileSync(path.join(root, 'tools', 'expr.js'), 'utf8')).replace(/\n+$/, ''); }

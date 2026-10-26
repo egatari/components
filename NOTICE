@@ -1,6 +1,10 @@
 Egatari components
 Copyright (c) 2026 Gendo Kumoi. Licensed under the MIT License (see LICENSE).
 
+components/base/index.js — MotionElement, el, mtext, lerp, prog and clamp (with ease and stepInt) are copied from Egatari
+Studio's kit/deck.js (https://github.com/egatari/egatari-studio, commit 03eaf0607598b993eb020f8e619caa53526bc771).
+  Copyright (c) 2026 Gendo Kumoi. MIT License, the same owner and licence as this repository (no further notice needed).
+
 This repository also contains third-party material under other licences:
 
 components/kakijun/index.js, the JSON between /* BEGIN OFL-1.1 data … */ and /* END OFL-1.1 data */ (and its source,

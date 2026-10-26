@@ -1,5 +1,6 @@
 ---
 name: m-menu
+version: 1.13.0
 series: common
 summary: スライドへのリンクの札を格子に並べる（目次・単元の選び方）。札はふつうの <a href="#<スライドの id>">、行ったスライドの札に「見た」の印
 steps: ceil(札の数 / per-step)（既定の per-step="0" なら 0：初めから全部）

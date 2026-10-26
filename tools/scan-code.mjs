@@ -19,6 +19,9 @@ const ROOT = path.dirname(path.dirname(fileURLToPath(import.meta.url)));
 // HTML sinks that are allowed, with the reason: file → {sink: count}
 export const ALLOW = {
   'components/menu/index.js': { insertAdjacentHTML: 1 },   // the constant SVG icons CHECK and EXT (no author data)
+  // MotionElement reads the static declarations of the part's class (steps, props), variant its static variants (spec §8.4
+  // Declarations in the component); a value is read, nothing is called. Any other use of .constructor stays refused
+  'components/base/index.js': { 'constructor.steps': 1, 'constructor.props': 1, 'constructor.variants': 1 },
 };
 const NAMES = new Set(['eval', 'Function', 'constructor', 'import']);
 const TIMERS = new Set(['setTimeout', 'setInterval', 'setImmediate', 'execScript']);
@@ -78,6 +81,10 @@ export function scanText(src, rel) {
   for (let j = 0; j < t.length; j++) {
     const x = t[j], prev = t[j - 1], next = t[j + 1];
     const at = `${rel}:${x.line}`;
+    // a read of a static field of the element's own class (this.constructor.props): counted, and allowed only where ALLOW lists it
+    const field = t[j + 2], after = t[j + 3];
+    if (x.k === 'id' && x.s === 'constructor' && prev && prev.s === '.' && next && next.s === '.' && field && field.k === 'id' && field.s !== 'constructor'
+      && !(after && (after.s === '(' || after.s === '[' || after.s === '.'))) { const key = 'constructor.' + field.s; sinks[key] = (sinks[key] || 0) + 1; continue; }
     if (x.k === 'id' && NAMES.has(x.s)) {
       // a property named in an object literal or a class body (x.import, { eval: 1 }) is still refused: keep the rule simple
       found.push(`${at}: ${x.s === 'constructor' ? '.constructor (reaches Function)' : x.s === 'import' ? 'import (dynamic import or module code)' : x.s}`);

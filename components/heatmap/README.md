@@ -1,5 +1,6 @@
 ---
 name: m-heatmap
+version: 1.13.0
 series: academic
 summary: ヒートマップ。値で塗ったセルの格子（混同行列・相関行列・注意の重み）
 steps: rows：行を 1 つずつ（normalize="row" の既定）。whole：全体を 1 段階。cells：全体、それから強調を 1 つずつ（highlight があるときの既定）

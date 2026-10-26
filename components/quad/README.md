@@ -1,5 +1,6 @@
 ---
 name: m-quad
+version: 1.13.0
 series: common
 summary: 2 軸の位置づけ（ポジショニングマップ・SWOT 風の 4 象限）に、点を段階ごとに 1 つずつ置く
 steps: 点の step と to.step の最大（既定は点 1 つ = 1 段階）

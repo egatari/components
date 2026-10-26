@@ -15,6 +15,10 @@
 //       tools/test-kakijun.mjs: m-kakijun's embedded stroke data equals data/kana/kana.json and its font block is the Egatari Kana subset;
 //       every one of the 166 characters shows ≥ 99 % of its glyph in the final state; small kana inside their quarter in both writings)
 //   7. studio           fetch Egatari Studio at the pinned commit and overlay these components (tools/studio.mjs)
+//      registry       the test-only parts registry (tools/registry-shim.js, spec §6.1): dependency order, forward references refused,
+//                     two versions of base side by side, exact versions, a factory throw and its fallback; base and expr load through it;
+//                     a 2.0 element part driven by the pinned Studio's DECK through the shim's ctx bridge (tools/test-registry.mjs)
+//      base           components/base gives the same output as the pinned Studio's DECK helpers and tools/variant.js (tools/test-base.mjs)
 //      studio-check     Studio's own checker (kit/check.mjs) on each demo.html: no error; warnings other than R-narr-steps listed (tools/test-studio-check.mjs)
 //   8. components       each demo.html: builds, no console errors, screenshots per step, determinism, text ≥ 24px, overlap, outside the slide (tools/test-components.mjs)
 //   9. kanbun-num      m-kanbun's two-digit reading-order numbers stay inside their box and off the character boxes; one-digit numbers unchanged (tools/test-kanbun-num.mjs)
@@ -74,6 +78,8 @@ const TESTS = [
   ['test-codetree', ['tools/test-codetree.mjs']],
   ['test-kokugo', ['tools/test-kokugo.mjs']],
   ['studio', ['tools/studio.mjs']],
+  ['test-registry', ['tools/test-registry.mjs', path.join(tmp, 'registry')]],
+  ['test-base', ['tools/test-base.mjs', path.join(tmp, 'base')]],
   ['test-studio-check', ['tools/test-studio-check.mjs']],
   ['test-components', ['tools/test-components.mjs', '--shots', path.join(tmp, 'shots')]],
   ['test-kakijun', ['tools/test-kakijun.mjs', path.join(tmp, 'kakijun')]],

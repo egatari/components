@@ -1,6 +1,7 @@
 // The layout of each component (no browser):
 //   components/<name>/index.js     defines <m-<name>> (DECK.define('m-<name>', …))
-//   components/<name>/README.md    frontmatter: name (m-<name>), series, summary, steps, purposes (ids in purposes.json), props,
+//   components/<name>/README.md    frontmatter: name (m-<name>), version (the part's own version X.Y.Z, spec §6.1; 1.x parts: 1.13.0),
+//                                  series, summary, steps, purposes (ids in purposes.json), props,
 //                                  license (optional: an SPDX expression MIT AND <id>, for a part carrying data under another licence),
 //                                  and variants when index.js declares `static variants` (the same names in the same order)
 //   components/<name>/demo.html    a 1–2 slide sample deck (required for new components; m-sweep predates the rule)
@@ -12,11 +13,15 @@
 // It fails when such a part lacks `static interactive = true`, and when viewerInput is set without interactive.
 // Answers under preview (docs/conventions.md §1.2, spec §8.4): a part whose later steps are an answer declares
 // `static preview = "none";` (the only value) and shows nothing ahead; tools/release.mjs writes it to the manifest.
+// 2.0 parts (components 2.0, spec §6.1) call egatariParts.define({name, version, requires?, element?}, factory): the meta is
+// checked (exact versions, no DECK / import / require; lintMeta), and a library part (no element: base, expr) has its own
+// README frontmatter (name = folder, version = the meta's, kind: library, summary, requires; lintLibrary) and no demo.html.
 // <name> is a registry name: ^[a-z][a-z0-9-]{0,63}$ (Egatari spec §6). Only regular files; no symbolic links, no out/ in git.
 //   node tools/lint.mjs
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { partMeta, EXACT } from './parts.mjs';
 
 export const NAME_RE = /^[a-z][a-z0-9-]{0,63}$/;
 export const SERIES = ['common', 'academic', 'business', 'kokugo', 'info', 'social', 'music', 'english'];
@@ -59,6 +64,51 @@ export function frontmatter(text) {
   return o;
 }
 
+// A 2.0 part (one that calls egatariParts.define, spec §6.1): its meta, and no DECK, import or require
+const strip = (js) => js.replace(/\/\*[\s\S]*?\*\//g, '').replace(/(^|[^:"'\\])\/\/.*$/gm, '$1');
+export function lintMeta(name, js, meta) {
+  const errs = [], at = `components/${name}/index.js`;
+  const keys = Object.keys(meta);
+  for (const k of keys) if (!['name', 'version', 'requires', 'element'].includes(k)) errs.push(`${at}: define meta has ${k} (only name, version, requires, element)`);
+  if (!NAME_RE.test(meta.name || '')) errs.push(`${at}: define meta name ${JSON.stringify(meta.name)} is not a registry name`);
+  if (!EXACT.test(meta.version || '')) errs.push(`${at}: define meta version ${JSON.stringify(meta.version)} is not an exact version X.Y.Z`);
+  const req = meta.requires === undefined ? {} : meta.requires;
+  if (!req || typeof req !== 'object' || Array.isArray(req)) errs.push(`${at}: define meta requires is not an object {name: version}`);
+  else for (const [n, v] of Object.entries(req)) {
+    if (!NAME_RE.test(n)) errs.push(`${at}: requires ${n}: not a registry name`);
+    if (typeof v !== 'string' || !EXACT.test(v)) errs.push(`${at}: requires ${n}: ${JSON.stringify(v)} is not an exact version (ranges live only in a library's sources, spec §6.1)`);
+  }
+  if ('element' in meta && !/^[a-z][a-z0-9]*-[a-z0-9-]*$/.test(meta.element || '')) errs.push(`${at}: define meta element ${JSON.stringify(meta.element)} is not a custom element name`);
+  const code = strip(js);
+  if (/\bDECK\b/.test(code)) errs.push(`${at}: a 2.0 part must not use DECK (spec §6.1: no globals of the player; use ctx and base)`);
+  if (/\brequire\s*\(/.test(code) || /(^|[^.\w$])import\b/m.test(code)) errs.push(`${at}: a 2.0 part must not import or require (spec §6.1)`);
+  if ((code.match(/egatariParts\.define\s*\(/g) || []).length !== 1) errs.push(`${at}: a part calls egatariParts.define exactly once`);
+  return errs;
+}
+// A library part (2.0, no element): README frontmatter name (= the folder), version (= the meta's), kind: library, summary,
+// requires (only when the meta requires something: "name@version, …" in the same order); no demo.html, series or purposes
+export function lintLibrary(name, dir, meta) {
+  const errs = [];
+  if (meta.name !== name) errs.push(`components/${name}/index.js: define meta name ${meta.name} differs from the folder`);
+  const readme = path.join(dir, 'README.md');
+  if (!fs.existsSync(readme)) return [...errs, `components/${name}: no README.md`];
+  const f = frontmatter(fs.readFileSync(readme, 'utf8'));
+  if (!f) return [...errs, `components/${name}/README.md: no frontmatter`];
+  for (const k of ['name', 'version', 'kind', 'summary']) if (!(k in f)) errs.push(`components/${name}/README.md: frontmatter has no ${k}`);
+  if (f.name && f.name !== name) errs.push(`components/${name}/README.md: name is ${f.name}, expected ${name} (a library part has no tag)`);
+  if (f.kind && f.kind !== 'library') errs.push(`components/${name}/README.md: kind is ${f.kind}, expected library`);
+  if (f.version && f.version !== meta.version) errs.push(`components/${name}/README.md: version ${f.version} differs from the define meta's ${meta.version}`);
+  const req = Object.entries(meta.requires || {}).map(([n, v]) => `${n}@${v}`).join(', ');
+  if ((f.requires || '') !== req) errs.push(`components/${name}/README.md: requires "${f.requires || ''}" differs from the define meta's "${req}"`);
+  for (const k of ['series', 'purposes', 'steps', 'props', 'variants']) if (k in f) errs.push(`components/${name}/README.md: ${k} is for element parts, not a library part`);
+  if (fs.existsSync(path.join(dir, 'demo.html'))) errs.push(`components/${name}: a library part has no demo.html (it is tested by tools/test-*.mjs)`);
+  if ('license' in f) {
+    const ids = f.license.split(/\s+AND\s+/);
+    if (!ids.every((x) => LICENSES[x]) || !ids.includes('MIT')) errs.push(`components/${name}/README.md: license "${f.license}" is not MIT AND <one of ${Object.keys(LICENSES).filter((x) => x !== 'MIT').join(', ')}>`);
+  }
+  return errs;
+}
+
 export function lint(root) {
   const errs = [];
   const base = path.join(root, 'components');
@@ -92,13 +142,20 @@ export function lint(root) {
     walk('');
     if (!fs.existsSync(path.join(dir, 'index.js'))) { errs.push(`components/${name}: no index.js`); continue; }
     const js = fs.readFileSync(path.join(dir, 'index.js'), 'utf8');
+    let meta = null;
+    try { meta = partMeta(js); } catch (e) { errs.push(`components/${name}/index.js: ${e.message}`); continue; }
+    if (meta) errs.push(...lintMeta(name, js, meta));
+    if (meta && !meta.element) { errs.push(...lintLibrary(name, dir, meta)); continue; }
     if (!new RegExp(`['"]m-${name}['"]`).test(js)) errs.push(`components/${name}/index.js: does not define <m-${name}>`);
     if (!fs.existsSync(path.join(dir, 'demo.html')) && !NO_DEMO.has(name)) errs.push(`components/${name}: no demo.html`);
     const readme = path.join(dir, 'README.md');
     if (!fs.existsSync(readme)) { errs.push(`components/${name}: no README.md`); continue; }
     const f = frontmatter(fs.readFileSync(readme, 'utf8'));
     if (!f) { errs.push(`components/${name}/README.md: no frontmatter`); continue; }
-    for (const k of ['name', 'series', 'summary', 'steps', 'props']) if (!(k in f)) errs.push(`components/${name}/README.md: frontmatter has no ${k}`);
+    for (const k of ['name', 'version', 'series', 'summary', 'steps', 'props']) if (!(k in f)) errs.push(`components/${name}/README.md: frontmatter has no ${k}`);
+    if ('version' in f && !EXACT.test(f.version)) errs.push(`components/${name}/README.md: version ${f.version} is not X.Y.Z (the part's own version)`);
+    if (meta && f.version !== meta.version) errs.push(`components/${name}/README.md: version ${f.version} differs from the define meta's ${meta.version}`);
+    if ('kind' in f) errs.push(`components/${name}/README.md: kind is only for library parts (kind: library, no element)`);
     if (f.name && f.name !== `m-${name}`) errs.push(`components/${name}/README.md: name is ${f.name}, expected m-${name}`);
     if (f.series && !SERIES.includes(f.series)) errs.push(`components/${name}/README.md: series ${f.series} is not one of ${SERIES.join(', ')}`);
     // license (optional): an SPDX expression for a part not wholly under the repository's MIT licence, e.g. MIT AND OFL-1.1.

@@ -18,6 +18,7 @@ import { execFileSync } from 'node:child_process';
 import { createHash } from 'node:crypto';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 import { normalizeEol, toCrlf } from './identity.mjs';
+import { isLibraryDir } from './parts.mjs';
 
 export const ROOT = path.dirname(path.dirname(fileURLToPath(import.meta.url)));
 export const PIN = JSON.parse(fs.readFileSync(path.join(ROOT, 'tools', 'studio.json'), 'utf8'));
@@ -25,12 +26,17 @@ export const TEST_VERSION = '0.0.0-test';
 
 const run = (cmd, args, cwd) => execFileSync(cmd, args, { cwd, stdio: ['ignore', 'pipe', 'inherit'], shell: process.platform === 'win32' && cmd === 'npm' }).toString().trim();
 
-// The components of this repository: directories under components/ with an index.js
-export function componentNames() {
+// The parts of this repository: directories under components/ with an index.js
+export function partNames() {
   return fs.readdirSync(path.join(ROOT, 'components'), { withFileTypes: true })
     .filter((d) => d.isDirectory() && fs.existsSync(path.join(ROOT, 'components', d.name, 'index.js')))
     .map((d) => d.name).sort();
 }
+// The components (element parts, <m-<name>>): every part except the 2.0 library parts (tools/parts.mjs), which define no
+// element and are not overlaid into Studio (the pinned Studio has no registry; tools/registry-shim.js stands in for tests)
+export function componentNames() { return partNames().filter((n) => !isLibraryDir(path.join(ROOT, 'components', n))); }
+// The 2.0 library parts (base, expr, …)
+export function libraryNames() { return partNames().filter((n) => isLibraryDir(path.join(ROOT, 'components', n))); }
 
 // Files of a component that are part of it (everything except out/ and dot files)
 export function componentFiles(name) {

@@ -4,10 +4,13 @@
 //   dist/egatari-components-v1.0.0.tar.gz   LICENSE and components/<name>/… as <name>/… (every file of each component except out/)
 //   dist/manifest.json                       {name, version, tag, repository, license, tarball: {file, sha256, bytes},
 //                                             purposes: [{id, ja, en, steps: {ja, en}, reserved?}] (purposes.json's list),
-//                                             components: {<name>: {tag, series, purposes, variants, interactive?, viewerInput?, clock? (true when index.js declares
+//                                             components: {<name>: {tag, version (the part's own version, README frontmatter version:), series, purposes, variants, interactive?, viewerInput?, clock? (true when index.js declares
 //                                               static interactive / viewerInput / clock = true; left out otherwise), preview? ("none" when index.js
 //                                               declares static preview = "none": the part shows nothing ahead under preview), license (an SPDX expression,
-//                                               only for a part whose README frontmatter has license: other than the repository's MIT), sha256 (of index.js), files: {<path>: sha256}}},
+//                                               only for a part whose README frontmatter has license: other than the repository's MIT), sha256 (of index.js), files: {<path>: sha256}}
+//                                               and, for a 2.0 library part (egatariParts.define without element: base, expr),
+//                                               {kind: "library", version, requires: {<name>: <exact version>}, license?, sha256, files}},
+//                                             (version is the part's; the manifest's own version is the catalogue version, package.json)
 //                                             yanked: {<version>: {replacement, reason, date}}  (from yanked.json; Egatari spec §6: a withdrawn release stays available),
 //                                             files: {<path in the tarball>: sha256}}
 // Per-file and component sha256 values are identity hashes (line endings normalized for text files, Egatari spec §6); the tarball's is byte-exact.
@@ -18,7 +21,8 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { createHash } from 'node:crypto';
 import { fileURLToPath } from 'node:url';
-import { ROOT, componentNames, componentFiles } from './studio.mjs';
+import { ROOT, partNames, componentFiles } from './studio.mjs';
+import { partMeta } from './parts.mjs';
 import { writeTarGz, readTarGz } from './tar.mjs';
 import { identityBytes, normalizeEol } from './identity.mjs';
 import { frontmatter, lint, flags } from './lint.mjs';
@@ -52,17 +56,24 @@ export function release(version) {
   if (errs.length) throw new Error('lint:\n  ' + errs.join('\n  '));
   const entries = [['LICENSE', fs.readFileSync(path.join(ROOT, 'LICENSE'))]];
   const components = {};
-  for (const name of componentNames()) {
+  for (const name of partNames()) {
     const files = {};
     for (const f of componentFiles(name)) {
       const b = fs.readFileSync(path.join(ROOT, 'components', name, f));
       entries.push([`${name}/${f}`, b]);
       files[f] = idSha(f, b);
     }
-    const fl = flags(fs.readFileSync(path.join(ROOT, 'components', name, 'index.js'), 'utf8'));
+    const js = fs.readFileSync(path.join(ROOT, 'components', name, 'index.js'), 'utf8');
+    const fl = flags(js), meta = partMeta(js);
     const fm = frontmatter(fs.readFileSync(path.join(ROOT, 'components', name, 'README.md'), 'utf8'));
     const list = (s) => (s ? s.split(',').map((x) => x.trim()).filter(Boolean) : []);
-    components[name] = { tag: `m-${name}`, series: fm.series, ...(fm.license ? { license: fm.license } : {}), purposes: list(fm.purposes), variants: list(fm.variants), ...(fl.interactive ? { interactive: true } : {}), ...(fl.viewerInput ? { viewerInput: true } : {}), ...(fl.clock ? { clock: true } : {}), ...(fl.group ? { group: fl.group } : {}), ...(fl.preview ? { preview: fl.preview } : {}), ...(fl.tile ? { tile: fl.tile } : {}), sha256: sha(normalizeEol(fs.readFileSync(path.join(ROOT, 'components', name, 'index.js')))), files };
+    const code = sha(normalizeEol(fs.readFileSync(path.join(ROOT, 'components', name, 'index.js'))));
+    if (meta && !meta.element) {
+      // a 2.0 library part (base, expr): no tag, series or purposes; what it requires, with exact versions
+      components[name] = { kind: 'library', version: fm.version, requires: { ...(meta.requires || {}) }, ...(fm.license ? { license: fm.license } : {}), sha256: code, files };
+      continue;
+    }
+    components[name] = { tag: `m-${name}`, version: fm.version, ...(meta ? { requires: { ...(meta.requires || {}) } } : {}), series: fm.series, ...(fm.license ? { license: fm.license } : {}), purposes: list(fm.purposes), variants: list(fm.variants), ...(fl.interactive ? { interactive: true } : {}), ...(fl.viewerInput ? { viewerInput: true } : {}), ...(fl.clock ? { clock: true } : {}), ...(fl.group ? { group: fl.group } : {}), ...(fl.preview ? { preview: fl.preview } : {}), ...(fl.tile ? { tile: fl.tile } : {}), sha256: code, files };
   }
   entries.sort((a, b) => (a[0] < b[0] ? -1 : a[0] > b[0] ? 1 : 0));
   const gz = writeTarGz(entries);

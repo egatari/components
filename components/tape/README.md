@@ -1,5 +1,6 @@
 ---
 name: m-tape
+version: 1.13.0
 series: academic
 summary: テープ図・線分図。全体や部分を括弧で括り、わからない量は □ か ?。行から行へ「2 倍」の矢印
 steps: steps（既定）：行 → 括弧 → 倍の矢印を 1 つずつ。rows：行 1 つ = 1 段階。whole：全部で 1 段階

@@ -1,5 +1,6 @@
 ---
 name: m-predict
+version: 1.13.0
 series: common
 summary: 予想してから答えを開く。選択肢ごとの人数を棒で見せ、答えの段階で正解に枠
 steps: 0 問いと選択肢、1 人数の棒、answer-step（既定 2）で答え
