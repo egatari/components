@@ -3,7 +3,7 @@ Copyright (c) 2026 Gendo Kumoi. Licensed under the MIT License (see LICENSE).
 
 This repository also contains third-party material under other licences:
 
-components/kakijun/index.js, the block between "BEGIN kakijun-strokes" and "END kakijun-strokes" (and its source,
+components/kakijun/index.js, the JSON between /* BEGIN OFL-1.1 data … */ and /* END OFL-1.1 data */ (and its source,
 data/kana/strokes.ofl.json) — kana stroke shapes
   Derived from strokesvg (https://github.com/zhengkyl/strokesvg), whose kana SVGs are derived from the Klee One font.
   Copyright 2020 The Klee Project Authors (https://github.com/fontworks-fonts/Klee)

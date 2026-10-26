@@ -1,14 +1,16 @@
 // m-kakijun, built with the pinned Egatari Studio:
 //   1. the data in components/kakijun/index.js equals the data files: kakijun-data (MIT) = data/kana/kana.json (count, ends,
-//      place) with each stroke's inked length; kakijun-strokes (OFL) = data/kana/strokes.ofl.json, verbatim, its "_license"
-//      first; the licence files are in the part's folder (tools/kana-embed.mjs --check)
+//      place) with each stroke's inked length; between /* BEGIN OFL-1.1 data … */ and /* END OFL-1.1 data */ only the JSON of
+//      data/kana/strokes.ofl.json, verbatim, its "_license" first; the licence files are in the part's folder; manifest.json
+//      gives the part the licence MIT AND OFL-1.1 (tools/kana-embed.mjs --check)
 //   2. the final state of every one of the 166 characters covers 100 % of its outlines, and nothing outside them
 //      (target: every outline filled; ink = pixels darker than the middle grey; 1 px of antialiasing allowed)
 //   3. no bleed while drawing: in the middle of stroke j (j = 1 and the middle stroke), the ink lies inside the outlines of
 //      strokes 1..j
 //   4. small kana: the ink lies inside the lower-left quarter of the box in horizontal writing and the upper-right quarter
 //      in vertical writing (writing="tate")
-//   5. steps: one per character, or one per stroke with per="stroke"; a character without data warns and is drawn plainly;
+//   5. small kana: their numbers and ending labels lie inside their own square, outside the kana's quarter
+//   6. steps: one per character, or one per stroke with per="stroke"; a character without data warns and is drawn plainly;
 //      the accessible name and the readable layer are the real kana; the drawing is aria-hidden
 //   node tools/test-kakijun.mjs [work folder]
 import fs from 'node:fs';
@@ -16,7 +18,8 @@ import os from 'node:os';
 import path from 'node:path';
 import { spawnSync } from 'node:child_process';
 import { ROOT, studio } from './studio.mjs';
-import { readEmbedded, inkLength, LICENSE_FILES } from './kana-embed.mjs';
+import { readEmbedded, inkLength, LICENSE_FILES, OFL_MARKERS } from './kana-embed.mjs';
+import { release } from './release.mjs';
 
 const work = path.resolve(process.argv[2] || fs.mkdtempSync(path.join(os.tmpdir(), 'test-kakijun-')));
 fs.mkdirSync(work, { recursive: true });
@@ -36,8 +39,12 @@ const diff = CHARS.filter((ch) => {
 });
 ok(!diff.length && Object.keys(emb.kana).length === CHARS.length, `kakijun-data equals kana.json for all ${CHARS.length} characters, stroke counts equal the shapes'` + (diff.length ? ' (differs: ' + diff.join('') + ')' : ''));
 const deep = (o) => JSON.stringify(o, Object.keys(o).sort());
-ok(same(Object.keys(emb.strokes), Object.keys(ofl)) && Object.keys(ofl).every((k) => same(emb.strokes[k], ofl[k])), 'kakijun-strokes equals data/kana/strokes.ofl.json (same keys, same values)');
-ok(/\nvar STROKES = \{"_license": \{/.test(emb.strokesBlock) && same(emb.strokes._license, ofl._license) && /OFL 1\.1, see OFL\.txt/.test(emb.strokesBlock.split('\n')[0]), 'the OFL block is marked "OFL 1.1, see OFL.txt" and starts with the "_license" object, verbatim');
+ok(same(Object.keys(emb.strokes), Object.keys(ofl)) && Object.keys(ofl).every((k) => same(emb.strokes[k], ofl[k])), 'the OFL-1.1 data equals data/kana/strokes.ofl.json (same keys, same values)');
+const js = fs.readFileSync(path.join(ROOT, 'components', 'kakijun', 'index.js'), 'utf8');
+const count = (t) => js.split(t).length - 1;
+ok(count(OFL_MARKERS.begin) === 1 && count(OFL_MARKERS.end) === 1 && emb.inner !== null && /^\s*\{"_license": \{/.test(emb.inner) && /\}\s*$/.test(emb.inner) && same(emb.strokes._license, ofl._license),
+  'index.js has /* BEGIN OFL-1.1 data … */ and /* END OFL-1.1 data */ once each; everything between them is the shapes JSON, "_license" first and verbatim');
+ok(release(JSON.parse(fs.readFileSync(path.join(ROOT, 'package.json'), 'utf8')).version).manifest.components.kakijun.license === 'MIT AND OFL-1.1', 'manifest.json: components.kakijun.license is "MIT AND OFL-1.1"');
 ok(LICENSE_FILES.every((f) => fs.existsSync(path.join(ROOT, 'components', 'kakijun', f))) && !fs.readdirSync(path.join(ROOT, 'components', 'kakijun')).some((f) => /klee/i.test(f)), `the part's folder has ${LICENSE_FILES.join(', ')}, and no file name with "Klee"`);
 const ke = spawnSync(process.execPath, [path.join(ROOT, 'tools', 'kana-embed.mjs'), '--check'], { encoding: 'utf8' });
 ok(ke.status === 0, 'tools/kana-embed.mjs --check: ' + (ke.stdout + ke.stderr).trim().split('\n').join(' | '));
@@ -55,6 +62,12 @@ for (const ch of SMALL) add('yoko', ch, 'grid="none" ghost="off" nums="off"');
 for (const ch of SMALL) add('tate', ch, 'grid="none" ghost="off" nums="off" writing="tate"');
 slides.push({ kind: 'steps', html: '<section class="slide noconcl"><h2>steps</h2><div class="body"><m-kakijun id="k-char" text="あガ" style="height:300px"></m-kakijun></div></section>' });
 slides.push({ kind: 'steps', html: '<section class="slide noconcl"><h2>steps</h2><div class="body"><m-kakijun id="k-stroke" text="あガ" per="stroke" ends="on" variant="pen" style="height:300px"></m-kakijun></div></section>' });
+// small kana with labels: tate one column (the demo's size) and yoko
+// (the demo's tate column at size 120 with numbers; numbers and endings at 200 in tate and 160 in yoko; a crowded box warns)
+slides.push({ kind: 'labels', html: '<section class="slide noconcl"><h2>labels</h2><div class="body"><m-kakijun class="k-labels" text="きょうしゃっ" writing="tate" size="120" style="height:440px"></m-kakijun></div></section>' });
+slides.push({ kind: 'labels', html: '<section class="slide noconcl"><h2>labels</h2><div class="body"><m-kakijun class="k-labels" text="きょしゃっ" writing="tate" size="200" ends="on" style="height:500px"></m-kakijun></div></section>' });
+slides.push({ kind: 'labels', html: '<section class="slide noconcl"><h2>labels</h2><div class="body"><m-kakijun class="k-labels" text="きょうしゃっ" ends="on" size="160" style="height:300px"></m-kakijun></div></section>' });
+slides.push({ kind: 'crowd', html: '<section class="slide noconcl"><h2>crowd</h2><div class="body"><m-kakijun text="しゃ" writing="tate" size="120" ends="on" style="height:440px"></m-kakijun></div></section>' });
 slides.push({ kind: 'unknown', html: '<section class="slide noconcl"><h2>unknown</h2><div class="body"><m-kakijun id="k-unknown" text="漢字あ" style="height:300px"></m-kakijun></div></section>' });
 const src = path.join(work, 'kakijun.html'), out = path.join(work, 'kakijun.out.html');
 fs.writeFileSync(src, `<!DOCTYPE html>\n<html lang="ja" data-theme="default">\n<head>\n<meta charset="utf-8">\n<title>m-kakijun test</title>\n</head>\n<body>\n<div id="stage">\n${slides.map((s) => s.html).join('\n')}\n</div>\n</body>\n</html>\n`);
@@ -148,6 +161,26 @@ try {
     const r = place.filter((x) => x[1] === mode), bad = r.filter((x) => !x[2]);
     ok(r.length === SMALL.length && !bad.length, `${mode}: all ${r.length} small kana inside the ${mode === 'yoko' ? 'lower-left' : 'upper-right'} quarter` + (bad.length ? ': ' + bad.map((x) => x[0] + ' ' + JSON.stringify(x[3])).join(', ') : ''));
   }
+  // ---- small kana: their numbers and ending labels stay inside their own square, out of the kana's quarter ----
+  const lab = await page.evaluate(() => {
+    const out = [];
+    document.querySelectorAll('m-kakijun.k-labels').forEach((comp) => {
+      const tate = comp.getAttribute('writing') === 'tate', R = comp.getBoundingClientRect();
+      comp.cells.forEach((c, ci) => {
+        if (!c.small) return;
+        const x = R.left + c.x, y = R.top + c.y, b = c.size, h = b / 2, Q = tate ? [x + h, y, x + b, y + h] : [x, y + h, x + h, y + b];
+        comp.querySelectorAll(`[data-c="${ci}"]`).forEach((g) => {
+          const e = g.querySelector('circle') || g.querySelector('text'), r = e.getBoundingClientRect(), cx = (r.left + r.right) / 2, cy = (r.top + r.bottom) / 2;
+          const inBox = r.left >= x - 1 && r.top >= y - 1 && r.right <= x + b + 1 && r.bottom <= y + b + 1;
+          const inQ = cx > Q[0] && cx < Q[2] && cy > Q[1] && cy < Q[3];
+          out.push({ ch: c.ch, tate, label: g.textContent, ok: inBox && !inQ });
+        });
+      });
+    });
+    return out;
+  });
+  const badLab = lab.filter((x) => !x.ok);
+  ok(lab.length >= 20 && !badLab.length, `small kana: all ${lab.length} numbers and ending labels inside their own square, toward the empty side (tate lower-left, yoko upper-right)` + (badLab.length ? ': ' + badLab.map((x) => `${x.ch} ${x.tate ? 'tate' : 'yoko'} "${x.label}"`).join(', ') : ''));
   // ---- 5. steps, unknown characters, accessibility ----
   const st = await page.evaluate(() => {
     const g = (id) => document.getElementById(id), u = g('k-unknown');
@@ -158,6 +191,7 @@ try {
   ok(st.char === 2, `per="char": one step per character (あガ → ${st.char})`);
   ok(st.stroke === 7, `per="stroke": one step per stroke (あ 3 + ガ 4 → ${st.stroke})`);
   ok(st.unknown === 3 && st.plain.includes('漢') && st.plain.includes('字'), `a character without data is one step, drawn as plain text (${st.unknown} steps)`);
+  ok(warnings.some((w) => /labels of the small ゃ do not all fit/.test(w)), 'a small kana whose labels do not fit beside it (ends="on" in a 120 px box) gives a console.warn');
   ok(warnings.some((w) => /no stroke data for "漢"/.test(w)) && warnings.some((w) => /no stroke data for "字"/.test(w)), 'a character without data gives a console.warn');
   ok(/あ 3画/.test(st.srChar) && /ガ 4画/.test(st.srChar), `readable layer has the characters and stroke counts ("${st.srChar}")`);
   ok(st.label === 'あガ（書き順）' && st.hidden, `the accessible name is the real kana ("${st.label}"), the drawing is aria-hidden`);

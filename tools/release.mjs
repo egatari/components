@@ -5,7 +5,8 @@
 //   dist/manifest.json                       {name, version, tag, repository, license, tarball: {file, sha256, bytes},
 //                                             purposes: [{id, ja, en, steps: {ja, en}, reserved?}] (purposes.json's list),
 //                                             components: {<name>: {tag, series, purposes, variants, interactive?, viewerInput?, clock? (true when index.js declares
-//                                               static interactive / viewerInput / clock = true; left out otherwise), sha256 (of index.js), files: {<path>: sha256}}},
+//                                               static interactive / viewerInput / clock = true; left out otherwise), license (an SPDX expression,
+//                                               only for a part whose README frontmatter has license: other than the repository's MIT), sha256 (of index.js), files: {<path>: sha256}}},
 //                                             yanked: {<version>: {replacement, reason, date}}  (from yanked.json; Egatari spec §6: a withdrawn release stays available),
 //                                             files: {<path in the tarball>: sha256}}
 // Per-file and component sha256 values are identity hashes (line endings normalized for text files, Egatari spec §6); the tarball's is byte-exact.
@@ -60,7 +61,7 @@ export function release(version) {
     const fl = flags(fs.readFileSync(path.join(ROOT, 'components', name, 'index.js'), 'utf8'));
     const fm = frontmatter(fs.readFileSync(path.join(ROOT, 'components', name, 'README.md'), 'utf8'));
     const list = (s) => (s ? s.split(',').map((x) => x.trim()).filter(Boolean) : []);
-    components[name] = { tag: `m-${name}`, series: fm.series, purposes: list(fm.purposes), variants: list(fm.variants), ...(fl.interactive ? { interactive: true } : {}), ...(fl.viewerInput ? { viewerInput: true } : {}), ...(fl.clock ? { clock: true } : {}), ...(fl.group ? { group: fl.group } : {}), ...(fl.tile ? { tile: fl.tile } : {}), sha256: sha(normalizeEol(fs.readFileSync(path.join(ROOT, 'components', name, 'index.js')))), files };
+    components[name] = { tag: `m-${name}`, series: fm.series, ...(fm.license ? { license: fm.license } : {}), purposes: list(fm.purposes), variants: list(fm.variants), ...(fl.interactive ? { interactive: true } : {}), ...(fl.viewerInput ? { viewerInput: true } : {}), ...(fl.clock ? { clock: true } : {}), ...(fl.group ? { group: fl.group } : {}), ...(fl.tile ? { tile: fl.tile } : {}), sha256: sha(normalizeEol(fs.readFileSync(path.join(ROOT, 'components', name, 'index.js')))), files };
   }
   entries.sort((a, b) => (a[0] < b[0] ? -1 : a[0] > b[0] ? 1 : 0));
   const gz = writeTarGz(entries);

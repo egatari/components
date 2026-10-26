@@ -1,6 +1,7 @@
 // The layout of each component (no browser):
 //   components/<name>/index.js     defines <m-<name>> (DECK.define('m-<name>', …))
 //   components/<name>/README.md    frontmatter: name (m-<name>), series, summary, steps, purposes (ids in purposes.json), props,
+//                                  license (optional: an SPDX expression MIT AND <id>, for a part carrying data under another licence),
 //                                  and variants when index.js declares `static variants` (the same names in the same order)
 //   components/<name>/demo.html    a 1–2 slide sample deck (required for new components; m-sweep predates the rule)
 // Interactive parts (操作できるパーツ, docs/conventions.md §6): index.js declares `static interactive = true;` when the viewer can
@@ -35,6 +36,8 @@ export function flags(js) {
   return { interactive: /static\s+interactive\s*=\s*true\s*;/.test(code), viewerInput: /static\s+viewerInput\s*=\s*true\s*;/.test(code), clock: /static\s+clock\s*=\s*true\s*;/.test(code), operable,
     group: g ? g[1] : null, tile, tileError, tileWritten: !!tm || /static\s+tile\s*=/.test(code) };
 }
+// SPDX ids a part may name in its README frontmatter license: (with the licence text it must carry)
+export const LICENSES = { MIT: {}, 'OFL-1.1': { file: 'OFL.txt' } };
 export const list = (s) => (s ? s.split(',').map((x) => x.trim()).filter(Boolean) : []);
 // purposes.json: id → entry
 export function purposeIds(root) {
@@ -94,6 +97,13 @@ export function lint(root) {
     for (const k of ['name', 'series', 'summary', 'steps', 'props']) if (!(k in f)) errs.push(`components/${name}/README.md: frontmatter has no ${k}`);
     if (f.name && f.name !== `m-${name}`) errs.push(`components/${name}/README.md: name is ${f.name}, expected m-${name}`);
     if (f.series && !SERIES.includes(f.series)) errs.push(`components/${name}/README.md: series ${f.series} is not one of ${SERIES.join(', ')}`);
+    // license (optional): an SPDX expression for a part not wholly under the repository's MIT licence, e.g. MIT AND OFL-1.1.
+    // It must name MIT (the code) and only licences from LICENSES; each other licence needs its text in the part's folder
+    if ('license' in f) {
+      const ids = f.license.split(/\s+AND\s+/);
+      if (!ids.every((x) => LICENSES[x]) || !ids.includes('MIT')) errs.push(`components/${name}/README.md: license "${f.license}" is not MIT AND <one of ${Object.keys(LICENSES).filter((x) => x !== 'MIT').join(', ')}>`);
+      for (const x of ids) if (LICENSES[x] && LICENSES[x].file && !fs.existsSync(path.join(dir, LICENSES[x].file))) errs.push(`components/${name}: license ${x} needs ${LICENSES[x].file} in the part's folder`);
+    }
     const ids = purposeIds(root);
     if (!f.purposes) errs.push(`components/${name}/README.md: frontmatter has no purposes`);
     else for (const p of list(f.purposes)) {
