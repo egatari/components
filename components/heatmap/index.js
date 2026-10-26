@@ -75,17 +75,12 @@ var CALC = (function(){
   // color-mix(in oklab, tone p, bg) の色（oklab での直線の補間）
   function mix(tone, bg, p){ var a = oklab(tone), b = oklab(bg); return fromOklab([0, 1, 2].map(function(i){ return b[i] + (a[i] - b[i]) * p; })); }
   var MIN = 4.6;   // 4.5:1 に、ブラウザの丸めの分の余裕
-  // セルの色と字の色：割合 p（0〜1）の色で、--fg と --bg のどちらかが MIN に届けばそのまま。届かなければ、届く最も近い割合に寄せる
-  // （明るさがちょうど中くらいの帯では、黒い字も白い字も 4.5:1 に届かない）。返すのは {p, text: "fg" | "bg", cr}
+  // 字の色：割合 p（0〜1）の色（セルの色は変えない。色がデータなので）に対して、--fg と --bg のうちコントラストの高い方。
+  // それでも MIN に届かない（明るさがちょうど中くらいの帯）ときは halo：字の周りに反対の色の細い縁（paint-order: stroke）を付ける。
+  // 返すのは {p, text: "fg" | "bg", cr, halo}
   function pick(tone, bg, fg, p){
-    var at = function(q){ var c = mix(tone, bg, q), a = contrast(c, fg), b = contrast(c, bg); return a >= b ? {p: q, text: "fg", cr: a} : {p: q, text: "bg", cr: b}; };
-    var o = at(p);
-    if (o.cr >= MIN) return o;
-    for (var d = 0.0025; d <= 1; d += 0.0025){
-      var lo = p - d >= 0 ? at(clean(p - d)) : null, hi = p + d <= 1 ? at(clean(p + d)) : null;
-      if (lo && lo.cr >= MIN) return lo;
-      if (hi && hi.cr >= MIN) return hi;
-    }
+    var c = mix(tone, bg, p), a = contrast(c, fg), b = contrast(c, bg), o = a >= b ? {p: p, text: "fg", cr: a} : {p: p, text: "bg", cr: b};
+    o.halo = o.cr < MIN;
     return o;
   }
   // ---- 配置（字の幅は見積もり：半角 0.56 字、全角 1 字） ----
@@ -265,9 +260,10 @@ DECK.define("m-heatmap", class extends DECK.MotionElement {
     var paint = function(f){
       var side = f < 0 ? low : tone, p = Math.abs(f), o;
       if (RGB.bg && RGB.fg && RGB[side]) o = C.pick(RGB[side], RGB.bg, RGB.fg, p);
-      else o = {p: p, text: p > 0.55 ? "bg" : "fg"};
-      var pc = Math.round(o.p * 1000) / 10;
-      return {fill: pc <= 0 ? "var(--bg)" : pc >= 100 ? "var(--" + side + ")" : "color-mix(in oklab, var(--" + side + ") " + pc + "%, var(--bg))", text: "var(--" + o.text + ")"};
+      else o = {p: p, text: p > 0.55 ? "bg" : "fg", halo: true};   // テーマの色が読めなければ、いつも縁を付ける
+      var pc = Math.round(o.p * 10000) / 100;
+      return {fill: pc <= 0 ? "var(--bg)" : pc >= 100 ? "var(--" + side + ")" : "color-mix(in oklab, var(--" + side + ") " + pc + "%, var(--bg))", text: "var(--" + o.text + ")",
+              halo: o.halo ? "var(--" + (o.text === "fg" ? "bg" : "fg") + ")" : null};
     };
     // ---- 配置 ----
     var dm = pl.dom, legend = [this.lfmt(dm.hi), this.lfmt(dm.c), this.lfmt(dm.lo)];
@@ -312,7 +308,10 @@ DECK.define("m-heatmap", class extends DECK.MotionElement {
         var tx = this.texts(r, c); if (lines === 1 && tx.length === 2) tx = [tx[1]];
         tx.forEach(function(s, j){
           var y = Y(r) + cs / 2 + nf * 0.36 + (tx.length === 2 ? (j ? 0.62 : -0.62) * nf : 0);
-          D.el("text", {x: f1(X(c) + cs / 2), y: f1(y), "font-size": j ? Math.max(24, nf - 4) : nf, "text-anchor": "middle", fill: pt.text, "font-weight": j || tx.length === 1 ? 700 : 400, style: "font-variant-numeric:tabular-nums"}, g).textContent = s;
+          var ta = {x: f1(X(c) + cs / 2), y: f1(y), "font-size": j ? Math.max(24, nf - 4) : nf, "text-anchor": "middle", fill: pt.text, "font-weight": j || tx.length === 1 ? 700 : 400, style: "font-variant-numeric:tabular-nums"};
+          // 縁（halo）：セルの色に対してどちらの字の色も 4.5:1 に届かないとき、反対の色の 3 px の線を字の下に
+          if (pt.halo) Object.assign(ta, {stroke: pt.halo, "stroke-width": 3, "stroke-linejoin": "round", "paint-order": "stroke"});
+          D.el("text", ta, g).textContent = s;
         });
       }
       var at = sweep && n > 1 ? dur * 0.6 * pos / (n - 1) : 0, len = sweep ? dur * 0.4 : dur;
@@ -344,7 +343,7 @@ DECK.define("m-heatmap", class extends DECK.MotionElement {
     // 帯は混ぜる割合をそのまま（セルの字のために寄せた割合ではなく、尺度そのもの）
     var grad = D.el("linearGradient", {id: gid, x1: 0, y1: 0, x2: 0, y2: 1}, D.el("defs", {}, svg));
     for (i = 0; i <= 20; i++){
-      var f = C.frac(dm.hi - (dm.hi - dm.lo) * i / 20, pl.kind, dm), pc = Math.round(Math.abs(f) * 1000) / 10, side = f < 0 ? low : tone;
+      var f = C.frac(dm.hi - (dm.hi - dm.lo) * i / 20, pl.kind, dm), pc = Math.round(Math.abs(f) * 10000) / 100, side = f < 0 ? low : tone;
       D.el("stop", {offset: (i / 20).toFixed(3), "stop-color": pc <= 0 ? "var(--bg)" : "color-mix(in oklab, var(--" + side + ") " + pc + "%, var(--bg))"}, grad);
     }
     D.el("rect", {x: f1(bx), y: f1(L.gy), width: 24, height: f1(bh), fill: "url(#" + gid + ")", stroke: "var(--line)", "stroke-width": 1.5}, gGrid);
@@ -357,10 +356,9 @@ DECK.define("m-heatmap", class extends DECK.MotionElement {
     // ---- 読める層（画面にも印刷にも出ない）：値の表 ----
     var wrap = document.createElement("div");
     wrap.className = "sr-only";
-    wrap.setAttribute("style", "position:absolute;width:1px;height:1px;margin:-1px;padding:0;overflow:hidden;clip-path:inset(50%);white-space:nowrap;border:0");
-    // 表の箱は縮めておく（Studio の配置の検査は、隠した子の箱まで測ってはみ出しと数える。m-map-japan の注）
+    wrap.setAttribute("style", "position:absolute;width:1px;height:1px;margin:-1px;padding:0;overflow:hidden;clip:rect(0 0 0 0);clip-path:inset(50%);white-space:nowrap;border:0");
     var tbl = document.createElement("table");
-    tbl.setAttribute("style", "font-size:24px;transform:scale(0.01);transform-origin:0 0");
+    tbl.setAttribute("style", "font-size:24px");
     var cap = document.createElement("caption"); cap.textContent = this.getAttribute("aria-label") || (P.xl || P.yl ? [P.yl, P.xl].filter(Boolean).join(ja ? " × " : " by ") : (ja ? "ヒートマップ" : "Heat map")); tbl.appendChild(cap);
     var tr = document.createElement("tr"), th = document.createElement("th"); th.textContent = ja ? "行＼列" : "row \\ column"; tr.appendChild(th);
     pl.cols.forEach(function(s){ var x = document.createElement("th"); x.setAttribute("scope", "col"); x.textContent = s; tr.appendChild(x); });

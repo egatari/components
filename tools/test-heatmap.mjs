@@ -1,7 +1,8 @@
 // m-heatmap: the colour scale, row normalisation, label thinning and steps without a browser (its `static calc`), then in a
 // browser with the pinned Egatari Studio, in the default, kokugo and business themes:
-//   - every cell's number reaches 4.5:1 against its own cell (the text colour picked per cell from --fg / --bg), over a full
-//     sequential ramp in each tone and a full diverging ramp, plus the demo-like matrices
+//   - cell colours equal the scale exactly (never moved for the text); every cell's number reaches 4.5:1 against its own cell
+//     (the text colour picked per cell from --fg / --bg), or, in the mid-lightness band, against its 2–3 px halo in the other
+//     colour (paint-order: stroke), over fine sequential ramps in each tone and a full diverging ramp, plus the demo-like matrices
 //   - cell fills use only theme colours (var(--…) or color-mix of them)
 //   - steps and durations per build (rows, whole, cells), highlights at their steps
 //   - more than 12×12: numbers off with a warning; too many labels: every k-th label with a warning, labels ≥ 24 px;
@@ -45,18 +46,23 @@ d = C.domain([[0.3]], 'diverging', 0, [-1, 1]);
 ok(near(C.frac(-0.5, 'diverging', d), -0.5) && near(C.frac(0.25, 'diverging', d), 0.25) && C.frac(0, 'diverging', d) === 0, 'diverging range [-1, 1]: −0.5 → −0.5 (low side), 0.25 → 0.25, 0 → 0');
 ok(C.frac(-2, 'diverging', d) === -1 && C.frac(3, 'diverging', d) === 1, 'diverging clamps at ±1');
 
-// the text colour per cell: whatever p, --fg or --bg reaches 4.5:1 (p moved out of the mid band when needed)
+// the text colour per cell: the cell colour is never moved (it is the data); the text is --fg or --bg, whichever contrasts more,
+// and where that is under 4.5:1 the number gets a halo in the other colour, which itself reaches 4.5:1 against the text
 const THEMES = { default: { bg: [255, 255, 255], fg: [34, 34, 34], tones: [[0x1f, 0x4e, 0x8c], [0xc5, 0x05, 0x16], [0x74, 0x44, 0x00]] } };
+let halos = 0;
 for (const [name, th] of Object.entries(THEMES)) for (const tone of th.tones) {
-  let worst = 99, moved = 0;
-  for (let i = 0; i <= 100; i++) {
-    const o = C.pick(tone, th.bg, th.fg, i / 100), col = C.mix(tone, th.bg, o.p);
-    worst = Math.min(worst, C.contrast(col, o.text === 'fg' ? th.fg : th.bg));
-    if (Math.abs(o.p - i / 100) > 1e-9) moved = Math.max(moved, Math.abs(o.p - i / 100));
+  let bad = [];
+  for (let i = 0; i <= 200; i++) {
+    const p = i / 200, o = C.pick(tone, th.bg, th.fg, p), col = C.mix(tone, th.bg, p), text = o.text === 'fg' ? th.fg : th.bg, other = o.text === 'fg' ? th.bg : th.fg;
+    if (o.p !== p) bad.push(`p ${p} moved to ${o.p}`);
+    const onCell = C.contrast(col, text), alt = C.contrast(col, other);
+    if (onCell < alt) bad.push(`p ${p}: the lower-contrast text colour`);
+    if (o.halo) { halos++; if (C.contrast(text, other) < 4.5) bad.push(`p ${p}: halo under 4.5:1 against the text`); }
+    else if (onCell < 4.5) bad.push(`p ${p}: ${onCell.toFixed(2)}:1 without a halo`);
   }
-  ok(worst >= 4.5, `pick (${name}, tone ${tone}): every p gives ≥ 4.5:1 (worst ${worst.toFixed(2)})`);
-  ok(moved <= 0.2, `pick (${name}, tone ${tone}): p moved by at most 0.2 (${moved.toFixed(3)})`);
+  ok(bad.length === 0, `pick (${name}, tone ${tone}): p unchanged, the higher-contrast text colour, ≥ 4.5:1 on the cell or with a halo (${bad.slice(0, 3).join('; ')})`);
 }
+ok(halos > 0, `pick: the mid-lightness band needs a halo somewhere on the ramps (${halos} of 603)`);
 ok(C.pick([0x1f, 0x4e, 0x8c], [255, 255, 255], [34, 34, 34], 0).text === 'fg' && C.pick([0x1f, 0x4e, 0x8c], [255, 255, 255], [34, 34, 34], 1).text === 'bg', 'pick: dark text on the background colour, light text on the full tone');
 
 // label thinning and rotation
@@ -100,9 +106,10 @@ fs.mkdirSync(work, { recursive: true });
 const ramp = Array.from({ length: 11 }, (_, i) => +(i / 10).toFixed(1));
 const el = (attrs, data, h = 300) => `<m-heatmap ${attrs} style="height:${h}px"><script type="application/json">${JSON.stringify(data)}</script></m-heatmap>`;
 const cols11 = ramp.map((_, i) => 'c' + i);
+const FINE = [0, 0.025, 0.05, 0.075].map((o) => ramp.map((v) => Math.min(1, +(v + o).toFixed(3))));
 const slides = [
-  // 0: full sequential ramps in each tone (numbers on), 1: a full diverging ramp
-  ['term', 'emph', 'accent2'].map((t) => el(`id="seq-${t}" tone="${t}" digits="1"`, { rows: ['r'], cols: cols11, values: [ramp] }, 140)).join('\n'),
+  // 0–2: sequential ramps in each tone, 0 to 1 by 0.025 (range fixed so the colour of value v is v × 100 %), 3: a full diverging ramp
+  ...['term', 'emph', 'accent2'].map((t) => el(`id="seq-${t}" tone="${t}" range="[0,1]" digits="2"`, { rows: ['a', 'b', 'c', 'd'], cols: cols11, values: FINE }, 430)),
   el('id="div" scale="diverging" range="[-1,1]" digits="1"', { rows: ['−', '+'], cols: cols11, values: [ramp.map((v) => -v), ramp] }, 230),
   el('id="conf" normalize="row" show="both" diag="on" xl="予測" yl="正解"', { rows: ['ねこ', 'いぬ', 'うさぎ'], cols: ['ねこ', 'いぬ', 'うさぎ'], values: [[45, 3, 2], [6, 38, 6], [1, 4, 45]] }, 430),
   el('id="cells" digits="2"', { rows: ['a', 'b', 'c', 'd'], cols: ['a', 'b', 'c', 'd'], values: [[0.6, 0.1, 0.2, 0.1], [0.4, 0.3, 0.2, 0.1], [0.1, 0.1, 0.7, 0.1], [0.1, 0, 0.6, 0.3]], highlight: [[2, 2], [3, 2], [0, 0, 6]] }, 430),
@@ -132,7 +139,7 @@ try {
       const rgb = (s) => { g.fillStyle = '#fff'; g.fillRect(0, 0, 1, 1); g.fillStyle = s; g.fillRect(0, 0, 1, 1); return [...g.getImageData(0, 0, 1, 1).data.slice(0, 3)]; };
       const lum = (c) => { const f = c.map((x) => { x /= 255; return x <= 0.03928 ? x / 12.92 : Math.pow((x + 0.055) / 1.055, 2.4); }); return 0.2126 * f[0] + 0.7152 * f[1] + 0.0722 * f[2]; };
       const cr = (a, b) => { const x = lum(a), y = lum(b); return (Math.max(x, y) + 0.05) / (Math.min(x, y) + 0.05); };
-      const out = { cells: [], fills: [], steps: {}, dur: {}, labels: {}, table: {}, hl: {} };
+      const out = { cells: [], fills: [], cellFill: [], steps: {}, dur: {}, labels: {}, table: {}, hl: {} };
       for (let i = 0; i < DECK.slides.length; i++) {
         const s = DECK.slides[i];
         DECK.seek(i, s._max, Infinity);
@@ -148,7 +155,12 @@ try {
           for (const cg of cellGroups) {
             const rect = cg.querySelector('rect'), fill = getComputedStyle(rect).fill, style = rect.getAttribute('style') || '';
             out.fills.push(style);
-            for (const t of cg.querySelectorAll('text')) out.cells.push({ id: c.id, txt: t.textContent, cr: +cr(rgb(getComputedStyle(t).fill), rgb(fill)).toFixed(2), fill });
+            const idx = cellGroups.indexOf(cg);
+            out.cellFill.push({ id: c.id, i: idx, style });
+            for (const t of cg.querySelectorAll('text')) {
+              const ts = getComputedStyle(t), tf = rgb(ts.fill), halo = ts.stroke !== 'none' && /^stroke/.test(ts.paintOrder) ? rgb(ts.stroke) : null;
+              out.cells.push({ id: c.id, txt: t.textContent, cr: +cr(tf, rgb(fill)).toFixed(2), fill, halo: halo ? { cr: +cr(tf, halo).toFixed(2), w: parseFloat(ts.strokeWidth) } : null });
+            }
           }
           const tb = c.querySelector('.sr-only table');
           out.table[c.id] = tb ? { rows: tb.querySelectorAll('tr').length, cells: tb.querySelectorAll('td').length, first: (tb.querySelector('td') || {}).textContent, hl: [...tb.querySelectorAll('td')].filter((x) => /強調/.test(x.textContent)).length } : null;
@@ -163,8 +175,20 @@ try {
     });
     await p.close();
     ok(errors.length === 0, `${theme}: no console errors (${errors.join(' | ')})`);
-    const low = r.cells.filter((x) => x.cr < 4.5);
-    ok(r.cells.length > 60 && low.length === 0, `${theme}: all ${r.cells.length} cell numbers ≥ 4.5:1 against their cell${low.length ? ': ' + low.map((x) => `${x.id} "${x.txt}" ${x.cr}`).join(', ') : ''} (lowest ${Math.min(...r.cells.map((x) => x.cr))})`);
+    // contrast counting the halo: on the cell ≥ 4.5:1, or a 2–3 px halo (paint-order: stroke) that reaches 4.5:1 against the text
+    const low = r.cells.filter((x) => x.cr < 4.5 && !(x.halo && x.halo.cr >= 4.5 && x.halo.w >= 2 && x.halo.w <= 3));
+    const haloed = r.cells.filter((x) => x.halo);
+    ok(r.cells.length > 150 && low.length === 0, `${theme}: all ${r.cells.length} cell numbers ≥ 4.5:1 against their cell or their halo${low.length ? ': ' + low.map((x) => `${x.id} "${x.txt}" ${x.cr}`).join(', ') : ''} (lowest on the cell ${Math.min(...r.cells.map((x) => x.cr))}, ${haloed.length} with a halo)`);
+    ok(haloed.length > 0 && haloed.every((x) => x.halo.cr >= 4.5), `${theme}: the halo case occurs on the ramps and each halo reaches 4.5:1 against its text (${haloed.map((x) => x.halo.cr).join(', ')})`);
+    // cell colours equal the scale exactly (never moved for the text): value v on [0, 1] → v × 100 % of the tone
+    const want = (id, i) => {
+      if (id.startsWith('seq-')) { const v = FINE[Math.floor(i / 11)][i % 11], t = id.slice(4); return v <= 0 ? 'fill:var(--bg);' : v >= 1 ? `fill:var(--${t});` : `fill:color-mix(in oklab, var(--${t}) ${+(v * 100).toFixed(2)}%, var(--bg));`; }
+      if (id === 'div') { const v = ramp[i % 11], t = i < 11 ? 'emph' : 'term'; return v <= 0 ? 'fill:var(--bg);' : v >= 1 ? `fill:var(--${t});` : `fill:color-mix(in oklab, var(--${t}) ${+(v * 100).toFixed(2)}%, var(--bg));`; }
+      if (id === 'conf') { const V = [[45, 3, 2], [6, 38, 6], [1, 4, 45]], v = V[Math.floor(i / 3)][i % 3] / 50; return `fill:color-mix(in oklab, var(--term) ${+(v * 100).toFixed(2)}%, var(--bg));`; }
+      return null;
+    };
+    const off = r.cellFill.filter((x) => want(x.id, x.i) !== null && x.style !== want(x.id, x.i));
+    ok(r.cellFill.filter((x) => want(x.id, x.i) !== null).length === 3 * 44 + 22 + 9 && off.length === 0, `${theme}: cell colours equal the scale exactly${off.length ? ': ' + off.slice(0, 4).map((x) => `${x.id}[${x.i}] ${x.style} ≠ ${want(x.id, x.i)}`).join('; ') : ''}`);
     ok(r.fills.every((f) => /^fill:(var\(--(bg|term|emph|accent2)\)|color-mix\(in oklab, var\(--(term|emph|accent2)\) [\d.]+%, var\(--bg\)\));$/.test(f)), `${theme}: cell fills are theme colours or color-mix of them (${[...new Set(r.fills.filter((f) => !/var\(--/.test(f)))].join(', ')})`);
     if (theme !== 'default') continue;
     // steps and durations
