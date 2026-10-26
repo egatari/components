@@ -4,6 +4,12 @@ Versions follow [README.md § Releases and versions](README.md#releases-and-vers
 
 ## Unreleased
 
+### Later (candidates, not in this release)
+
+- `m-compare` `by="row"`; an "outside every set" region for `m-venn`; planned-vs-actual bars for `m-timeline`
+
+## 1.13.0 - 2026-10-27
+
 ### Added
 
 - `m-heatmap` (series academic 数理・統計, purposes `compare`, `correlation`; paid packs only, not in the free pack for now): a grid of cells coloured by value, for confusion matrices, correlation matrices and attention maps. Child JSON `{"rows": [labels], "cols": [labels], "values": [[…]], "unit"?, "digits"?, "highlight"?: [[row, col] or [row, col, step]]}` (0-based; a row or column count that does not match the labels is an error and shows the placeholder). Colours are theme colours only, mixed with `color-mix(in oklab, …, var(--bg))`: `scale="sequential"` (default) from `--bg` to `tone` (`term` default, `emph`, `accent2`), `scale="diverging"` around `center` (default 0) with `tone` above and `lowtone` (`emph` default) below; `range="[lo,hi]"` fixes the scale (otherwise [min(0, smallest), largest], or symmetric around the centre). Cell colours follow the scale exactly (the colour is the data). Each cell's number is drawn in `--fg` or `--bg`, whichever has the higher computed contrast against that cell; where even that is under 4.5:1 (mid lightness) the number gets a 3 px halo in the other colour (`paint-order: stroke`). A legend bar on the right (min, centre, max). `normalize="row"` (proportions per row, confusion matrix; numbers `show="percent" | "count" | "both"`), `diag="on"` (diagonal outlined in `--fg`), highlights outlined in `--emph` (both over a `--bg` halo), `numbers="auto" | "on" | "off"`. Steps: `build="rows"` (one row per step; the default with `normalize="row"`), `"whole"`, `"cells"` (the grid, then one highlight per step; the default with highlights). Labels at 26 px or 24 px, never smaller: long column labels turn vertical (`rotate="auto" | "0" | "90"`), and when there are too many only every k-th label is shown, with a warning; above 12×12 the cell numbers turn off automatically, with a warning, and they turn off whenever they would need less than 24 px. Row labels, column labels, the legend and the empty grid show from step 0; under `ctx.preview` later cells and outlines at the theme's `--preview-opacity`. Readable layer: a `<table>` of the values (the standard visually-hidden pattern: absolute, 1 px, clip, overflow hidden; highlighted cells marked); the drawing is aria-hidden. Variants `fade` (0) and `sweep` (cells of a step from the top left, within the same step length)
@@ -21,10 +27,6 @@ Versions follow [README.md § Releases and versions](README.md#releases-and-vers
 - `tools/test-shape.mjs`: m-heatmap's wrong-shape case (`data` instead of `values`); `tools/variant-sync.mjs`: m-heatmap in `USERS`
 - `tools/test-map-world.mjs` (in `tools/test-all.mjs`): names equal the table; at 6 heights × 5 widths and two label settings, 北方領土 lies in Japan's land, the island dots, 帰属未定地 (white, in no coloured path even with Russia coloured) and its 4 lines are drawn, the readable layer lists them once; each region coloured alone colours exactly the places on its continent (overseas departments and territories by geography; Hawaii and Alaska with the United States, the Canaries with Spain in ヨーロッパ州; Antarctica in none); 南極大陸 is named with labels="all"; no name has ヴ; Taiwan with China / by its own value; XUD refused with a warning; small elements (no error, sizes ≥ 0, inside, text ≥ 24 px); the seam warning
 - `tools/test-shape.mjs`: m-map-world's wrong-shape case; `tools/test-classes.mjs`: its generated 4- and 5-class deck uses 47 country codes for m-map-world
-
-### Later (candidates, not in this release)
-
-- `m-compare` `by="row"`; an "outside every set" region for `m-venn`; planned-vs-actual bars for `m-timeline`
 
 ## 1.12.0 - 2026-10-26
 
