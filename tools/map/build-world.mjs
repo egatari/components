@@ -70,12 +70,15 @@ const groupOf = (p) => ({ Asia: 'asia', Europe: 'europe', Africa: 'africa', Ocea
 export const OVERSEAS = [
   ['FRA', 'フランス領ギアナ', [[-55, 1.5, -51, 6.5]], 'south-america'],
   ['FRA', 'レユニオン', [[55, -21.5, 56, -20.8]], 'africa'],
-  ['ESP', 'カナリア諸島', [[-18.5, 27.5, -13, 29.5]], 'africa'],
 ];
-// Overseas parts that keep their country's region although the nearest foreign country is in another: id, name, boxes, reason
+// Overseas parts that keep their country's region although the nearest foreign country is in another: id, name, boxes, reason.
+// A part of the country's own territory (a state or autonomous community) stays with the country; an overseas department or
+// territory (an atlas's 〜領) goes to the region where it lies (standards, 2026-10-27). 'own' (5th): simplified as a feature of
+// its own, so keep-shapes keeps its largest ring (the Canaries were drawn that way while they were in OVERSEAS; without it they vanish)
 export const STAY = [
   ['USA', 'ハワイ州', [[-161, 18, -154, 23]], 'アメリカ合衆国の州（日本の地図帳と同じ）'],
   ['USA', 'アラスカ州', [[-180, 50, -129, 72], [172, 50, 180, 56]], 'アメリカ合衆国の州（日本の地図帳と同じ）'],
+  ['ESP', 'カナリア諸島', [[-18.5, 27.5, -13, 29.5]], 'スペインの自治州（国の領土の一部）', 'own'],
   ['GRL', 'グリーンランドの東の部分', [[-30, 59, -10, 84]], '継ぎ目（30°W）で分かれた同じ島'],
 ];
 const OVERSEA_KM = 800;
@@ -362,7 +365,7 @@ async function rebuild() {
       const ll = proj.invert(cen[i]), hit = (e) => e[0] === f.id && e[2].some((b) => ll[0] >= b[0] && ll[0] <= b[2] && ll[1] >= b[1] && ll[1] <= b[3]);
       const ov = OVERSEAS.find(hit), st = STAY.find(hit);
       if (ov) { pieceGroup[f.id][i] = ov[3]; seen.add(ov); moved.push(`${ov[1]} (${f.id}) → ${ov[3]}`); if (ov[3] !== n.group) { bad++; say(`FAIL ${ov[1]}: listed for ${ov[3]}, its nearest country ${n.id} is in ${n.group}`); } }
-      else if (st) { seen.add(st); say(`overseas part kept with its country: ${st[1]} (${f.id}, ${st[3]})`); }
+      else if (st) { if (st[4] === 'own') pieceGroup[f.id][i] = '=' + st[1]; seen.add(st); say(`overseas part kept with its country: ${st[1]} (${f.id}, ${st[3]})`); }
       else { bad++; say(`FAIL an overseas part of ${f.id} (${f.group}) at ${ll.map((v) => v.toFixed(1))}, ${Math.round(own)} km from its land, ${Math.round(n.d)} km from ${n.id} (${n.group}), is in neither OVERSEAS nor STAY`); }
     });
   }
@@ -380,6 +383,10 @@ async function rebuild() {
   const topo = JSON.parse(out['out.json']), obj = Object.values(topo.objects)[0];
   const arcs = topo.arcs.map((a) => { const r = []; for (const p of a) { const q = [Math.round(p[0]), Math.round(p[1])]; if (!r.length || q[0] !== r[r.length - 1][0] || q[1] !== r[r.length - 1][1]) r.push(q); } return r; });
   const fts = obj.geometries.filter((g) => g.arcs).map((g) => ({ id: g.properties.id, g: g.properties.g || '', polys: g.type === 'Polygon' ? [g.arcs] : g.arcs }));
+  // a part kept with its country and marked 'own' in STAY is simplified as a feature of its own (keep-shapes keeps its largest
+  // ring, as for a moved part); it is then merged back into the country's feature
+  for (const f of fts.filter((f) => f.g.startsWith('='))) { const home = fts.find((h) => h.id === f.id && !h.g); home.polys = home.polys.concat(f.polys); }
+  fts.splice(0, fts.length, ...fts.filter((f) => !f.g.startsWith('=')));
   fts.sort((a, b) => a.id.localeCompare(b.id) || a.g.localeCompare(b.g));
   const ringOf = (idx) => { const r = []; for (const i of idx) { const a = i < 0 ? arcs[~i].slice().reverse() : arcs[i]; r.push(...(r.length ? a.slice(1) : a)); } return r; };
   const polysOfFeat = (f) => f.polys.map((p) => p.map(ringOf)).filter((p) => p[0].length >= 4 && Math.abs(ringArea(p[0])) > 0);

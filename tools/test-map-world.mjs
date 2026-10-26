@@ -120,7 +120,7 @@ try {
         const dotFill = Object.fromEntries([...svg.querySelectorAll('g circle')].filter((d) => shown(d) && d.closest('g') !== svg.firstChild).map((d) => [`${d.getAttribute('cx')},${d.getAttribute('cy')}`, fillOf(d)]));
         const texts = [...svg.querySelectorAll('text')].filter(shown).map((t) => t.textContent);
         const PLACES = { パリ: [2.35, 48.86, 'europe'], マドリード: [-3.7, 40.4, 'europe'], フランス領ギアナ: [-53.0, 4.0, 'south-america'], レユニオン: [55.5, -21.1, 'africa'],
-          'カナリア諸島（フエルテベントゥラ島）': [-13.95, 28.55, 'africa'], ハワイ島: [-155.5, 19.6, 'north-america'], アラスカ: [-150, 64, 'north-america'], ヌーク付近: [-45, 66, 'north-america'],
+          'カナリア諸島（フエルテベントゥラ島）': [-13.95, 28.55, 'europe'], ハワイ島: [-155.5, 19.6, 'north-america'], アラスカ: [-150, 64, 'north-america'], ヌーク付近: [-45, 66, 'north-america'],
           グリーンランド東部: [-25, 74, 'north-america'], 東京: [139.5, 36.0, 'asia'], シドニー: [146, -33, 'oceania'], ニューカレドニア: [165.5, -21.4, 'oceania'],
           モスクワ: [37.6, 55.75, 'europe'], ウラジオストク付近: [133, 45, 'europe'], カイロ: [31.2, 29.5, 'africa'], ブラジリア: [-47.9, -15.8, 'south-america'],
           スバールバル諸島: [16, 78.6, 'europe'], 南極大陸: [150, -80, ''], '南極大陸（西）': [-60, -82, ''] };
