@@ -4,6 +4,12 @@ Versions follow [README.md § Releases and versions](README.md#releases-and-vers
 
 ## Unreleased
 
+### Later (candidates, not in this release)
+
+- `m-compare` `by="row"`; an "outside every set" region for `m-venn`; planned-vs-actual bars for `m-timeline`
+
+## 1.11.0 - 2026-10-26
+
 ### Added
 
 - `m-keyboard` (series music 音楽, purpose `music`; not in the free pack for now): a piano keyboard for school music lessons. Child JSON `{"range": "C4-C6", "names": "solfa" | "abc" | "iroha" | "none", "cumulative": bool, "dur": s, "steps": [{"keys": ["C4", "E4", "G4"], "label", "t": [s per key], "tone", "dur"}]}`. `range` covers 1–3 octaves (12–36 semitones) and starts and ends on white keys; the part draws its own SVG keyboard: white keys as rectangles, black keys 0.58 wide and 0.62 long, on top, centred as on a real keyboard (the C–E group split into fifths and the F–B group into sevenths: C♯/D♯ and F♯/A♯ lean outwards, G♯ is centred). White-key names under the keyboard (ドレミファソラシ, CDEFGAB or ハニホヘトイロ); black-key names (ド♯ / C♯ / 嬰ハ, レ♭ / D♭ / 変ニ) only on lit keys, above the keyboard (a second row when two would touch). Each step lights its keys in `--emph` (or the step's `tone`) with a filled dot; a lit black key keeps its dark rim around the coloured inside; `cumulative: true` keeps earlier steps' keys lit, faded, with a ring instead of the dot (never colour alone). Per-key `t` staggers a scale or arpeggio, equal `t` is a chord. `events(k)` (spec §8.4 "Component sounds"): one `note` per key, `pitch` the key name, `vel` 0.7, `dur` from `dur` (step, then top level) or else to the next later `t` (0.8 s for the last); `duration(k)` reaches the end of the last note. Sound is never the only carrier: the lit keys show the same. Step labels 30 px above the keyboard. The lecture view (`ctx.preview`, or `ctx.mode === "lecture"` from older players) shows later steps' keys faint without the dot, at the theme's `--preview-opacity` read with getComputedStyle (spec §8.4 "Answers under preview"; 0.45 only when the variable is missing). The part has no controls. Variants `light` (0, the light fades in), `press` (the key dips 4 px and comes back), `rise` (the light fills the key from the bottom), all within 0.3 s and within the note. Range, key-name and `t`-length errors show the placeholder
@@ -36,10 +42,6 @@ Versions follow [README.md § Releases and versions](README.md#releases-and-vers
 - `m-numberline` demo: the 2本の数直線 slide overflowed the slide body by 47 px in Egatari Studio's checker (the part needed 478 px with arcs on both lines). It now shows the ×2/3 arc on the price line only, at 440 px; the part is unchanged
 - The same step left a different DOM depending on the calls before it (docs/contract.md §3; Egatari Studio's harness now compares the component DOM byte for byte between two renders of the same state). Drawing is unchanged. `m-cycle`: a hidden arrowhead kept the `transform` of an earlier render (demo slide 3, step 4); render now removes it. `m-codetree`: colours were written with `style.fill = …` (serialised as `fill: var(--muted);`) next to `DECK.el`'s `fill:var(--muted);`, so the `style` text depended on the history; render now writes the `style` attribute in `DECK.el`'s form. A hidden run swatch is reset to its `x="0"` instead of losing `x`, which had moved the attribute. `m-seq`, `m-sweep`: the faint curves' `stroke` is written the same way (same `style.stroke` issue). `m-seq`: the mark line and its label go back to x = 0 on steps without a mark instead of keeping the previous step's position. `m-hist`: the frequency polygon drops `stroke-dashoffset` with `stroke-dasharray` when it is not being drawn in (`grow`). `m-map-japan` (`variant="draw"`): areas and lines not yet shown get the same outline, fill and dash attributes as at the start of their draw, instead of keeping an earlier render's. `m-menu`: each render writes the card's `style` as one string after the author's own, and `tabindex` / `aria-hidden` in a fixed order (with `style.pointerEvents` and toggled attributes, the attribute text and order depended on the steps shown before)
 - `tools/test-dom-order.mjs` (in `tools/test-all.mjs`): for every part's demo, every slide and every step k at its end, in the talk and lecture views, the components' DOM (outerHTML, byte for byte, no tolerance and no pixels) after seeking straight to k on a fresh deck equals the DOM after then seeking k+1, 0 and k. It caught the seven parts above
-
-### Later (candidates, not in this release)
-
-- `m-compare` `by="row"`; an "outside every set" region for `m-venn`; planned-vs-actual bars for `m-timeline`
 
 ## 1.10.0 - 2026-10-26
 
