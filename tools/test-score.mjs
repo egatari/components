@@ -66,7 +66,7 @@ const N = (o) => ({ cls: 'abcjs-v0 abcjs-mm0 abcjs-n0', measure: 0, pitch: ['C4'
 throws(() => SC.plan(map([N({ pitch: ['H4'] })]), 'note'), /pitch "H4" is not a pitch/, 'H4 is not a pitch');
 throws(() => SC.plan(map([N({})], 0), 'note'), /tempo/, 'tempo must be > 0');
 throws(() => SC.plan(map([N({ dur: 0 })]), 'note'), /dur must be > 0/, 'dur must be > 0');
-throws(() => SC.plan(map([N({ cls: 'note0' })]), 'note'), /cls must be abcjs classes/, 'cls must be abcjs classes');
+eq(SC.plan(map([N({ cls: 'anything' }), N({ cls: undefined, beat: 1 })]), 'note').steps.length, 2, 'cls is the adapter\'s record: the part does not read it');
 throws(() => SC.plan(map([]), 'note'), /notes is empty/, 'no notes');
 throws(() => SC.plan(map([N({})]), 'bar'), /by="bar"/, 'by must be note or measure');
 throws(() => SC.plan(null, 'note'), /abcMap is missing/, 'no abcMap');
@@ -128,28 +128,49 @@ eq(ev7.map((e) => e.pitch).join(' '), 'C4 C4 D4 D4 E4 E4 F4 F4', 'kaeru measure 
 eq(ev7.map((e) => e.t), [0, 1, 2, 3, 4, 5, 6, 7].map((i) => +(i * 30 / 104).toFixed(6)), '… each at its beat');
 eq(SC.events(kM, 5).map((e) => e.t), [0, +(2 * 60 / 104).toFixed(6)], 'kaeru measure 5 by measure: C on beats 1 and 3, rests silent');
 
-// ---- 5. which notes each element appears with ----
+// ---- 5. which notes each element appears with (by the build's data- tags only) ----
+// abcjs's own classes, read here only as an independent check of the tags (the part never reads them)
+const where = (c) => { const g = (re) => { const x = re.exec(c || ''); return x ? +x[1] : null; }; return { l: g(/\babcjs-l(\d+)\b/), m: g(/\babcjs-m(\d+)\b/), mm: g(/\babcjs-mm(\d+)\b/), n: g(/\babcjs-n(\d+)\b/), v: g(/\babcjs-v(\d+)\b/) }; };
+const stripClasses = (svg) => svg.replace(/ class="([^"]*)"/g, (all, c) => { const k = c.split(/\s+/).filter((x) => x && !/^abcjs-/.test(x)); return k.length ? ` class="${k.join(' ')}"` : ''; });
+const tagOf = (p) => ['data-note', 'data-beam', 'data-measure', 'data-arc'].find((t) => p.node.a[t] !== undefined) || null;
 for (const [name, fx] of Object.entries(FX)) {
   const pl = SC.plan(fx.abcMap, 'note'), a = SC.assign(SC.parseSvg(fx.abcSvg), pl);
-  eq(a.missing, [], `${name}: every note of abcMap is an element of the SVG`);
-  eq(a.parts.filter((p) => p.note).length, pl.notes.length, `${name}: one element per note`);
+  eq([a.missing, a.mismatch], [[], []], `${name}: every note, beam, bar line and arc line is tagged and known`);
+  const notes = a.parts.filter((p) => p.note);
+  eq(notes.length, pl.notes.length, `${name}: one element per note`);
+  ok(notes.every((p) => { const w = where(p.node.a.class), c = fx.abcMap.notes[p.i].cls; return c === `abcjs-v${w.v} abcjs-mm${w.mm} abcjs-n${w.n}`; }), `${name}: data-note picks the same element as the adapter's cls record`);
   const lastOf = {};
   pl.notes.forEach((x) => { lastOf[x.m] = x.i; });
-  eq(a.mismatch, [], `${name}: beams match the beam paths, every arc line has a known data-arc`);
-  const bars = a.parts.filter((p) => /\babcjs-bar\b/.test(p.node.a.class || ''));
-  ok(bars.length >= Object.keys(lastOf).length && bars.every((b) => b.i === lastOf[SC.where(b.node.a.class.split(' ')).mm]), `${name}: bar lines appear with the last note of their measure`);
+  const bars = a.parts.filter((p) => p.node.a['data-measure'] !== undefined);
+  ok(bars.length === Object.keys(lastOf).length && bars.every((b) => b.i === lastOf[+b.node.a['data-measure']] && /\babcjs-bar\b/.test(b.node.a.class)), `${name}: one bar line a measure (data-measure), with the last note of its measure`);
   const fixed = a.parts.filter((p) => p.i === null).map((p) => p.node.a.class || '');
-  ok(fixed.some((s) => /abcjs-staff\b/.test(s)) && fixed.some((s) => /abcjs-clef/.test(s)) && fixed.some((s) => /abcjs-time-signature/.test(s)), `${name}: staff, clef and time signature are there from step 0`);
+  ok(fixed.some((s) => /abcjs-staff\b/.test(s)) && fixed.some((s) => /abcjs-clef/.test(s)) && fixed.some((s) => /abcjs-time-signature/.test(s)), `${name}: staff, clef and time signature (untagged) are there from step 0`);
+  // without any abcjs class the part assigns every element the same way (the classes are not read)
+  const b = SC.assign(SC.parseSvg(stripClasses(fx.abcSvg)), pl);
+  eq([b.mismatch, b.missing, b.parts.map((p) => [p.i, p.top, !!p.note, tagOf(p)])], [[], [], a.parts.map((p) => [p.i, p.top, !!p.note, tagOf(p)])], `${name}: with every abcjs-* class stripped, the same elements appear at the same notes`);
 }
+ok(!/class="[^"]*abcjs-/.test(stripClasses(FX.kaeru.abcSvg)), 'the stripped SVG has no abcjs-* class left');
 {
   const pl = SC.plan(FX.kaeru.abcMap, 'note'), a = SC.assign(SC.parseSvg(FX.kaeru.abcSvg), pl);
-  const beams = a.parts.filter((p) => /abcjs-beam-elem/.test(p.node.a.class || '')).map((p) => p.i);
-  eq(beams, [22, 26], 'kaeru: the k-th beam path appears with the first note of beams[k]');
+  const beams = a.parts.filter((p) => p.node.a['data-beam'] !== undefined);
+  eq(beams.map((p) => p.i), [22, 26], 'kaeru: data-beam k appears with the first note of beams[k]');
+  ok(beams.every((p) => /abcjs-beam-elem/.test(p.node.a.class)), '… and those are abcjs\'s beam paths');
   const pr = SC.plan(FX.rhythm.abcMap, 'note'), ar = SC.assign(SC.parseSvg(FX.rhythm.abcSvg), pr);
   eq(ar.parts.filter((p) => p.node.a['data-arc'] !== undefined).map((p) => p.i), [12], 'rhythm: the tie line (data-arc 0) appears with the note it leads to');
-  eq(ar.parts.filter((p) => /abcjs-beam-elem/.test(p.node.a.class || '')).map((p) => p.i), [2, 7, 9], 'rhythm: three beams, each with its first note');
+  eq(ar.parts.filter((p) => p.node.a['data-beam'] !== undefined).map((p) => p.i), [2, 7, 9], 'rhythm: three beams, each with its first note');
+  // untagged or unknown elements are reported (and then shown from step 0, never guessed)
+  const untag = (svg, attr, v) => svg.replace(` ${attr}="${v}"`, '');
+  const n3 = SC.assign(SC.parseSvg(untag(FX.rhythm.abcSvg, 'data-note', 3)), pr);
+  eq([n3.missing, n3.mismatch], [[3], ['no element has data-note for abcMap.notes[3]']], 'a note element without data-note is reported');
+  ok(n3.parts.some((p) => p.i === null && p.node.a.class && /abcjs-n1\b/.test(p.node.a.class) && /abcjs-mm1\b/.test(p.node.a.class)), '… and that element is shown from step 0 (not guessed from its classes)');
+  const b1 = SC.assign(SC.parseSvg(untag(FX.rhythm.abcSvg, 'data-beam', 1)), pr);
+  eq(b1.mismatch, ['no element has data-beam="1"'], 'a beam without data-beam is reported');
+  const m2 = SC.assign(SC.parseSvg(FX.rhythm.abcSvg.replace('data-measure="2"', 'data-measure="99"')), pr);
+  eq(m2.mismatch, ['data-measure="99" is not a measure of abcMap.notes'], 'an unknown data-measure is reported');
   const bad = SC.assign(SC.parseSvg(FX.rhythm.abcSvg), SC.plan({ ...FX.rhythm.abcMap, beams: [[2, 3]] }, 'note'));
-  ok(bad.mismatch.length === 1 && /beams: 1 in abcMap, 3 in abcSvg/.test(bad.mismatch[0]), 'a build record that does not match the SVG is reported (' + bad.mismatch[0] + ')');
+  eq(bad.mismatch, ['data-beam="1" is not an index of abcMap.beams', 'data-beam="2" is not an index of abcMap.beams'], 'beams in abcMap that do not match the tagged paths are reported');
+  const dup = SC.assign(SC.parseSvg(FX.rhythm.abcSvg.replace('data-note="4"', 'data-note="3"')), pr);
+  ok(dup.mismatch.includes('data-note="3" is used twice') && dup.missing.includes(4), 'a data-note used twice is reported');
 }
 
 // ---- 5b. ties and slurs (fixtures/ties.json, test only): ties in a chord, a chain of ties, a tie and a slur from one note,
@@ -173,6 +194,7 @@ for (const [name, fx] of Object.entries(FX)) {
   const tree = SC.parseSvg(fx.abcSvg), a = SC.assign(tree, pl);
   eq([a.mismatch, a.missing], [[], []], 'every arc line has a data-arc of abcMap.arcs');
   const lines = a.parts.filter((p) => /abcjs-slur/.test(p.node.a.class || ''));
+  eq(a.parts.filter((p) => p.node.a['data-arc'] !== undefined).length, lines.length, 'every abcjs arc line carries data-arc');
   ok(lines.length === 13 && lines.every((p) => p.node.a['data-arc'] !== undefined), `the build tagged all ${lines.length} arc lines (the hidden duplicate slur line was dropped)`);
   const byArc = {};
   lines.forEach((p) => { (byArc[p.node.a['data-arc']] = byArc[p.node.a['data-arc']] || []).push(p.i); });
@@ -180,10 +202,10 @@ for (const [name, fx] of Object.entries(FX)) {
     'each arc\'s lines appear with its note: ties with `to`, slurs with `from`; the chord tie across the break has 2 lines a pitch, the slur across it only its second line');
   // independent check: abcjs's own classes on the lines that name both ends
   const at = {};
-  a.parts.filter((p) => p.note).forEach((p) => { const w = SC.where(p.node.a.class.split(' ')); at[w.l + ':' + w.m + ':' + w.n] = p.i; });
+  a.parts.filter((p) => p.note).forEach((p) => { const w = where(p.node.a.class); at[w.l + ':' + w.m + ':' + w.n] = p.i; });
   let checked = 0;
   lines.forEach((p) => {
-    const c = p.node.a.class, w = SC.where(c.split(' '));
+    const c = p.node.a.class, w = where(c);
     const st = /abcjs-start-m(\d+)-n(\d+)/.exec(c), en = /abcjs-end-m(\d+)-n(\d+)/.exec(c);
     if (/abcjs-legato/.test(c) && st) { checked++; ok(p.i === at[w.l + ':' + st[1] + ':' + st[2]], `slur line ${c}: with its first note`); }
     if (/abcjs-tie/.test(c) && st && en) { checked++; ok(p.i === at[w.l + ':' + en[1] + ':' + en[2]], `tie line ${c}: with the note it ends on`); }
@@ -192,7 +214,8 @@ for (const [name, fx] of Object.entries(FX)) {
   // the part reads nothing but data-arc: without it, the arc lines are reported, never guessed from class or order
   const bare = SC.parseSvg(fx.abcSvg.replace(/ data-arc="\d+"/g, ''));
   const b2 = SC.assign(bare, pl);
-  ok(b2.mismatch.length === 13 && b2.mismatch.every((m) => /no data-arc/.test(m)), 'arc lines without data-arc are reported, one by one');
+  eq(b2.mismatch, ['no element has data-arc for abcMap.arcs n 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10'], 'arc lines without data-arc: every arc without a line is reported');
+  ok(b2.parts.filter((p) => /abcjs-slur/.test(p.node.a.class || '')).every((p) => p.i === null), '… and the untagged lines are shown from step 0, not guessed');
   const wrong = SC.assign(tree, SC.plan({ ...fx.abcMap, arcs: fx.abcMap.arcs.slice(0, 5) }, 'note'));
   ok(wrong.mismatch.some((m) => /data-arc="7" is not an n of abcMap.arcs/.test(m)), 'a data-arc without its arc is reported');
   ok(demoHas('kaeru') && !demoHas('ties'), 'the ties fixture is a test fixture only, not in the demo');

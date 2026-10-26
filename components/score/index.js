@@ -4,10 +4,10 @@
 //    "renderer": {"name": "abcjs", "version": "6.7.2"}}
 // （JSON の終わり）</m-score>
 // 楽譜を描くのは組み立て（作り手。部品庫 2.0 の「組み立てのときの描画」）：作者の書いた abc を abcjs（add_classes）で描き、
-// abcSvg（abcjs の SVG。class はそのまま）と abcMap（音符ごとの class・小節 measure・音の高さ・拍・長さ（四分音符 = 1）・符頭の箱、連桁 beams、タイとスラーの弧 arcs）を足して渡す。
-// 描いた弧の線には組み立てが data-arc="k" を付ける（arcs[].n）。パーツは弧の線を data-arc だけで選ぶ
+// abcSvg（abcjs の SVG）と abcMap（音符ごとの小節 measure・音の高さ・拍・長さ（四分音符 = 1）・符頭の箱、連桁 beams、タイとスラーの弧 arcs）を足して渡す。
+// 組み立ては SVG の音符・休符に data-note="i"、連桁に data-beam="k"、小節線に data-measure="m"、弧の線に data-arc="n" を付ける
 // 再生のときに abcjs は持たない。この部品は abcSvg を読み、許した要素と属性だけで組み直して（スクリプト・外への参照・色は入らない）、
-// abcjs の class（abcjs-mm…・abcjs-n…）で段階ごとに出す。五線・音部記号・調号・拍子は段階 0 から見える
+// 組み立てが付けた印（data-note・data-beam・data-measure・data-arc）で段階ごとに出す（abcjs の class は読まない）。五線・音部記号・調号・拍子は段階 0 から見える
 // 段階：by="note"（既定）は音符・和音・休符 1 つ、by="measure" は 1 小節。休符とタイでつながった音は鳴らさずに進む
 // 音（仕様 §8.4「Component sounds」）：events(k) は段階 k で出る音の note（pitch・dur（秒、tempo から。タイは次の音符の分も鳴る）・vel 0.7）。
 // 和音は同じ t。duration(k) は段階の音符の長さ（by="measure" は小節の終わりまで）
@@ -46,7 +46,7 @@ var SC = (function(){
     x: NUM, y: NUM, x1: NUM, y1: NUM, x2: NUM, y2: NUM, cx: NUM, cy: NUM, r: NUM, rx: NUM, ry: NUM, width: NUM, height: NUM,
     "stroke-width": NUM, "font-size": NUM, "font-style": /^(normal|italic)$/, "font-weight": /^(normal|bold|\d{3})$/,
     "font-family": /^[\w\s,'"-]{0,80}$/, "text-anchor": /^(start|middle|end)$/, fill: /^(none|currentColor)$/, stroke: /^(none|currentColor)$/,
-    "class": /^[\w\s-]*$/, "data-arc": /^\d{1,6}$/, viewBox: /^[\d\s.,eE+\-]*$/
+    "class": /^[\w\s-]*$/, "data-arc": /^\d{1,6}$/, "data-note": /^\d{1,6}$/, "data-beam": /^\d{1,6}$/, "data-measure": /^\d{1,6}$/, viewBox: /^[\d\s.,eE+\-]*$/
   };
   var ENT = {amp: "&", lt: "<", gt: ">", quot: "\"", apos: "'"};
   function decode(s){
@@ -86,8 +86,6 @@ var SC = (function(){
     if (!root) throw new Error("m-score: abcSvg has no <svg> element");
     return root;
   }
-  var cls = function(node){ return (node.a["class"] || "").split(/\s+/).filter(Boolean); };
-  var num = function(list, re){ for (var i = 0; i < list.length; i++){ var x = re.exec(list[i]); if (x) return +x[1]; } return null; };
   // 音の名前 "C4" "F#4" "Bb3" → {letter, acc: "" | "#" | "b" | "##" | "bb", oct, midi}。読めなければ null
   function parsePitch(s){
     var m = /^([A-G])(##|bb|#|b|♯|♭)?(-?\d)$/.exec(String(s));
@@ -112,7 +110,6 @@ var SC = (function(){
     if (by !== "note" && by !== "measure") throw new Error('m-score: by="' + by + '" must be "note" or "measure"');
     var spb = 60 / map.tempo;
     var notes = map.notes.map(function(n, i){
-      if (typeof n.cls !== "string" || !/^(abcjs-[\w-]+\s*)+$/.test(n.cls.trim())) throw new Error("m-score: abcMap.notes[" + i + "].cls must be abcjs classes such as \"abcjs-v0 abcjs-mm0 abcjs-n0\"");
       if (!(n.dur > 0)) throw new Error("m-score: abcMap.notes[" + i + "].dur must be > 0 (quarter note = 1)");
       var p = (n.pitch || []).map(function(s){
         var q = parsePitch(s);
@@ -120,7 +117,7 @@ var SC = (function(){
         return q;
       });
       if (!(n.measure >= 0) || Math.floor(n.measure) !== n.measure) throw new Error("m-score: abcMap.notes[" + i + "].measure must be the measure number (0, 1, …)");
-      return {i: i, cls: n.cls.trim().split(/\s+/), m: n.measure, beat: n.beat || 0, dur: n.dur, box: n.box || null, tie: false, p: p, raw: n};
+      return {i: i, m: n.measure, beat: n.beat || 0, dur: n.dur, box: n.box || null, tie: false, p: p, raw: n};
     });
     // 連桁：組み立てが記録した音符の番号の組（beams）
     var beams = map.beams === undefined ? [] : map.beams;
@@ -233,58 +230,52 @@ var SC = (function(){
     });
     return bars.map(function(b){ return b.join(" "); }).join("｜");
   }
-  // 要素がどの小節・何番目の音符か（abcjs の class から）
-  function where(list){ return {v: num(list, /^abcjs-v(\d+)$/), mm: num(list, /^abcjs-mm(\d+)$/), n: num(list, /^abcjs-n(\d+)$/), l: num(list, /^abcjs-l(\d+)$/), m: num(list, /^abcjs-m(\d+)$/)}; }
-  // 楽譜の木の要素を、どの音符と一緒に出すか決める（DOM を使わない）。
-  // → [{node, i（音符の番号。null なら段階 0 から見える）, note: 音符・休符そのものか}]。
-  // 音符・休符：abcMap の cls が全部ある要素。小節線：その小節の最後の音符と。
-  // 連桁（abcjs-beam-elem）：abcjs は連桁 1 組を 1 つの path に描き、beams の順に並ぶので、k 番目の path を beams[k] の最初の音符と。
-  // 弧（タイ・スラー）の線：組み立てが付けた data-arc="k" で arcs の n を引き、タイは to の音符と、スラーは from の音符と。
-  // data-arc の無い線・知らない k は、そのほかの要素と同じに扱い、mismatch で知らせる。
-  // 連桁の数が beams と合わなければ、その小節の最初の音符と出し、mismatch で知らせる。
-  // そのほかの abcjs-mm… の要素：その小節の最初の音符と。
-  // 五線・音部記号・調号・拍子・速度（abcjs-staff・abcjs-staff-extra・abcjs-tempo）と、小節のないものは段階 0 から
+  // 楽譜の木の要素を、どの音符と一緒に出すか決める（DOM を使わない）。組み立てが付けた data- の印だけを読む（abcjs の class は読まない）：
+  //   data-note="i"：notes[i] の音符・休符。data-beam="k"：beams[k] の連桁（最初の音符と）。data-measure="m"：小節 m の小節線
+  //   （その小節の最後の音符と）。data-arc="n"：arcs の n の弧の線（タイは to の音符と、スラーは from の音符と）。
+  //   印のない要素は段階 0 から見える（五線・音部記号・調号・拍子など）。中に印のある g は中を見る。
+  // → {parts: [{node, i（null なら段階 0 から）, note, top（いちばん上の子の何番目か＝段）}], missing: [印の要素がない音符], mismatch: [知らせ]}
   function assign(tree, pl){
-    var out = [], used = {};
-    var byMeasure = {};
-    pl.notes.forEach(function(n){ (byMeasure[n.m] = byMeasure[n.m] || []).push(n.i); });
-    var find = function(list){
-      for (var j = 0; j < pl.notes.length; j++){
-        if (used[j]) continue;
-        if (pl.notes[j].cls.every(function(c){ return list.indexOf(c) >= 0; })) return j;
-      }
-      return null;
-    };
-    var beamEls = [], mismatch = [];
-    (function walk(node){
-      node.kids.forEach(function(k){
-        var list = cls(k);
-        if (list.indexOf("abcjs-note") >= 0 || list.indexOf("abcjs-rest") >= 0){
-          var j = find(list);
-          if (j !== null){ used[j] = true; out.push({node: k, i: j, note: true}); return; }
+    var out = [], seen = {}, beamSeen = {}, arcSeen = {}, mismatch = [], lastOf = {};
+    var TAGS = ["data-note", "data-beam", "data-measure", "data-arc"];
+    var tagged = function(k){ return TAGS.some(function(t){ return k.a[t] !== undefined; }) || k.kids.some(tagged); };
+    pl.notes.forEach(function(n){ lastOf[n.m] = n.i; });
+    var tag = function(k, name){ var v = k.a[name]; return v === undefined ? null : +v; };
+    tree.kids.forEach(function(top, ti){
+      (function walk(k){
+        var i = tag(k, "data-note"), b = tag(k, "data-beam"), m = tag(k, "data-measure"), a = tag(k, "data-arc");
+        if (i !== null){
+          if (i < pl.notes.length && !seen[i]){ seen[i] = true; out.push({node: k, i: i, note: true, top: ti}); }
+          else mismatch.push("data-note=\"" + i + "\" is " + (seen[i] ? "used twice" : "not an index of abcMap.notes"));
+          return;
         }
-        if (k.a["data-arc"] !== undefined){
-          var a = pl.byN[+k.a["data-arc"]];
-          if (a){ out.push({node: k, i: a.kind === "tie" ? a.to : a.from}); return; }
-          mismatch.push("data-arc=\"" + k.a["data-arc"] + "\" is not an n of abcMap.arcs");
+        if (b !== null){
+          if (pl.beams[b]){ beamSeen[b] = true; out.push({node: k, i: pl.beams[b][0], top: ti}); }
+          else mismatch.push("data-beam=\"" + b + "\" is not an index of abcMap.beams");
+          return;
         }
-        var w = where(list), ms = w.mm !== null ? byMeasure[w.mm] : null;
-        if (list.indexOf("abcjs-staff") >= 0 || list.indexOf("abcjs-staff-extra") >= 0 || list.indexOf("abcjs-tempo") >= 0){ out.push({node: k, i: null}); return; }
-        if (!ms){ if (k.kids.length && w.mm === null) walk(k); else out.push({node: k, i: null}); return; }
-        var i = ms[0];
-        if (list.indexOf("abcjs-bar") >= 0) i = ms[ms.length - 1];
-        var part = {node: k, i: i};
-        if (list.indexOf("abcjs-beam-elem") >= 0) beamEls.push(part);
-        else if (list.indexOf("abcjs-slur") >= 0 && k.a["data-arc"] === undefined) mismatch.push("an arc line in abcSvg has no data-arc");
-        out.push(part);
-      });
-    })(tree);
-    if (beamEls.length === pl.beams.length) beamEls.forEach(function(p, q){ p.i = pl.beams[q][0]; });
-    else mismatch.push("beams: " + pl.beams.length + " in abcMap, " + beamEls.length + " in abcSvg");
-    var missing = pl.notes.filter(function(n){ return !used[n.i]; }).map(function(n){ return n.i; });
+        if (m !== null){
+          if (lastOf[m] !== undefined) out.push({node: k, i: lastOf[m], top: ti});
+          else mismatch.push("data-measure=\"" + m + "\" is not a measure of abcMap.notes");
+          return;
+        }
+        if (a !== null){
+          var arc = pl.byN[a];
+          if (arc){ arcSeen[a] = true; out.push({node: k, i: arc.kind === "tie" ? arc.to : arc.from, top: ti}); return; }
+          mismatch.push("data-arc=\"" + a + "\" is not an n of abcMap.arcs");
+        }
+        if (k.tag === "g" && k.kids.some(tagged)){ k.kids.forEach(walk); return; }
+        out.push({node: k, i: null, top: ti});
+      })(top);
+    });
+    var missing = pl.notes.filter(function(n){ return !seen[n.i]; }).map(function(n){ return n.i; });
+    if (missing.length) mismatch.push("no element has data-note for abcMap.notes[" + missing.join(", ") + "]");
+    pl.beams.forEach(function(_, k){ if (!beamSeen[k]) mismatch.push("no element has data-beam=\"" + k + "\""); });
+    var noArc = pl.arcs.filter(function(x){ return !arcSeen[x.n]; }).map(function(x){ return x.n; });
+    if (noArc.length) mismatch.push("no element has data-arc for abcMap.arcs n " + noArc.join(", "));
     return {parts: out, missing: missing, mismatch: mismatch};
   }
-  return {place: place, parseSvg: parseSvg, parsePitch: parsePitch, label: label, plan: plan, events: events, names: names, readable: readable, assign: assign, where: where};
+  return {place: place, parseSvg: parseSvg, parsePitch: parsePitch, label: label, plan: plan, events: events, names: names, readable: readable, assign: assign};
 })();
 
 var FS = 26, ROW = 30;   // 名前の字（24 px 以上）と行の高さ
@@ -298,8 +289,8 @@ DECK.define("m-score", class extends DECK.MotionElement {
       abc: {type: "string"}, abcSvg: {type: "string"}, renderer: {type: "object"},
       abcMap: {type: "object", required: ["tempo", "notes"], properties: {
         tempo: {type: "number"},
-        notes: {type: "array", minItems: 1, items: {type: "object", required: ["cls", "measure", "pitch", "beat", "dur"], properties: {
-          cls: {type: "string"}, measure: {type: "integer"}, pitch: {type: "array", items: {type: "string"}}, beat: {type: "number"}, dur: {type: "number"},
+        notes: {type: "array", minItems: 1, items: {type: "object", required: ["measure", "pitch", "beat", "dur"], properties: {
+          measure: {type: "integer"}, pitch: {type: "array", items: {type: "string"}}, beat: {type: "number"}, dur: {type: "number"},
           box: {type: "array", items: {type: "number"}}}}},
         beams: {type: "array", items: {type: "array", items: {type: "integer"}}},
         arcs: {type: "array", items: {type: "object", required: ["kind", "from", "to", "n"], properties: {
@@ -333,8 +324,7 @@ DECK.define("m-score", class extends DECK.MotionElement {
     this.style.display = "block";
     var W = this.clientWidth, H = this.clientHeight;
     var tree = SC.parseSvg(this.data.abcSvg), as = SC.assign(tree, pl);
-    as.mismatch.forEach(function(x){ console.warn("m-score: the build's record and abcSvg differ (" + x + "); those marks appear with the first note of their measure"); });
-    if (as.missing.length) console.warn("m-score: no element in abcSvg has the classes of abcMap.notes[" + as.missing.join(", ") + "] (they are not drawn)");
+    as.mismatch.forEach(function(x){ console.warn("m-score: abcSvg and abcMap do not match: " + x + " (an element without a known tag is shown from step 0)"); });
     var svg = D.el("svg", {viewBox: "0 0 " + W + " " + H, width: W, height: H, "aria-hidden": "true", style: "display:block;overflow:visible"}, this);
     // 楽譜の木を組み直す（許した属性だけ。色は currentColor → color: var(--fg)）
     var mk = function(node, parent){
@@ -346,25 +336,20 @@ DECK.define("m-score", class extends DECK.MotionElement {
       node.el = e;
       return e;
     };
-    // 段（abcjs-staff-wrapper abcjs-l…）ごとに g に分け、段の間に名前の帯を入れる
-    var lineOf = function(node){ var w = SC.where((node.a["class"] || "").split(/\s+/)); return w.l !== null ? w.l : 0; };
-    var lines = {};
-    tree.kids.forEach(function(c){ var l = lineOf(c); (lines[l] = lines[l] || []).push(c); });
-    var keys = Object.keys(lines).map(Number).sort(function(a, b){ return a - b; });
+    // 段：楽譜の SVG のいちばん上の子 1 つが 1 段（描き手は段ごとに 1 つの g にまとめる）。段ごとに g に分け、段の間に名前の帯を入れる
     var root = D.el("g", {fill: "currentColor", stroke: "currentColor", style: "color:var(--fg)"}, svg);
-    var L = keys.map(function(l){
+    var L = tree.kids.map(function(c, l){
       var g = D.el("g", {}, root);
-      lines[l].forEach(function(c){ mk(c, g); });
+      mk(c, g);
       var bb = {x: 0, y: 0, width: +tree.a.width || 600, height: +tree.a.height || 100};
       try { var b = g.getBBox(); if (b.height > 0) bb = b; } catch (e) {}
       return {l: l, g: g, top: bb.y, h: bb.height, x0: bb.x, x1: bb.x + bb.width, names: []};
     });
     // 名前（どの段のどの行か）
-    var NM = SC.names(pl, pl.names), byNote = {};
-    as.parts.forEach(function(p){ if (p.note) byNote[p.i] = p.node; });
+    var NM = SC.names(pl, pl.names), topOf = {};
+    as.parts.forEach(function(p){ if (p.note) topOf[p.i] = p.top; });
     NM.forEach(function(n){
-      var node = byNote[n.i], l = node ? lineOf({a: {"class": node.a["class"]}}) : 0;
-      var ln = L.filter(function(x){ return x.l === l; })[0] || L[0];
+      var ln = L[topOf[n.i] || 0] || L[0];
       ln.names.push(n);
     });
     // 大きさ：幅と高さの両方に収める（名前の字は大きさによらず 26 px）。名前の行の数は倍率で変わるので、2 回まで決め直す

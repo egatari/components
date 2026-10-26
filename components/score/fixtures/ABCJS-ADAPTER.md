@@ -1,10 +1,34 @@
 # Reading abcjs 6.7.2 for m-score (notes for the build hook)
 
-m-score knows nothing about abcjs beyond the frozen output shape (components 2.0 design §4.1): `abcSvg` with each note's
-classes (`cls`), `abcMap` (`tempo`, `notes`, `beams`, `arcs`), and `data-arc="k"` on every drawn tie or slur piece. These are
-the abcjs facts a producer needs to get there. `tools/score-fixtures.mjs` follows them. It is the stand-in for Studio's build
+m-score knows nothing about abcjs (components 2.0 design §4.1). It reads `abcMap` (`tempo`, `notes`, `beams`, `arcs`)
+and finds things in `abcSvg` only by the build's data- tags, never by an abcjs class. This file gives the abcjs facts a
+producer needs to write those tags. `tools/score-fixtures.mjs` follows them. It is the stand-in for Studio's build
 hook and writes `fixtures/*.json` and `demo.html`. They were checked on the fixtures here (`ties.json` is test-only) and in
 abcjs's source (`src/write/creation/abstract-engraver.js`, `src/write/draw/tie.js`, `src/write/draw/beam.js`).
+
+## Tags the build writes (all digits; the part's SVG reader keeps only these data- attributes)
+
+| Tag | On | Value | The part shows it with |
+|---|---|---|---|
+| `data-note="i"` | each note's or rest's `<g>` (`abselem.elemset[0]` of the parsed note) | its index in `notes` | that note (and colours it while current) |
+| `data-beam="k"` | each beam path (`abcjs-beam-elem`) | its index in `beams` | the first note of `beams[k]` |
+| `data-measure="m"` | each bar line's `<g>` (`abselem.elemset[0]` of a `bar` element) | the measure it closes (its `abcjs-mm`) | the last note of measure `m` |
+| `data-arc="n"` | each drawn tie or slur piece | `arcs[].n` | a tie with its `to`, a slur with its `from` |
+
+- Everything without a tag is shown from step 0: the staff, clef, key and time signatures, and whatever else abcjs draws.
+  So anything that should appear with a note must be tagged. This covers decorations, lyrics and chord symbols, if abcjs
+  ever draws them outside the note's `<g>`; the fixtures have none.
+- A `<g>` that contains a tag is looked into. One that contains none is kept whole.
+- A staff line is one child of the root `<svg>`. abcjs puts each line in its own `abcjs-staff-wrapper` `<g>`.
+  The part stacks these children and puts the names band under each.
+- The part reports, without guessing:
+  - a note with no `data-note` element, and a `data-note` used twice;
+  - a beam with no `data-beam` element;
+  - an arc with no `data-arc` line;
+  - a tag value that `abcMap` does not have.
+- `notes[].cls` (`"abcjs-v0 abcjs-mm1 abcjs-n2"`) stays in `abcMap` as the adapter's record, for checking. The part does not read it.
+- `tools/test-score.mjs` and `tools/test-score-noclass.mjs` strip every `abcjs-*` class from the fixtures. They check
+  that the part behaves the same: same steps, events, names and DOM.
 
 ## Notes
 
@@ -19,7 +43,7 @@ abcjs's source (`src/write/creation/abstract-engraver.js`, `src/write/draw/tie.j
 ## Beams
 
 `drawBeam` draws one path per beam group, all levels in one path, with class `abcjs-beam-elem`. The paths come in the
-order of the engraved voice's `beams` (`tune.lines[l].staffGroup.voices[v].beams`, skipping `'bar'`). The notes of each
+order of the engraved voice's `beams`, so the build tags the k-th `abcjs-beam-elem` path in document order `data-beam="k"` (`tune.lines[l].staffGroup.voices[v].beams`, skipping `'bar'`). The notes of each
 group are in `elems[].abcelem`.
 
 ## Ties and slurs
@@ -54,10 +78,7 @@ group are in `elems[].abcelem`.
 
 ## What m-score does with it
 
-- Notes are found by `cls`.
-- Bar lines are found by `abcjs-mm`. They appear with the last note of their measure.
-- The k-th `abcjs-beam-elem` path is `beams[k]`.
-- Arc pieces are found only by `data-arc`. A tie piece appears with the note it leads to (`to`), a slur piece with its
-  first note (`from`).
+- It finds notes, beams, bar lines and arc pieces only by the tags above.
+- A tie piece appears with the note it leads to (`to`), a slur piece with its first note (`from`).
 - A pitch is not sounded again at note `j` when a tie arc has `to = j` and that `pitch`. A tied pitch sounds for the
   whole chain.

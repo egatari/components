@@ -54,7 +54,12 @@ function adapt({ abc, staffwidth }) {
     return { s: LET[li] + (acc === 1 ? '#' : acc === -1 ? 'b' : acc === 2 ? '##' : acc === -2 ? 'bb' : '') + oct, midi: mid };
   };
   tune.lines.forEach((L) => (L.staff || []).slice(0, 1).forEach((S) => S.voices.slice(0, 1).forEach((V) => V.forEach((e) => {
-    if (e.el_type === 'bar') { beat = 0; return; }
+    if (e.el_type === 'bar') {
+      // a bar line closes the measure it ends: data-measure from abcjs's abcjs-mm class on it (the part reads no class)
+      const bg = e.abselem && e.abselem.elemset && e.abselem.elemset[0], bm = bg && /\babcjs-mm(\d+)\b/.exec(bg.getAttribute('class') || '');
+      if (bm) bg.setAttribute('data-measure', bm[1]);
+      beat = 0; return;
+    }
     if (e.el_type !== 'note') return;
     if (e.startTriplet) trip = e.tripletMultiplier || 1;
     const g = e.abselem.elemset[0], c = g.getAttribute('class');
@@ -66,6 +71,7 @@ function adapt({ abc, staffwidth }) {
     const i = notes.length;
     const ps = e.rest ? [] : e.pitches.map((_, q) => name(e, q, i));
     e._idx = i;
+    g.setAttribute('data-note', String(i));   // the note's or rest's <g>: the part finds it by this, never by abcjs-v / -mm / -n
     notes.push({ out: { cls: 'abcjs-v' + cv('v') + ' abcjs-mm' + cv('mm') + ' abcjs-n' + cv('n'), measure: cv('mm'), pitch: ps.map((x) => x.s), beat: r3(beat), dur: r3(dur), box: [x0, y0, x1 - x0, y1 - y0].map((v) => Math.round(v * 100) / 100) },
       steps: e.rest ? [] : e.pitches.map((p) => p.pitch), midi: ps.map((x) => x.midi), e });
     beat += dur;
@@ -78,6 +84,10 @@ function adapt({ abc, staffwidth }) {
     const ix = b.elems.map((a) => a.abcelem && a.abcelem._idx).filter((x) => x !== undefined);
     if (ix.length) beams.push(ix);
   })); });
+  // data-beam: the k-th abcjs-beam-elem path in document order is beams[k] (drawBeam draws one path per group, in voice.beams order)
+  const beamEls = [...d.querySelectorAll('.abcjs-beam-elem')];
+  if (beamEls.length !== beams.length) throw new Error(`${beamEls.length} beam paths but ${beams.length} beam groups`);
+  beamEls.forEach((el, k) => el.setAttribute('data-beam', String(k)));
   // arcs from the parsed notes: a tie per pitch (startTie on pitch q of note i, ended by the next note whose pitch with the
   // same diatonic step has endTie, as abcjs matches them), a slur per startSlur / endSlur label (on the note or a pitch)
   const arcs = [], openTie = [], openSlur = {};
