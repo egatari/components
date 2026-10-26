@@ -8,6 +8,8 @@
 //   5. which notes each SVG element appears with (every note found; bar lines with the last note of their measure,
 //      the k-th beam path with the first note of abcMap.beams[k], tie paths with the note they end on from abcMap.ties;
 //      a record that does not match the SVG is reported)
+//   5b. ties and slurs on the test-only fixture fixtures/ties.json (chords, a chain, across a line break): the order abcjs
+//      draws their pieces (SC.arcOrder), checked against the classes abcjs writes on each piece
 //   6. note names (solfa, abc, iroha; chords top to bottom) and their placement under the noteheads (x from the box;
 //      a measure with a collision zigzags all its names, odd notes up and even notes down; nothing overlaps); the readable layer's text
 //   7. the demo carries the fixtures unchanged
@@ -22,6 +24,9 @@ const DECK = { define: (tag, C) => { classes[tag] = C; }, MotionElement: class {
 vm.runInNewContext(fs.readFileSync(path.join(ROOT, 'components', 'score', 'index.js'), 'utf8'), { DECK, console, Math, String, JSON, Number, Array, Object, Error, parseInt, isFinite });
 const SC = classes['m-score'].sc;
 const FX = {};
+const demo = fs.readFileSync(path.join(ROOT, 'components', 'score', 'demo.html'), 'utf8');
+const demoHas = (name) => demo.includes(JSON.stringify(JSON.parse(fs.readFileSync(path.join(ROOT, 'components', 'score', 'fixtures', name + '.json'), 'utf8')).abcMap.notes).replace(/</g, '\\u003c'));
+const TIES = JSON.parse(fs.readFileSync(path.join(ROOT, 'components', 'score', 'fixtures', 'ties.json'), 'utf8'));   // test only, not in the demo
 for (const n of ['doremi', 'rhythm', 'kaeru', 'chords']) FX[n] = JSON.parse(fs.readFileSync(path.join(ROOT, 'components', 'score', 'fixtures', n + '.json'), 'utf8'));
 
 let fail = 0, n = 0;
@@ -69,8 +74,9 @@ throws(() => SC.plan(map([N({ measure: undefined, m: 0 })]), 'note'), /measure m
 throws(() => SC.plan({ ...map([N({}), N({})]), beams: [[1, 0]] }, 'note'), /beams must be lists of increasing note indices/, 'beams: increasing indices');
 throws(() => SC.plan({ ...map([N({}), N({})]), ties: [[0, 5]] }, 'note'), /ties must be/, 'ties: indices inside notes');
 throws(() => SC.plan({ ...map([N({}), N({})]), ties: [[0]] }, 'note'), /ties must be/, 'ties: at least two notes');
+throws(() => SC.plan({ ...map([N({}), N({})]), slurs: [[1]] }, 'note'), /slurs must be/, 'slurs: at least two notes');
 eq(SC.plan({ ...map([N({}), N({ beat: 1 })]), ties: [[0, 1]] }, 'note').sound, [1, 0], 'ties alone (without tie: true) make the second note a continuation: the first sounds 2 beats at 120');
-for (const [name, fx] of Object.entries(FX)) ok(fx.abcMap.notes.every((x) => 'measure' in x && !('m' in x)) && Array.isArray(fx.abcMap.beams) && Array.isArray(fx.abcMap.ties), `${name}: fixture has measure, beams and ties (§4.1 of 2026-10-26)`);
+for (const [name, fx] of Object.entries({ ...FX, ties: TIES })) ok(fx.abcMap.notes.every((x) => 'measure' in x && !('m' in x)) && Array.isArray(fx.abcMap.beams) && Array.isArray(fx.abcMap.ties) && Array.isArray(fx.abcMap.slurs), `${name}: fixture has measure, beams and ties (§4.1 of 2026-10-26)`);
 eq(FX.kaeru.abcMap.beams, [[22, 23, 24, 25], [26, 27, 28, 29]], 'kaeru: the build recorded the two beam groups of measure 7');
 eq(FX.rhythm.abcMap.beams, [[2, 3], [7, 8], [9, 10]], 'rhythm: three beam groups');
 eq(FX.rhythm.abcMap.ties, [[11, 12]], 'rhythm: one tie');
@@ -138,6 +144,44 @@ for (const [name, fx] of Object.entries(FX)) {
   ok(bad.mismatch.length === 1 && /beams: 1 in abcMap, 3 in abcSvg/.test(bad.mismatch[0]), 'a build record that does not match the SVG is reported (' + bad.mismatch[0] + ')');
 }
 
+// ---- 5b. ties and slurs (fixtures/ties.json, test only): ties in chords, a chain of ties, a tie and a slur from one note,
+// a chord tie and a slur across a line break (abcjs draws each in two pieces). The order rule is SC.arcOrder; the classes abcjs
+// writes on each piece (abcjs-start-m…-n…, abcjs-end-m…-n… or -edge, abcjs-tie / abcjs-legato) are the independent check here
+{
+  const fx = TIES, pl = SC.plan(fx.abcMap, 'note');
+  eq(fx.abcMap.ties, [[0, 1], [2, 3, 4], [5, 6], [10, 11], [13, 14]], 'ties: chord tie, chain of three, tie under a slur, chord tie across the line break, plain tie');
+  eq(fx.abcMap.slurs, [[5, 6, 7, 8], [10, 11, 12]], 'slurs: one on the first line, one across the line break');
+  eq(SC.events(pl, 1).map((e) => [e.pitch, e.dur]), [['C4', 2.5], ['E4', 2.5]], 'a tied chord sounds both notes for both halves (4 beats at 96 = 2.5 s)');
+  eq(SC.events(pl, 2), [], '… and its continuation is silent');
+  eq(SC.events(pl, 3).map((e) => e.dur), [2.5], 'a chain of ties (2 + 1 + 1 beats) sounds once for 4 beats');
+  eq([SC.events(pl, 4), SC.events(pl, 5)], [[], []], '… the rest of the chain is silent');
+  eq(SC.events(pl, 11).map((e) => [e.pitch, e.dur]), [['G4', 2.5], ['C5', 2.5]], 'a chord tied across the line break sounds on through the next line');
+  const tree = SC.parseSvg(fx.abcSvg), a = SC.assign(tree, pl);
+  eq([a.mismatch, a.missing], [[], []], 'every tie and slur path is accounted for');
+  // the note at (line, m, n) from the note elements' classes
+  const at = {};
+  a.parts.filter((p) => p.note).forEach((p) => { const w = SC.where(p.node.a.class.split(' ')); at[w.l + ':' + w.m + ':' + w.n] = p.i; });
+  const arcs = a.parts.filter((p) => /abcjs-slur/.test(p.node.a.class || ''));
+  const got = arcs.map((p) => p.i);
+  eq(got, [1, 1, 3, 4, 6, 5, 11, 10, 11, 10, 11, 11, 14], 'each piece appears with its note: ties with the note they lead to, slurs with their first note');
+  let checked = 0;
+  arcs.forEach((p) => {
+    const c = p.node.a.class, w = SC.where(c.split(' '));
+    const st = /abcjs-start-m(\d+)-n(\d+)/.exec(c), en = /abcjs-end-m(\d+)-n(\d+)/.exec(c);
+    if (/abcjs-legato/.test(c) && st) { checked++; ok(p.i === at[w.l + ':' + st[1] + ':' + st[2]], `slur piece ${c}: with its first note`); }
+    if (/abcjs-tie/.test(c) && st && en) { checked++; ok(p.i === at[w.l + ':' + en[1] + ':' + en[2]], `tie piece ${c}: with the note it ends on`); }
+  });
+  ok(checked === 7, `the 7 pieces whose classes name both ends agree with abcjs's classes (${checked})`);
+  const order = SC.arcOrder(pl, { 0: 0, 1: 0, 2: 0, 3: 0, 4: 0, 5: 0, 6: 0, 7: 0, 8: 0, 9: 0, 10: 0, 11: 1, 12: 1, 13: 1, 14: 1 });
+  eq(order[0].map((x) => x.kind + x.from + (x.kind === 'tie' ? '.' + x.r : '')), ['tie0.0', 'tie0.1', 'tie2.0', 'tie3.0', 'tie5.0', 'slur5', 'tie10.0', 'slur10', 'tie10.1'],
+    'line 1: by start note; at one note the lowest pitch\'s tie, then the slur, then the other pitches\' ties');
+  eq(order[1].map((x) => x.kind + x.from + (x.kind === 'tie' ? '.' + x.r : '')), ['slur10', 'tie10.0', 'tie10.1', 'tie13.0'],
+    'line 2: the pieces continued from line 1 first (slurs, then ties low to high), then the arcs starting on line 2');
+  const noSlurs = SC.assign(tree, SC.plan({ ...fx.abcMap, slurs: [] }, 'note'));
+  ok(noSlurs.mismatch.length === 2 && noSlurs.mismatch.every((m) => /ties and slurs on staff line [01]/.test(m)), 'a record without the slurs does not match the SVG on either line: reported');
+  ok(demoHas('kaeru') && !demoHas('ties'), 'the ties fixture is a test fixture only, not in the demo');
+}
+
 // ---- 6. names ----
 const p66 = SC.parsePitch('F#4'), pb = SC.parsePitch('Bb3');
 eq([SC.label(p66, 'solfa'), SC.label(p66, 'abc'), SC.label(p66, 'iroha')], ['ファ♯', 'F♯', '嬰ヘ'], 'F#4: ファ♯ / F♯ / 嬰ヘ');
@@ -180,7 +224,6 @@ eq(SC.readable(c, 'abc', false), '(C・E・G) (F・A・C)｜(G・B・D) (C・E�
 eq(SC.readable(r, 'solfa', true).split('｜')[2], 'ソ 休み', 'readable layer: a rest is 休み');
 
 // ---- 7. demo data = fixtures ----
-const demo = fs.readFileSync(path.join(ROOT, 'components', 'score', 'demo.html'), 'utf8');
 const blocks = [...demo.matchAll(/<script type="application\/json">([\s\S]*?)<\/script>/g)].map((m) => JSON.parse(m[1]));
 eq(blocks.map((b) => b.abcSvg === undefined ? null : Object.keys(FX).find((k) => JSON.stringify(FX[k]) === JSON.stringify(b))), ['doremi', 'rhythm', 'kaeru', 'chords'], 'the demo carries the four fixtures unchanged');
 

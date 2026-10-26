@@ -506,7 +506,8 @@
     29
    ]
   ],
-  "ties": []
+  "ties": [],
+  "slurs": []
  },
  "renderer": {
   "name": "abcjs",

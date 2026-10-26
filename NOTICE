@@ -15,7 +15,7 @@ data/kana/strokes.ofl.json) — kana stroke shapes
 
 components/map-japan/index.js — map data derived from Natural Earth (public domain).
 
-components/score/fixtures/*.json and components/score/demo.html — the abcSvg strings are output of abcjs 6.7.2
-(https://github.com/paulrosen/abcjs), including its music glyph outlines.
-  Copyright (c) 2009-2026 Paul Rosen and Gregory Dyke. Licensed under the MIT License: components/score/fixtures/LICENSE-abcjs.txt.
-  The tunes are exercises written for the demo and かえるの合唱 (German folk song, public domain).
+components/score/fixtures/*.json and components/score/demo.html — the abcSvg strings:
+  notation drawn with abcjs 6.7.2 (MIT, © Paul Rosen and Gregory Dyke); glyph outlines are part of abcjs
+  (https://github.com/paulrosen/abcjs; licence text: components/score/fixtures/LICENSE-abcjs.txt).
+  The tunes are exercises written for this repository and かえるの合唱 (German folk song, public domain).

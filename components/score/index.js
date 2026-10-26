@@ -128,7 +128,7 @@ var SC = (function(){
         throw new Error("m-score: abcMap." + key + " must be lists of increasing note indices (such as [[4, 5, 6, 7]])");
       return g;
     };
-    var beams = groups("beams", 1), ties = groups("ties", 2);
+    var beams = groups("beams", 1), ties = groups("ties", 2), slurs = groups("slurs", 2);
     // タイの先（鳴らし直さない）：ties の 2 番目から。tie: true もそう扱う
     ties.forEach(function(x){ x.slice(1).forEach(function(j){ if (notes[j].p.length) notes[j].tie = true; }); });
     // タイ：つながった先の分も鳴らす（鳴るのは始めの音符だけ）
@@ -148,7 +148,7 @@ var SC = (function(){
       last.len = Math.max(last.len, at[n.i] + n.dur * spb);
     });
     steps.forEach(function(s){ s.len = +s.len.toFixed(6); delete s.b0; });
-    return {tempo: map.tempo, spb: spb, notes: notes, steps: steps, stepOf: stepOf, at: at, sound: sound, beams: beams, ties: ties};
+    return {tempo: map.tempo, spb: spb, notes: notes, steps: steps, stepOf: stepOf, at: at, sound: sound, beams: beams, ties: ties, slurs: slurs};
   }
   // 段階 k の音：音の高さ 1 つに 1 つの note（和音は同じ t）。休符・タイの先は鳴らない
   function events(pl, k){
@@ -221,13 +221,43 @@ var SC = (function(){
   }
   // 要素がどの小節・何番目の音符か（abcjs の class から）
   function where(list){ return {v: num(list, /^abcjs-v(\d+)$/), mm: num(list, /^abcjs-mm(\d+)$/), n: num(list, /^abcjs-n(\d+)$/), l: num(list, /^abcjs-l(\d+)$/), m: num(list, /^abcjs-m(\d+)$/)}; }
+  // タイとスラーの path が abcjs の SVG に並ぶ順（abcjs 6.7.2 の write/creation/abstract-engraver.js による）。
+  // abcjs は弧を作った順に描く。段（abcjs-l…）ごとに：
+  //   1. 前の段から続く弧の切れ端（段の頭で作り直す）：スラーが先（始まりの順）、次にタイ（始まりの音符の順、和音は低い音から）
+  //   2. この段で始まる弧を、始まりの音符の順に。1 つの音符では、音の高さごとに（低い音から）その高さのタイ、
+  //      いちばん低い高さのタイの後にその音符から始まるスラー
+  // 弧が段をまたぐと、始まりの段から終わりの段まで、段ごとに 1 つずつ切れ端がある。
+  // タイは つなぎ 1 つ × 音の高さの数（つなぎの先の音符の高さの数）。lineOf[i] は音符 i の段。
+  // → {段: [{kind: "tie" | "slur", from, to, r（和音の何番目の高さ）, show（一緒に出す音符：タイは先、スラーは最初）}]}
+  function arcOrder(pl, lineOf){
+    var arcs = [], out = {};
+    pl.ties.forEach(function(x){
+      for (var q = 1; q < x.length; q++) for (var r = 0; r < Math.max(1, pl.notes[x[q]].p.length); r++)
+        arcs.push({kind: "tie", from: x[q - 1], to: x[q], r: r, show: x[q]});
+    });
+    pl.slurs.forEach(function(x){ arcs.push({kind: "slur", from: x[0], to: x[x.length - 1], r: 0, show: x[0]}); });
+    var L = function(i){ return lineOf[i] || 0; };
+    // 1 つの音符の中の順：タイ r=0、スラー、タイ r=1、r=2 …
+    var within = function(a){ return a.kind === "slur" ? 1 : a.r === 0 ? 0 : a.r + 1; };
+    var lines = {};
+    arcs.forEach(function(a){ for (var l = L(a.from); l <= L(a.to); l++) lines[l] = true; });
+    Object.keys(lines).map(Number).sort(function(a, b){ return a - b; }).forEach(function(l){
+      var cont = arcs.filter(function(a){ return L(a.from) < l && l <= L(a.to); }).sort(function(a, b){
+        return (a.kind === b.kind ? 0 : a.kind === "slur" ? -1 : 1) || a.from - b.from || a.r - b.r;
+      });
+      var start = arcs.filter(function(a){ return L(a.from) === l; }).sort(function(a, b){ return a.from - b.from || within(a) - within(b); });
+      out[l] = cont.concat(start);
+    });
+    return out;
+  }
   // 楽譜の木の要素を、どの音符と一緒に出すか決める（DOM を使わない）。
   // → [{node, i（音符の番号。null なら段階 0 から見える）, note: 音符・休符そのものか}]。
   // 音符・休符：abcMap の cls が全部ある要素。小節線：その小節の最後の音符と。
   // 連桁（abcjs-beam-elem）：abcjs は連桁 1 組を 1 つの path に描き、beams の順に並ぶので、k 番目の path を beams[k] の最初の音符と。
-  // タイ（abcjs-tie）：ties の組を終わりの音符の順に、つなぎ 1 つ × 音の高さの数だけ path が並ぶので、それぞれ つなぎの先の音符と。
+  // タイとスラー（どちらも class abcjs-slur。段をまたぐスラーの切れ端は abcjs-tie になる）：arcOrder の順に段ごとに並ぶので、
+  // タイは つなぎの先の音符と、スラーは最初の音符と。
   // 数が合わなければ（組み立ての記録と SVG が違う）、その小節の最初の音符と出し、mismatch で知らせる。
-  // そのほかの abcjs-mm… の要素（スラーなど）：その小節の最初の音符と。
+  // そのほかの abcjs-mm… の要素：その小節の最初の音符と。
   // 五線・音部記号・調号・拍子・速度（abcjs-staff・abcjs-staff-extra・abcjs-tempo）と、小節のないものは段階 0 から
   function assign(tree, pl){
     var out = [], used = {};
@@ -240,18 +270,13 @@ var SC = (function(){
       }
       return null;
     };
-    // タイの path の順の、つなぎの先の音符
-    var tieEnds = [];
-    pl.ties.map(function(x){ return x; }).sort(function(a, b){ return a[1] - b[1]; }).forEach(function(x){
-      for (var q = 1; q < x.length; q++) for (var r = 0; r < Math.max(1, pl.notes[x[q]].p.length); r++) tieEnds.push(x[q]);
-    });
-    var nb = 0, nt = 0, beamEls = [], tieEls = [];
+    var beamEls = [], arcEls = {}, lineOfNote = {};
     (function walk(node){
       node.kids.forEach(function(k){
         var list = cls(k);
         if (list.indexOf("abcjs-note") >= 0 || list.indexOf("abcjs-rest") >= 0){
           var j = find(list);
-          if (j !== null){ used[j] = true; out.push({node: k, i: j, note: true}); return; }
+          if (j !== null){ used[j] = true; lineOfNote[j] = where(list).l || 0; out.push({node: k, i: j, note: true}); return; }
         }
         var w = where(list), ms = w.mm !== null ? byMeasure[w.mm] : null;
         if (list.indexOf("abcjs-staff") >= 0 || list.indexOf("abcjs-staff-extra") >= 0 || list.indexOf("abcjs-tempo") >= 0){ out.push({node: k, i: null}); return; }
@@ -260,19 +285,24 @@ var SC = (function(){
         if (list.indexOf("abcjs-bar") >= 0) i = ms[ms.length - 1];
         var part = {node: k, i: i};
         if (list.indexOf("abcjs-beam-elem") >= 0) beamEls.push(part);
-        else if (list.indexOf("abcjs-tie") >= 0) tieEls.push(part);
+        else if (list.indexOf("abcjs-slur") >= 0){ var l = where(list).l || 0; (arcEls[l] = arcEls[l] || []).push(part); }
         out.push(part);
       });
     })(tree);
     var mismatch = [];
     if (beamEls.length === pl.beams.length) beamEls.forEach(function(p, q){ p.i = pl.beams[q][0]; });
     else mismatch.push("beams: " + pl.beams.length + " in abcMap, " + beamEls.length + " in abcSvg");
-    if (tieEls.length === tieEnds.length) tieEls.forEach(function(p, q){ p.i = tieEnds[q]; });
-    else mismatch.push("ties: " + tieEnds.length + " tie paths expected from abcMap, " + tieEls.length + " in abcSvg");
+    var want = arcOrder(pl, lineOfNote);
+    Object.keys(arcEls).forEach(function(l){
+      var e = arcEls[l], w = want[l] || [];
+      if (e.length === w.length) e.forEach(function(p, q){ p.i = w[q].show; });
+      else mismatch.push("ties and slurs on staff line " + l + ": " + w.length + " paths expected from abcMap, " + e.length + " in abcSvg");
+    });
+    Object.keys(want).forEach(function(l){ if (!arcEls[l]) mismatch.push("ties and slurs on staff line " + l + ": " + want[l].length + " paths expected from abcMap, 0 in abcSvg"); });
     var missing = pl.notes.filter(function(n){ return !used[n.i]; }).map(function(n){ return n.i; });
     return {parts: out, missing: missing, mismatch: mismatch};
   }
-  return {place: place, parseSvg: parseSvg, parsePitch: parsePitch, label: label, plan: plan, events: events, names: names, readable: readable, assign: assign, where: where};
+  return {arcOrder: arcOrder, place: place, parseSvg: parseSvg, parsePitch: parsePitch, label: label, plan: plan, events: events, names: names, readable: readable, assign: assign, where: where};
 })();
 
 var FS = 26, ROW = 30;   // 名前の字（24 px 以上）と行の高さ
@@ -289,7 +319,8 @@ DECK.define("m-score", class extends DECK.MotionElement {
         notes: {type: "array", minItems: 1, items: {type: "object", required: ["cls", "measure", "pitch", "beat", "dur"], properties: {
           cls: {type: "string"}, measure: {type: "integer"}, pitch: {type: "array", items: {type: "string"}}, beat: {type: "number"}, dur: {type: "number"},
           box: {type: "array", items: {type: "number"}}, tie: {type: "boolean"}}}},
-        beams: {type: "array", items: {type: "array", items: {type: "integer"}}}, ties: {type: "array", items: {type: "array", items: {type: "integer"}}}}}}},
+        beams: {type: "array", items: {type: "array", items: {type: "integer"}}}, ties: {type: "array", items: {type: "array", items: {type: "integer"}}},
+        slurs: {type: "array", items: {type: "array", items: {type: "integer"}}}}}}},
     example: {abc: "X:1\nM:4/4\nL:1/4\nQ:1/4=96\nK:C\nC D E F |]"},
     note: {en: "write abc only; the build adds abcSvg and abcMap", ja: "abc だけを書く（abcSvg・abcMap は組み立てが足す）"},
   };
