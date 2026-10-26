@@ -54,7 +54,10 @@ What it does:
 4. Projects with d3-geo (Equal Earth, central meridian 150°E, sphere, 1 unit ≈ 1 km; cut at the seam, 30°W; the component's
    formula is checked against d3-geo), drops rings under 1500 km² (4 km² for JPN and XUD) except each feature's largest,
    simplifies (mapshaper, Visvalingam, 22 km; 2 km for JPN and XUD; map-design §3.1), quantizes and builds the topology.
-5. Writes label anchors, the six regions (六州, from `REGION_UN`/`SUBREGION`), the fixed island points, the lines, the block and
+5. Gives overseas parts the region of their geography: a part more than 800 km from the country's main land whose nearest foreign
+   country (nearer than its own land) is in another region. The parts found must equal `OVERSEAS` (moved: フランス領ギアナ,
+   レユニオン, カナリア諸島) and `STAY` (kept: ハワイ州, アラスカ州, the east of Greenland across the seam); the build fails otherwise.
+6. Writes label anchors, the six regions (六州, from `REGION_UN`/`SUBREGION`), the fixed island points, the lines, the block and
    `world.sha256` (the block's, the source's and the names table's sha256).
 
 Attribution: 地図データ：Natural Earth（パブリックドメイン）を加工.

@@ -35,7 +35,9 @@ for (const l of csv.slice(1)) { const r = parse(l); TABLE[r[col('ADM0_A3')]] = r
 for (const [id, name] of Object.entries(LIST)) ok(id === 'XUD' ? name === '' : TABLE[id] === name, `names: ${id} is "${name}", atlas-names.csv has "${TABLE[id]}"`);
 ok(Object.keys(LIST).length === Object.keys(TABLE).length, `names: ${Object.keys(LIST).length} features, the table has ${Object.keys(TABLE).length} rows`);
 const RENAMED = { CHN: '中国', KOR: '韓国', PRK: '北朝鮮', TWN: '台湾', HKG: 'ホンコン', MNG: 'モンゴル', THA: 'タイ', MLI: 'マリ', CAF: '中央アフリカ', KOS: 'コソボ',
-  KNA: 'セントクリストファー・ネービス', VCT: 'セントビンセント・グレナディーン諸島', PGA: 'スプラトリー諸島' };
+  KNA: 'セントクリストファー・ネービス', VCT: 'セントビンセント・グレナディーン諸島', PGA: 'スプラトリー諸島',
+  VGB: 'イギリス領バージン諸島', VIR: 'アメリカ領バージン諸島' };
+for (const [id, n] of Object.entries(LIST)) ok(!/ヴ/.test(n), `names: ${id} ${n} has ヴ (write it with バ行, as the atlases do)`);
 const differ = Object.keys(LIST).filter((id) => id !== 'XUD' && LIST[id] !== NE[id]).sort();
 ok(JSON.stringify(differ) === JSON.stringify(Object.keys(RENAMED).sort()), `names: the names that differ from NAME_JA are ${differ.join(', ')}`);
 for (const [id, n] of Object.entries(RENAMED)) ok(LIST[id] === n, `names: ${id} is ${LIST[id]}, expected ${n}`);
@@ -57,6 +59,10 @@ cases.push({ kind: 'taiwan-regions', name: 'China coloured as a country', attrs:
 cases.push({ kind: 'taiwan-categories', name: 'China in a category', attrs: '', style: 'height:440px', data: { categories: [{ label: '区分', ids: ['CHN', 'JPN'] }] } });
 cases.push({ kind: 'taiwan-values', name: 'values for China and Taiwan', attrs: 'legend="架空"', style: 'height:440px', data: { values: { CHN: 10, TWN: 50, RUS: 30 }, classes: [0, 20, 40] } });
 cases.push({ kind: 'xud', name: 'XUD in regions and values', attrs: '', style: 'height:440px', data: { regions: [{ id: 'XUD' }], values: { XUD: 5, JPN: 7 } } });
+// overseas parts by geography: each region coloured alone; places on a continent are coloured iff the region is theirs
+const GROUPS = ['asia', 'europe', 'africa', 'north-america', 'south-america', 'oceania'];
+for (const g of GROUPS) cases.push({ kind: 'group', group: g, name: `region ${g} alone`, attrs: '', style: 'height:600px', data: { regions: [{ group: g, tone: 'emph' }] } });
+cases.push({ kind: 'antarctica', name: 'Antarctica named with labels="all"', attrs: 'labels="all"', style: 'height:600px', data: {} });
 cases.push({ kind: 'seam', name: 'a flow across the seam', attrs: '', style: 'height:440px', data: { flows: [{ from: [-74.0, 40.7], to: [-0.13, 51.5] }] } });
 const SMALL = [
   ['points', '', { points: [{ lon: 139.69, lat: 35.69, label: '東京', step: 1 }, { lon: -0.13, lat: 51.51, label: 'ロンドン', step: 1 }, { lon: -74.0, lat: 40.7, label: 'ニューヨーク', step: 2 }, { lon: 151.21, lat: -33.87, label: 'シドニー', step: 2 }] }],
@@ -113,7 +119,13 @@ try {
         const colourAt = (lon, lat) => { const p = el.ll(lon, lat), pt = new DOMPoint(p[0], p[1]); const hit = coloured().filter((q) => q.isPointInFill(pt)); return hit.length ? fillOf(hit[hit.length - 1]) : null; };
         const dotFill = Object.fromEntries([...svg.querySelectorAll('g circle')].filter((d) => shown(d) && d.closest('g') !== svg.firstChild).map((d) => [`${d.getAttribute('cx')},${d.getAttribute('cy')}`, fillOf(d)]));
         const texts = [...svg.querySelectorAll('text')].filter(shown).map((t) => t.textContent);
-        return { drawn: [...drawn], bad, colour: { kunashiri: colourAt(145.9, 44.1), taipei: colourAt(121.0, 23.7), beijing: colourAt(116.4, 39.9), tokyo: colourAt(139.5, 36.0) }, texts, dots: dotFill };
+        const PLACES = { パリ: [2.35, 48.86, 'europe'], マドリード: [-3.7, 40.4, 'europe'], フランス領ギアナ: [-53.0, 4.0, 'south-america'], レユニオン: [55.5, -21.1, 'africa'],
+          'カナリア諸島（フエルテベントゥラ島）': [-13.95, 28.55, 'africa'], ハワイ島: [-155.5, 19.6, 'north-america'], アラスカ: [-150, 64, 'north-america'], ヌーク付近: [-45, 66, 'north-america'],
+          グリーンランド東部: [-25, 74, 'north-america'], 東京: [139.5, 36.0, 'asia'], シドニー: [146, -33, 'oceania'], ニューカレドニア: [165.5, -21.4, 'oceania'],
+          モスクワ: [37.6, 55.75, 'europe'], ウラジオストク付近: [133, 45, 'europe'], カイロ: [31.2, 29.5, 'africa'], ブラジリア: [-47.9, -15.8, 'south-america'],
+          スバールバル諸島: [16, 78.6, 'europe'], 南極大陸: [150, -80, ''], '南極大陸（西）': [-60, -82, ''] };
+        const places = Object.fromEntries(Object.entries(PLACES).map(([n, [lon, lat, g]]) => [n, { g, c: (() => { const p = el.ll(lon, lat), pt = new DOMPoint(p[0], p[1]); return coloured().some((q) => q.isPointInFill(pt)); })() }]));
+        return { places, drawn: [...drawn], bad, colour: { kunashiri: colourAt(145.9, 44.1), taipei: colourAt(121.0, 23.7), beijing: colourAt(116.4, 39.9), tokyo: colourAt(139.5, 36.0) }, texts, dots: dotFill };
       };
       DECK.seek(i, 0, Infinity);
       const s0 = state('step 0');
@@ -162,6 +174,11 @@ try {
     }
     if (c.kind === 'taiwan-regions' || c.kind === 'taiwan-categories') ok(r.sN.colour.taipei && r.sN.colour.taipei === r.sN.colour.beijing, `${c.name}: Taiwan ${r.sN.colour.taipei}, China ${r.sN.colour.beijing}`);
     if (c.kind === 'taiwan-values') ok(r.sN.colour.taipei && r.sN.colour.beijing && r.sN.colour.taipei !== r.sN.colour.beijing, `${c.name}: Taiwan ${r.sN.colour.taipei} should differ from China ${r.sN.colour.beijing}`);
+    if (c.kind === 'group') {
+      for (const [n, x] of Object.entries(r.sN.places)) ok(x.c === (x.g === c.group), `${c.name}: ${n} (${x.g || 'no region'}) is ${x.c ? '' : 'not '}coloured`);
+      if (c.group === 'south-america') ok(r.sr.some((x) => x.startsWith('南アメリカ州（') && x.includes('フランス領ギアナ')), `${c.name}: the readable layer does not list フランス領ギアナ`);
+    }
+    if (c.kind === 'antarctica') ok(r.sN.texts.includes('南極大陸'), `${c.name}: 南極大陸 is not written (${r.sN.texts.length} names)`);
     if (c.kind === 'xud') ok(warnings.some((w) => w.includes('XUD (帰属未定地)')), `${c.name}: no warning`);
     if (c.kind === 'seam') ok(warnings.some((w) => w.includes('30°W')), `${c.name}: no warning about the seam`);
   }

@@ -63,6 +63,22 @@ const MIN_AREA = { fine: 4, coarse: 1500 };
 export const GROUPS = [['asia', 'アジア州'], ['europe', 'ヨーロッパ州'], ['africa', 'アフリカ州'], ['north-america', '北アメリカ州'], ['south-america', '南アメリカ州'], ['oceania', 'オセアニア州']];
 const groupOf = (p) => ({ Asia: 'asia', Europe: 'europe', Africa: 'africa', Oceania: 'oceania' })[p.REGION_UN]
   || (p.REGION_UN === 'Americas' ? (/South America|Seven seas/.test(p.SUBREGION) ? 'south-america' : 'north-america') : '');
+// Overseas parts on another continent than their country (standards, 2026-10-27): id, name, lon/lat boxes that hold the part's
+// centre, region. They are coloured with the region of their geography (六州) when regions or categories colour a region; the
+// country itself (regions[].id, categories' country ids, values) still colours all its parts.
+// (グアドループ・マルティニーク・マヨットも同じ扱いだが、1500 km² 未満で地図に形が残らない)
+export const OVERSEAS = [
+  ['FRA', 'フランス領ギアナ', [[-55, 1.5, -51, 6.5]], 'south-america'],
+  ['FRA', 'レユニオン', [[55, -21.5, 56, -20.8]], 'africa'],
+  ['ESP', 'カナリア諸島', [[-18.5, 27.5, -13, 29.5]], 'africa'],
+];
+// Overseas parts that keep their country's region although the nearest foreign country is in another: id, name, boxes, reason
+export const STAY = [
+  ['USA', 'ハワイ州', [[-161, 18, -154, 23]], 'アメリカ合衆国の州（日本の地図帳と同じ）'],
+  ['USA', 'アラスカ州', [[-180, 50, -129, 72], [172, 50, 180, 56]], 'アメリカ合衆国の州（日本の地図帳と同じ）'],
+  ['GRL', 'グリーンランドの東の部分', [[-30, 59, -10, 84]], '継ぎ目（30°W）で分かれた同じ島'],
+];
+const OVERSEA_KM = 800;
 // Islands that must always be drawn and vanish at slide scale: drawn as points of Japan (name, lon, lat, owner, territory name)
 export const FIXED = [['竹島', 131.868, 37.241, 'JPN', '竹島'], ['魚釣島', 123.476, 25.745, 'JPN', '尖閣諸島'],
   ['沖ノ鳥島', 136.082, 20.425, 'JPN', '沖ノ鳥島'], ['南鳥島', 153.981, 24.287, 'JPN', '南鳥島']];
@@ -305,32 +321,76 @@ async function rebuild() {
     if (!ok) { bad++; say(`FAIL projected: ${name} → ${o.id || 'none'}, expected ${want}`); }
   }
 
-  // 5. drop small rings, simplify (planar Visvalingam; Japan and XUD finer), quantize to integers
+  // 5. drop small rings
   let dropped = 0;
-  const gj = [];
+  const keptOf = {};
   for (const f of Object.values(feats)) {
     const fine = FINE.includes(f.id), polys = full[f.id].slice().sort((a, b) => Math.abs(ringArea(b[0])) - Math.abs(ringArea(a[0])));
-    const kept = polys.filter((p, i) => i === 0 || Math.abs(ringArea(p[0])) >= MIN_AREA[fine ? 'fine' : 'coarse']);
-    dropped += polys.length - kept.length;
-    if (kept.length) gj.push({ type: 'Feature', properties: { id: f.id, fine: fine ? 1 : 0 }, geometry: { type: 'MultiPolygon', coordinates: kept } });
+    keptOf[f.id] = polys.filter((p, i) => i === 0 || Math.abs(ringArea(p[0])) >= MIN_AREA[fine ? 'fine' : 'coarse']);
+    dropped += polys.length - keptOf[f.id].length;
   }
   say(`small rings dropped before simplifying: ${dropped}`);
+  // 6. overseas parts take the region of their geography (standards, 2026-10-27). A part is overseas when it is more than
+  // OVERSEA_KM from the country's main land (the largest part, and the parts chained to it at less than OVERSEA_KM); it takes
+  // the region of the nearest foreign country (main part) when that country is nearer than its own land and in another region.
+  // The resulting parts must be exactly the ones listed in OVERSEAS (moved) and STAY (kept with the country, with the reason):
+  // the build fails otherwise, so a change in the data is reviewed
+  const thin = (r) => { const k = Math.max(1, Math.ceil(r.length / 300)); return r.filter((q, i) => i % k === 0); };
+  const mains = Object.values(feats).filter((f) => f.group && keptOf[f.id].length).map((f) => { const r = thin(keptOf[f.id][0][0]); return { id: f.id, group: f.group, ring: r, b: bboxOf(r) }; });
+  const bdist = (c, b) => Math.hypot(Math.max(0, b[0] - c[0], c[0] - b[2]), Math.max(0, b[1] - c[1], c[1] - b[3]));
+  const nearestForeign = (c, self) => {
+    let best = null, bd = Infinity;
+    for (const m of mains.filter((m) => m.id !== self).sort((x, y) => bdist(c, x.b) - bdist(c, y.b))) {
+      if (bdist(c, m.b) >= bd) break;
+      const d = ringDist(c, m.ring);
+      if (d < bd) { bd = d; best = m; }
+    }
+    return { ...best, d: bd };
+  };
+  const pieceGroup = {}, moved = [], seen = new Set();
+  for (const f of Object.values(feats)) {
+    const ps = keptOf[f.id];
+    pieceGroup[f.id] = ps.map(() => '');
+    if (!f.group || ps.length < 2) continue;
+    const rings = ps.map((p) => thin(p[0])), cen = ps.map((p) => centre(p[0])), home = new Set([0]);
+    let grew = true;
+    while (grew) { grew = false; ps.forEach((p, i) => { if (!home.has(i) && [...home].some((j) => Math.min(ringDist(cen[i], rings[j]), ringDist(cen[j], rings[i])) < OVERSEA_KM)) { home.add(i); grew = true; } }); }
+    ps.forEach((p, i) => {
+      if (home.has(i)) return;
+      const own = Math.min(...[...home].map((j) => ringDist(cen[i], rings[j]))), n = nearestForeign(cen[i], f.id);
+      if (!(n.d < own && n.group !== f.group)) return;
+      const ll = proj.invert(cen[i]), hit = (e) => e[0] === f.id && e[2].some((b) => ll[0] >= b[0] && ll[0] <= b[2] && ll[1] >= b[1] && ll[1] <= b[3]);
+      const ov = OVERSEAS.find(hit), st = STAY.find(hit);
+      if (ov) { pieceGroup[f.id][i] = ov[3]; seen.add(ov); moved.push(`${ov[1]} (${f.id}) → ${ov[3]}`); if (ov[3] !== n.group) { bad++; say(`FAIL ${ov[1]}: listed for ${ov[3]}, its nearest country ${n.id} is in ${n.group}`); } }
+      else if (st) { seen.add(st); say(`overseas part kept with its country: ${st[1]} (${f.id}, ${st[3]})`); }
+      else { bad++; say(`FAIL an overseas part of ${f.id} (${f.group}) at ${ll.map((v) => v.toFixed(1))}, ${Math.round(own)} km from its land, ${Math.round(n.d)} km from ${n.id} (${n.group}), is in neither OVERSEAS nor STAY`); }
+    });
+  }
+  for (const e of OVERSEAS.concat(STAY)) if (!seen.has(e)) { bad++; say(`FAIL ${e[1]} (${e[0]}) was not found as an overseas part`); }
+  say(`overseas parts moved to the region of their geography: ${moved.join(', ')}`);
+  // 7. simplify (planar Visvalingam; Japan and XUD finer), quantize to integers. One feature per country and region
+  const gj = [];
+  for (const f of Object.values(feats)) {
+    const fine = FINE.includes(f.id), by = {};
+    keptOf[f.id].forEach((p, i) => { (by[pieceGroup[f.id][i]] = by[pieceGroup[f.id][i]] || []).push(p); });
+    for (const [g, ps] of Object.entries(by)) gj.push({ type: 'Feature', properties: { id: f.id, g, fine: fine ? 1 : 0 }, geometry: { type: 'MultiPolygon', coordinates: ps } });
+  }
   const out = await ms.applyCommands(`-i in.json -simplify planar variable interval='fine ? ${SIMPLIFY.fine} : ${SIMPLIFY.coarse}' keep-shapes -o format=topojson no-quantization precision=0.001 out.json`,
     { 'in.json': JSON.stringify({ type: 'FeatureCollection', features: gj }) });
   const topo = JSON.parse(out['out.json']), obj = Object.values(topo.objects)[0];
   const arcs = topo.arcs.map((a) => { const r = []; for (const p of a) { const q = [Math.round(p[0]), Math.round(p[1])]; if (!r.length || q[0] !== r[r.length - 1][0] || q[1] !== r[r.length - 1][1]) r.push(q); } return r; });
-  const fts = obj.geometries.filter((g) => g.arcs).map((g) => ({ id: g.properties.id, polys: g.type === 'Polygon' ? [g.arcs] : g.arcs }));
-  fts.sort((a, b) => a.id.localeCompare(b.id));
+  const fts = obj.geometries.filter((g) => g.arcs).map((g) => ({ id: g.properties.id, g: g.properties.g || '', polys: g.type === 'Polygon' ? [g.arcs] : g.arcs }));
+  fts.sort((a, b) => a.id.localeCompare(b.id) || a.g.localeCompare(b.g));
   const ringOf = (idx) => { const r = []; for (const i of idx) { const a = i < 0 ? arcs[~i].slice().reverse() : arcs[i]; r.push(...(r.length ? a.slice(1) : a)); } return r; };
   const polysOfFeat = (f) => f.polys.map((p) => p.map(ringOf)).filter((p) => p[0].length >= 4 && Math.abs(ringArea(p[0])) > 0);
   const byId = {};
-  for (const f of fts) byId[f.id] = polysOfFeat(f);
+  for (const f of fts) byId[f.id] = (byId[f.id] || []).concat(polysOfFeat(f));
   const lost = Object.keys(feats).filter((id) => !byId[id] || !byId[id].length);
   if (lost.length) say(`note: no shape left at slide scale (values and regions for these are not drawn; the component warns): ${lost.join(', ')}`);
   let npts = 0; for (const a of arcs) npts += a.length;
   say(`geometry: ${fts.length} features, ${arcs.length} arcs, ${npts} points (rings < ${MIN_AREA.coarse} km² dropped; interval ${SIMPLIFY.coarse} km, ${SIMPLIFY.fine} km for ${FINE.join(' and ')})`);
 
-  // 6. ownership on the final geometry: contained, or nearest within 30 km; vanished islands need a FIXED point
+  // 8. ownership on the final geometry: contained, or nearest within 30 km; vanished islands need a FIXED point
   for (const [name, lon, lat, want] of CHECKS) {
     const o = owner(P(lon, lat), byId, 30), fx = FIXED.find((f) => f[0] === name);
     if (o.id === want) say(`ok   final geometry: ${name} → ${o.id}${o.d ? ` (nearest, ${o.d.toFixed(1)} km)` : ''}`);
@@ -342,25 +402,25 @@ async function rebuild() {
   for (const [name, lon, lat] of CHECKS.slice(0, 4)) { const o = owner(P(lon, lat), byId, 3); if (o.id !== 'JPN') { bad++; say(`FAIL ${name} has no shape of JPN within 3 km`); } }
   if (bad) throw new Error(`${bad} check(s) failed`);
 
-  // 7. bounds (the whole sphere), label anchors (interior point of the largest part) and group anchors
+  // 9. bounds (the whole sphere), label anchors (interior point of the largest part) and group anchors
   const sph = []; for (let la = -90; la <= 90; la += 1) { sph.push(P(PROJ.lon0 + 179.999, la)); sph.push(P(PROJ.lon0 - 179.999, la)); }
   const sb = bboxOf(sph), pad = 4;
   const bounds = [sb[0] - pad, sb[1] - pad, sb[2] - sb[0] + 2 * pad, sb[3] - sb[1] + 2 * pad].map(Math.round);
   const anchors = {};
-  for (const f of fts) {
-    const ps = polysOfFeat(f).sort((a, b) => Math.abs(ringArea(b[0])) - Math.abs(ringArea(a[0])));
+  for (const [id, polys] of Object.entries(byId)) {
+    const ps = polys.slice().sort((a, b) => Math.abs(ringArea(b[0])) - Math.abs(ringArea(a[0])));
     if (!ps.length) continue;
-    anchors[f.id] = interior(ps.slice(0, 1)).p.map(Math.round);
+    anchors[id] = interior(ps.slice(0, 1)).p.map(Math.round);
   }
   // the group's label point: the interior point of its largest few countries (Russia is left out of Europe's: it would put the name in Siberia)
   const gAnchors = {};
   for (const [g] of GROUPS) {
-    const ps = fts.filter((f) => feats[f.id].group === g && f.id !== 'RUS').flatMap(polysOfFeat).sort((a, b) => Math.abs(ringArea(b[0])) - Math.abs(ringArea(a[0])));
+    const ps = fts.filter((f) => (f.g || feats[f.id].group) === g && f.id !== 'RUS').flatMap(polysOfFeat).sort((a, b) => Math.abs(ringArea(b[0])) - Math.abs(ringArea(a[0])));
     gAnchors[g] = interior(ps.slice(0, g === 'europe' ? 20 : 6)).p.map(Math.round);
   }
   const lines = [line50].concat(SEA_LINES).map(([n, c]) => [n, c.map((q) => P(q[0], q[1]).map(Math.round))]);
 
-  // 8. the block
+  // 10. the block
   let arcStr = '';
   for (const a of arcs) { arcStr += enc(a.length); let px = 0, py = 0; for (const [x, y] of a) { arcStr += enc(x - px) + enc(y - py); px = x; py = y; } }
   if (dec(arcStr).length !== arcs.length + 2 * npts) throw new Error('arc encoding does not round-trip');
@@ -380,7 +440,8 @@ async function rebuild() {
     `  fixed: ${J(FIXED.map((f) => [f[4], f[1], f[2], f[3]]))},`,
     `  lines: ${J(lines.map((l) => l[1]))},`,
     `  anchors: ${J(anchors)},`,
-    `  feats: ${J(fts.map((f) => [f.id, f.polys]))},`,
+    `  feats: ${J(fts.map((f) => (f.g ? [f.id, f.polys, f.g] : [f.id, f.polys])))},`,
+    `  pieces: ${J(OVERSEAS.map((e) => [e[0], e[1], e[3]]))},`,
     `  arcs: "${arcStr}"`,
     `};`,
     END,
