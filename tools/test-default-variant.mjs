@@ -1,7 +1,9 @@
-// Variant 0 does not change by a single pixel (docs/conventions.md §1.6). For every component with variants that existed in
-// the baseline release, build the baseline's demo.html twice, once with the baseline's index.js and once with the current one,
-// and compare screenshots at each step (35 %, 70 % and the final state). A lesson without a seed must look the same
-// (the runtime's interface hidden, and the anti-aliasing tolerance of tools/shot-helpers.mjs).
+// The default variant does not change by a single pixel (docs/conventions.md §1.6). The default is the first name in
+// `static variants` (tools/variant.js; there is no lesson seed since egatari-spec 28d8801, and releases up to v1.10.0 drew
+// the same variant for a lesson without one). For every component with variants that existed in the baseline release, build
+// the baseline's demo.html twice, once with the baseline's index.js and once with the current one, and compare screenshots at
+// each step (35 %, 70 % and the final state). Demo slides that name a variant are compared too: a named variant must not change
+// either (the runtime's interface hidden, and the anti-aliasing tolerance of tools/shot-helpers.mjs).
 // Deliberate exception approved by the owner (v1.2.0, issue #1): m-flow's edge labels and muted-box text became --fg, so
 // lessons using m-flow look different when rebuilt; m-flow has no variants and is not compared here.
 // Deliberate exception approved by the owner (v1.8.0): m-map-japan's default drawing changed (no 小笠原諸島 inset unless
@@ -10,7 +12,7 @@
 // Deliberate change (v1.10.0, for Egatari Studio's checker, which requires ≥ 26.6 px HTML text): m-predict's −1 / +1 buttons
 // and count field went from 26 to 27 px text. Against a baseline older than v1.10.0, its controls (.pd-ctl, the presenter's
 // input, not part of the figure) are hidden in both builds (MASKED_IN); everything else must still be pixel-identical.
-//   node tools/test-seed0.mjs [shots dir]      baseline: the release before package.json's version (tools/baseline.mjs)
+//   node tools/test-default-variant.mjs [shots dir]      baseline: the release before package.json's version (tools/baseline.mjs)
 import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
@@ -22,8 +24,8 @@ import { LAUNCH, TOLERANCE, hideChrome, settle, pixelDiff } from './shot-helpers
 
 const git = (...a) => execFileSync('git', a, { cwd: ROOT, encoding: 'utf8' });
 const { base } = baseline();
-if (!base) { console.log('test-seed0: no earlier release tag (fetch tags: git fetch --tags), nothing to compare'); process.exit(0); }
-const shotsRoot = path.resolve(process.argv[2] || fs.mkdtempSync(path.join(os.tmpdir(), 'egatari-seed0-')));
+if (!base) { console.log('test-default-variant: no earlier release tag (fetch tags: git fetch --tags), nothing to compare'); process.exit(0); }
+const shotsRoot = path.resolve(process.argv[2] || fs.mkdtempSync(path.join(os.tmpdir(), 'egatari-default-variant-')));
 const S = await studio();
 const b = await S.browser.launch(LAUNCH);
 let fail = 0, n = 0;
@@ -41,9 +43,9 @@ for (const name of USERS) {
   if (mask) console.log(`-- ${name}: controls hidden against ${base} (text size changed on purpose in v${mask.since})`);
   for (const [which, js] of [['base', oldJs], ['head', cur]]) {
     fs.writeFileSync(path.join(cd, 'index.js'), js);
-    fs.writeFileSync(path.join(cd, 'seed0-demo.html'), demo);
-    const out = path.join(cd, 'out', 'seed0-demo.html');
-    S.build(path.join(cd, 'seed0-demo.html'), out);
+    fs.writeFileSync(path.join(cd, 'default-variant-demo.html'), demo);
+    const out = path.join(cd, 'out', 'default-variant-demo.html');
+    S.build(path.join(cd, 'default-variant-demo.html'), out);
     const p = await b.newPage({ viewport: { width: 1280, height: 720 } });
     await p.goto(S.browser.fileUrl(out));
     await p.waitForFunction(() => window.DECK && DECK.ready, null, { timeout: 10000 });
@@ -67,7 +69,7 @@ for (const name of USERS) {
     await p.close();
   }
   fs.writeFileSync(path.join(cd, 'index.js'), cur);
-  fs.rmSync(path.join(cd, 'seed0-demo.html'));
+  fs.rmSync(path.join(cd, 'default-variant-demo.html'));
   const keys = Object.keys(shots.base);
   // pixel-identical in practice (byte-identical on macOS); Chrome's anti-aliasing may vary by a few pixels between page loads elsewhere
   const cmp = await b.newPage();
@@ -80,5 +82,5 @@ for (const name of USERS) {
   else console.log(`ok   ${name}: ${keys.length} frames identical to ${base}`);
 }
 await b.close();
-console.log(fail ? `\n${fail} component(s) changed variant 0` : `test-seed0: ok (${n} component(s), baseline ${base})`);
+console.log(fail ? `\n${fail} component(s) changed their default variant` : `test-default-variant: ok (${n} component(s), baseline ${base})`);
 process.exit(fail ? 1 : 0);
