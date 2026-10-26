@@ -8,59 +8,18 @@
 //       inc（表計算の QUARTILE.INC）・exc（QUARTILE.EXC）
 // 軸の属性は m-curves と同じ名前：値の軸は orient="h" なら xr xt xf xl、orient="v" なら yr yt yf yl
 // 見せ方（docs/conventions.md §1）：fade（フェードして現れる、既定）・draw（箱の枠と線を引く。ひげは箱から外へ伸びる）
-(function(){
-// ---- BEGIN egatari-variant (source: tools/variant.js; copy with `node tools/variant-sync.mjs`; do not edit inside a component) ----
-// Choosing a presentation variant (Egatari spec §8.4, docs/conventions.md §1). A component lists its variant names in
-// `static variants` (the first is the default) and calls VARIANT.of(this) once, in mount. The variant is the component's
-// `variant` attribute when it names one of them, otherwise the first name. There is no seed: lessons do not carry one
-// (spec §8.4 since egatari-spec 28d8801), and `seed` / `data-egatari-seed` are not read.
-// The choice is a pure function of the attribute: the picture still depends on (i, k, t) only.
-var VARIANT = (function(){
-  "use strict";
-  function of(el){
-    var tag = el.tagName.toLowerCase(), C = customElements.get(tag), names = (C && C.variants) || [], v = el.getAttribute("variant");
-    if (v !== null && names.indexOf(v) >= 0) return v;
-    if (v !== null) console.warn(tag + ' variant="' + v + '" is not one of ' + names.join(", ") + " (the first, " + (names[0] || "none") + ", is used)");
-    return names[0] || null;
-  }
-  return {of: of};
-})();
-// ---- END egatari-variant ----
-// ---- 四分位数（tools/test-stats.mjs が試す。customElements.get("m-boxplot").stats） ----
-var STATS = (function(){
-  function sorted(a){ return a.slice().sort(function(x, y){ return x - y; }); }
-  function clean(v){ return +(+v).toFixed(10); }
-  // 並べた値 s の、0 から数えた位置 h（小数なら前後の値の間を比で分ける）の値
-  function at(s, h){ var lo = Math.floor(h + 1e-9), f = h - lo; return clean(f > 1e-9 ? s[lo] + f * (s[lo + 1] - s[lo]) : s[lo]); }
-  function median(a){ var s = sorted(a); return at(s, (s.length - 1) / 2); }
-  // 四分位数。iq1 imed iq3 は並べた値の中の位置（0 から。x.5 なら 2 つの値の間）、halves は jp の前半・後半の位置の範囲
-  function quartiles(values, method){
-    var s = sorted(values), n = s.length;
-    if (!n) throw new Error("m-boxplot: a group has no values");
-    var imed = (n - 1) / 2, iq1, iq3, halves = null;
-    if (!method || method === "jp"){
-      var m = Math.floor(n / 2);
-      if (m === 0){ iq1 = iq3 = 0; }
-      else { iq1 = (m - 1) / 2; iq3 = n - m + (m - 1) / 2; halves = [[0, m - 1], [n - m, n - 1]]; }
-    } else if (method === "inc"){ iq1 = (n - 1) * 0.25; iq3 = (n - 1) * 0.75; }
-    else if (method === "exc"){
-      iq1 = (n + 1) * 0.25 - 1; iq3 = (n + 1) * 0.75 - 1;
-      if (iq1 < -1e-9 || iq3 > n - 1 + 1e-9) throw new Error('m-boxplot: method="exc" needs 3 or more values (like QUARTILE.EXC)');
-    } else throw new Error('m-boxplot: method="' + method + '" is not jp, inc or exc');
-    return {n: n, sorted: s, min: s[0], q1: at(s, iq1), med: at(s, imed), q3: at(s, iq3), max: s[n - 1], iq1: iq1, imed: imed, iq3: iq3, halves: halves};
-  }
-  // 外れ値：第1四分位数 − 1.5 × 四分位範囲 より小さいか、第3四分位数 ＋ 1.5 × 四分位範囲 より大きい値。ひげはその内側の最小・最大まで
-  function fences(q, values){
-    var r = q.q3 - q.q1, lo = clean(q.q1 - 1.5 * r), hi = clean(q.q3 + 1.5 * r), s = sorted(values);
-    var inside = s.filter(function(v){ return v >= lo && v <= hi; });
-    return {lo: lo, hi: hi, wlo: inside.length ? inside[0] : q.q1, whi: inside.length ? inside[inside.length - 1] : q.q3,
-            out: s.filter(function(v){ return v < lo || v > hi; })};
-  }
-  return {sorted: sorted, at: at, median: median, quartiles: quartiles, fences: fences, clean: clean};
-})();
+// 2.0（Egatari spec §6.1 の部品）：base の MotionElement・el・mtext・prog・variant・previewOpacity、plot の Plot、
+// 四分位数は boxplot-core（1.x の static stats）を使い、プレイヤーのグローバルは使わない。書き方やデータの知らせ
+// （1.x の console.warn）は mount で ctx.report に。言語は ctx.lang（mount で読む）
+egatariParts.define({name: "boxplot", version: "2.0.0", requires: {base: "1.0.0", "boxplot-core": "1.0.0", plot: "1.0.0"}, element: "m-boxplot"}, function(deps){
+"use strict";
+var base = deps.base, plot = deps.plot;
+// ---- 四分位数（boxplot-core。tools/test-stats.mjs が試す） ----
+var STATS = deps["boxplot-core"];
 // 印の名前の置き場所（m-hist と同じ決まり）：線の頭の右（start）か左（end）。名前がほかの線にかからない側を選び、
-// 名前がかかる線の印はそれより下の行に置く。fl：[{x, w}]。各要素に a・L・R・row を書き、行の数を返す
-function FLAGS(fl, W, tag){
+// 名前がかかる線の印はそれより下の行に置く。fl：[{x, w}]。各要素に a・L・R・row を書き、行の数を返す。
+// 置き場所がないときは report(code, message)（ctx.report）で知らせる
+function FLAGS(fl, W, report){
   var span = function(f, a){ var l = a === "start" ? f.x + 8 : f.x - 8 - f.w; return [l, l + f.w]; };
   var covers = function(f, g){ return g !== f && g.x > f.L - 6 && g.x < f.R + 6; };
   fl.forEach(function(f){
@@ -86,16 +45,16 @@ function FLAGS(fl, W, tag){
         return (o.row === row && f.L < o.R + 14 && o.L < f.R + 14) || (o.row < row && covers(o, f)) || (o.row > row && covers(f, o));
       });
       if (!clash) break;
-      if (row > 12){ console.warn(tag + ': no free place for the name "' + (f.text || "") + '" (it may overlap)'); break; }
+      if (row > 12){ report("layout", '[boxplot] no free place for the name "' + (f.text || "") + '" (it may overlap)'); break; }
     }
     f.row = row; placed.push(f); rows = Math.max(rows, row + 1);
   });
   return rows;
 }
 var ON = function(v){ return /^(on|true|yes)$/i.test(String(v || "").trim()); };
-DECK.define("m-boxplot", class extends DECK.MotionElement {
+return class extends base.MotionElement {
+  static partName = "boxplot";   // the registry name (define meta name), for report prefixes
   static variants = ["fade", "draw"];
-  static stats = STATS;
   // データの形（kit/shape.js）
   static shape = {
     schema: {type: "object", additionalProperties: false, required: ["groups"], properties: {
@@ -129,7 +88,7 @@ DECK.define("m-boxplot", class extends DECK.MotionElement {
     if (this._plan) return this._plan;
     var d = this.data || {}, P = this.props, notes = [], S = STATS;
     var method = P.method || "jp", out = ON(P.outliers), build = P.build;
-    if (["steps", "whole"].indexOf(build) < 0){ notes.push('m-boxplot: build="' + build + '" is not steps or whole (steps is used)'); build = "steps"; }
+    if (["steps", "whole"].indexOf(build) < 0){ notes.push(["attr", '[boxplot] build="' + build + '" is not steps or whole (steps is used)']); build = "steps"; }
     var groups = (d.groups || []).map(function(g, i){
       var o = {i: i, label: g.label || "", tone: g.tone};
       if (Array.isArray(g.values)){
@@ -143,7 +102,7 @@ DECK.define("m-boxplot", class extends DECK.MotionElement {
       o.f = out && o.values ? S.fences(o.q, o.values) : {wlo: o.q.min, whi: o.q.max, out: []};
       return o;
     });
-    if (out && groups.some(function(g){ return !g.values; })) notes.push('m-boxplot: outliers="on" needs the values of a group (a group written with "five" has none)');
+    if (out && groups.some(function(g){ return !g.values; })) notes.push(["data", '[boxplot] outliers="on" needs the values of a group (a group written with "five" has none)']);
     var dec = function(v){ var m = String(v).match(/\.(\d+)$/); return m ? m[1].length : 0; };
     var base = Math.max.apply(null, [0].concat.apply([0], groups.map(function(g){ return g.values ? g.values.map(dec) : [g.q.min, g.q.q1, g.q.med, g.q.q3, g.q.max].map(dec); })));
     var hasVals = groups.some(function(g){ return g.values; }), st = {};
@@ -163,13 +122,15 @@ DECK.define("m-boxplot", class extends DECK.MotionElement {
     var p = s.split("."), i = p[0].replace(/\B(?=(\d{3})+(?!\d))/g, ",");
     return (v < 0 && +s !== 0 ? "−" : "") + i + (p[1] ? "." + p[1] : "");
   }
-  mount(){
-    var P = this.props, D = DECK, self = this, pl = this.plan(), S = STATS;
-    this.variant = VARIANT.of(this);
-    pl.notes.forEach(function(n){ console.warn(n); });
+  mount(ctx){
+    var P = this.props, D = base, self = this, pl = this.plan(), S = STATS;
+    this.variant = base.variant(this);
+    // 書き方とデータの知らせ（plan が集めた [code, message]）
+    pl.notes.forEach(function(n){ ctx.report(n[0], n[1]); });
+    var report = function(code, msg){ ctx.report(code, msg); };
     this.classList.add("plot"); this.style.display = "block";
-    var ja = DECK.ja !== false, hor = P.orient !== "v";
-    if (P.orient !== "h" && P.orient !== "v") console.warn('m-boxplot: orient="' + P.orient + '" is not h or v (h is used)');
+    var ja = this.ja = String(ctx.lang).startsWith("ja"), hor = P.orient !== "v";
+    if (P.orient !== "h" && P.orient !== "v") ctx.report("attr", '[boxplot] orient="' + P.orient + '" is not h or v (h is used)');
     var est = function(s, size){ return [...String(s)].reduce(function(a, c){ return a + (/[\u0000-ɏ]/.test(c) ? 0.56 : 1); }, 0) * size; };
     var toneOf = function(c){ return /^(term|emph|muted|accent2|fg|series-[1-4])$/.test(c || "") ? "var(--" + c + ")" : null; };
     var W = this.clientWidth, H = this.clientHeight, G = pl.groups, steps = pl.build === "steps", st = pl.st;
@@ -259,10 +220,10 @@ DECK.define("m-boxplot", class extends DECK.MotionElement {
       var boxH = 56, avail = H - m.b - top0 - 6;
       var need = function(bh, r){ return G.reduce(function(a, g){ return a + g.rows * 34 + (g.rows ? 10 : 0) + bh + (showDots(g) ? 10 + g.stack * (2 * r + 3) : 0) + 14; }, 0); };
       stackDots(X);
-      G.forEach(function(g){ g.flags = flagsOf(g, X); g.rows = g.flags.length ? FLAGS(g.flags, W, "m-boxplot") : 0; });
+      G.forEach(function(g){ g.flags = flagsOf(g, X); g.rows = g.flags.length ? FLAGS(g.flags, W, report) : 0; });
       while (need(boxH, R) > avail && boxH > 30) boxH -= 2;
       while (need(boxH, R) > avail && R > 5) R -= 0.5;
-      if (need(boxH, R) > avail) console.warn("m-boxplot: the element (" + W + "×" + H + " px) is too small for the groups; give it more height");
+      if (need(boxH, R) > avail) ctx.report("size", "[boxplot] the element (" + W + "×" + H + " px) is too small for the groups; give it more height");
       var extra = Math.max(0, avail - need(boxH, R)), add = Math.min(extra / G.length, 24);
       boxH = Math.min(boxH + add, 72);
       // 余りは群の間に（30 px まで）、残りは上に。いちばん下の群は軸のすぐ上
@@ -276,14 +237,14 @@ DECK.define("m-boxplot", class extends DECK.MotionElement {
         if (showDots(g)){ g.dotBase = y + 10 + g.stack * (2 * R + 3) - R - 1; y += 10 + g.stack * (2 * R + 3); }
         y += 14;
       });
-      p = D.Plot(this, {xr: vr, yr: [0, 1], xt: vt, xf: vf, xl: P.xl, noY: true, m: {l: m.l, r: m.r, t: top0, b: m.b}});
+      p = plot.Plot(this, {xr: vr, yr: [0, 1], xt: vt, xf: vf, xl: P.xl, noY: true, m: {l: m.l, r: m.r, t: top0, b: m.b}});
     } else {
       m = {l: 0, r: 20, t: 16, b: 44 + (labeled ? 34 : 0) + (P.xl ? 34 : 0)};
       var yw = Math.max.apply(null, vt.map(function(v){ return est(v.toFixed(vf), 24); }).concat([0]));
       m.l = Math.max(64, yw + 22 + (vl ? 40 : 0));
       Y = function(v){ return H - m.b - (v - vr[0]) / (vr[1] - vr[0]) * (H - m.b - m.t); };
       stackDots(Y);
-      p = D.Plot(this, {xr: [0, 1], yr: vr, xt: [], yt: vt, yf: vf, xl: P.xl, yl: vl, m: m});
+      p = plot.Plot(this, {xr: [0, 1], yr: vr, xt: [], yt: vt, yf: vf, xl: P.xl, yl: vl, m: m});
       // 群ごとの幅：点の列・箱・名前
       var slot = (W - m.l - m.r) / G.length;
       G.forEach(function(g, i){
@@ -292,7 +253,7 @@ DECK.define("m-boxplot", class extends DECK.MotionElement {
                           g.outLab.length ? Math.max.apply(null, g.outLab.map(function(o){ return o.w; })) + 20 : 0);
         var dw = showDots(g) ? g.stack * (2 * R + 3) + 10 : 0;
         var bw = Math.max(36, Math.min(80, slot - lw - dw - 24));
-        if (lw + dw + bw + 12 > slot) console.warn("m-boxplot: the groups are too narrow for the names; give the element more width");
+        if (lw + dw + bw + 12 > slot) ctx.report("size", "[boxplot] the groups are too narrow for the names; give the element more width");
         var x = m.l + slot * i + (slot - (lw + dw + bw)) / 2;
         g.mid = x + (dw + bw) / 2;   // 群の名前は点の列と箱の真ん中の下
         if (showDots(g)){ g.dotBase = x + g.stack * (2 * R + 3) - R + 2; x += dw; }
@@ -420,8 +381,8 @@ DECK.define("m-boxplot", class extends DECK.MotionElement {
     return k >= 1 && k <= pl.steps ? this.props.dur : 0;
   }
   render(k, t, ctx){
-    var D = DECK, lecture = ctx && (ctx.preview || ctx.mode === "lecture"), draw = this.variant === "draw", FAINT = 0.45;
-    if (lecture){ var pv = parseFloat(getComputedStyle(this).getPropertyValue("--preview-opacity")); FAINT = pv >= 0 && pv <= 1 ? pv : 0.45; }   // 先の段階の薄さ：テーマの --preview-opacity（ないときは 0.45）
+    var D = base, lecture = !!ctx.preview, draw = this.variant === "draw", FAINT = 0.45;
+    if (lecture) FAINT = base.previewOpacity(this);   // 先の段階の薄さ：テーマの --preview-opacity（ないときは 0.45）
     this.items.forEach(function(it){
       var e = it.st < k ? 1 : it.st > k ? (lecture ? -1 : 0) : D.prog(t, it.at, it.len), op;
       // 箱が出たら消える線（四分位数の仮の線）
@@ -436,5 +397,5 @@ DECK.define("m-boxplot", class extends DECK.MotionElement {
       it.el.setAttribute("opacity", (op * (1 - gone)).toFixed(3));
     });
   }
+};
 });
-})();
