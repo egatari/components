@@ -557,7 +557,7 @@ DECK.define("m-kakijun", class extends DECK.MotionElement {
     if (P.grid !== "cross" && P.grid !== "none") console.warn('m-kakijun: grid="' + P.grid + '" is not cross or none (cross is used)');
     // ---- 字の枠の大きさと置き方 ----
     // 縦書きは列の中のます目を続けて（原稿用紙のように）、列と列の間はあける。横書きは字と字の間をあける（番号を置く所）
-    var n = pl.cells.length, PAD = 36, GA = tate ? 0 : 48, GC = 48;
+    var n = pl.cells.length, PAD = nums || ends ? 36 : 8, GA = tate ? 0 : 48, GC = 48;
     var W = this.clientWidth || 960, H0 = this.clientHeight, H = H0 || Infinity;
     var along = tate ? H : W, across = tate ? W : H;
     var fitLine = function(b){ var per = Math.max(1, Math.floor((along - 2 * PAD + GA) / (b + GA))); return {per: per, lines: Math.ceil(n / per)}; };
