@@ -5,7 +5,12 @@
 // （JSON の終わり）</m-seq>
 // steps[0] は始めの状態（段階 0）。steps[1..] が 1 回ずつの更新。1 段階に per-step 回の更新を、等しい時間枠で順に動かす。
 // 今の分布は濃く、前の分布は薄い線で残す。右の欄に readout の数値（桁をそろえる）。mark は今回の観測の位置
-DECK.define("m-seq", class extends DECK.MotionElement {
+// 2.0（Egatari spec §6.1 の部品）：base の MotionElement・el・mtext・prog・lerp・previewOpacity と plot の Plot を使い、プレイヤーのグローバルは使わない
+egatariParts.define({name: "seq", version: "2.0.0", requires: {base: "1.0.0", plot: "1.0.0"}, element: "m-seq"}, function(deps){
+"use strict";
+var base = deps.base, plot = deps.plot;
+return class extends base.MotionElement {
+  static partName = "seq";   // the registry name (define meta name), for report prefixes
   // データの形（kit/shape.js）。軸の設定（xl yl yr など）も JSON に書ける
   static shape = {
     schema: {type: "object", required: ["xs", "steps"], properties: {
@@ -30,10 +35,10 @@ DECK.define("m-seq", class extends DECK.MotionElement {
   get updates(){ return Math.max(0, ((this.data || {}).steps || []).length - 1); }
   get steps(){ return this.getAttribute("steps") !== null ? +this.getAttribute("steps") : Math.ceil(this.updates / this.props["per-step"]); }
   mount(){
-    var D = DECK, self = this, data = this.data, xs = data.xs;
+    var D = base, self = this, data = this.data, xs = data.xs;
     this.classList.add("plot"); this.style.display = "block";
     var xr = this.opt("xr") || [xs[0], xs[xs.length - 1]], pw = this.opt("panel");
-    var p = this.p = D.Plot(this, {xr: xr, yr: this.opt("yr"), xt: this.opt("xt"), yt: this.opt("yt"), xf: this.opt("xf"), yf: this.opt("yf"),
+    var p = this.p = plot.Plot(this, {xr: xr, yr: this.opt("yr"), xt: this.opt("xt"), yt: this.opt("yt"), xf: this.opt("xf"), yf: this.opt("yf"),
                                    xl: this.opt("xl"), yl: this.opt("yl"), m: {l: 86, r: pw + 16, t: 24, b: 64}});
     this.pts = function(dens){ return xs.map(function(x, i){ return [x, dens[i]]; }); };
     // 塗り（今の分布の下）→ 前の分布の薄い線 → 今の分布の線 の順に重ねる
@@ -71,9 +76,8 @@ DECK.define("m-seq", class extends DECK.MotionElement {
     return out;
   }
   render(k, t, ctx){
-    var D = DECK, S = this.data.steps, p = this.p, slot = this.props.slot;
-    var preview = !!(ctx && (ctx.preview || ctx.mode === "lecture")), PV = 1;
-    if (preview){ PV = parseFloat(getComputedStyle(this).getPropertyValue("--preview-opacity")); if (!(PV >= 0 && PV <= 1)) PV = 0.45; }
+    var D = base, S = this.data.steps, p = this.p, slot = this.props.slot;
+    var preview = !!ctx.preview, PV = preview ? base.previewOpacity(this) : 1;
 
     // 今の更新の番号 idx と、その更新の進み具合 e（0 なら一つ前の状態、1 なら更新後）
     var idx = 0, e = 1, tm = 0;
@@ -95,7 +99,7 @@ DECK.define("m-seq", class extends DECK.MotionElement {
     this.ghostEls.forEach(function(g, i){
       var f = ahead(i) && i === last;
       var col = f ? "var(--term)" : "var(--line)";
-      // style は DECK.el と同じ書き方で書く（style.stroke に代入すると "stroke: var(--x);" になり、作った直後と字が変わる）
+      // style は base.el と同じ書き方で書く（style.stroke に代入すると "stroke: var(--x);" になり、作った直後と字が変わる）
       g.setAttribute("style", "stroke:" + col + ";");
       g.setAttribute("opacity", f ? PV : i < idx && i >= idx - G ? 1 : 0);
     });
@@ -113,4 +117,5 @@ DECK.define("m-seq", class extends DECK.MotionElement {
       r.el.textContent = v === "−0" || /^−0\.0*$/.test(v) ? v.slice(1) : v;
     });
   }
+};
 });
