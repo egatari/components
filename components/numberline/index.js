@@ -8,27 +8,14 @@
 // 2 本の線：0 の位置をそろえ、上の線の数は上、下の線の数は下に書く。link は 2 本の線の対応する値を結ぶ（label があれば矢印）
 // 拡大（magnify）：線の区間を下に引いた長い線に広げる（既定は 10 等分）。2 つ目からは前の拡大の線を広げる。線が 1 本のときだけ
 // 見せ方（docs/conventions.md §1）：fade（フェード、既定）・draw（線・弧・範囲の線を引き、目盛りは左から）。拡大の動きはどちらも同じ
-(function(){
-// ---- BEGIN egatari-variant (source: tools/variant.js; copy with `node tools/variant-sync.mjs`; do not edit inside a component) ----
-// Choosing a presentation variant (Egatari spec §8.4, docs/conventions.md §1). A component lists its variant names in
-// `static variants` (the first is the default) and calls VARIANT.of(this) once, in mount. The variant is the component's
-// `variant` attribute when it names one of them, otherwise the first name. There is no seed: lessons do not carry one
-// (spec §8.4 since egatari-spec 28d8801), and `seed` / `data-egatari-seed` are not read.
-// The choice is a pure function of the attribute: the picture still depends on (i, k, t) only.
-var VARIANT = (function(){
-  "use strict";
-  function of(el){
-    var tag = el.tagName.toLowerCase(), C = customElements.get(tag), names = (C && C.variants) || [], v = el.getAttribute("variant");
-    if (v !== null && names.indexOf(v) >= 0) return v;
-    if (v !== null) console.warn(tag + ' variant="' + v + '" is not one of ' + names.join(", ") + " (the first, " + (names[0] || "none") + ", is used)");
-    return names[0] || null;
-  }
-  return {of: of};
-})();
-// ---- END egatari-variant ----
+// 2.0（Egatari spec §6.1 の部品）：base の MotionElement・el・mtext・prog・variant・previewOpacity を使い、プレイヤーのグローバルは使わない。
+// データや大きさの問題は ctx.report で知らせる（1.x の console.warn の代わり）。幾何はテストのために static testing.geom（部品は読まない）
+egatariParts.define({name: "numberline", version: "2.0.0", requires: {base: "1.0.0"}, element: "m-numberline"}, function(deps){
+"use strict";
+var base = deps.base;
 // 形の要素ごとに、書き直すと形が作り直される属性（render の終わりで使う）
 var SHAPE_GEOM = {rect: "width", circle: "r", ellipse: "rx", path: "d", line: "x1", polyline: "points", polygon: "points"};
-// ---- 数直線の幾何（tools/test-numberline.mjs が試す。customElements.get("m-numberline").geom） ----
+// ---- 数直線の幾何（tools/test-numberline.mjs が試す。クラスの static testing.geom） ----
 var NL = (function(){
   function gcd(a, b){ a = Math.abs(a); b = Math.abs(b); while (b){ var t = a % b; a = b; b = t; } return a || 1; }
   function R(n, d){ if (d < 0){ n = -n; d = -d; } var g = gcd(n, d); return {n: n / g, d: d / g}; }
@@ -172,9 +159,10 @@ var NL = (function(){
 var TONES = /^(term|emph|muted|accent2|fg|series-[1-4])$/;
 var toneOf = function(c, d){ return TONES.test(c || "") ? "var(--" + c + ")" : d; };
 var num = {type: ["number", "string"]};
-DECK.define("m-numberline", class extends DECK.MotionElement {
+return class extends base.MotionElement {
+  static partName = "numberline";   // the registry name (define meta name), for report prefixes
   static variants = ["fade", "draw"];
-  static geom = NL;
+  static testing = {geom: NL};   // for tools/test-numberline.mjs only (no part reads it)
   static shape = {
     schema: {type: "object", additionalProperties: false, required: ["lines"], properties: {
       lines: {type: "array", minItems: 1, maxItems: 2, items: {type: "object", additionalProperties: false, required: ["from", "to"], properties: {
@@ -210,10 +198,10 @@ DECK.define("m-numberline", class extends DECK.MotionElement {
     var pos = function(v, what){ var r = G.parse(v); if (!r) throw new Error("m-numberline: " + what + " " + JSON.stringify(v) + " is not a number or a fraction like \"1/3\""); return G.val(r); };
     var lineOf = function(o, what){
       var li = o.line === undefined ? 0 : o.line;
-      if (li < 0 || li >= L + (what === "mark" ? NM : 0)){ notes.push("m-numberline: " + what + " line " + li + " does not exist (line 0 is used)"); li = 0; }
+      if (li < 0 || li >= L + (what === "mark" ? NM : 0)){ notes.push("[numberline] " + what + " line " + li + " does not exist (line 0 is used)"); li = 0; }
       return li;
     };
-    var inside = function(li, v, what){ if (li >= L) return; if (v < lines[li].lo - 1e-9 || v > lines[li].hi + 1e-9) notes.push("m-numberline: " + what + " " + v + " is outside its line (" + lines[li].lo + " to " + lines[li].hi + ")"); };
+    var inside = function(li, v, what){ if (li >= L) return; if (v < lines[li].lo - 1e-9 || v > lines[li].hi + 1e-9) notes.push("[numberline] " + what + " " + v + " is outside its line (" + lines[li].lo + " to " + lines[li].hi + ")"); };
     var marks = (d.marks || []).map(function(o){ var li = lineOf(o, "mark"), v = pos(o.at, "mark at"); inside(li, v, "mark at"); return {o: o, li: li, v: v, kind: o.kind || "dot"}; });
     var jumps = (d.jumps || []).map(function(o){ var li = lineOf(o, "jump"), a = pos(o.from, "jump from"), b = pos(o.to, "jump to"); inside(li, a, "jump from"); inside(li, b, "jump to"); return {o: o, li: li, a: a, b: b}; });
     var ranges = (d.ranges || []).map(function(o){
@@ -226,14 +214,14 @@ DECK.define("m-numberline", class extends DECK.MotionElement {
       if (!Array.isArray(at) || at.length !== 2) throw new Error("m-numberline: a link is [top value, bottom value] or {at: [top, bottom], label}");
       return {o: Array.isArray(o) ? {} : o, a: pos(at[0], "link"), b: pos(at[1], "link")};
     });
-    if (links.length && L < 2){ notes.push("m-numberline: link needs 2 lines (ignored)"); links = []; }
+    if (links.length && L < 2){ notes.push("[numberline] link needs 2 lines (ignored)"); links = []; }
     var mags = (d.magnify || []).map(function(o){ return {o: o, a: pos(o.from, "magnify from"), b: pos(o.to, "magnify to")}; });
-    if (mags.length && L > 1){ notes.push("m-numberline: magnify works with 1 line (ignored)"); mags = []; }
+    if (mags.length && L > 1){ notes.push("[numberline] magnify works with 1 line (ignored)"); mags = []; }
     mags.forEach(function(m, j){
       var src = j ? mags[j - 1] : lines[0];
       if (m.b <= m.a) throw new Error("m-numberline: magnify needs from < to");
       var lo = j ? src.a : src.lo, hi = j ? src.b : src.hi;
-      if (m.a < lo - 1e-9 || m.b > hi + 1e-9) notes.push("m-numberline: magnify " + m.a + " to " + m.b + " is outside the line it magnifies");
+      if (m.a < lo - 1e-9 || m.b > hi + 1e-9) notes.push("[numberline] magnify " + m.a + " to " + m.b + " is outside the line it magnifies");
       var t = m.o.step;
       if (t === undefined){ var q = G.div(G.sub(G.parse(m.o.to), G.parse(m.o.from)), G.R(10, 1)); t = G.isFrac(m.o.from) || G.isFrac(m.o.to) ? q.n + "/" + q.d : +G.val(q).toFixed(10); }
       m.ticks = G.ticks({from: m.o.from, to: m.o.to, step: t});
@@ -245,7 +233,7 @@ DECK.define("m-numberline", class extends DECK.MotionElement {
     if (!whole){
       order = String(P.build).split(",").map(function(s){ return s.trim(); }).filter(Boolean);
       var bad = order.filter(function(c){ return !cats[c]; });
-      if (bad.length) notes.push('m-numberline: build has unknown names ' + bad.join(", ") + " (use ticks, marks, links, jumps, ranges, magnify or whole)");
+      if (bad.length) notes.push('[numberline] build has unknown names ' + bad.join(", ") + " (use ticks, marks, links, jumps, ranges, magnify or whole)");
       order = order.filter(function(c){ return cats[c]; });
       ["ticks", "marks", "links", "jumps", "ranges", "magnify"].forEach(function(c){ if (order.indexOf(c) < 0) order.push(c); });
     } else order = ["ticks", "marks", "links", "jumps", "ranges", "magnify"];
@@ -270,11 +258,11 @@ DECK.define("m-numberline", class extends DECK.MotionElement {
     pl.mags.forEach(function(m){ if (m.st === k) out = Math.max(out, dur * 2); });
     return out;
   }
-  mount(){
-    var P = this.props, D = DECK, G = NL, self = this, pl = this.plan();
-    this.variant = VARIANT.of(this);
-    pl.notes.forEach(function(n){ console.warn(n); });
-    if (P.arrow !== "on" && P.arrow !== "off") console.warn('m-numberline: arrow="' + P.arrow + '" is not on or off');
+  mount(ctx){
+    var P = this.props, D = base, G = NL, self = this, pl = this.plan();
+    this.variant = base.variant(this);
+    pl.notes.forEach(function(n){ ctx.report("data", n); });
+    if (P.arrow !== "on" && P.arrow !== "off") ctx.report("data", '[numberline] arrow="' + P.arrow + '" is not on or off');
     this.style.display = "block";
     var W = this.clientWidth, H = this.clientHeight, L = pl.lines.length, dur = P.dur, arrow = P.arrow === "on";
     var svg = D.el("svg", {viewBox: "0 0 " + W + " " + H, width: W, height: H, style: "display:block;overflow:visible"}, this);
@@ -318,7 +306,7 @@ DECK.define("m-numberline", class extends DECK.MotionElement {
     var mR = Math.max(unitW ? unitW + OVER + (arrow ? 30 : 10) : 0, Math.max.apply(null, pl.lines.map(function(l){ return endW(l, false); })) + 6, OVER + (arrow ? 26 : 6));
     pl.mags.forEach(function(m){ var tk = m.ticks; mL = Math.max(mL, G.width(tk[0].label, FS) / 2 + 6); mR = Math.max(mR, G.width(tk[tk.length - 1].label, FS) / 2 + 6); });
     var x0 = mL, x1 = W - mR, SP = G.spans(pl.lines.map(function(l){ return l.src; }), x0, x1);
-    if (L > 1 && SP[0].z === null) console.warn("m-numberline: the 2 lines are not aligned at 0 (one of them does not contain 0)");
+    if (L > 1 && SP[0].z === null) ctx.report("data", "[numberline] the 2 lines are not aligned at 0 (one of them does not contain 0)");
     // ---- 目盛りの名前（間引き）と、□ の印が隠す名前 ----
     var pickLabels = function(l, X, boxes){
       var spec = l.src ? l.src.labels : l.labels, tk = l.ticks.filter(function(t){ return t.major; });
@@ -330,12 +318,12 @@ DECK.define("m-numberline", class extends DECK.MotionElement {
       if (spec === "none") return [];
       if (spec === "ends") return tk.filter(function(t, i){ return i === 0 || i === last; });
       if (Array.isArray(spec)){
-        var want = spec.map(function(v){ var r = G.parse(v); if (!r) console.warn("m-numberline: labels value " + JSON.stringify(v) + " is not a number"); return r ? G.val(r) : NaN; });
+        var want = spec.map(function(v){ var r = G.parse(v); if (!r) ctx.report("data", "[numberline] labels value " + JSON.stringify(v) + " is not a number"); return r ? G.val(r) : NaN; });
         var shown = tk.filter(function(t){ return want.some(function(v){ return Math.abs(v - t.v) < 1e-9; }); });
-        if (shown.length < want.filter(isFinite).length) console.warn("m-numberline: some labels values are not on a tick of the line");
+        if (shown.length < want.filter(isFinite).length) ctx.report("data", "[numberline] some labels values are not on a tick of the line");
         return shown;
       }
-      if (spec !== undefined && spec !== "all") console.warn('m-numberline: labels="' + spec + '" is not all, ends, none or a list of values');
+      if (spec !== undefined && spec !== "all") ctx.report("data", '[numberline] labels="' + spec + '" is not all, ends, none or a list of values');
       // 線の端は必ず書く。間引くのはその間の目盛りの名前だけ（□ の印に近い名前も落とす）
       tk.forEach(function(t, i){ t.keep = i === 0 || i === last; });
       return G.pick(tk, boxes);
@@ -409,7 +397,7 @@ DECK.define("m-numberline", class extends DECK.MotionElement {
       y0 = Math.max(4, (H - need) / 2) + outer(Lx[0]); y1 = y0 + gap;
       Lx[0].y = y0; Lx[1].y = y1;
     }
-    if (need > H + 1) console.warn("m-numberline: the element (" + W + "×" + H + " px) is too small; it needs about " + Math.ceil(need) + " px of height");
+    if (need > H + 1) ctx.report("size", "[numberline] the element (" + W + "×" + H + " px) is too small; it needs about " + Math.ceil(need) + " px of height");
     var gGrid = D.el("g", {}, svg), gShade = D.el("g", {}, svg), gLine = D.el("g", {}, svg), gMark = D.el("g", {}, svg), gText = D.el("g", {}, svg);
     var draw = this.variant === "draw";
     var tickItems = function(o, y, ticks, shown, top, X, a, b, st, par, parT, frac){
@@ -528,7 +516,7 @@ DECK.define("m-numberline", class extends DECK.MotionElement {
         // 拡大の線の上の点（line 1, 2, …）。名前は目盛りの名前の下
         m.marks.forEach(function(k){
           var x = m.X(k.v), col = toneOf(k.o.tone, "var(--term)");
-          if (k.kind === "box") console.warn("m-numberline: a box mark on a magnified line is drawn as a dot");
+          if (k.kind === "box") ctx.report("data", "[numberline] a box mark on a magnified line is drawn as a dot");
           add(D.el("circle", {cx: x.toFixed(1), cy: yN, r: 9, fill: k.kind === "open" ? "var(--bg)" : col, stroke: col, "stroke-width": 3, opacity: 0}, gMark), {st: k.st, at: 0, len: dur * 0.6, kind: "fade"});
           if (k.o.label){ var kf = G.hasFrac(k.o.label); add(lab(gText, x, yN + OVER + m.tickH + 2 + (m.markH - 2 - (kf ? FROW : ROW)) / 2, k.o.label, {frac: kf}), {st: k.st, at: dur * 0.2, len: dur * 0.5, kind: "fade"}); }
         });
@@ -540,8 +528,8 @@ DECK.define("m-numberline", class extends DECK.MotionElement {
     this.shapes = [].slice.call(svg.querySelectorAll("rect,circle,ellipse,path,line,polyline,polygon"));
   }
   render(k, t, ctx){
-    var D = DECK, lecture = ctx && (ctx.preview || ctx.mode === "lecture"), draw = this.variant === "draw", FAINT = 0.45;
-    if (lecture){ var pv = parseFloat(getComputedStyle(this).getPropertyValue("--preview-opacity")); FAINT = pv >= 0 && pv <= 1 ? pv : 0.45; }   // 先の段階の薄さ：テーマの --preview-opacity（ないときは 0.45）
+    var D = base, lecture = !!ctx.preview, draw = this.variant === "draw", FAINT = 0.45;
+    if (lecture) FAINT = base.previewOpacity(this);   // 先の段階の薄さ：テーマの --preview-opacity（ないときは 0.45）
     this.items.forEach(function(it){
       var e = it.st < k ? 1 : it.st > k ? (lecture ? -1 : 0) : D.prog(t, it.at, it.len), op;
       if (e < 0){ op = FAINT; e = 1; } else op = e;
@@ -569,5 +557,5 @@ DECK.define("m-numberline", class extends DECK.MotionElement {
     // 何回塗り直されたかは呼び出しの間にコマが描かれたかで決まるので、作り直さないと同じ (k, t) でも呼び出しの順と時刻で画素が変わる（docs/contract.md §3）
     this.shapes.forEach(function(e){ var a = SHAPE_GEOM[e.localName], v = e.getAttribute(a); if (v !== null) e.setAttribute(a, v); });
   }
+};
 });
-})();
