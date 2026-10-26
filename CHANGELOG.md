@@ -4,6 +4,10 @@ Versions follow [README.md § Releases and versions](README.md#releases-and-vers
 
 ## Unreleased
 
+### Added
+
+- `m-flow`: decision nodes and loop-back edges for algorithm flowcharts (GA item 7, owner-approved via standards). Node `shape: "diamond"` draws a diamond inscribed in the node's `x` `y` `w` `h` (same tones, `class="box"`), and arrows are cut at its sides; yes/no go in the outgoing edges' `label` as before. Edge `loop` (`true`, `"left"`, `"right"`, `"top"`, `"bottom"`; `true` is `right` when the ends are stacked vertically, `bottom` when side by side) routes an edge back to an earlier node around the outside instead of straight through boxes: it leaves and enters at the middle of that side of both boxes and runs 34 px beyond every box between the two ends (right angles), drawn from its start with the arrowhead riding its tip; its `label` goes outside the long run (inside when outside would leave the figure), `amount` inside, and `pulse` dots follow the bends. Without these fields a lesson's DOM is byte-identical to v1.11.0 at every step in the talk and lecture views (checked on the v1.11.0 demo; m-flow has no variants, so `tools/test-default-variant.mjs` does not compare it). Demo slide 「1 から n までの和を求める手順」. Pack-visible bytes (`tools/pack-bytes.mjs --base v1.11.0`) −50 for `m-flow`: `shape:"diamond"`（判断） and `loop:true`（戻る辺） named in the node and edge bullets, the details in an `llm: omit` block, the shape schema unchanged; paid for by moving the colour bullet's history note (「v1.2.0 から。前は…薄かった」, not an authoring rule) into an `llm: omit` block
+
 ### Later (candidates, not in this release)
 
 - `m-compare` `by="row"`; an "outside every set" region for `m-venn`; planned-vs-actual bars for `m-timeline`
