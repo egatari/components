@@ -19,6 +19,7 @@
 //      predict        m-predict's viewer input: ±1, typed counts, input(), reset on step entry, video, print, live, keys (tools/test-predict.mjs)
 //      timer          m-timer: duration = sec, the clock, ja/en strings and labels, ctx.extend buttons (fake), video, print (tools/test-timer.mjs)
 //  11. codetree-dom    m-codetree's DOM and pixels do not depend on the order of render calls (tools/test-codetree-dom.mjs)
+//      raster-history m-tree / m-venn / m-numberline: the pixels of a step do not depend on how often it was drawn before, nor on a click and ctx.reset (tools/test-raster-history.mjs)
 //  12. shape            wrong-shaped data and refused expressions: inline placeholder and DECK.componentErrors, no exception (tools/test-shape.mjs)
 //  13. seed0           variant 0 of every component with variants is pixel-identical to the last release (tools/test-seed0.mjs)
 //      preview        answers under preview: with ctx.preview a part draws its later steps at --preview-opacity, or declares static preview = "none"
@@ -63,6 +64,7 @@ const TESTS = [
   ['test-predict', ['tools/test-predict.mjs', path.join(tmp, 'predict')]],
   ['test-timer', ['tools/test-timer.mjs', path.join(tmp, 'timer')]],
   ['test-codetree-dom', ['tools/test-codetree-dom.mjs', path.join(tmp, 'codetree-dom')]],
+  ['test-raster-history', ['tools/test-raster-history.mjs', path.join(tmp, 'raster-history')]],
   ['test-shape', ['tools/test-shape.mjs', path.join(tmp, 'shape')]],
   ['test-seed0', ['tools/test-seed0.mjs', path.join(tmp, 'seed0')]],
   ['test-preview', ['tools/test-preview.mjs', path.join(tmp, 'preview')]],

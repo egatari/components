@@ -72,6 +72,8 @@ var VARIANT = (function(){
   return {of: of, pick: pick, seed: seed, rng: rng, hash: hash};
 })();
 // ---- END egatari-variant ----
+// 形の要素ごとに、書き直すと形が作り直される属性（render の終わりで使う）
+var SHAPE_GEOM = {rect: "width", circle: "r", ellipse: "rx", path: "d", line: "x1", polyline: "points", polygon: "points"};
 DECK.define("m-tree", class extends DECK.MotionElement {
   static variants = ["fade", "draw", "grow"];
   // データの形（kit/shape.js）
@@ -331,6 +333,8 @@ DECK.define("m-tree", class extends DECK.MotionElement {
       [a, b].forEach(function(o){ if (o.step === x.step) after = Math.max(after, o.at + self.span()); });
       return {g: g, line: line, head: head, lab: lab, path: self.poly(pts), step: x.step, at: e.at !== undefined ? e.at : after};
     });
+    // 形の一覧（render の終わりに形を作り直すため。下の render を見る）
+    this.shapes = [].slice.call(svg.querySelectorAll("rect,circle,ellipse,path,line,polyline,polygon"));
   }
   // 箱 1 つの動きの長さ（どの見せ方でも同じ）：箱が現れて線を引き終わるまで
   span(){ return this.props.fade * 0.6 + this.props.draw; }
@@ -406,5 +410,9 @@ DECK.define("m-tree", class extends DECK.MotionElement {
       o.head.setAttribute("transform", "translate(" + p.end[0].toFixed(2) + " " + p.end[1].toFixed(2) + ") rotate(" + (p.ang * 180 / Math.PI).toFixed(2) + ") scale(" + hs.toFixed(4) + ")");
       if (o.lab) o.lab.setAttribute("opacity", lo.toFixed(3));
     });
+    // 形を作り直す（同じ値を書き直すだけで、DOM は変わらない）。Chrome は、変わっていない形を近くの変化のために塗り直す（ラスタライズし直す）と、
+    // 2 回目からその形の輪郭（曲線の縁）を別の方法で描き、縁の画素が数十個変わる（ソフトウェアの GPU、CI の Linux・Windows）。
+    // 何回塗り直されたかは呼び出しの間にコマが描かれたかで決まるので、作り直さないと同じ (k, t) でも呼び出しの順と時刻で画素が変わる（docs/contract.md §3）
+    this.shapes.forEach(function(e){ var a = SHAPE_GEOM[e.localName], v = e.getAttribute(a); if (v !== null) e.setAttribute(a, v); });
   }
 });
