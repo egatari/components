@@ -540,13 +540,13 @@ DECK.define("m-hist", class extends DECK.MotionElement {
       });
       if (s.poly){
         var e3 = ph(pl.polyStep, 0, dur), po = s.poly;
-        if (e3 < 0){ po.path.setAttribute("opacity", FAINT); po.path.removeAttribute("stroke-dasharray"); po.vs.forEach(function(v){ v.c.setAttribute("opacity", FAINT); }); }
+        if (e3 < 0){ po.path.setAttribute("opacity", FAINT); po.path.removeAttribute("stroke-dasharray"); po.path.removeAttribute("stroke-dashoffset"); po.vs.forEach(function(v){ v.c.setAttribute("opacity", FAINT); }); }
         else if (vr === "grow"){
           po.path.setAttribute("stroke-dasharray", po.len.toFixed(1) + " " + (po.len + 10).toFixed(1));
           po.path.setAttribute("stroke-dashoffset", (po.len * (1 - e3)).toFixed(1));
           po.path.setAttribute("opacity", e3 > 0 ? 1 : 0);
           po.vs.forEach(function(v){ v.c.setAttribute("opacity", e3 >= v.f - 1e-6 && e3 > 0 ? 1 : 0); });
-        } else { po.path.removeAttribute("stroke-dasharray"); po.path.setAttribute("opacity", e3.toFixed(3)); po.vs.forEach(function(v){ v.c.setAttribute("opacity", e3.toFixed(3)); }); }
+        } else { po.path.removeAttribute("stroke-dasharray"); po.path.removeAttribute("stroke-dashoffset"); po.path.setAttribute("opacity", e3.toFixed(3)); po.vs.forEach(function(v){ v.c.setAttribute("opacity", e3.toFixed(3)); }); }
       }
     });
     // 代表値の印：fade は線と名前がフェード、grow は線が軸から上へ伸びてから名前

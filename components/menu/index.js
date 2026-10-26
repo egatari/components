@@ -72,7 +72,9 @@ D.define("m-menu", class extends D.MotionElement {
       var href = a.getAttribute("href"), inDoc = href.charAt(0) === "#";
       a.insertAdjacentHTML("beforeend", CHECK + (inDoc ? "" : EXT));
       var sr = document.createElement("span"); sr.className = "mm-sr"; a.appendChild(sr);
-      return {a: a, sr: sr, frag: inDoc ? href.slice(1) : null, ext: !inDoc, step: per ? Math.floor(j / per) + 1 : 0, at: per ? (j % per) * P.stagger : 0};
+      // 作り手が書いた style（render はこの後ろに自分の値を足して書く）
+      var css = (a.getAttribute("style") || "").trim().replace(/\s*;$/, ""); if (css) css += ";";
+      return {a: a, sr: sr, css: css, frag: inDoc ? href.slice(1) : null, ext: !inDoc, step: per ? Math.floor(j / per) + 1 : 0, at: per ? (j % per) * P.stagger : 0};
     });
     this.visitedOn = P.visited && ctx.mode !== "video";
     if (this.visitedOn){
@@ -103,14 +105,15 @@ D.define("m-menu", class extends D.MotionElement {
     this.cards.forEach(function(c){
       var p = c.step < k ? 1 : c.step > k ? 0 : D.prog(t, c.at, F);
       if (lecture && p < 1) p = Math.max(p, c.step > k ? FAINT : p);
-      c.a.style.opacity = p.toFixed(3);
-      c.a.style.transform = p < 1 && !lecture ? "translateY(" + ((1 - p) * 14).toFixed(2) + "px)" : "";
       // 見えていない札は押せない・選べない・読み上げない
       // 授業の表示で薄く見せている先の札も押せない・選べない（読み上げはする）
       var off = p <= 0, inert = off || (lecture && c.step > k);
-      c.a.style.pointerEvents = inert ? "none" : "";
-      if (inert) c.a.setAttribute("tabindex", "-1"); else c.a.removeAttribute("tabindex");
-      if (off) c.a.setAttribute("aria-hidden", "true"); else c.a.removeAttribute("aria-hidden");
+      // 書く属性は毎回、同じ順・同じ書き方で書き直す（style は作り手の style の後ろに 1 つの文字列で。
+      // tabindex・aria-hidden は消してから付け直す）。呼ぶ順で属性の字や並びが変わらない（docs/contract.md §3）
+      c.a.removeAttribute("tabindex"); c.a.removeAttribute("aria-hidden");
+      c.a.setAttribute("style", c.css + "opacity:" + p.toFixed(3) + ";" + (p < 1 && !lecture ? "transform:translateY(" + ((1 - p) * 14).toFixed(2) + "px);" : "") + (inert ? "pointer-events:none;" : ""));
+      if (inert) c.a.setAttribute("tabindex", "-1");
+      if (off) c.a.setAttribute("aria-hidden", "true");
     });
   }
 });

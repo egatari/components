@@ -414,6 +414,8 @@ D.define("m-codetree", class extends D.MotionElement {
       return {g: g, br: br, sw: sw, tx: tx, r: r};
     });
   }
+  // 色は style 属性に DECK.el と同じ書き方（"fill:var(--x);"）で書く。style.fill に代入すると "fill: var(--x);" になり、
+  // 作った直後と描き直した後で属性の字が変わる（docs/contract.md §3、tools/test-dom-order.mjs）
   // 段階 k の今の道の進み（0〜1 の各辺）と、葉の後の進み
   render(k, t, ctx){
     var D2 = D, P = this.props, m = this.model(), dec = m.dec, self = this, Lb = m.L;
@@ -491,12 +493,12 @@ D.define("m-codetree", class extends D.MotionElement {
         var top = e.parent === "r", lp = labelAt(a, q, top ? 0.5 : 0.42, top ? 20 : 17);
         e.lab.setAttribute("x", lp.x.toFixed(2)); e.lab.setAttribute("y", lp.y.toFixed(2));
         e.lab.setAttribute("opacity", Math.min(q.op, q.lab, wf(lp.y - 8)).toFixed(3));
-        e.lab.style.fill = onPath[id] ? "var(--emph)" : "var(--muted)";
+        e.lab.setAttribute("style", "fill:" + (onPath[id] ? "var(--emph)" : "var(--muted)") + ";");
         e.lab.setAttribute("font-weight", onPath[id] ? 700 : 400);
       }
       if (e.num){
         var h = !!hit[id];
-        e.num.style.fill = h ? "var(--emph)" : "var(--fg)";
+        e.num.setAttribute("style", "fill:" + (h ? "var(--emph)" : "var(--fg)") + ";");
         e.num.setAttribute("font-weight", h ? 700 : 400);
         // 着いたときに輪が 1 回広がる（最終状態には出ない）
         var u = p && p.type === "tok" && h && t !== Infinity ? (t - T.A) / 0.6 : -1;
@@ -548,7 +550,7 @@ D.define("m-codetree", class extends D.MotionElement {
       var c = j < doneEnd ? "var(--fg)" : j <= readUpTo ? "var(--emph)" : "var(--muted)";
       if (p && p.type === "sum" && dec.error && dec.error.kind !== "dangling" && j >= dec.error.start) c = "var(--emph)";
       if (p && p.type === "tok" && j >= cur.start && j < cur.end && t >= T.F0) c = "var(--fg)";
-      e.style.fill = c;
+      e.setAttribute("style", "fill:" + (c) + ";");
     });
     var po = 0, pj = 0;
     if (cur && T && t !== Infinity){
@@ -584,7 +586,8 @@ D.define("m-codetree", class extends D.MotionElement {
       var vis = o.r.toks.filter(function(i){ return shown[i] > 0; });
       if (!vis.length){
         o.g.setAttribute("opacity", 0);
-        o.br.removeAttribute("d"); o.sw.removeAttribute("x"); o.tx.removeAttribute("x"); o.tx.textContent = "";
+        o.br.removeAttribute("d"); o.sw.setAttribute("x", "0"); o.tx.removeAttribute("x");   // 作った直後と同じ（色の升目は x="0" で作る。消すと属性の順が変わる）
+        o.tx.textContent = "";
         return;
       }
       var len = vis.reduce(function(a, i){ return a + shown[i]; }, 0);
@@ -634,7 +637,7 @@ D.define("m-codetree", class extends D.MotionElement {
     this.note[0].textContent = n0; this.note[1].textContent = n1;
     // 前の一言が消えてから次を出す（重ねて入れ替えると読めない）
     this.note[0].setAttribute("opacity", Math.max(0, 1 - 2 * sw).toFixed(3)); this.note[1].setAttribute("opacity", Math.max(0, 2 * sw - 1).toFixed(3));
-    this.note[1].style.fill = p && (p.type === "err" || p.type === "sum") ? "var(--emph)" : "var(--fg)";
+    this.note[1].setAttribute("style", "fill:" + (p && (p.type === "err" || p.type === "sum") ? "var(--emph)" : "var(--fg)") + ";");
   }
 });
 })();

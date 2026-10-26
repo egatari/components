@@ -292,7 +292,8 @@ DECK.define("m-cycle", class extends DECK.MotionElement {
       var r = o.r, v = arrE[r.i] || (lecture ? [1, faint(r.step, r.at, 0.5)] : [pr(r.step, r.at, 0.5), 1]);
       var e = v[0], a = o.a, tc = a.t0 + (a.t1 - a.t0) * e;
       o.g.setAttribute("opacity", e > 0 ? v[1].toFixed(3) : 0);
-      if (e <= 0){ o.path.setAttribute("d", ""); return; }
+      // 見えない矢印も、render が書く属性はすべて書き直す（前の呼び出しの transform を残さない。docs/contract.md §3）
+      if (e <= 0){ o.path.setAttribute("d", ""); o.head.removeAttribute("transform"); return; }
       // 線は矢じりの根元まで（矢じりは 14px、線が 20px 伸びるまでに大きくなる）
       var p = self.pt(tc), sp = Math.hypot(L.rx * Math.sin(tc), L.ry * Math.cos(tc)) || 1;
       var back = Math.min(14 / sp, tc - a.t0), te = tc - back, q0 = self.pt(a.t0), q1 = self.pt(te);

@@ -21,6 +21,7 @@
 //      keyboard-preview m-keyboard's lecture preview: later keys faint at the theme's --preview-opacity, no dot (tools/test-keyboard-preview.mjs)
 //      timer          m-timer: duration = sec, the clock, ja/en strings and labels, ctx.extend buttons (fake), video, print (tools/test-timer.mjs)
 //  11. codetree-dom    m-codetree's DOM and pixels do not depend on the order of render calls (tools/test-codetree-dom.mjs)
+//      dom-order      every part's DOM at (k, end) is byte-identical straight and after seeking k+1, 0, k, in the talk and lecture views (tools/test-dom-order.mjs)
 //      raster-history m-tree / m-venn / m-numberline: the pixels of a step do not depend on how often it was drawn before, nor on a click and ctx.reset (tools/test-raster-history.mjs)
 //      timeline-gantt m-timeline's after arrows (ends, right angles, no band crossed), progress width, today line position, unit ticks (tools/test-timeline-gantt.mjs)
 //  12. shape            wrong-shaped data and refused expressions: inline placeholder and DECK.componentErrors, no exception (tools/test-shape.mjs)
@@ -69,6 +70,7 @@ const TESTS = [
   ['test-timer', ['tools/test-timer.mjs', path.join(tmp, 'timer')]],
   ['test-keyboard-preview', ['tools/test-keyboard-preview.mjs', path.join(tmp, 'keyboard-preview')]],
   ['test-codetree-dom', ['tools/test-codetree-dom.mjs', path.join(tmp, 'codetree-dom')]],
+  ['test-dom-order', ['tools/test-dom-order.mjs', path.join(tmp, 'dom-order')]],
   ['test-raster-history', ['tools/test-raster-history.mjs', path.join(tmp, 'raster-history')]],
   ['test-timeline-gantt', ['tools/test-timeline-gantt.mjs', path.join(tmp, 'timeline-gantt')]],
   ['test-shape', ['tools/test-shape.mjs', path.join(tmp, 'shape')]],

@@ -873,11 +873,11 @@ DECK.define("m-map-japan", class extends DECK.MotionElement {
       }
       it.els.forEach(function(el){
         var s0 = vr === "sweep" ? (el.rank || 0) * dur * 0.4 : 0, op;
-        if (tt < 0) op = 0;
-        else if (vr === "draw" && (el.outlines || el.line)){
+        if (vr === "draw" && (el.outlines || el.line)){
           // 輪郭を 0〜0.6 dur で引き、塗りを 0.4〜1.0 dur で。輪郭は 0.8〜1.0 dur で消える
-          var de = D.prog(tt, 0, dur * 0.6), fe = D.prog(tt, dur * 0.4, dur * 0.6), oe = 1 - D.prog(tt, dur * 0.8, dur * 0.2);
-          op = mul;
+          // まだの段階（tt < 0）でも同じ属性を書く（前の呼び出しの値を残さない。docs/contract.md §3）
+          var de = tt < 0 ? 0 : D.prog(tt, 0, dur * 0.6), fe = tt < 0 ? 0 : D.prog(tt, dur * 0.4, dur * 0.6), oe = tt < 0 ? 1 : 1 - D.prog(tt, dur * 0.8, dur * 0.2);
+          op = tt < 0 ? 0 : mul;
           if (el.outlines){
             el.kids.forEach(function(q){ q.setAttribute("opacity", fe.toFixed(3)); });
             el.outlines.forEach(function(q){
@@ -894,7 +894,7 @@ DECK.define("m-map-japan", class extends DECK.MotionElement {
             if (el.fill) el.fill.setAttribute("opacity", fe.toFixed(3));
           }
         }
-        else op = D.prog(tt, s0, dur * 0.6) * mul;
+        else op = tt < 0 ? 0 : D.prog(tt, s0, dur * 0.6) * mul;
         el.g.setAttribute("opacity", op.toFixed(3));
       });
       it.txt.forEach(function(g){ g.setAttribute("opacity", lo.toFixed(3)); });

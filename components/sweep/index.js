@@ -229,7 +229,8 @@ DECK.define("m-sweep", class extends DECK.MotionElement {
     this.lab.textContent = P.param + " = " + c.toFixed(P.digits);
     V.forEach(function(v, i){
       var e = this.ghosts[i], ahead = preview && i > k && v !== c, col = ahead ? "var(--emph)" : "var(--line)";
-      if (e.style.stroke !== col) e.style.stroke = col;
+      // style は DECK.el と同じ書き方で書く（style.stroke に代入すると "stroke: var(--x);" になり、作った直後と字が変わる）
+      e.setAttribute("style", "stroke:" + col + ";");
       e.setAttribute("opacity", ahead ? PV : i < k && v !== c ? 1 : 0);
     }, this);
   }

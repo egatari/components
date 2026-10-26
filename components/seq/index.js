@@ -95,12 +95,15 @@ DECK.define("m-seq", class extends DECK.MotionElement {
     this.ghostEls.forEach(function(g, i){
       var f = ahead(i) && i === last;
       var col = f ? "var(--term)" : "var(--line)";
-      if (g.style.stroke !== col) g.style.stroke = col;
+      // style は DECK.el と同じ書き方で書く（style.stroke に代入すると "stroke: var(--x);" になり、作った直後と字が変わる）
+      g.setAttribute("style", "stroke:" + col + ";");
       g.setAttribute("opacity", f ? PV : i < idx && i >= idx - G ? 1 : 0);
     });
     this.dots.forEach(function(c, i){ if (c) c.setAttribute("opacity", ahead(i) ? PV : i < idx ? 1 : 0); });
     var mo = b.mark !== undefined && idx > 0 ? D.prog(tm, 0, 0.25) : 0;
-    if (b.mark !== undefined){ var mx = p.x(b.mark); this.markLine.setAttribute("x1", mx); this.markLine.setAttribute("x2", mx); this.markLab.setAttribute("x", mx); }
+    // 印のない段階では作った直後の位置（0）に戻す（前の段階の位置を残さない。docs/contract.md §3）
+    var mx = b.mark !== undefined ? p.x(b.mark) : 0;
+    this.markLine.setAttribute("x1", mx); this.markLine.setAttribute("x2", mx); this.markLab.setAttribute("x", mx);
     this.markLine.setAttribute("opacity", mo.toFixed(3));
     this.markLab.setAttribute("opacity", mo.toFixed(3));
     this.rows.forEach(function(r){
