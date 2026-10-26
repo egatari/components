@@ -6,6 +6,8 @@
 <title>部品の一覧（見本）</title>
 <!-- tools/gallery.mjs が各部品の demo.html と README.md から作る。手で直さない。数値・会社はすべて架空か公の事実 -->
 <style>
+/* m-tree */
+.vcap{font-size:27px;color:var(--muted);text-align:center;margin-bottom:6px}
 /* m-compare */
 .vlabel{font-size:27px;color:var(--muted);margin:0 0 6px}
 /* m-cycle */
@@ -14,8 +16,6 @@
 .vcap{font-size:27px;color:var(--muted);text-align:center;margin-bottom:6px}
 /* m-timeline */
 .vcap{font-size:27px;line-height:1.3;margin:0 0 6px;color:var(--muted)}
-/* m-tree */
-.vcap{font-size:27px;color:var(--muted);text-align:center;margin-bottom:6px}
 /* m-venn */
 .vlabel{font-size:27px;color:var(--muted);margin:0 0 6px}
 </style>
@@ -73,10 +73,10 @@ document.addEventListener("DOMContentLoaded", function(){
 <div id="stage">
 
 <section class="slide">
-  <h2>部品の一覧（35 個、123 枚）</h2>
+  <h2>部品の一覧（35 個、124 枚）</h2>
   <div class="body">
     <p>部品ごとに、説明の 1 枚と見本のスライドが続きます。→ で段階を進めます。</p>
-    <p>m-heatmap（新しい）　m-map-world（新しい）　m-syntax（新しい）　m-predict（変わった）　m-timer（変わった）　m-bars　m-boxplot　m-codetree　m-collect　m-compare　m-curves　m-cycle　m-fishbone　m-flow　m-gendai　m-hissan　m-hist　m-kakijun　m-kanbun　m-keyboard　m-kobun　m-kpi　m-map-japan　m-market　m-menu　m-numberline　m-pie　m-quad　m-scatter　m-seq　m-sweep　m-tape　m-timeline　m-tree　m-venn</p>
+    <p>m-heatmap（新しい）　m-map-world（新しい）　m-syntax（新しい）　m-predict（変わった）　m-timer（変わった）　m-tree（変わった）　m-bars　m-boxplot　m-codetree　m-collect　m-compare　m-curves　m-cycle　m-fishbone　m-flow　m-gendai　m-hissan　m-hist　m-kakijun　m-kanbun　m-keyboard　m-kobun　m-kpi　m-map-japan　m-market　m-menu　m-numberline　m-pie　m-quad　m-scatter　m-seq　m-sweep　m-tape　m-timeline　m-venn</p>
   </div>
 </section>
 
@@ -283,6 +283,113 @@ document.addEventListener("DOMContentLoaded", function(){
       <li>系列：標準パーツ　見本のスライド：0 枚</li>
     </ul>
   </div>
+</section>
+
+<section class="slide">
+  <h2>m-tree（変わった、v1.12.0）</h2>
+  <div class="body">
+    <p>階層・分類の木（組織図、生物の分類など）を、根から 1 段ずつ組み立てる。座標は書かず、配置は部品が決める</p>
+    <ul>
+      <li>伝えたいこと：階層・分類</li>
+      <li>見せ方：fade・draw・grow</li>
+      <li>系列：標準パーツ　見本のスライド：4 枚</li>
+    </ul>
+  </div>
+</section>
+
+<section class="slide">
+  <h2>会社の組織（架空）</h2>
+  <div class="body">
+    <m-tree aria-label="架空の会社の組織図" style="height:440px">
+      <script type="application/json">{
+        "nodes": [
+          {"id": "ceo", "label": "社長", "tone": "emph"},
+          {"id": "s", "label": "営業本部", "parent": "ceo"},
+          {"id": "d", "label": "開発本部", "parent": "ceo"},
+          {"id": "a", "label": "管理本部", "parent": "ceo"},
+          {"id": "s1", "label": "国内営業部", "parent": "s"},
+          {"id": "s2", "label": "海外営業部", "parent": "s"},
+          {"id": "d1", "label": "製品開発部", "parent": "d"},
+          {"id": "d2", "label": "品質保証部", "parent": "d"},
+          {"id": "a1", "label": "人事部", "parent": "a"},
+          {"id": "a2", "label": "経理部", "parent": "a"},
+          {"id": "d11", "label": "設計課", "parent": "d1"},
+          {"id": "d12", "label": "試作課", "parent": "d1"},
+          {"id": "d13", "label": "試験課", "parent": "d1", "note": "2026 年に新設"}
+        ]
+      }</script>
+    </m-tree>
+  </div>
+  <div class="concl"><span>→ 上から 1 段ずつ：本部、部、課</span></div>
+</section>
+
+<section class="slide">
+  <h2>動物の分け方（orient="right"）</h2>
+  <div class="body">
+    <m-tree orient="right" aria-label="動物の分類" style="height:440px">
+      <script type="application/json">{
+        "nodes": [
+          {"id": "an", "label": "動物"},
+          {"id": "v", "label": "脊椎動物", "parent": "an", "note": "背骨がある"},
+          {"id": "i", "label": "無脊椎動物", "parent": "an", "note": "背骨がない", "tone": "muted"},
+          {"id": "f", "label": "魚類", "parent": "v"},
+          {"id": "am", "label": "両生類", "parent": "v"},
+          {"id": "r", "label": "は虫類", "parent": "v"},
+          {"id": "b", "label": "鳥類", "parent": "v"},
+          {"id": "m", "label": "哺乳類", "parent": "v", "tone": "emph"},
+          {"id": "ar", "label": "節足動物", "parent": "i", "tone": "muted"},
+          {"id": "mo", "label": "軟体動物", "parent": "i", "tone": "muted"}
+        ],
+        "edges": [
+          {"from": "r", "to": "b", "label": "近い仲間", "step": 4}
+        ]
+      }</script>
+    </m-tree>
+  </div>
+  <div class="concl"><span>→ 背骨の有無で分け、脊椎動物をさらに 5 つに分ける</span></div>
+</section>
+
+<section class="slide">
+  <h2>見せ方の種類（variant）</h2>
+  <div class="body">
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:28px">
+      <div><div class="vcap">箱、それから線（fade、既定）</div>
+      <m-tree variant="fade" aria-label="植物の分類（fade）" style="height:330px">
+        <script type="application/json">{"nodes": [{"id": "p", "label": "植物"}, {"id": "s", "label": "種子植物", "parent": "p"}, {"id": "f", "label": "胞子植物", "parent": "p"}, {"id": "a", "label": "被子植物", "parent": "s"}, {"id": "g", "label": "裸子植物", "parent": "s"}]}</script>
+      </m-tree></div>
+      <div><div class="vcap">線を引いてから箱（draw）</div>
+      <m-tree variant="draw" aria-label="植物の分類（draw）" style="height:330px">
+        <script type="application/json">{"nodes": [{"id": "p", "label": "植物"}, {"id": "s", "label": "種子植物", "parent": "p"}, {"id": "f", "label": "胞子植物", "parent": "p"}, {"id": "a", "label": "被子植物", "parent": "s"}, {"id": "g", "label": "裸子植物", "parent": "s"}]}</script>
+      </m-tree></div>
+      <div><div class="vcap">親の側から大きくなる（grow）</div>
+      <m-tree variant="grow" aria-label="植物の分類（grow）" style="height:330px">
+        <script type="application/json">{"nodes": [{"id": "p", "label": "植物"}, {"id": "s", "label": "種子植物", "parent": "p"}, {"id": "f", "label": "胞子植物", "parent": "p"}, {"id": "a", "label": "被子植物", "parent": "s"}, {"id": "g", "label": "裸子植物", "parent": "s"}]}</script>
+      </m-tree></div>
+    </div>
+  </div>
+  <div class="concl"><span>→ 書かなければ最初の見せ方（fade）になる</span></div>
+</section>
+
+<section class="slide">
+  <h2>確率の木：雨の日に遅れる確率（branch・path）</h2>
+  <div class="body">
+    <m-tree orient="right" aria-label="天気と遅刻の確率の木" style="height:440px">
+      <script type="application/json">{
+        "nodes": [
+          {"id": "s", "label": "出発"},
+          {"id": "r", "label": "雨", "parent": "s", "branch": "0.3"},
+          {"id": "f", "label": "晴れ", "parent": "s", "branch": "0.7"},
+          {"id": "rl", "label": "遅れる", "parent": "r", "branch": "0.4"},
+          {"id": "ro", "label": "間に合う", "parent": "r", "branch": "0.6"},
+          {"id": "fl", "label": "遅れる", "parent": "f", "branch": "0.1"},
+          {"id": "fo", "label": "間に合う", "parent": "f", "branch": "0.9"}
+        ],
+        "path": ["s", "r", "rl"],
+        "pathNote": "0.3 × 0.4 = 0.12"
+      }</script>
+    </m-tree>
+  </div>
+  <div class="concl"><span>→ 道に沿って枝の確率をかける：雨で遅れる確率は 0.12</span></div>
 </section>
 
 <section class="slide">
@@ -1749,91 +1856,6 @@ document.addEventListener("DOMContentLoaded", function(){
         <m-timeline variant="grow" style="height:330px">
           <script type="application/json">{"nodes": [{"label": "明治維新", "when": "1868"}, {"label": "明治", "when": "1868", "end": "1912"}, {"label": "憲法の発布", "when": "1889"}]}</script>
         </m-timeline></div>
-    </div>
-  </div>
-  <div class="concl"><span>→ 書かなければ最初の見せ方（fade）になる</span></div>
-</section>
-
-<section class="slide">
-  <h2>m-tree</h2>
-  <div class="body">
-    <p>階層・分類の木（組織図、生物の分類など）を、根から 1 段ずつ組み立てる。座標は書かず、配置は部品が決める</p>
-    <ul>
-      <li>伝えたいこと：階層・分類</li>
-      <li>見せ方：fade・draw・grow</li>
-      <li>系列：標準パーツ　見本のスライド：3 枚</li>
-    </ul>
-  </div>
-</section>
-
-<section class="slide">
-  <h2>会社の組織（架空）</h2>
-  <div class="body">
-    <m-tree aria-label="架空の会社の組織図" style="height:440px">
-      <script type="application/json">{
-        "nodes": [
-          {"id": "ceo", "label": "社長", "tone": "emph"},
-          {"id": "s", "label": "営業本部", "parent": "ceo"},
-          {"id": "d", "label": "開発本部", "parent": "ceo"},
-          {"id": "a", "label": "管理本部", "parent": "ceo"},
-          {"id": "s1", "label": "国内営業部", "parent": "s"},
-          {"id": "s2", "label": "海外営業部", "parent": "s"},
-          {"id": "d1", "label": "製品開発部", "parent": "d"},
-          {"id": "d2", "label": "品質保証部", "parent": "d"},
-          {"id": "a1", "label": "人事部", "parent": "a"},
-          {"id": "a2", "label": "経理部", "parent": "a"},
-          {"id": "d11", "label": "設計課", "parent": "d1"},
-          {"id": "d12", "label": "試作課", "parent": "d1"},
-          {"id": "d13", "label": "試験課", "parent": "d1", "note": "2026 年に新設"}
-        ]
-      }</script>
-    </m-tree>
-  </div>
-  <div class="concl"><span>→ 上から 1 段ずつ：本部、部、課</span></div>
-</section>
-
-<section class="slide">
-  <h2>動物の分け方（orient="right"）</h2>
-  <div class="body">
-    <m-tree orient="right" aria-label="動物の分類" style="height:440px">
-      <script type="application/json">{
-        "nodes": [
-          {"id": "an", "label": "動物"},
-          {"id": "v", "label": "脊椎動物", "parent": "an", "note": "背骨がある"},
-          {"id": "i", "label": "無脊椎動物", "parent": "an", "note": "背骨がない", "tone": "muted"},
-          {"id": "f", "label": "魚類", "parent": "v"},
-          {"id": "am", "label": "両生類", "parent": "v"},
-          {"id": "r", "label": "は虫類", "parent": "v"},
-          {"id": "b", "label": "鳥類", "parent": "v"},
-          {"id": "m", "label": "哺乳類", "parent": "v", "tone": "emph"},
-          {"id": "ar", "label": "節足動物", "parent": "i", "tone": "muted"},
-          {"id": "mo", "label": "軟体動物", "parent": "i", "tone": "muted"}
-        ],
-        "edges": [
-          {"from": "r", "to": "b", "label": "近い仲間", "step": 4}
-        ]
-      }</script>
-    </m-tree>
-  </div>
-  <div class="concl"><span>→ 背骨の有無で分け、脊椎動物をさらに 5 つに分ける</span></div>
-</section>
-
-<section class="slide">
-  <h2>見せ方の種類（variant）</h2>
-  <div class="body">
-    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:28px">
-      <div><div class="vcap">箱、それから線（fade、既定）</div>
-      <m-tree variant="fade" aria-label="植物の分類（fade）" style="height:330px">
-        <script type="application/json">{"nodes": [{"id": "p", "label": "植物"}, {"id": "s", "label": "種子植物", "parent": "p"}, {"id": "f", "label": "胞子植物", "parent": "p"}, {"id": "a", "label": "被子植物", "parent": "s"}, {"id": "g", "label": "裸子植物", "parent": "s"}]}</script>
-      </m-tree></div>
-      <div><div class="vcap">線を引いてから箱（draw）</div>
-      <m-tree variant="draw" aria-label="植物の分類（draw）" style="height:330px">
-        <script type="application/json">{"nodes": [{"id": "p", "label": "植物"}, {"id": "s", "label": "種子植物", "parent": "p"}, {"id": "f", "label": "胞子植物", "parent": "p"}, {"id": "a", "label": "被子植物", "parent": "s"}, {"id": "g", "label": "裸子植物", "parent": "s"}]}</script>
-      </m-tree></div>
-      <div><div class="vcap">親の側から大きくなる（grow）</div>
-      <m-tree variant="grow" aria-label="植物の分類（grow）" style="height:330px">
-        <script type="application/json">{"nodes": [{"id": "p", "label": "植物"}, {"id": "s", "label": "種子植物", "parent": "p"}, {"id": "f", "label": "胞子植物", "parent": "p"}, {"id": "a", "label": "被子植物", "parent": "s"}, {"id": "g", "label": "裸子植物", "parent": "s"}]}</script>
-      </m-tree></div>
     </div>
   </div>
   <div class="concl"><span>→ 書かなければ最初の見せ方（fade）になる</span></div>
