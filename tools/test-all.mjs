@@ -26,6 +26,8 @@
 //      c2-identity    each migrated element part (2.0, e.g. m-bars, m-menu) draws byte-identical DOM to its v1.13.0 version on the
 //                     v1.13.0 demo, through the registry shim: every step at 35 %, 70 % and its end, talk and preview views,
 //                     and after a tour of every slide (tools/test-c2-identity.mjs; docs/c2-migration.md)
+//      c2-noreports   every migrated part's demo.html and every identity fixture play without any ctx.report record, but for the
+//                     reports a fixture lists as expected (tools/test-c2-noreports.mjs)
 //      studio-check     Studio's own checker (kit/check.mjs) on each demo.html: no error; warnings other than R-narr-steps listed (tools/test-studio-check.mjs)
 //   8. components       each demo.html: builds, no console errors, screenshots per step, determinism, text ≥ 24px, overlap, outside the slide (tools/test-components.mjs)
 //   9. kanbun-num      m-kanbun's two-digit reading-order numbers stay inside their box and off the character boxes; one-digit numbers unchanged (tools/test-kanbun-num.mjs)
@@ -90,6 +92,7 @@ const TESTS = [
   ['test-part-shape', ['tools/test-part-shape.mjs']],
   ['test-part-plot', ['tools/test-part-plot.mjs', path.join(tmp, 'part-plot')]],
   ['test-c2-identity', ['tools/test-c2-identity.mjs', path.join(tmp, 'c2-identity')]],
+  ['test-c2-noreports', ['tools/test-c2-noreports.mjs', path.join(tmp, 'c2-noreports')]],
   ['test-studio-check', ['tools/test-studio-check.mjs']],
   ['test-components', ['tools/test-components.mjs', '--shots', path.join(tmp, 'shots')]],
   ['test-kakijun', ['tools/test-kakijun.mjs', path.join(tmp, 'kakijun')]],

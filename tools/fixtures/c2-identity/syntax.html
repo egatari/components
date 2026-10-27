@@ -3,6 +3,11 @@
 <head>
 <meta charset="utf-8">
 <title>m-syntax: options the demo does not reach (tools/test-c2-identity.mjs)</title>
+<!-- c2-expected-reports: the reports this fixture is written to produce (tools/test-c2-noreports.mjs)
+[
+  {"tag": "m-syntax", "key": "折り返し", "code": "size", "msg": "[syntax] 「yesterday」から「gave」への矢印が行をまたぐ（要素を広くするか size を小さく、文を短く）"},
+  {"tag": "m-syntax", "key": "折り返し", "code": "size", "msg": "[syntax] 要素の高さ 620px に 145px 足りない（要素を高くするか、文を分ける）"}
+] -->
 <!-- A wrapped sentence with brackets and arrows across lines, build="whole", yaku off and pos in the draw variant:
      each drawn by 1.13.0 and by 2.0.0 and compared at every step. -->
 </head>

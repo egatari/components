@@ -3,6 +3,12 @@
 <head>
 <meta charset="utf-8">
 <title>m-kakijun: options the demo does not reach (tools/test-c2-identity.mjs)</title>
+<!-- c2-expected-reports: the reports this fixture is written to produce (tools/test-c2-noreports.mjs)
+[
+  {"tag": "m-kakijun", "key": "データのない字", "code": "data", "msg": "[kakijun] no stroke data for \"漢\" (it is drawn plainly in the theme font, without stroke order)"},
+  {"tag": "m-kakijun", "key": "データのない字", "code": "data", "msg": "[kakijun] no stroke data for \"字\" (it is drawn plainly in the theme font, without stroke order)"},
+  {"tag": "m-kakijun", "key": "長い列", "code": "size", "msg": "[kakijun] the character boxes are 140 px (less than 200) to fit 10 characters; make the element larger or write fewer characters"}
+] -->
 <!-- per="stroke", the pen variant, endings, small kana in vertical writing with labels, grid="none", ghost="off", characters
      without stroke data and boxes made smaller to fit: each drawn by 1.13.0 and by 2.0.0 and compared at every step. -->
 </head>

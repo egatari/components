@@ -3,6 +3,17 @@
 <head>
 <meta charset="utf-8">
 <title>m-map-japan: small boxes and the inset redraw (tools/test-c2-identity.mjs)</title>
+<!-- c2-expected-reports: the reports this fixture is written to produce (tools/test-c2-noreports.mjs)
+[
+  {"tag": "m-map-japan", "key": "islands=\"all\"in260×160(theinsetisleftout:drawnagainwithoutit)", "code": "size", "msg": "[map-japan] the element (260×160 px) has no room for the names of 沖ノ鳥島 and 南鳥島 in the 小笠原諸島 inset; the inset is not drawn"},
+  {"tag": "m-map-japan", "key": "islands=\"all\"in260×160(theinsetisleftout:drawnagainwithoutit)", "code": "size", "msg": "[map-japan] no room for the label \"北海道\""},
+  {"tag": "m-map-japan", "key": "islands=\"all\"in260×160(theinsetisleftout:drawnagainwithoutit)", "code": "size", "msg": "[map-japan] the element (260×160 px) is too small for the caption 南西諸島 (not drawn)"},
+  {"tag": "m-map-japan", "key": "islands=\"all\"in300×200(theinsetfits)", "code": "size", "msg": "[map-japan] no room for the label \"北海道\""},
+  {"tag": "m-map-japan", "key": "islands=\"all\"in300×200(theinsetfits)", "code": "size", "msg": "[map-japan] the element (300×200 px) is too small for the caption 南西諸島, the caption 小笠原諸島 (not drawn)"},
+  {"tag": "m-map-japan", "key": "choroplethwithavaluebelowthefirstclass,small", "code": "data", "msg": "[map-japan] values[31] = 55 is below the first class (100) and is not drawn"},
+  {"tag": "m-map-japan", "key": "choroplethwithavaluebelowthefirstclass,small", "code": "size", "msg": "[map-japan] the element (1184×300 px) is too small for the caption 南西諸島 (not drawn)"},
+  {"tag": "m-map-japan", "key": "pointsinasmallbox", "code": "size", "msg": "[map-japan] the element (1184×240 px) is too small for the caption 南西諸島 (not drawn)"}
+] -->
 <!-- Cases the demo does not reach: the 小笠原諸島 inset that does not fit (mount draws again without it; 2.0: draw(ctx, true)),
      layout="true", pieces dropped from small elements, a value below the first class (each was a console.warn in 1.x
      and is a ctx.report in 2.0; the DOM must stay the same). From tools/test-map-territory.mjs and tools/test-map-small.mjs. -->

@@ -3,6 +3,13 @@
 <head>
 <meta charset="utf-8">
 <title>m-map-world: reported cases and small elements (tools/test-c2-identity.mjs)</title>
+<!-- c2-expected-reports: the reports this fixture is written to produce (tools/test-c2-noreports.mjs)
+[
+  {"tag": "m-map-world", "key": "XUDinregionsandvalues", "code": "data", "msg": "[map-world] values[XUD]: XUD (帰属未定地) is never coloured"},
+  {"tag": "m-map-world", "key": "XUDinregionsandvalues", "code": "data", "msg": "[map-world] XUD (帰属未定地) is never coloured"},
+  {"tag": "m-map-world", "key": "aflowacrosstheseam", "code": "data", "msg": "[map-world] flows[0]: the short way crosses the map's edge at 30°W (the map is Pacific-centred); the arrow is drawn across the map"},
+  {"tag": "m-map-world", "key": "categories,420×300", "code": "size", "msg": "[map-world] the element (420×300 px) has no room for the legend (not drawn; the values are in the readable layer)"}
+] -->
 <!-- Cases the demo does not reach, from tools/test-map-world.mjs: XUD refused, a flow across the seam, the graticule,
      small elements that drop the legend or labels (each was a console.warn in 1.x and is a ctx.report in 2.0; the DOM
      must stay the same). -->
