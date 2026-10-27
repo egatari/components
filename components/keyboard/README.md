@@ -2,6 +2,8 @@
 name: m-keyboard
 version: 2.0.0
 series: music
+tier: specialized
+set: music
 summary: ピアノの鍵盤。音階・和音・半音と全音を光らせて音も鳴らす
 steps: steps の 1 つ = 1 段階（鍵盤は t でずらして順に光る）
 purposes: music

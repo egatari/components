@@ -1,7 +1,9 @@
 // The layout of each component (no browser):
 //   components/<name>/index.js     defines <m-<name>> (DECK.define('m-<name>', …))
 //   components/<name>/README.md    frontmatter: name (m-<name>), version (the part's own version X.Y.Z, spec §6.1; 1.x parts: 1.13.0),
-//                                  series, summary, steps, purposes (ids in purposes.json), props,
+//                                  series, tier (standard | specialized | extra), set (only for specialized: stats, math, maps,
+//                                  kokugo, english, music, business, tools), display (optional: "<ja> / <en>", a name other than the tag),
+//                                  summary, steps, purposes (ids in purposes.json), props,
 //                                  license (optional: an SPDX expression MIT AND <id>, for a part carrying data under another licence),
 //                                  and variants when index.js declares `static variants` (the same names in the same order)
 //   components/<name>/demo.html    a 1–2 slide sample deck (required for new components; m-sweep predates the rule)
@@ -27,6 +29,14 @@ export const NAME_RE = /^[a-z][a-z0-9-]{0,63}$/;
 export const SERIES = ['common', 'academic', 'business', 'kokugo', 'info', 'social', 'music', 'english'];
 // How a series is named to people (CATALOG.md, gallery). The ids above never change; `common` is 標準パーツ / Standard parts,
 // `kokugo` 国語 / Japanese, `music` 音楽 / Music, `english` 英語 / English (subject series, like kokugo)
+// Tiers of element parts (parts-tiers-2026-10-27 §1, owner decision): standard parts are always offered, specialized ones
+// in sets (chosen by scene and words), extra ones only when a lesson clearly needs them (read their README). Library parts
+// have no tier. The ids never change; TIER_LABEL and SET_LABEL are how CATALOG.md names them.
+export const TIERS = ['standard', 'specialized', 'extra'];
+export const TIER_LABEL = { standard: '標準', specialized: '専門', extra: '特殊' };
+export const SETS = ['stats', 'math', 'maps', 'kokugo', 'english', 'music', 'business', 'tools'];
+export const SET_LABEL = { stats: '統計', math: '数学', maps: '地図', kokugo: '国語', english: '英語', music: '音楽', business: 'ビジネス', tools: '道具' };
+export const DISPLAY_RE = /^[^/]+ \/ [^/]+$/;
 export const SERIES_LABEL = { common: '標準パーツ', academic: '数理・統計', business: 'ビジネス', kokugo: '国語', info: '情報', social: '地図（社会）', music: '音楽', english: '英語' };
 // Components released before demo.html was required (do not add to this list)
 const NO_DEMO = new Set([]);
@@ -163,7 +173,7 @@ export function lintLibrary(name, dir, meta) {
   if (f.version && f.version !== meta.version) errs.push(`components/${name}/README.md: version ${f.version} differs from the define meta's ${meta.version}`);
   const req = Object.entries(meta.requires || {}).map(([n, v]) => `${n}@${v}`).join(', ');
   if ((f.requires || '') !== req) errs.push(`components/${name}/README.md: requires "${f.requires || ''}" differs from the define meta's "${req}"`);
-  for (const k of ['series', 'purposes', 'steps', 'props', 'variants']) if (k in f) errs.push(`components/${name}/README.md: ${k} is for element parts, not a library part`);
+  for (const k of ['series', 'purposes', 'steps', 'props', 'variants', 'tier', 'set', 'display']) if (k in f) errs.push(`components/${name}/README.md: ${k} is for element parts, not a library part`);
   if (fs.existsSync(path.join(dir, 'demo.html'))) errs.push(`components/${name}: a library part has no demo.html (it is tested by tools/test-*.mjs)`);
   if ('license' in f) {
     const ids = f.license.split(/\s+AND\s+/);
@@ -177,6 +187,8 @@ export function lint(root, warns = []) {
   const base = path.join(root, 'components');
   const pj = JSON.parse(fs.readFileSync(path.join(root, 'purposes.json'), 'utf8'));
   const seen = new Set();
+  for (const t of TIERS) if (!TIER_LABEL[t]) errs.push(`tools/lint.mjs: tier ${t} has no TIER_LABEL`);
+  for (const t of SETS) if (!SET_LABEL[t]) errs.push(`tools/lint.mjs: set ${t} has no SET_LABEL`);
   for (const s of SERIES) if (!SERIES_LABEL[s]) errs.push(`tools/lint.mjs: series ${s} has no SERIES_LABEL (how CATALOG.md and the gallery name it)`);
   for (const p of pj.purposes) {
     if (!/^[a-z][a-z-]*$/.test(p.id || '') || seen.has(p.id)) errs.push(`purposes.json: id ${JSON.stringify(p.id)} is not a unique lower-case id`);
@@ -215,7 +227,11 @@ export function lint(root, warns = []) {
     if (!fs.existsSync(readme)) { errs.push(`components/${name}: no README.md`); continue; }
     const f = frontmatter(fs.readFileSync(readme, 'utf8'));
     if (!f) { errs.push(`components/${name}/README.md: no frontmatter`); continue; }
-    for (const k of ['name', 'version', 'series', 'summary', 'steps', 'props']) if (!(k in f)) errs.push(`components/${name}/README.md: frontmatter has no ${k}`);
+    for (const k of ['name', 'version', 'series', 'tier', 'summary', 'steps', 'props']) if (!(k in f)) errs.push(`components/${name}/README.md: frontmatter has no ${k}`);
+    if ('tier' in f && !TIERS.includes(f.tier)) errs.push(`components/${name}/README.md: tier ${f.tier} is not one of ${TIERS.join(', ')}`);
+    if (f.tier === 'specialized' && !SETS.includes(f.set)) errs.push(`components/${name}/README.md: a specialized part needs set: one of ${SETS.join(', ')}${'set' in f ? ` (not ${f.set})` : ''}`);
+    if (f.tier !== 'specialized' && 'set' in f) errs.push(`components/${name}/README.md: set is only for tier: specialized`);
+    if ('display' in f && !DISPLAY_RE.test(f.display)) errs.push(`components/${name}/README.md: display "${f.display}" is not "<ja> / <en>"`);
     if ('version' in f && !EXACT.test(f.version)) errs.push(`components/${name}/README.md: version ${f.version} is not X.Y.Z (the part's own version)`);
     if (meta && f.version !== meta.version) errs.push(`components/${name}/README.md: version ${f.version} differs from the define meta's ${meta.version}`);
     // a migrated part (2.0, element) keeps its own changelog, so that parts migrated in parallel do not all edit the

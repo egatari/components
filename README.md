@@ -9,7 +9,7 @@ The list is in **[CATALOG.md](CATALOG.md)**. Each component lives in `components
 | File | What it is |
 |---|---|
 | `index.js` | the custom element `<m-<name>>` (it follows Studio's [component contract](https://github.com/egatari/egatari-studio/blob/main/docs/contract.md#3-components-web-components)) |
-| `README.md` | frontmatter (`name`, `version`, `series`, `summary`, `steps`, `props`) and how to use it |
+| `README.md` | frontmatter (`name`, `version`, `series`, `tier` (and `set`), `summary`, `steps`, `props`) and how to use it |
 | `demo.html` | a 1–2 slide sample deck |
 
 ## Using them

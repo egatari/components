@@ -2,6 +2,8 @@
 name: m-score
 version: 2.0.0
 series: music
+tier: specialized
+set: music
 summary: 楽譜（五線譜）を 1 音・和音ずつ、または 1 小節ずつ出して音も鳴らす。ABC 記譜法で書く
 steps: 音符・和音・休符 1 つ＝1 段階。by="measure" なら 1 小節＝1 段階
 purposes: music

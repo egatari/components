@@ -2,6 +2,8 @@
 name: m-map-japan
 version: 2.0.0
 series: social
+tier: specialized
+set: maps
 summary: 日本の 47 都道府県の地図。地域の強調、統計の塗り分け、点、矢印、経度・緯度の重ね描きを段階ごとに出す
 steps: 項目の step の最大（既定 1）。地図そのものは段階 0 から出ている
 purposes: spatial

@@ -4,7 +4,9 @@
 //   dist/egatari-components-v1.0.0.tar.gz   LICENSE and components/<name>/… as <name>/… (every file of each component except out/)
 //   dist/manifest.json                       {name, version, tag, repository, license, tarball: {file, sha256, bytes},
 //                                             purposes: [{id, ja, en, steps: {ja, en}, reserved?}] (purposes.json's list),
-//                                             components: {<name>: {tag, version (the part's own version, README frontmatter version:), series, purposes, variants, interactive?, viewerInput?, clock? (true when index.js declares
+//                                             components: {<name>: {kind: "element", tag, version (the part's own version, README frontmatter version:),
+//                                               tier ("standard" | "specialized" | "extra", README frontmatter tier:), set (specialized parts only: stats, math,
+//                                               maps, kokugo, english, music, business, tools), series, purposes, variants, interactive?, viewerInput?, clock? (true when index.js declares
 //                                               static interactive / viewerInput / clock = true; left out otherwise), preview? ("none" when index.js
 //                                               declares static preview = "none": the part shows nothing ahead under preview), license (an SPDX expression,
 //                                               only for a part whose README frontmatter has license: other than the repository's MIT), sha256 (of index.js), files: {<path>: sha256}}
@@ -73,7 +75,7 @@ export function release(version) {
       components[name] = { kind: 'library', version: fm.version, requires: { ...(meta.requires || {}) }, ...(fm.license ? { license: fm.license } : {}), sha256: code, files };
       continue;
     }
-    components[name] = { tag: `m-${name}`, version: fm.version, ...(meta ? { requires: { ...(meta.requires || {}) } } : {}), series: fm.series, ...(fm.license ? { license: fm.license } : {}), purposes: list(fm.purposes), variants: list(fm.variants), ...(fl.interactive ? { interactive: true } : {}), ...(fl.viewerInput ? { viewerInput: true } : {}), ...(fl.clock ? { clock: true } : {}), ...(fl.group ? { group: fl.group } : {}), ...(fl.preview ? { preview: fl.preview } : {}), ...(fl.tile ? { tile: fl.tile } : {}), sha256: code, files };
+    components[name] = { kind: 'element', tag: `m-${name}`, version: fm.version, tier: fm.tier, ...(fm.set ? { set: fm.set } : {}), ...(meta ? { requires: { ...(meta.requires || {}) } } : {}), series: fm.series, ...(fm.license ? { license: fm.license } : {}), purposes: list(fm.purposes), variants: list(fm.variants), ...(fl.interactive ? { interactive: true } : {}), ...(fl.viewerInput ? { viewerInput: true } : {}), ...(fl.clock ? { clock: true } : {}), ...(fl.group ? { group: fl.group } : {}), ...(fl.preview ? { preview: fl.preview } : {}), ...(fl.tile ? { tile: fl.tile } : {}), sha256: code, files };
   }
   entries.sort((a, b) => (a[0] < b[0] ? -1 : a[0] > b[0] ? 1 : 0));
   const gz = writeTarGz(entries);

@@ -2,6 +2,8 @@
 name: m-timer
 version: 2.0.0
 series: common
+tier: specialized
+set: tools
 summary: グループワークの進行タイマー。区切りごとに残り時間を大きく数え、区切りの一覧で今の区切りを示す
 steps: 0 準備の画面、区切り 1 つが 1 段階（その長さ = sec 秒）
 purposes: timebox

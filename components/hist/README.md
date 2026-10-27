@@ -2,6 +2,8 @@
 name: m-hist
 version: 2.0.0
 series: academic
+tier: specialized
+set: stats
 summary: ヒストグラム・度数折れ線・ドットプロット。平均値・中央値・最頻値の線も
 steps: 分布（系列 1 つ = 1 段階）→ 度数折れ線 → 代表値を 1 つずつ
 purposes: spread

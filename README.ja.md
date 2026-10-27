@@ -9,7 +9,7 @@
 | ファイル | 中身 |
 |---|---|
 | `index.js` | カスタム要素 `<m-<名前>>`（Studio の[部品の約束事](https://github.com/egatari/egatari-studio/blob/main/docs/contract.ja.md)に従う） |
-| `README.md` | 先頭の frontmatter（`name`・`version`・`series`・`summary`・`steps`・`props`）と使い方 |
+| `README.md` | 先頭の frontmatter（`name`・`version`・`series`・`tier`（と `set`）・`summary`・`steps`・`props`）と使い方 |
 | `demo.html` | 1〜2 枚の見本のデッキ |
 
 ## 使い方

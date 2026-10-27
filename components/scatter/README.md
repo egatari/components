@@ -2,6 +2,7 @@
 name: m-scatter
 version: 2.0.0
 series: common
+tier: standard
 summary: 散布図。点の組（系列）を段階ごとに出し、そのあと傾向の線（最小二乗の直線か、書いた 2 点）を引く
 steps: 系列の数 ＋ 傾向の線（既定は系列 1 つ = 1 段階、そのあと線をまとめて 1 段階。系列・線の step で直接）
 purposes: correlation
