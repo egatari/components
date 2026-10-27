@@ -6,11 +6,30 @@
 // duration(k) = phases[k-1].sec。実行系は t を実時間で進めるので、時計は (k, t) だけで決まる。→ キー（段階を進める）がスタートの合図
 // 左：題・説明・残り時間の大きな時計・進みの棒。右：区切りの一覧（今の区切りに枠、終わった区切りは --muted）
 // 最後の 1 分は時計と棒が --emph。最後の 10 秒は時計が 1 秒おきに薄くなる（注目のため。動画・動きを減らす設定・最後の状態では止まる）
-// 字は部品の中に書かない：<html lang> で日本語か英語の表を選び、データの labels で上書きできる
+// 字は部品の中に書かない：授業の言語（ctx.lang。<html lang> から）で日本語か英語の表を選び、データの labels で上書きできる
 // ＋1 分・−1 分（仕様 §8.4 ctx.extend、egatari-spec 485ae54）：実行系が ctx.extend を渡すときだけボタンを出す。延ばした秒数は見る人の状態で、
 //   同じスライドにいるあいだは残り、ほかのスライドから入ったとき・飛んだとき（ctx.entered）だけ戻る。ctx.reset ではボタンのフォーカスだけを戻す（仕様 §8.4）。動画・印刷は作者の秒数
-(function(){
-DECK.define("m-timer", class extends DECK.MotionElement {
+// 2.0（Egatari spec §6.1 の部品）：base の MotionElement・el・prog を使い、プレイヤーのグローバルは使わない。
+//   延長を戻すのは ctx.entered だけ（1.x の deck:pos の代わりはない）。日本語かどうかは mount の ctx.lang、動画かどうかは ctx.mode。
+//   要素の大きさの問題は ctx.report("size", …)。印刷の前後は document.defaultView の beforeprint・afterprint
+egatariParts.define({name: "timer", version: "2.0.0", requires: {base: "1.0.0"}, element: "m-timer"}, function(deps){
+"use strict";
+var base = deps.base;
+var CSS_ID = "timer-2-0-0-css";   // the style element this part writes, named with its name and version (spec §6.1 Identifiers)
+var JA = {ready: "準備の確認", total: "合計", remaining: "残り", done: "時間", start: "準備ができたら　→ キーでスタート", next: "終了　→ キーで次へ", end: "終了",
+          min: "分", sec: "秒", plus: "＋1 分", minus: "−1 分"};
+var EN = {ready: "Ready?", total: "Total", remaining: "Remaining", done: "Time's up", start: "When ready, press → to start", next: "Time's up. Press → for the next", end: "Time's up",
+          min: " min", sec: " s", plus: "+1 min", minus: "−1 min"};
+var CSS = [
+  "m-timer .tm-say{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}",
+  "m-timer .tm-ctl{position:absolute;display:flex;gap:12px}",
+  "m-timer .tm-btn{min-width:112px;height:52px;padding:0 14px;font:700 27px/1 var(--font-cap,var(--font-sans,sans-serif));color:var(--fg);background:var(--bg);border:2px solid var(--term);border-radius:8px;cursor:pointer;touch-action:manipulation}",
+  "m-timer .tm-btn:active{background:var(--term-tint)}",
+  "m-timer .tm-btn:focus-visible{outline:3px solid var(--emph);outline-offset:2px}",
+  "@media print{m-timer .tm-ctl{display:none!important}}",
+].join("\n");
+return class extends base.MotionElement {
+  static partName = "timer";   // the registry name (define meta name), for report prefixes
   static variants = ["fade"];
   static interactive = true;   // 操作できるパーツ（docs/conventions.md §6）
   static preview = "none";     // 先の時間は中身ではないので、授業の表示でも先の区切りを見せない（仕様 §8.4、docs/conventions.md §1.2）
@@ -36,23 +55,24 @@ DECK.define("m-timer", class extends DECK.MotionElement {
   };
   static props = {};
   get steps(){ return this.getAttribute("steps") !== null ? +this.getAttribute("steps") : ((this.data || {}).phases || []).length; }
-  // 字の表（<html lang> で選ぶ。データの labels が勝つ。古い書き方の "done" も受け付ける）
+  // 字の表（授業の言語 ctx.lang で選ぶ。mount が this.ja を決めてから読む。データの labels が勝つ。古い書き方の "done" も受け付ける）
   get L(){
     if (this._L) return this._L;
-    var d = this.data || {}, base = DECK.ja ? JA : EN, o = {};
-    for (var k in base) o[k] = base[k];
+    var d = this.data || {}, tbl = this.ja ? JA : EN, o = {};
+    for (var k in tbl) o[k] = tbl[k];
     if (typeof d.done === "string") o.done = o.end = d.done;
     var lb = d.labels || {};
     for (var j in lb) o[j] = lb[j];
     return (this._L = o);
   }
-  mount(){
-    var self = this, D = DECK, d = this.data || {}, L = this.L;
+  mount(ctx){
+    this.ja = String(ctx.lang).startsWith("ja");
+    var self = this, D = base, d = this.data || {}, L = this.L;
     this.P = d.phases || [];
     if (this.P.some(function(p){ return !(p.sec > 0); })) throw new Error("every phase needs sec > 0 (whole seconds)");
-    this.video = D.mode === "video";
+    this.video = ctx.mode === "video";
     this.style.display = "block"; this.style.position = "relative";
-    if (!document.getElementById("m-timer-css")){ var st = document.createElement("style"); st.id = "m-timer-css"; st.textContent = CSS; document.head.appendChild(st); }
+    if (!document.getElementById(CSS_ID)){ var st = document.createElement("style"); st.id = CSS_ID; st.textContent = CSS; document.head.appendChild(st); }
     var W = this.clientWidth, H = this.clientHeight;
     var f = this.f = Math.max(0.6, Math.min(1.2, H / 432, W / 1180)), F = function(z){ return Math.max(24, Math.round(z * f)); };
     var LW = this.LW = W * 0.525, RX = W * 0.576;
@@ -61,7 +81,7 @@ DECK.define("m-timer", class extends DECK.MotionElement {
     // 題（長ければ 24 px まで小さく）と説明（2 行まで。幅で折り返す）
     var fit = function(s, max, z, what){
       var y = z; while (y > 24 && est(s, y) > max) y--;
-      if (est(s, y) > max) console.warn("m-timer: the " + what + " " + JSON.stringify(s) + " does not fit (" + Math.ceil(est(s, y) - max) + " px too wide); shorten it");
+      if (est(s, y) > max) ctx.report("size", "[timer] the " + what + " " + JSON.stringify(s) + " does not fit (" + Math.ceil(est(s, y) - max) + " px too wide); shorten it");
       return y;
     };
     var wrap = function(s, max, z, what){
@@ -71,7 +91,7 @@ DECK.define("m-timer", class extends DECK.MotionElement {
         [...line].forEach(function(c){ if (cur && est(cur + c, z) > max){ out.push(cur); cur = ""; } cur += c; });
         out.push(cur);
       });
-      if (out.length > 2) console.warn("m-timer: the text of " + what + " needs " + out.length + " lines (2 fit); shorten it");
+      if (out.length > 2) ctx.report("size", "[timer] the text of " + what + " needs " + out.length + " lines (2 fit); shorten it");
       return out.slice(0, 2);
     };
     var heads = [d.ready || {}].concat(this.P);
@@ -88,13 +108,13 @@ DECK.define("m-timer", class extends DECK.MotionElement {
     this.clock = D.el("text", {x: 0, y: cy.toFixed(1), "font-size": cz.toFixed(0), "font-weight": 700, style: "font-variant-numeric:tabular-nums"}, svg);
     D.el("rect", {x: 0, y: by.toFixed(1), width: LW, height: 20 * f, rx: 10 * f, fill: "var(--line)"}, svg);
     this.bar = D.el("rect", {x: 0, y: by.toFixed(1), width: 0, height: 20 * f, rx: 10 * f}, svg);
-    if (by + 20 * f > H - 40 * f) console.warn("m-timer: the element is too low for the clock, the bar and the line under it (make it taller)");
+    if (by + 20 * f > H - 40 * f) ctx.report("size", "[timer] the element is too low for the clock, the bar and the line under it (make it taller)");
     this.foot = D.el("text", {x: 0, y: H - 4, "font-size": F(32), "font-weight": 700, fill: "var(--emph)"}, svg);
     // 区切りの一覧
     var n = this.P.length, top = 180 * f, rh = Math.min(48 * f, (H - top) / Math.max(n, 1));
-    if (rh < 34) console.warn("m-timer: " + n + " phases do not fit in the list (make the element taller or use fewer phases)");
+    if (rh < 34) ctx.report("size", "[timer] " + n + " phases do not fit in the list (make the element taller or use fewer phases)");
     this.rows = this.P.map(function(p, j){
-      var y = top + j * rh, s = (j + 1) + (DECK.ja ? "　" : "  ") + self.span(p.sec) + (DECK.ja ? "　" : "  ") + (p.short || p.title);
+      var y = top + j * rh, s = (j + 1) + (self.ja ? "　" : "  ") + self.span(p.sec) + (self.ja ? "　" : "  ") + (p.short || p.title);
       var box = D.el("rect", {x: RX, y: y, width: W - RX, height: rh - 6, rx: 8, fill: "none", stroke: "none", "stroke-width": 2.5}, svg);
       var tx = D.el("text", {x: RX + 14, y: y + rh / 2 + 7, "font-size": fit(s, W - RX - 28, F(28), "phase list entry")}, svg);
       tx.textContent = s;
@@ -106,22 +126,17 @@ DECK.define("m-timer", class extends DECK.MotionElement {
     this.appendChild(this.say);
     this._ext = {};
     this.RX = RX; this.W = W;
-    if (!this.video){
-      // ctx.entered を渡さない実行系のための代わり：ほかのスライドからこのスライドに入ったときだけ戻す（m-predict と同じ。ctx.entered を受け取ったら使わない）
-      var slide = this.closest("section"), mine = function(){ return DECK.slides ? [].indexOf.call(DECK.slides, slide) : -1; };
-      document.addEventListener("deck:pos", function(e){
-        var i = e.detail && e.detail.i, was = self._posI;
-        self._posI = i;
-        if (!self._hasEntered && i === mine() && was !== i && self.reset()) self.redraw();
-      });
-      window.addEventListener("beforeprint", function(){ self._printing = true; self.redraw(); });
-      window.addEventListener("afterprint", function(){ self._printing = false; self.redraw(); });
+    // 印刷は作者の秒数で描く（延長は消さない。afterprint で戻す）。beforeprint・afterprint は文書の窓（document.defaultView）に来る
+    var view = document.defaultView;
+    if (!this.video && view){
+      view.addEventListener("beforeprint", function(){ self._printing = true; self.redraw(); });
+      view.addEventListener("afterprint", function(){ self._printing = false; self.redraw(); });
     }
   }
   // 秒数の書き方：「3分」「20秒」「1分30秒」（英語は 3 min・20 s）
   span(s){
     var L = this.L, m = Math.floor(s / 60), r = s % 60;
-    return s < 60 ? s + L.sec : r === 0 ? m + L.min : m + L.min + (DECK.ja ? "" : " ") + r + L.sec;
+    return s < 60 ? s + L.sec : r === 0 ? m + L.min : m + L.min + (this.ja ? "" : " ") + r + L.sec;
   }
   clockText(s){ s = Math.max(0, Math.ceil(s - 1e-9)); return Math.floor(s / 60) + ":" + ("0" + (s % 60)).slice(-2); }
   duration(k){ return k >= 1 && this.P[k - 1] ? this.P[k - 1].sec : 0; }
@@ -163,7 +178,8 @@ DECK.define("m-timer", class extends DECK.MotionElement {
     var a = document.activeElement;
     if (a && a !== this && this.contains(a) && a.blur) a.blur();
   }
-  redraw(){ if (this._k !== undefined) this.render(this._k, this._t, this._ctx); }
+  // 入力のあとの描き直し：最後の (k, t) で paint だけを呼ぶ（render を通さないので、ctx.entered・ctx.reset を繰り返さない）
+  redraw(){ if (this._k !== undefined) this.paint(this._k, this._t, this._ctx); }
   // ＋1 分・−1 分：実行系が ctx.extend を渡したときに初めて作る（渡さない実行系・動画では作らない）
   buttons(){
     if (this.btns || this.video) return;
@@ -183,12 +199,15 @@ DECK.define("m-timer", class extends DECK.MotionElement {
     this.appendChild(box);
   }
   render(k, t, ctx){
-    var D = DECK, L = this.L, P = this.P, n = P.length, run = k >= 1 && P[k - 1];
-    if (ctx && typeof ctx.entered === "boolean") this._hasEntered = true;
-    if (ctx && ctx.entered === true) this.reset();
-    if (ctx && ctx.reset) this.untouch();
+    if (ctx.entered === true) this.reset();
+    if (ctx.reset) this.untouch();
     // 描き直し（redraw）で reset・entered をもう一度使わないように、それを除いて覚える（extend などはそのまま）
-    this._k = k; this._t = t; if (ctx){ this._ctx = Object.assign({}, ctx); delete this._ctx.reset; delete this._ctx.entered; }
+    this._k = k; this._t = t; this._ctx = Object.assign({}, ctx); delete this._ctx.reset; delete this._ctx.entered;
+    this.paint(k, t, this._ctx);
+  }
+  // (k, t) と延長の絵。ctx は render の ctx から reset・entered を除いたもの
+  paint(k, t, ctx){
+    var D = base, L = this.L, P = this.P, n = P.length, run = k >= 1 && P[k - 1];
     var hasExt = !this.video && ctx && typeof ctx.extend === "function";
     if (hasExt) this.buttons();
     if (this.btns) this.btns.style.display = hasExt && run ? "" : "none";
@@ -224,17 +243,5 @@ DECK.define("m-timer", class extends DECK.MotionElement {
     var s = !run ? "" : finished ? h.title + "：" + L.done : h.title;
     if (this._said !== s && !this.video){ this._said = s; this.say.textContent = s; }
   }
+};
 });
-var JA = {ready: "準備の確認", total: "合計", remaining: "残り", done: "時間", start: "準備ができたら　→ キーでスタート", next: "終了　→ キーで次へ", end: "終了",
-          min: "分", sec: "秒", plus: "＋1 分", minus: "−1 分"};
-var EN = {ready: "Ready?", total: "Total", remaining: "Remaining", done: "Time's up", start: "When ready, press → to start", next: "Time's up. Press → for the next", end: "Time's up",
-          min: " min", sec: " s", plus: "+1 min", minus: "−1 min"};
-var CSS = [
-  "m-timer .tm-say{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}",
-  "m-timer .tm-ctl{position:absolute;display:flex;gap:12px}",
-  "m-timer .tm-btn{min-width:112px;height:52px;padding:0 14px;font:700 27px/1 var(--font-cap,var(--font-sans,sans-serif));color:var(--fg);background:var(--bg);border:2px solid var(--term);border-radius:8px;cursor:pointer;touch-action:manipulation}",
-  "m-timer .tm-btn:active{background:var(--term-tint)}",
-  "m-timer .tm-btn:focus-visible{outline:3px solid var(--emph);outline-offset:2px}",
-  "@media print{m-timer .tm-ctl{display:none!important}}",
-].join("\n");
-})();

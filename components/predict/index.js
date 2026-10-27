@@ -12,25 +12,25 @@
 // live（拡張 live §2.5）：poll="p1" と書き、ctx.live があれば ctx.live.poll("p1") の数（number[] | null）を棒に出す。
 //   見せてよいか（先生が見せると決めたか、3 人以上か）は実行系が決める。部品は配列が来たときだけ出し、動画・印刷では出さない
 // 見せ方（docs/conventions.md §1）：fade（0。棒と答えの印がフェードして現れる）・draw（棒が上の選択肢から順に現れ、答えの枠を線で引く。長さは同じ）
-(function(){
-// ---- BEGIN egatari-variant (source: tools/variant.js; copy with `node tools/variant-sync.mjs`; do not edit inside a component) ----
-// Choosing a presentation variant (Egatari spec §8.4, docs/conventions.md §1). A component lists its variant names in
-// `static variants` (the first is the default) and calls VARIANT.of(this) once, in mount. The variant is the component's
-// `variant` attribute when it names one of them, otherwise the first name. There is no seed: lessons do not carry one
-// (spec §8.4 since egatari-spec 28d8801), and `seed` / `data-egatari-seed` are not read.
-// The choice is a pure function of the attribute: the picture still depends on (i, k, t) only.
-var VARIANT = (function(){
-  "use strict";
-  function of(el){
-    var tag = el.tagName.toLowerCase(), C = customElements.get(tag), names = (C && C.variants) || [], v = el.getAttribute("variant");
-    if (v !== null && names.indexOf(v) >= 0) return v;
-    if (v !== null) console.warn(tag + ' variant="' + v + '" is not one of ' + names.join(", ") + " (the first, " + (names[0] || "none") + ", is used)");
-    return names[0] || null;
-  }
-  return {of: of};
-})();
-// ---- END egatari-variant ----
-DECK.define("m-predict", class extends DECK.MotionElement {
+// 2.0（Egatari spec §6.1 の部品）：base の MotionElement・el・mtext・prog・variant を使い、プレイヤーのグローバルは使わない。
+//   見る人の入力を戻すのは ctx.entered だけ（1.x の deck:pos の代わりはない）。動画かどうかは mount の ctx.mode。
+//   要素の大きさの問題は ctx.report("size", …)。印刷の前後は document.defaultView の beforeprint・afterprint
+egatariParts.define({name: "predict", version: "2.0.0", requires: {base: "1.0.0"}, element: "m-predict"}, function(deps){
+"use strict";
+var base = deps.base;
+var CSS_ID = "predict-2-0-0-css";   // the style element this part writes, named with its name and version (spec §6.1 Identifiers)
+var CSS = [
+  "m-predict .pd-say{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}",
+  "m-predict .pd-pick{position:absolute;background:transparent;border:0;border-radius:10px;cursor:pointer;padding:0;margin:0}",
+  "m-predict .pd-pick:focus-visible,m-predict .pd-btn:focus-visible,m-predict .pd-num:focus-visible{outline:3px solid var(--emph);outline-offset:2px}",
+  "m-predict .pd-ctl{position:absolute;display:flex;gap:8px;align-items:center;height:48px}",
+  "m-predict .pd-btn{width:60px;height:48px;font:700 27px/1 var(--font-cap,var(--font-sans,sans-serif));color:var(--fg);background:var(--bg);border:2px solid var(--term);border-radius:8px;cursor:pointer;padding:0;touch-action:manipulation}",
+  "m-predict .pd-btn:active{background:var(--term-tint)}",
+  "m-predict .pd-num{width:80px;height:48px;box-sizing:border-box;font:700 27px/1 var(--font-cap,var(--font-sans,sans-serif));font-variant-numeric:tabular-nums;text-align:center;color:var(--fg);background:var(--bg);border:2px solid var(--muted);border-radius:8px;padding:0}",
+  "@media print{m-predict .pd-ctl,m-predict .pd-pick,m-predict .pd-mark,m-predict .pd-live{display:none!important}}",
+].join("\n");
+return class extends base.MotionElement {
+  static partName = "predict";   // the registry name (define meta name), for report prefixes
   static variants = ["fade", "draw"];
   static interactive = true;   // 操作できるパーツ（docs/conventions.md §6）
   static viewerInput = true;   // 見る人の入力を受け付ける（仕様 §8.4）
@@ -61,21 +61,21 @@ DECK.define("m-predict", class extends DECK.MotionElement {
     var d = this.data || {}, n = (d.choices || []).length;
     return Array.from({length: n}, function(_, i){ var v = d.counts && d.counts[i]; return Number.isInteger(v) && v > 0 ? v : 0; });
   }
-  mount(){
-    var self = this, P = this.props, D = DECK, d = this.data || {}, ch = d.choices || [], n = ch.length;
+  mount(ctx){
+    var self = this, P = this.props, D = base, d = this.data || {}, ch = d.choices || [], n = ch.length;
     if (!(d.answer >= 0 && d.answer < n)) throw new Error("answer " + d.answer + " is not a choice index (0–" + (n - 1) + ")");
     if (d.counts && d.counts.length !== n) throw new Error("counts has " + d.counts.length + " numbers for " + n + " choices");
     if (d.counts && d.counts.some(function(v){ return v < 0; })) throw new Error("counts must be 0 or more");
-    this.variant = VARIANT.of(this);
-    this.video = D.mode === "video";
+    this.variant = base.variant(this);
+    this.video = ctx.mode === "video";
     this.style.display = "block"; this.style.position = "relative";
-    if (!document.getElementById("m-predict-css")){ var st = document.createElement("style"); st.id = "m-predict-css"; st.textContent = CSS; document.head.appendChild(st); }
+    if (!document.getElementById(CSS_ID)){ var st = document.createElement("style"); st.id = CSS_ID; st.textContent = CSS; document.head.appendChild(st); }
     var W = this.clientWidth, H = this.clientHeight, inter = !this.video;
     var est = function(s, size){ return [...String(s)].reduce(function(a, c){ return a + (/[\u0000-ɏ]/.test(c) ? 0.56 : 1); }, 0) * size; };
     // 縦：問い・行・目盛り・注（と予想の当たり外れ）
     var qh = d.question ? 54 : 0, nh = d.note || inter ? 50 : 0, tb = P.ticks ? 40 : 8;
     var rh = Math.min(88, (H - qh - nh - tb) / n);
-    if (inter && rh < 54) console.warn("m-predict: rows are " + rh.toFixed(0) + " px high; the −1/+1 buttons need 54 (make the element taller or use fewer choices)");
+    if (inter && rh < 54) ctx.report("size", "[predict] rows are " + rh.toFixed(0) + " px high; the −1/+1 buttons need 54 (make the element taller or use fewer choices)");
     // 横：予想の印・選択肢の名前・棒・数と「正解」・操作
     var mk = inter ? 40 : 0, LS = 26;
     var lw = Math.min(W * 0.34, Math.max.apply(null, ch.map(function(c){ return est(c.label, LS); })) + 16);
@@ -88,7 +88,7 @@ DECK.define("m-predict", class extends DECK.MotionElement {
     var fitText = function(el, s, max, size, what){
       var z = size;
       while (z > 24 && est(s, z) > max) z--;
-      if (est(s, z) > max) console.warn("m-predict: the " + what + " does not fit (" + Math.ceil(est(s, z) - max) + " px too wide at 24 px); shorten it");
+      if (est(s, z) > max) ctx.report("size", "[predict] the " + what + " does not fit (" + Math.ceil(est(s, z) - max) + " px too wide at 24 px); shorten it");
       el.setAttribute("font-size", z);
       return el;
     };
@@ -160,18 +160,12 @@ DECK.define("m-predict", class extends DECK.MotionElement {
         ctl.appendChild(f);
         ctl.appendChild(bt("+1", 1, "1 増やす"));
       });
-      // ctx.entered を渡さない実行系のための代わり：ほかのスライドからこのスライドに入ったときだけ戻す。
-      // 自動再生の切り替え・発表者の画面とのつながり・同じスライドの中の段階の移りでは戻さない。ctx.entered を一度でも受け取ったら使わない
-      var slide = this.closest("section"), mine = function(){ return DECK.slides ? [].indexOf.call(DECK.slides, slide) : -1; };
-      this._onPos = function(e){
-        var i = e.detail && e.detail.i, was = self._posI;
-        self._posI = i;
-        if (!self._hasEntered && i === mine() && was !== i && self.reset()) self.redraw();
-      };
-      document.addEventListener("deck:pos", this._onPos);
-      // 印刷は作者の値で描く（画面の数は消さない。afterprint で戻す）
-      window.addEventListener("beforeprint", function(){ self._printing = true; self.redraw(); });
-      window.addEventListener("afterprint", function(){ self._printing = false; self.redraw(); });
+      // 印刷は作者の値で描く（画面の数は消さない。afterprint で戻す）。beforeprint・afterprint は文書の窓（document.defaultView）に来る
+      var view = document.defaultView;
+      if (view){
+        view.addEventListener("beforeprint", function(){ self._printing = true; self.redraw(); });
+        view.addEventListener("afterprint", function(){ self._printing = false; self.redraw(); });
+      }
     }
     function tone(t){ return /^(term|emph|muted|accent2|fg|series-[1-4])$/.test(t || "") ? "var(--" + t + ")" : "var(--term)"; }
   }
@@ -180,10 +174,10 @@ DECK.define("m-predict", class extends DECK.MotionElement {
   counts(){ return (this._vc || this.author).slice(); }
   // 発表者の画面から（Studio が呼ぶ）：choice は 0 から数える選択肢の番号、count は新しい数（0 以上の整数）
   input(choice, count){
-    if (DECK.mode === "video") return;
+    if (this.video) return;
     var n = this.author.length;
     if (!Number.isInteger(choice) || choice < 0 || choice >= n || !Number.isInteger(count) || count < 0 || count > 9999){
-      console.warn("m-predict: input(" + JSON.stringify(choice) + ", " + JSON.stringify(count) + ") ignored (choice 0–" + (n - 1) + ", count a whole number 0–9999)");
+      console.warn("[predict] input(" + JSON.stringify(choice) + ", " + JSON.stringify(count) + ") ignored (choice 0–" + (n - 1) + ", count a whole number 0–9999)");
       return;
     }
     this.set(choice, count);
@@ -232,7 +226,8 @@ DECK.define("m-predict", class extends DECK.MotionElement {
     var a = document.activeElement;
     if (a && a !== this && this.contains(a) && a.blur) a.blur();
   }
-  redraw(){ if (this._k !== undefined) this.render(this._k, this._t, this._ctx); }
+  // 入力のあとの描き直し：最後の (k, t) で paint だけを呼ぶ（render を通さないので、ctx.entered・ctx.reset を繰り返さない）
+  redraw(){ if (this._k !== undefined) this.paint(this._k, this._t, this._ctx); }
   duration(k){
     var a = this.aStep, d = 0;
     if (k === 1) d = 0.6;
@@ -240,14 +235,17 @@ DECK.define("m-predict", class extends DECK.MotionElement {
     return d;
   }
   render(k, t, ctx){
-    var self = this, P = this.props, D = DECK, G = this.g, dd = this.data, n = this.rows.length, vr = this.variant;
-    var a = this.aStep;
     // ほかのスライドから入ったとき・飛んだとき（ctx.entered）だけ、見る人の状態を捨てる。同じスライドの中の段階の移りでは残す。
     // ctx.reset（触った部品が段階に入るとき）は触った跡だけを戻し、見る人の入力は消さない（仕様 §8.4）
-    if (ctx && typeof ctx.entered === "boolean") this._hasEntered = true;
-    if (ctx && ctx.entered === true) this.reset();
-    if (ctx && ctx.reset) this.untouch();
-    this._k = k; this._t = t; this._ctx = ctx ? {mode: ctx.mode, preview: ctx.preview, live: ctx.live} : undefined;
+    if (ctx.entered === true) this.reset();
+    if (ctx.reset) this.untouch();
+    this._k = k; this._t = t; this._ctx = {mode: ctx.mode, preview: ctx.preview, live: ctx.live};
+    this.paint(k, t, this._ctx);
+  }
+  // (k, t) と見る人の状態の絵。ctx は {mode, preview, live}
+  paint(k, t, ctx){
+    var self = this, P = this.props, D = base, G = this.g, dd = this.data, n = this.rows.length, vr = this.variant;
+    var a = this.aStep;
     // 数：live の集計（実行系が見せてよいと渡したときだけ）→ 見る人の数 → 作者の数
     var live = null;
     if (P.poll && ctx && ctx.live && typeof ctx.live.poll === "function" && !this.video && !this._printing){
@@ -311,15 +309,5 @@ DECK.define("m-predict", class extends DECK.MotionElement {
       return Math.round((x <= 1 ? 1 : x <= 2 ? 2 : x <= 2.5 ? 2.5 : x <= 5 ? 5 : 10) * e); }
   }
   fmt(v){ return String(v).replace(/\B(?=(\d{3})+(?!\d))/g, ",") + this.props.unit; }
+};
 });
-var CSS = [
-  "m-predict .pd-say{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}",
-  "m-predict .pd-pick{position:absolute;background:transparent;border:0;border-radius:10px;cursor:pointer;padding:0;margin:0}",
-  "m-predict .pd-pick:focus-visible,m-predict .pd-btn:focus-visible,m-predict .pd-num:focus-visible{outline:3px solid var(--emph);outline-offset:2px}",
-  "m-predict .pd-ctl{position:absolute;display:flex;gap:8px;align-items:center;height:48px}",
-  "m-predict .pd-btn{width:60px;height:48px;font:700 27px/1 var(--font-cap,var(--font-sans,sans-serif));color:var(--fg);background:var(--bg);border:2px solid var(--term);border-radius:8px;cursor:pointer;padding:0;touch-action:manipulation}",
-  "m-predict .pd-btn:active{background:var(--term-tint)}",
-  "m-predict .pd-num{width:80px;height:48px;box-sizing:border-box;font:700 27px/1 var(--font-cap,var(--font-sans,sans-serif));font-variant-numeric:tabular-nums;text-align:center;color:var(--fg);background:var(--bg);border:2px solid var(--muted);border-radius:8px;padding:0}",
-  "@media print{m-predict .pd-ctl,m-predict .pd-pick,m-predict .pd-mark,m-predict .pd-live{display:none!important}}",
-].join("\n");
-})();

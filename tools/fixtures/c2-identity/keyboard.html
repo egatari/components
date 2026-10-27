@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="default">
+<head>
+<meta charset="utf-8">
+<title>m-keyboard: default key names in an English lesson (tools/test-c2-identity.mjs)</title>
+<!-- The demo is a Japanese lesson. Here the lesson is English, so a keyboard without "names" shows the abc names
+     (1.x: chosen in plan() from DECK.ja; 2.0: in mount from ctx.lang). Also the iroha names and the rise variant. -->
+</head>
+<body>
+<div id="stage">
+
+<section class="slide noconcl">
+  <h2>Default names</h2>
+  <div class="body">
+    <m-keyboard aria-label="C major and F sharp major chords" style="height:400px">
+      <script type="application/json">{"range": "C4-C6", "steps": [
+        {"keys": ["C4", "E4", "G4"], "label": "C major"},
+        {"keys": ["F#4", "A#4", "C#5"], "label": "F sharp major", "tone": "term"}]}</script>
+    </m-keyboard>
+  </div>
+</section>
+
+<section class="slide noconcl">
+  <h2>Iroha names, rise</h2>
+  <div class="body">
+    <m-keyboard variant="rise" aria-label="A scale with flats" style="height:400px">
+      <script type="application/json">{"range": "C4-C5", "names": "iroha", "cumulative": true, "steps": [
+        {"keys": ["C4", "Eb4", "G4"], "t": [0, 0.4, 0.8], "label": "one"},
+        {"keys": ["Bb4", "C5"], "label": "two"}]}</script>
+    </m-keyboard>
+  </div>
+</section>
+
+</div>
+</body>
+</html>

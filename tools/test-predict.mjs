@@ -2,7 +2,11 @@
 //   1. +1 / −1 / a typed number / input(choice, count) change the counts and the bars at once; never below 0; bad input() ignored
 //   2. the counts persist while the viewer stays on the slide (spec §8.4, 241770f): forward to the answer step and back; an autoplay
 //      toggle or deck:pos on the same slide keep them; ctx.reset keeps them (spec §8.4: it MUST NOT clear viewer input); entering
-//      from another slide (deck:pos, for a player without ctx.entered) or ctx.entered restores the author's (egatari-input)
+//      from another slide or ctx.entered restores the author's (egatari-input); deck:pos alone does nothing (predict 2.0.0 listens
+//      to no player event: ctx.entered only)
+// predict 2.0.0 runs through the registry shim (tools/parts.mjs c2Bundle), which builds the 2.0 ctx itself (entered from the
+// slide the viewer is on, live null). A render with a hand-made ctx (entered, reset, live) calls the part's own render
+// (__r: the class's prototype method, below the shim's and base's instance wrappers).
 //   3. ?mode=video: no buttons or fields, input() and clicks change nothing
 //   4. print (media emulation): no buttons shown, the author's counts as text; afterwards the screen keeps the viewer's counts
 //   5. the learner's own prediction: marked, kept into the answer step and told right or wrong there, reset on entering the slide
@@ -43,6 +47,7 @@ try {
       c.addEventListener('egatari-input', (e) => window.__ev.push(e.detail.counts));
       window.__shown = (c) => c.rows.map((r) => r.val.textContent);
       window.__w = (c) => c.rows.map((r) => +r.bar.getAttribute('width'));
+      window.__r = (c, k, t, ctx) => { let p = Object.getPrototypeOf(c); while (p && !Object.prototype.hasOwnProperty.call(p, 'render')) p = Object.getPrototypeOf(p); return p.render.call(c, k, t, ctx); };
     });
     return { page, errors, warns };
   };
@@ -95,7 +100,7 @@ try {
       DECK.go(0, 1, false); o.back = c.counts().join();
       DECK.go(0, 1, false); o.same = c.counts().join();
       DECK.go(0, 3, false); DECK.go(0, 2, false); o.fwd = c.counts().join();
-      c.render(2, 0.3, { mode: 'talk' }); o.frame = c.counts().join();
+      __r(c, 2, 0.3, { mode: 'talk', entered: false }); o.frame = c.counts().join();
       o.evSameSlide = __ev.length;
       // autoplay toggled on and off, the presenter view connecting: deck:pos on the same slide
       document.dispatchEvent(new CustomEvent('deck:pos', { detail: { i: 0, k: 2 } }));
@@ -108,11 +113,14 @@ try {
       __ev.length = 0;
       DECK.go(1, 0, false); DECK.go(0, 1, false); o.noDirtyEv = __ev.length;   // nothing changed: no event
       c.input(0, 30); __ev.length = 0;
-      c.render(1, Infinity, { mode: 'talk', reset: true }); o.ctxReset = c.counts().join(); o.ctxResetEv = __ev.length;
-      c.render(1, Infinity, { mode: 'talk', entered: false }); o.notEntered = c.counts().join();
-      c.render(1, Infinity, { mode: 'talk', entered: true }); o.ctxEntered = c.counts().join(); o.ctxEv = __ev.map((x) => x.join());
-      // once the player passes ctx.entered, deck:pos no longer resets
-      c.input(0, 30); __ev.length = 0; DECK.go(1, 0, false); DECK.go(0, 1, false); o.posIgnored = c.counts().join();
+      __r(c, 1, Infinity, { mode: 'talk', entered: false, reset: true }); o.ctxReset = c.counts().join(); o.ctxResetEv = __ev.length;
+      __r(c, 1, Infinity, { mode: 'talk', entered: false }); o.notEntered = c.counts().join();
+      __r(c, 1, Infinity, { mode: 'talk', entered: true }); o.ctxEntered = c.counts().join(); o.ctxEv = __ev.map((x) => x.join());
+      // the part listens to no player event: deck:pos for another slide and back, without a render, resets nothing
+      c.input(0, 30); __ev.length = 0;
+      document.dispatchEvent(new CustomEvent('deck:pos', { detail: { i: 1, k: 0 } }));
+      document.dispatchEvent(new CustomEvent('deck:pos', { detail: { i: 0, k: 1 } }));
+      o.posIgnored = c.counts().join(); o.posEv = __ev.length;
       return o;
     });
     const V = '30,9,11';
@@ -126,7 +134,7 @@ try {
     ok(r.ctxReset === '30,2,11' && r.ctxResetEv === 0, 'render(k, t, {reset: true}) keeps the viewer\'s counts and dispatches nothing');
     ok(r.notEntered === '30,2,11', 'render(k, t, {entered: false}) keeps them');
     ok(r.ctxEntered === AUTHOR.join() && r.ctxEv.length === 1 && r.ctxEv[0] === AUTHOR.join(), 'render(k, t, {entered: true}) restores the author\'s counts and dispatches egatari-input');
-    ok(r.posIgnored === '30,2,11', 'once the player passes ctx.entered, entering by deck:pos alone does not reset');
+    ok(r.posIgnored === '30,2,11' && r.posEv === 0, 'deck:pos alone (no render with ctx.entered) does not reset');
     await page.close();
   }
 
@@ -194,12 +202,12 @@ try {
       const c = DECK.slides[1]._comps[0], o = {};   // poll="p1" in the demo
       DECK.go(1, 1, false);
       const live = (v) => ({ poll: (id) => (id === 'p1' ? v : null) });
-      c.render(1, Infinity, { mode: 'talk', live: live([3, 4, 5, 6]) });
+      __r(c, 1, Infinity, { mode: 'talk', live: live([3, 4, 5, 6]) });
       o.shown = __shown(c).join(); o.label = +c.liveEl.getAttribute('opacity'); o.ctl = c.rows.every((x) => x.ctl.style.display === 'none');
-      c.render(1, Infinity, { mode: 'talk', live: live(null) }); o.nullShown = __shown(c).join(); o.nullLabel = +c.liveEl.getAttribute('opacity');
-      c.render(1, Infinity, { mode: 'talk' }); o.absent = __shown(c).join();
-      c.render(1, Infinity, { mode: 'talk', live: { poll: () => [1, 1, 1, 1] } }); o.otherShown = __shown(c).join();
-      const d = DECK.slides[0]._comps[0]; d.render(1, Infinity, { mode: 'talk', live: live([3, 4, 5]) }); o.noPoll = __shown(d).join();
+      __r(c, 1, Infinity, { mode: 'talk', live: live(null) }); o.nullShown = __shown(c).join(); o.nullLabel = +c.liveEl.getAttribute('opacity');
+      __r(c, 1, Infinity, { mode: 'talk', live: null }); o.absent = __shown(c).join();
+      __r(c, 1, Infinity, { mode: 'talk', live: { poll: () => [1, 1, 1, 1] } }); o.otherShown = __shown(c).join();
+      const d = DECK.slides[0]._comps[0]; __r(d, 1, Infinity, { mode: 'talk', live: live([3, 4, 5]) }); o.noPoll = __shown(d).join();
       return o;
     });
     ok(r.shown === '3人,4人,5人,6人' && r.label === 1 && r.ctl, 'live: an array from poll(id) is shown in the bars, labelled, controls hidden');
@@ -209,7 +217,7 @@ try {
     ok(r.noPoll === '17人,2人,11人', 'live: a component without poll ignores ctx.live');
     await page.close();
     const v = await open('?mode=video');
-    const rv = await v.page.evaluate(() => { const c = DECK.slides[1]._comps[0]; DECK.seek(1, 1, Infinity); c.render(1, Infinity, { mode: 'video', live: { poll: () => [3, 4, 5, 6] } }); return __shown(c).join(); });
+    const rv = await v.page.evaluate(() => { const c = DECK.slides[1]._comps[0]; DECK.seek(1, 1, Infinity); __r(c, 1, Infinity, { mode: 'video', live: { poll: () => [3, 4, 5, 6] } }); return __shown(c).join(); });
     ok(rv === '12人,10人,6人,2人', 'live: never in video');
     await v.page.close();
   }

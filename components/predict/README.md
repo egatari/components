@@ -1,6 +1,6 @@
 ---
 name: m-predict
-version: 1.13.0
+version: 2.0.0
 series: common
 summary: 予想してから答えを開く。選択肢ごとの人数を棒で見せ、答えの段階で正解に枠
 steps: 0 問いと選択肢、1 人数の棒、answer-step（既定 2）で答え
@@ -23,7 +23,7 @@ props: answer-step, unit, poll, ticks
 - 段階：0 は問い・選択肢・目盛り（地図の段階 0 の地と同じく、文脈は初めから見せる。共通の決まり）。1 で人数の棒と操作、`answer-step` で正解の枠・「✓ 正解」・`note`、ほかの選択肢は棒を薄く、字は `--muted`（4.5:1 以上）。`answer-step="1"` なら棒の後に続けて開く
 - 授業の表示（`ctx.preview`）の例外：先の段階を何も見せない（棒も**答え（枠・✓ 正解・note）**も。予想の部品なので）。index.js の `static preview = "none"` で、manifest.json に `preview: "none"` と載る（docs/conventions.md §1.2）
 - 見る人の状態（仕様 §8.4、egatari-spec 241770f）：数と自分の予想は、同じスライドにいるあいだは段階を進めても戻っても残る（答えの段階で、数えた数と予想の当たり外れが出る）。作者の値に戻すのは、ほかのスライドから入ったときと飛んだときの描画（`ctx.entered`）だけ。k が変わっただけでは戻さない。`ctx.reset`（触った部品が段階に入るとき）では欄やボタンのフォーカスだけを外し、数と予想は消さない（仕様 §8.4：`ctx.reset` は見る人の入力を消してはならない）
-- `ctx.entered` を渡さない実行系（Studio main@03eaf06 まで）のための代わり：`deck:pos` を聞き、スライドの番号が変わってこのスライドに入ったときだけ戻す（自動再生の切り替え・発表者の画面とのつながり・同じスライドの中の段階の移りでは戻さない）。同じスライドの中へのリンクで飛んだときは、この代わりでは戻らない。`ctx.entered` を一度でも受け取ったら、この代わりは使わない
+- 2.0.0 から、戻すのは `ctx.entered` だけ（1.x の `deck:pos` を聞く代わりはやめた。2.0 の実行系はいつも `ctx.entered` を渡す）
 - 印刷：`beforeprint` から `afterprint` まで作者の値で描き（予想の印・当たり外れも出さない）、印刷の後は画面の数に戻す（消さない）
 - 要素のメソッド（Studio が呼ぶ）：`input(choice, count)`（choice は 0 から数える選択肢の番号、count は新しい数で 0〜9999 の整数。それ以外は console.warn して無視。動画では何もしない。返り値なし）。`counts()`：今の数の新しい配列（変えていなければ作者の値）。発表者の画面の `deck-cmd` `{type: "input", …}` から `input()` へ渡すのは Studio の中のこと
 - 数が変わったとき（ボタン・欄・キー・`input()`）と、数を変えた後に戻したとき（`ctx.entered`・ほかのスライドから入ったとき）：要素に `CustomEvent("egatari-input", {bubbles: true, detail: {counts}})`。ふつうの描画では出さない

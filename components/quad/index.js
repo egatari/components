@@ -7,7 +7,12 @@
 // 座標は 0〜1（0.5 が軸の交わるところ）。軸と両端の言葉は段階 0 から見える。象限の名前は quads-step（既定 0）で出る
 // 点は既定で 1 つ = 1 段階（step で直接、at で段階の中の開始秒）。self の点は強調の色で大きく、着いたときに輪が広がる
 // to は移動先：to.step（既定は点の次の段階）に、点が破線の跡を引きながら滑る
-DECK.define("m-quad", class extends DECK.MotionElement {
+// 2.0（Egatari spec §6.1 の部品）：base の MotionElement・el・prog・lerp・clamp・previewOpacity を使い、プレイヤーのグローバルは使わない
+egatariParts.define({name: "quad", version: "2.0.0", requires: {base: "1.0.0"}, element: "m-quad"}, function(deps){
+"use strict";
+var base = deps.base;
+return class extends base.MotionElement {
+  static partName = "quad";   // the registry name (define meta name), for report prefixes
   // データの形（kit/shape.js）。x・y は 0〜1（0.5 が軸の交わるところ）
   static shape = {
     schema: {type: "object", additionalProperties: false, required: ["items"], properties: {
@@ -43,7 +48,7 @@ DECK.define("m-quad", class extends DECK.MotionElement {
     }));
   }
   mount(){
-    var P = this.props, D = DECK, self = this, d = this.data || {};
+    var P = this.props, D = base, self = this, d = this.data || {};
     this.style.display = "block"; this.style.position = "relative";
     var W = this.clientWidth, H = this.clientHeight;
     var svg = D.el("svg", {viewBox: "0 0 " + W + " " + H, width: W, height: H, style: "display:block;overflow:visible"}, this);
@@ -117,11 +122,10 @@ DECK.define("m-quad", class extends DECK.MotionElement {
     return c.length ? c.sort(function(a, b){ return a - b; }) : null;
   }
   render(k, t, ctx){
-    var P = this.props, D = DECK, self = this;
+    var P = this.props, D = base, self = this;
     // 先の段階を薄く見せる表示（授業の表示）：後の段階の点（動いた後の位置）・動く跡・行き先の名前・象限の名前を、
     // テーマの --preview-opacity の濃さに。今の段階に出ている点は元の位置のまま
-    var preview = !!(ctx && (ctx.preview || ctx.mode === "lecture")), PV = 1;
-    if (preview){ PV = parseFloat(getComputedStyle(this).getPropertyValue("--preview-opacity")); if (!(PV >= 0 && PV <= 1)) PV = 0.45; }
+    var preview = !!ctx.preview, PV = preview ? base.previewOpacity(this) : 1;
     var pr = function(step, at, dur){ return step < k ? 1 : step > k ? 0 : D.prog(t, at, dur); };
     var qs = P["quads-step"];
     this.quadG.setAttribute("opacity", (qs === 0 ? 1 : preview && qs > k ? PV : pr(qs, 0, P.fade)).toFixed(3));
@@ -136,7 +140,7 @@ DECK.define("m-quad", class extends DECK.MotionElement {
       p.g.setAttribute("transform", "translate(" + x.toFixed(2) + " " + y.toFixed(2) + ") scale(" + s.toFixed(4) + ")");
       // 自社の点：着いたときに輪が 1 回広がって消える（最終状態では出さない）
       if (p.ring){
-        var rt = !fp && o.step === k && t !== Infinity ? D.clamp01((t - o.at - P.fade * 0.6) / 0.8) : 1;
+        var rt = !fp && o.step === k && t !== Infinity ? D.clamp((t - o.at - P.fade * 0.6) / 0.8) : 1;
         p.ring.setAttribute("cx", x.toFixed(2)); p.ring.setAttribute("cy", y.toFixed(2));
         p.ring.setAttribute("r", (p.r * (1 + 1.6 * rt)).toFixed(2));
         p.ring.setAttribute("opacity", (rt > 0 && rt < 1 ? 0.8 * (1 - rt) : 0).toFixed(3));
@@ -153,4 +157,5 @@ DECK.define("m-quad", class extends DECK.MotionElement {
       }
     });
   }
+};
 });

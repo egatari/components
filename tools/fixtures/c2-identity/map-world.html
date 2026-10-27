@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="ja" data-theme="default">
+<head>
+<meta charset="utf-8">
+<title>m-map-world: reported cases and small elements (tools/test-c2-identity.mjs)</title>
+<!-- Cases the demo does not reach, from tools/test-map-world.mjs: XUD refused, a flow across the seam, the graticule,
+     small elements that drop the legend or labels (each was a console.warn in 1.x and is a ctx.report in 2.0; the DOM
+     must stay the same). -->
+</head>
+<body>
+<div id="stage">
+
+<section class="slide noconcl">
+  <h2>XUD in regions and values</h2>
+  <div class="body">
+    <m-map-world  style="height:440px">
+      <script type="application/json">{"regions": [{"id": "XUD"}], "values": {"XUD": 5, "JPN": 7}}</script>
+    </m-map-world>
+  </div>
+</section>
+
+<section class="slide noconcl">
+  <h2>a flow across the seam</h2>
+  <div class="body">
+    <m-map-world variant="draw" style="height:440px">
+      <script type="application/json">{"flows": [{"from": [-74.0, 40.7], "to": [-0.13, 51.5]}]}</script>
+    </m-map-world>
+  </div>
+</section>
+
+<section class="slide noconcl">
+  <h2>graticule, all names</h2>
+  <div class="body">
+    <m-map-world grid="graticule" labels="all" variant="sweep" style="height:440px">
+      <script type="application/json">{"regions": [{"id": "JPN", "tone": "emph", "step": 1}, {"id": "RUS", "tone": "series-2", "step": 2}, {"id": "CHN", "tone": "series-3", "step": 2}]}</script>
+    </m-map-world>
+  </div>
+</section>
+
+<section class="slide noconcl">
+  <h2>values and legend, 240 px</h2>
+  <div class="body">
+    <m-map-world legend="架空" unit="点" show="value" style="height:240px">
+      <script type="application/json">{"values": {"JPN": 72, "CHN": 48, "USA": 75, "BRA": 36, "AUS": 64, "RUS": 38, "IND": 18, "ZAF": 29}, "classes": [0, 20, 40, 60], "regions": [{"id": "JPN", "step": 2}]}</script>
+    </m-map-world>
+  </div>
+</section>
+
+<section class="slide noconcl">
+  <h2>flows and the equator, 300 × 200</h2>
+  <div class="body">
+    <m-map-world grid="equator" labels="none" style="height:200px;width:300px">
+      <script type="application/json">{"points": [{"lon": 139.69, "lat": 35.69, "label": "東京"}], "flows": [{"from": [139.69, 35.69], "to": [103.82, 1.35], "label": "矢印", "step": 1}, {"from": "JPN", "to": "AUS", "step": 2}]}</script>
+    </m-map-world>
+  </div>
+</section>
+
+<section class="slide noconcl">
+  <h2>categories, 420 × 300</h2>
+  <div class="body">
+    <m-map-world legend="区分" style="height:300px;width:420px">
+      <script type="application/json">{"categories": [{"label": "区分 A", "ids": ["asia"], "step": 1}, {"label": "区分 B", "ids": ["africa", "EGY"], "step": 2}]}</script>
+    </m-map-world>
+  </div>
+</section>
+
+</div>
+</body>
+</html>

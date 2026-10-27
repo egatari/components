@@ -8,26 +8,14 @@
 // 次の t まで（なければ 0.8 秒））。duration(k) は最後の音の終わりまで。音だけに頼らない：光った鍵盤と印がいつも同じことを示す
 // 鍵盤の形（customElements.get("m-keyboard").kb、tools/test-keyboard.mjs）：白鍵の幅を 1 として、ド〜ミの 3 つを 5 等分、ファ〜シの 4 つを
 // 7 等分した 2・4（・6）番目に黒鍵を置く（本物の鍵盤と同じく、ド♯とレ♯は外へ、ファ♯とラ♯も外へ寄り、ソ♯は真ん中）
-// 授業の表示（ctx.preview、古い再生器は ctx.mode === "lecture"）：先の段階の鍵盤をテーマの --preview-opacity（なければ 0.45）で薄く、印なしで見せる
+// 授業の表示（ctx.preview）：先の段階の鍵盤をテーマの --preview-opacity（なければ 0.45）で薄く、印なしで見せる
 // 見せ方（docs/conventions.md §1）：light（既定。光がフェード）・press（鍵盤が少し沈んで戻る）・rise（光が鍵盤の下から上へ満ちる）
-(function(){
-// ---- BEGIN egatari-variant (source: tools/variant.js; copy with `node tools/variant-sync.mjs`; do not edit inside a component) ----
-// Choosing a presentation variant (Egatari spec §8.4, docs/conventions.md §1). A component lists its variant names in
-// `static variants` (the first is the default) and calls VARIANT.of(this) once, in mount. The variant is the component's
-// `variant` attribute when it names one of them, otherwise the first name. There is no seed: lessons do not carry one
-// (spec §8.4 since egatari-spec 28d8801), and `seed` / `data-egatari-seed` are not read.
-// The choice is a pure function of the attribute: the picture still depends on (i, k, t) only.
-var VARIANT = (function(){
-  "use strict";
-  function of(el){
-    var tag = el.tagName.toLowerCase(), C = customElements.get(tag), names = (C && C.variants) || [], v = el.getAttribute("variant");
-    if (v !== null && names.indexOf(v) >= 0) return v;
-    if (v !== null) console.warn(tag + ' variant="' + v + '" is not one of ' + names.join(", ") + " (the first, " + (names[0] || "none") + ", is used)");
-    return names[0] || null;
-  }
-  return {of: of};
-})();
-// ---- END egatari-variant ----
+// 2.0（Egatari spec §6.1 の部品）：base の MotionElement・el・prog・variant・previewOpacity を使い、プレイヤーのグローバルは使わない。
+// 段階の数は ctx にも言語にもよらない（spec §8.4）：既定の鍵盤の名前（日本語ならドレミ、ほかは CDE）は plan() ではなく mount で選ぶ。
+// レッスンのデータや要素の大きさの問題は ctx.report で知らせる（1.x の console.warn("m-keyboard: …") の代わり）
+egatariParts.define({name: "keyboard", version: "2.0.0", requires: {base: "1.0.0"}, element: "m-keyboard"}, function(deps){
+"use strict";
+var base = deps.base;
 // ---- 鍵盤の名前と形（DOM を使わない。tools/test-keyboard.mjs が試す） ----
 var KB = (function(){
   var LETTERS = "CDEFGAB", PC = {C: 0, D: 2, E: 4, F: 5, G: 7, A: 9, B: 11};
@@ -117,7 +105,8 @@ var KB = (function(){
 
 var TONES = /^(term|emph|muted|accent2|fg|series-[1-4])$/;
 var est = function(s, size){ return [...String(s)].reduce(function(a, c){ return a + (c === " " ? 0.3 : /[\u0000-ɏ]/.test(c) ? 0.6 : 1); }, 0) * size; };
-DECK.define("m-keyboard", class extends DECK.MotionElement {
+return class extends base.MotionElement {
+  static partName = "keyboard";   // the registry name (define meta name), for report prefixes
   static variants = ["light", "press", "rise"];
   static kb = KB;
   static shape = {
@@ -140,7 +129,6 @@ DECK.define("m-keyboard", class extends DECK.MotionElement {
     if (this._plan) return this._plan;
     var d = this.data || {}, notes = [];
     var r = KB.parseRange(d.range), kb = KB.keys(r);
-    var names = d.names === undefined ? (DECK.ja ? "solfa" : "abc") : d.names;
     var steps = d.steps.map(function(s, j){
       var ks = s.keys.map(function(name){
         var k = KB.parseKey(name);
@@ -150,18 +138,20 @@ DECK.define("m-keyboard", class extends DECK.MotionElement {
       });
       if (s.t && s.t.length !== s.keys.length) throw new Error("m-keyboard: steps[" + j + "] has " + s.keys.length + " keys but " + s.t.length + " times in t (one per key)");
       if (s.t && s.t.some(function(v){ return !(v >= 0); })) throw new Error("m-keyboard: steps[" + j + "] t must be seconds ≥ 0");
-      if (s.tone !== undefined && !TONES.test(s.tone)) notes.push('m-keyboard: steps[' + j + '] tone "' + s.tone + '" is not a theme colour (emph is used)');
+      if (s.tone !== undefined && !TONES.test(s.tone)) notes.push('[keyboard] steps[' + j + '] tone "' + s.tone + '" is not a theme colour (emph is used)');
       var ev = KB.notes(s, d.dur);
       return {o: s, keys: ks, ev: ev, len: KB.length(s, d.dur), tone: TONES.test(s.tone || "") ? s.tone : "emph"};
     });
-    return (this._plan = {r: r, kb: kb, names: names, steps: steps, cumulative: d.cumulative === true, notes: notes});
+    return (this._plan = {r: r, kb: kb, steps: steps, cumulative: d.cumulative === true, notes: notes});
   }
   duration(k){ var s = k >= 1 && this.plan().steps[k - 1]; return s ? s.len : 0; }
   events(k){ var s = k >= 1 && this.plan().steps[k - 1]; return s ? s.ev.map(function(e){ return Object.assign({}, e); }) : []; }
-  mount(){
-    var self = this, D = DECK, pl = this.plan(), kb = pl.kb;
-    this.variant = VARIANT.of(this);
-    pl.notes.forEach(function(n){ console.warn(n); });
+  mount(ctx){
+    var self = this, D = base, pl = this.plan(), kb = pl.kb, d = this.data || {};
+    this.variant = base.variant(this);
+    // 鍵盤の名前：書いていなければ日本語の授業はドレミ、ほかは CDE（段階の数は変わらないので plan() ではなくここで選ぶ）
+    var names = d.names === undefined ? (String(ctx.lang).startsWith("ja") ? "solfa" : "abc") : d.names;
+    pl.notes.forEach(function(n){ ctx.report("data", n); });
     this.style.display = "block";
     var W = this.clientWidth, H = this.clientHeight;
     var svg = D.el("svg", {viewBox: "0 0 " + W + " " + H, width: W, height: H, style: "display:block;overflow:visible"}, this);
@@ -171,22 +161,22 @@ DECK.define("m-keyboard", class extends DECK.MotionElement {
     var unitW = Math.min((W - 6) / kb.n, 96);
     var x0 = (W - unitW * kb.n) / 2;
     var bl = {};
-    pl.steps.forEach(function(s){ s.keys.forEach(function(k){ if (!k.white && pl.names !== "none") bl[k.midi + "|" + k.acc] = k; }); });
+    pl.steps.forEach(function(s){ s.keys.forEach(function(k){ if (!k.white && names !== "none") bl[k.midi + "|" + k.acc] = k; }); });
     var blist = Object.keys(bl).map(function(id){
-      var k = bl[id], key = kb.all.filter(function(q){ return q.midi === k.midi; })[0], s = KB.label(k, pl.names);
+      var k = bl[id], key = kb.all.filter(function(q){ return q.midi === k.midi; })[0], s = KB.label(k, names);
       return {id: id, k: k, s: s, cx: x0 + key.cx * unitW, w: est(s, BFS)};
     }).sort(function(a, b){ return a.cx - b.cx || a.id.localeCompare(b.id); });
     var rowsEnd = [-1e9, -1e9], nRows = 0;
     blist.forEach(function(b){
       var row = b.cx - b.w / 2 > rowsEnd[0] + 10 ? 0 : 1;
-      if (row === 1 && b.cx - b.w / 2 <= rowsEnd[1] + 10) console.warn("m-keyboard: the names of black keys near " + b.s + " overlap (use a wider element or a narrower range)");
+      if (row === 1 && b.cx - b.w / 2 <= rowsEnd[1] + 10) ctx.report("size", "[keyboard] the names of black keys near " + b.s + " overlap (use a wider element or a narrower range)");
       rowsEnd[row] = b.cx + b.w / 2; b.row = row; nRows = Math.max(nRows, row + 1);
     });
-    var labH = hasLabel ? 46 : 0, bnH = nRows * 32, namesH = pl.names === "none" ? 0 : 40, gapTop = nRows ? 8 : (hasLabel ? 10 : 0);
+    var labH = hasLabel ? 46 : 0, bnH = nRows * 32, namesH = names === "none" ? 0 : 40, gapTop = nRows ? 8 : (hasLabel ? 10 : 0);
     var avail = H - labH - bnH - gapTop - namesH - 8;
     var keyH = Math.min(avail, unitW * 4.4);
-    if (avail < 110) console.warn("m-keyboard: the element (" + W + "×" + H + " px) leaves only " + Math.round(avail) + " px for the keys; make it taller (about " + Math.ceil(H + 110 - avail) + " px)");
-    if (unitW < 40) console.warn("m-keyboard: white keys are " + unitW.toFixed(0) + " px wide; the names under them may not fit (use a narrower range or a wider element)");
+    if (avail < 110) ctx.report("size", "[keyboard] the element (" + W + "×" + H + " px) leaves only " + Math.round(avail) + " px for the keys; make it taller (about " + Math.ceil(H + 110 - avail) + " px)");
+    if (unitW < 40) ctx.report("size", "[keyboard] white keys are " + unitW.toFixed(0) + " px wide; the names under them may not fit (use a narrower range or a wider element)");
     var used = labH + bnH + gapTop + keyH + namesH, top0 = Math.max(0, (H - used) / 2);
     var labY = top0 + 34, bnTop = top0 + labH, keyTop = bnTop + bnH + gapTop, keyBot = keyTop + keyH, bH = keyH * KB.BH;
     this.geo = {x0: x0, unitW: unitW, keyTop: keyTop, keyH: keyH};
@@ -206,8 +196,8 @@ DECK.define("m-keyboard", class extends DECK.MotionElement {
       K[key.midi] = {key: key, g: g, lit: lit, dot: dot, y: keyTop + (white ? 2 : 0), h: h - ins - (white ? 2 : 0), white: white, nm: null, bn: {}};
     });
     // 白鍵の名前（鍵盤の下）
-    if (pl.names !== "none") kb.whites.forEach(function(key){
-      var s = KB.label({letter: KB.whiteLetter(key.midi), acc: ""}, pl.names);
+    if (names !== "none") kb.whites.forEach(function(key){
+      var s = KB.label({letter: KB.whiteLetter(key.midi), acc: ""}, names);
       var t = D.el("text", {x: (x0 + (key.x + 0.5) * unitW).toFixed(1), y: (keyBot + 32).toFixed(1), "font-size": NFS, "text-anchor": "middle", fill: "var(--fg)"}, gT);
       t.textContent = s;
       K[key.midi].nm = t;
@@ -220,15 +210,14 @@ DECK.define("m-keyboard", class extends DECK.MotionElement {
     });
     // 段階の名前（鍵盤の上、24 px 以上）
     this.lab = D.el("text", {x: (W / 2).toFixed(1), y: labY.toFixed(1), "font-size": LFS, "font-weight": 700, "text-anchor": "middle", fill: "var(--fg)", opacity: 0}, gT);
-    pl.steps.forEach(function(s, j){ if (s.o.label && est(s.o.label, LFS) > W) console.warn("m-keyboard: steps[" + j + "] label is wider than the element; shorten it"); });
+    pl.steps.forEach(function(s, j){ if (s.o.label && est(s.o.label, LFS) > W) ctx.report("size", "[keyboard] steps[" + j + "] label is wider than the element; shorten it"); });
     if (rise) Object.keys(K).forEach(function(m){ K[m].lit.setAttribute("data-y", K[m].y); });
   }
   render(k, t, ctx){
     var pl = this.plan(), K = this.K, v = this.variant, cur = pl.steps[k - 1];
     // 薄さはテーマの --preview-opacity（仕様 §8.4「Answers under preview」）。書いていないテーマだけ 0.45
-    var FAINT = 0.45;
-    if (ctx && (ctx.preview || ctx.mode === "lecture")){ var fv = parseFloat(getComputedStyle(this).getPropertyValue("--preview-opacity")); if (fv >= 0 && fv <= 1) FAINT = fv; }
-    var st = KB.state(pl.steps, k, t, {cumulative: pl.cumulative, preview: !!(ctx && (ctx.preview || ctx.mode === "lecture")), variant: v, prog: DECK.prog});
+    var preview = !!ctx.preview, FAINT = preview ? base.previewOpacity(this) : 0.45;
+    var st = KB.state(pl.steps, k, t, {cumulative: pl.cumulative, preview: preview, variant: v, prog: base.prog});
     Object.keys(K).forEach(function(m){
       var o = K[m], s = st[m] || {e: 0, faded: false, pre: false, ids: {}, fids: {}}, on = s.e > 0;
       var tone = on ? s.tone : s.faded ? s.fadeTone : s.preTone;
@@ -256,7 +245,7 @@ DECK.define("m-keyboard", class extends DECK.MotionElement {
     });
     var lab = cur && cur.o.label;
     this.lab.textContent = lab || "";
-    this.lab.setAttribute("opacity", lab ? (t === Infinity ? 1 : DECK.prog(t, 0, Math.min(0.3, cur.len || 0.3))).toFixed(3) : 0);
+    this.lab.setAttribute("opacity", lab ? (t === Infinity ? 1 : base.prog(t, 0, Math.min(0.3, cur.len || 0.3))).toFixed(3) : 0);
   }
+};
 });
-})();
