@@ -1,4 +1,4 @@
-// The statistics of m-hist and m-boxplot (their `static stats`), without a browser: mean, median (odd and even n), mode
+// The statistics of m-hist and m-boxplot (the library parts hist-core and boxplot-core, components 2.0), without a browser: mean, median (odd and even n), mode
 // (one, several, none), counting into classes (以上・未満, decimal widths), the frequency-table mean / mode / median class,
 // and quartiles by the three methods (jp: the median of each half, leaving out the median when n is odd — 中2・数学Ⅰ;
 // inc / exc: spreadsheet QUARTILE.INC / QUARTILE.EXC), with the 1.5 × IQR fences. Textbook-style examples.
@@ -8,12 +8,12 @@ import path from 'node:path';
 import vm from 'node:vm';
 import { ROOT } from './studio.mjs';
 
-// Load a component's index.js with a minimal DECK and return its class
+// Load a library part's index.js (egatariParts.define without element, requiring nothing) and return its factory's value
 function load(name) {
-  const classes = {};
-  const DECK = { define: (tag, C) => { classes[tag] = C; }, MotionElement: class {} };
-  vm.runInNewContext(fs.readFileSync(path.join(ROOT, 'components', name, 'index.js'), 'utf8'), { DECK, console, Math, String, JSON, Number, Array, Object, Error });
-  return classes['m-' + name];
+  let out = null;
+  const egatariParts = { define: (meta, f) => { out = f({}); } };
+  vm.runInNewContext(fs.readFileSync(path.join(ROOT, 'components', name, 'index.js'), 'utf8'), { egatariParts, console, Math, String, JSON, Number, Array, Object, Error });
+  return out;
 }
 let fail = 0, n = 0;
 const near = (a, b) => Math.abs(a - b) < 1e-9;
@@ -25,7 +25,7 @@ const eq = (got, want, msg) => {
 const throws = (f, msg) => { n++; try { f(); fail++; console.log(`FAIL ${msg}: no error`); } catch { /* expected */ } };
 
 // ---- m-hist ----
-const H = load('hist').stats;
+const H = load('hist-core');
 const book = [3, 5, 6, 7, 8, 9, 10, 12, 13, 15, 18];          // 11 values (odd)
 const book10 = [3, 5, 6, 7, 8, 9, 10, 12, 13, 15];            // 10 values (even)
 eq(H.median([12, 5, 9, 18, 7, 3, 13, 8, 15, 6, 10]), 9, 'median, odd n, unsorted input');
@@ -57,7 +57,7 @@ eq(H.tableMedian(0, 10, [1, 3, 1]).bin, 1, 'table median class, odd n');
 eq(H.cumulative([2, 5, 9]), [2, 7, 16], 'cumulative frequency');
 
 // ---- m-boxplot ----
-const B = load('boxplot').stats;
+const B = load('boxplot-core');
 const q = (v, m) => { const r = B.quartiles(v, m); return [r.min, r.q1, r.med, r.q3, r.max]; };
 // jp (中2・数学Ⅰ): halves without the median when n is odd
 eq(q(book, 'jp'), [3, 6, 9, 13, 18], 'jp, n = 11: halves 3 5 6 7 8 | 10 12 13 15 18');

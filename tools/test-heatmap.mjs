@@ -1,4 +1,4 @@
-// m-heatmap: the colour scale, row normalisation, label thinning and steps without a browser (its `static calc`), then in a
+// m-heatmap: the colour scale, row normalisation, label thinning and steps without a browser (the library part heatmap-core), then in a
 // browser with the pinned Egatari Studio, in the default, kokugo and business themes:
 //   - cell colours equal the scale exactly (never moved for the text); every cell's number reaches 4.5:1 against its own cell
 //     (the text colour picked per cell from --fg / --bg), or, in the mid-lightness band, against its 2–3 px halo in the other
@@ -20,10 +20,9 @@ const ok = (cond, msg) => { n++; if (!cond) { fails++; console.log('FAIL ' + msg
 const near = (a, b, e = 1e-9) => Math.abs(a - b) < e;
 
 // ---- without a browser ----
-const classes = {};
-vm.runInNewContext(fs.readFileSync(path.join(ROOT, 'components', 'heatmap', 'index.js'), 'utf8'),
-  { DECK: { define: (t, C) => { classes[t] = C; }, MotionElement: class {} }, console, Math, String, JSON, Number, Array, Object, Error, isFinite });
-const C = classes['m-heatmap'].calc;
+let C = null;
+vm.runInNewContext(fs.readFileSync(path.join(ROOT, 'components', 'heatmap-core', 'index.js'), 'utf8'),
+  { egatariParts: { define: (meta, f) => { C = f({}); } }, console, Math, String, JSON, Number, Array, Object, Error, isFinite });
 
 // row normalisation (confusion matrix): each row sums to 1; a zero row stays 0
 const N = C.normalizeRows([[45, 3, 2], [6, 38, 6], [0, 0, 0]]);
