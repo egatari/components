@@ -376,7 +376,7 @@ function buildInk(D, g, c, tf){
   var ink = D.el("g", {transform: tf, "data-ink": c.ci}, g);   // data-*：tools/test-kakijun.mjs が測るときの目印
   c.strokes.forEach(function(sk, j){
     sk.pieces = S[j].map(function(pc){
-      var cid = "m-kakijun-clip-" + (++UID);
+      var cid = "kakijun-2-0-0-clip-" + (++UID);
       var clip = D.el("clipPath", {id: cid}, defs), outline = D.el("path", {d: pc[0], "data-o": j}, clip);
       var line = D.el("path", {d: pc[1], "data-s": j, fill: "none", stroke: "var(--fg)", "stroke-width": BR, "stroke-linecap": "round", "stroke-linejoin": "round", "clip-path": "url(#" + cid + ")"}, ink);
       var len = line.getTotalLength(), a = line.getPointAtLength(0), b = line.getPointAtLength(Math.min(1, len));

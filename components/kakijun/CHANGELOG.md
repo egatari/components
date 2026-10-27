@@ -17,9 +17,9 @@ The part's own versions (Egatari spec §6.1). Releases of the whole library are 
   for `mount`.
 - The preview view is `ctx.preview` alone (1.13.0 also accepted `ctx.mode === "lecture"`).
 - The part's code now runs in strict mode (1.13.0's had no `"use strict"`).
-- Ids: the clip paths keep 1.13.0's names, `m-kakijun-clip-<n>` and `m-kakijun-clip-<n>h`, from the part's own counter
-  (deterministic). Renaming them `kakijun-2-0-0-clip-<n>` (spec §6.1 Identifiers) needs a rewrite in the identity test's
-  `ID_REWRITES`, which waits for a standards decision.
+- Ids: the clip paths are renamed `kakijun-2-0-0-clip-<n>` (1.13.0: `m-kakijun-clip-<n>`), and their start-cap masks
+  `kakijun-2-0-0-clip-<n>h` (1.13.0: `m-kakijun-clip-<n>h`), from the part's own counter (deterministic; spec §6.1
+  Identifiers). The rewrite is in the identity test's `ID_REWRITES` (`kakijun`).
 
 ## 1.13.0
 
