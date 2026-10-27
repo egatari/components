@@ -125,19 +125,26 @@ function reparent(cls){
   Object.setPrototypeOf(c, DM);
   Object.setPrototypeOf(c.prototype, DM.prototype);
 }
-var epoch = 0, current = null;
+var epoch = 0, current = null, printing = false, printSaved = null;
 // The slide the viewer is on, followed through DECK's position events too: a slide is entered again after the viewer was on
 // another slide, also one without 2.0 parts (whose renders the bridge never sees)
 if (G.document && typeof G.document.addEventListener === "function") G.document.addEventListener("deck:pos", function(e){
   var D = G.DECK, s = D && D.slides && e.detail && D.slides[e.detail.i], key = s && s._key;
-  if (key && key !== current){ current = key; epoch++; }
+  if (key && key !== current && !printing){ current = key; epoch++; }
 });
+// Printing is not entering a slide: DECK's beforeprint seeks every slide to its end and its afterprint seeks back to where the
+// viewer was. Those renders neither move the viewer's slide nor set ctx.entered. A capture listener on the window runs before
+// DECK's own (non-capture) beforeprint; the afterprint listener, added after DECK's, runs after its seek back.
+if (G.addEventListener){
+  G.addEventListener("beforeprint", function(){ if (!printing){ printing = true; printSaved = current; } }, true);
+  G.addEventListener("afterprint", function(){ if (printing){ printing = false; current = printSaved; } });
+}
 function slideKey(s){ return s && typeof s === "object" ? (s._key || s.getAttribute("data-key") || s.id || "") : s; }
 function ctxOf(c, d, first){
   var D = G.DECK, key = slideKey(d && d.slide);
-  if (!first && key !== current){ current = key; epoch++; }
-  var entered = !first && c.__epoch !== epoch;
-  if (!first) c.__epoch = epoch;
+  if (!first && !printing && key !== current){ current = key; epoch++; }
+  var entered = !first && !printing && c.__epoch !== epoch;
+  if (!first && !printing) c.__epoch = epoch;
   var lecture = d && d.mode === "lecture";
   var x = {
     mode: lecture ? "talk" : (d && d.mode) || "talk",
