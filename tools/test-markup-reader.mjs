@@ -21,7 +21,7 @@ import os from 'node:os';
 import path from 'node:path';
 import { ROOT, studio, pinLabel } from './studio.mjs';
 import { c2Bundle } from './parts.mjs';
-import { SPEC_PIN } from './spec.mjs';
+import { SPEC_PIN, specFile } from './spec.mjs';
 import { schemaList, blockOf, embedded, SCHEMA } from './markup-sync.mjs';
 import { katexOf, macrosOf, optionsOf, render, KATEX_VERSION } from './katex-produce.mjs';
 import { katexCorpus, DOC_MACROS } from './katex-corpus.mjs';
@@ -124,8 +124,9 @@ ok(tf.before === 0 && JSON.stringify(tf.reports) === JSON.stringify([['data', '[
   'reports: at flush (end of mount), once per instance and kind, with the count; a formula read twice counts once (ctx.report("data", "[<name>] …"))' + `\n     ${JSON.stringify(tf.reports)}`);
 
 // ---- 3. corpus, 4. faithful
-// The losses egatari-spec 56ae5da documents (§6.2, schema/rendered-markup-1.json style.$comment): colours come only from
-// classes and the theme. A drop is one of them when its text (and, where given, the formula) matches; any other drop fails.
+// The losses the pinned egatari-spec documents (ce96072, as since 56ae5da: §6.2, schema/rendered-markup-1.json style.$comment):
+// colours come only from classes and the theme. A drop is one of them when its text (and, where given, the formula) matches;
+// any other drop fails. The check below the list makes sure the pinned schema still names each of them.
 export const EXPECTED_LOSSES = [
   { name: '\\color, \\textcolor: the colour', tex: /\\(color|textcolor)\b/, drop: /^(style color:(?!transparent\b)|attribute mathcolor=)/ },
   { name: 'untrusted commands (\\href, \\url, \\includegraphics, \\htmlStyle): KaTeX\'s errorColor', tex: /\\(href|url|includegraphics|htmlStyle)\b/, drop: /^(style color:#cc0000|attribute mathcolor="#cc0000")/i },
@@ -134,6 +135,11 @@ export const EXPECTED_LOSSES = [
   { name: 'mathcolor (MathML colour)', drop: /^attribute mathcolor=/ },
   { name: 'mathbackground (MathML background)', drop: /^attribute mathbackground=/ },
 ];
+{
+  const sc = JSON.parse(specFile(SCHEMA)).style.$comment || '';
+  const named = ['\\color', '\\textcolor', '\\colorbox', '\\fcolorbox', '\\pmb'].filter((c) => !sc.includes(c));
+  ok(named.length === 0, `EXPECTED_LOSSES are the losses egatari-spec ${SPEC_PIN.commit.slice(0, 7)} documents (style.$comment names \\color, \\textcolor, \\colorbox, \\fcolorbox, \\pmb)` + (named.length ? ': missing ' + named.join(', ') : ''));
+}
 const kindOf = (x) => x.replace(/^(attribute [^=]+)=".*" on (<[^>]+>)$/, '$1 on $2').replace(/^(element <[^>]+>) in <[^>]+>$/, '$1').replace(/^style ([a-z-]+):.* on (<[^>]+>)$/, 'style $1 on $2');
 const K = await katexOf();
 const corpus = await katexCorpus();

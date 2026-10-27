@@ -77,12 +77,13 @@ eq([ns.a, ns.kids.length, ns.kids[0].st, ns.dropped], [{ width: '10' }, 1, [['ma
   'xmlns: checked, never set (an element in another namespace dropped); shorthands by parts; color only transparent');
 
 // ---- 1b. the abcjs corpus through the reader ----
-// Gaps found by this corpus, reported to standards for a spec change (not admitted by the reader): abcjs writes
-// stroke="none", font-family and text-decoration on the text of chord symbols, lyrics, the title and the tempo
-// Expected losses (egatari-spec ce96072 leaves them out on purpose): abcjs's font-family and text-decoration on the text of
+// Expected losses (the pinned egatari-spec, ce96072, does not list them: group paint and text stroke were added there, these
+// were left out): abcjs's font-family and text-decoration on the text of
 // chord symbols, lyrics, the title and the tempo (the slide's font is used instead)
 const EXPECTED_LOSSES = { extras: { element: [], attribute: ['text@font-family', 'text@text-decoration'], style: [] } };
 const NONE = { element: [], attribute: [], style: [] };
+ok(EXPECTED_LOSSES.extras.attribute.every((x) => { const [t, at] = x.split('@'); return !RM.elements.svg[t].includes(at) && !RM.global.svg.includes(at); }),
+  `EXPECTED_LOSSES: egatari-spec ${SPEC_PIN.commit.slice(0, 7)} admits none of them (${EXPECTED_LOSSES.extras.attribute.join(', ')})`);
 for (const [name, fx] of Object.entries({ ...FX, ties: TIES, extras: EXTRAS })) {
   eq(SC.parseSvg(fx.abcSvg).dropped, EXPECTED_LOSSES[name] || NONE, `${name}: the reader drops nothing` + (EXPECTED_LOSSES[name] ? ' but the expected losses (text font-family, text-decoration)' : ''));
   const o = fx.renderers && fx.renderers.abcjs && fx.renderers.abcjs.options;
