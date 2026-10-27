@@ -8,141 +8,14 @@
 // 段階：build="rows"（行を 1 つずつ。normalize="row" の既定）・"whole"（全体を 1 段階）・"cells"（全体、それから強調を 1 つずつ。highlight があるときの既定）
 // 字は 24 px 以上：列の名前は長ければ縦に、それでも入らなければ k 個おきに出して知らせる。12×12 を超えるとセルの数字は自動で消える（知らせる）
 // 見せ方（docs/conventions.md §1）：fade（セルがフェード、既定）・sweep（同じ段階のセルが左上から順に）
-(function(){
-// ---- BEGIN egatari-variant (source: tools/variant.js; copy with `node tools/variant-sync.mjs`; do not edit inside a component) ----
-// Choosing a presentation variant (Egatari spec §8.4, docs/conventions.md §1). A component lists its variant names in
-// `static variants` (the first is the default) and calls VARIANT.of(this) once, in mount. The variant is the component's
-// `variant` attribute when it names one of them, otherwise the first name. There is no seed: lessons do not carry one
-// (spec §8.4 since egatari-spec 28d8801), and `seed` / `data-egatari-seed` are not read.
-// The choice is a pure function of the attribute: the picture still depends on (i, k, t) only.
-var VARIANT = (function(){
-  "use strict";
-  function of(el){
-    var tag = el.tagName.toLowerCase(), C = customElements.get(tag), names = (C && C.variants) || [], v = el.getAttribute("variant");
-    if (v !== null && names.indexOf(v) >= 0) return v;
-    if (v !== null) console.warn(tag + ' variant="' + v + '" is not one of ' + names.join(", ") + " (the first, " + (names[0] || "none") + ", is used)");
-    return names[0] || null;
-  }
-  return {of: of};
-})();
-// ---- END egatari-variant ----
-
-// ---- 計算（tools/test-heatmap.mjs がブラウザなしで試す。customElements.get("m-heatmap").calc） ----
-var CALC = (function(){
-  function clean(v){ return +(+v).toFixed(10); }
-  // 行ごとの割合（混同行列）。行の和が 0 なら 0 のまま
-  function normalizeRows(values){
-    return values.map(function(row){
-      var s = row.reduce(function(a, v){ return a + v; }, 0);
-      return row.map(function(v){ return s ? v / s : 0; });
-    });
-  }
-  // 色の範囲：sequential は [min(0, 最小), 最大]、diverging は center を真ん中に対称（|値 − center| の最大）
-  function domain(values, kind, center, range){
-    var all = [].concat.apply([], values).filter(function(v){ return isFinite(v); });
-    if (range && range.length === 2) return {lo: +range[0], hi: +range[1], c: kind === "diverging" ? center : (+range[0] + +range[1]) / 2};
-    var lo = Math.min.apply(null, all), hi = Math.max.apply(null, all);
-    if (kind === "diverging"){
-      var m = Math.max(Math.abs(hi - center), Math.abs(lo - center)) || 1;
-      return {lo: clean(center - m), hi: clean(center + m), c: center};
-    }
-    lo = Math.min(0, lo);
-    if (hi === lo) hi = lo + 1;
-    return {lo: lo, hi: hi, c: clean((lo + hi) / 2)};
-  }
-  // 値 → 混ぜる割合 f（sequential は 0〜1、diverging は −1〜1。負は lowtone の側）。範囲の外は端にそろえる
-  function frac(v, kind, d){
-    if (kind === "diverging"){
-      var f = v >= d.c ? (d.hi > d.c ? (v - d.c) / (d.hi - d.c) : 0) : (d.lo < d.c ? -(d.c - v) / (d.c - d.lo) : 0);
-      return Math.max(-1, Math.min(1, f));
-    }
-    return Math.max(0, Math.min(1, (v - d.lo) / (d.hi - d.lo)));
-  }
-  // ---- 色（sRGB 0〜255 の [r, g, b]） ----
-  function lin(c){ c /= 255; return c <= 0.04045 ? c / 12.92 : Math.pow((c + 0.055) / 1.055, 2.4); }
-  function lum(c){ return 0.2126 * lin(c[0]) + 0.7152 * lin(c[1]) + 0.0722 * lin(c[2]); }
-  function oklab(c){
-    var r = lin(c[0]), g = lin(c[1]), b = lin(c[2]);
-    var l = Math.cbrt(0.4122214708 * r + 0.5363325363 * g + 0.0514459929 * b), m = Math.cbrt(0.2119034982 * r + 0.6806995451 * g + 0.1073969566 * b), s = Math.cbrt(0.0883024619 * r + 0.2817188376 * g + 0.6299787005 * b);
-    return [0.2104542553 * l + 0.7936177850 * m - 0.0040720468 * s, 1.9779984951 * l - 2.4285922050 * m + 0.4505937099 * s, 0.0259040371 * l + 0.7827717662 * m - 0.8086757660 * s];
-  }
-  function fromOklab(o){
-    var l = Math.pow(o[0] + 0.3963377774 * o[1] + 0.2158037573 * o[2], 3), m = Math.pow(o[0] - 0.1055613458 * o[1] - 0.0638541728 * o[2], 3), s = Math.pow(o[0] - 0.0894841775 * o[1] - 1.2914855480 * o[2], 3);
-    var f = function(x){ x = Math.max(0, Math.min(1, x)); return 255 * (x <= 0.0031308 ? 12.92 * x : 1.055 * Math.pow(x, 1 / 2.4) - 0.055); };
-    return [f(4.0767416621 * l - 3.3077115913 * m + 0.2309699292 * s), f(-1.2684380046 * l + 2.6097574011 * m - 0.3413193965 * s), f(-0.0041960863 * l - 0.7034186147 * m + 1.7076147010 * s)];
-  }
-  function contrast(a, b){ var x = lum(a), y = lum(b); return (Math.max(x, y) + 0.05) / (Math.min(x, y) + 0.05); }
-  // color-mix(in oklab, tone p, bg) の色（oklab での直線の補間）
-  function mix(tone, bg, p){ var a = oklab(tone), b = oklab(bg); return fromOklab([0, 1, 2].map(function(i){ return b[i] + (a[i] - b[i]) * p; })); }
-  var MIN = 4.6;   // 4.5:1 に、ブラウザの丸めの分の余裕
-  // 字の色：割合 p（0〜1）の色（セルの色は変えない。色がデータなので）に対して、--fg と --bg のうちコントラストの高い方。
-  // それでも MIN に届かない（明るさがちょうど中くらいの帯）ときは halo：字の周りに反対の色の細い縁（paint-order: stroke）を付ける。
-  // 返すのは {p, text: "fg" | "bg", cr, halo}
-  function pick(tone, bg, fg, p){
-    var c = mix(tone, bg, p), a = contrast(c, fg), b = contrast(c, bg), o = a >= b ? {p: p, text: "fg", cr: a} : {p: p, text: "bg", cr: b};
-    o.halo = o.cr < MIN;
-    return o;
-  }
-  // ---- 配置（字の幅は見積もり：半角 0.56 字、全角 1 字） ----
-  // セルの数字は表の数字の幅（0.7 字。−も同じ）で見積もる
-  function est(s, size, an){ an = an || 0.56; return [...String(s)].reduce(function(a, c){ return a + (/[\u0000-ɏ−]/.test(c) ? an : 1); }, 0) * size; }
-  // o: {W, H, rows, cols, legend: [字], xl, yl, rotate: "auto" | "0" | "90"}。
-  // 字は 26 px（入らなければ 24 px。それより小さくしない）。列の名前は横か縦（rotate）。入らなければ k 個おきに出す
-  function layout(o){
-    var nr = o.rows.length, nc = o.cols.length, best = null;
-    var rot = String(o.rotate || "auto"), orients = rot === "0" ? ["h"] : rot === "90" ? ["v"] : ["h", "v"];
-    var legW = Math.max.apply(null, [0].concat((o.legend || []).map(function(s){ return est(s, 24); })));
-    [26, 24].forEach(function(fs){
-      var rowW = Math.max.apply(null, [0].concat(o.rows.map(function(s){ return est(s, fs); })));
-      var colW = Math.max.apply(null, [0].concat(o.cols.map(function(s){ return est(s, fs); })));
-      var left = (o.yl ? 40 : 0) + (rowW ? rowW + 14 : 4), right = o.legend ? 22 + 24 + 10 + legW + 4 : 4;
-      orients.forEach(function(or){
-        var top = (o.xl ? 40 : 0) + (colW ? (or === "h" ? Math.ceil(fs * 1.25) + 8 : Math.ceil(colW) + 14) : 4);
-        var cs = Math.min((o.W - left - right) / nc, (o.H - top - 4) / nr, 180);
-        if (!(cs > 0)) cs = 0;
-        var kc = colW ? Math.max(1, Math.ceil((or === "h" ? colW + 10 : fs * 1.25) / Math.max(cs, 1e-6) - 1e-9)) : 1;
-        var kr = rowW ? Math.max(1, Math.ceil(fs * 1.25 / Math.max(cs, 1e-6) - 1e-9)) : 1;
-        var c = {fs: fs, orient: or, left: left, right: right, top: top, cs: cs, kc: kc, kr: kr, rowW: rowW, colW: colW, legW: legW};
-        var score = function(x){ return (x.kc - 1) + (x.kr - 1); };
-        if (!best || score(c) < score(best) || (score(c) === score(best) && c.cs > best.cs + 0.5 && score(c) > 0)) best = c;
-      });
-    });
-    var b = best, gw = nc * b.cs, gh = nr * b.cs, total = b.left + gw + b.right;
-    b.x0 = Math.max(0, (o.W - total) / 2);   // 左の端（行の名前の左）
-    b.gx = b.x0 + b.left; b.gy = b.top + Math.max(0, (o.H - b.top - gh - 4) / 2);
-    b.gw = gw; b.gh = gh;
-    b.notes = [];
-    if (b.kc > 1) b.notes.push("m-heatmap: " + nc + " columns are too many to label at 24 px; every " + ord(b.kc) + " column label is shown");
-    if (b.kr > 1) b.notes.push("m-heatmap: " + nr + " rows are too many to label at 24 px; every " + ord(b.kr) + " row label is shown");
-    if (b.cs < 4) b.notes.push("m-heatmap: the element (" + o.W + "×" + o.H + " px) is too small for " + nr + "×" + nc + " cells");
-    return b;
-  }
-  function ord(k){ return k + (k % 10 === 2 && k % 100 !== 12 ? "nd" : k % 10 === 3 && k % 100 !== 13 ? "rd" : "th"); }
-  // 出す名前の番号（k 個おき、0 から）
-  function shown(n, k){ var out = []; for (var i = 0; i < n; i += k) out.push(i); return out; }
-  // セルの数字の大きさ：lines 行（1 か 2）の字 texts が cs の正方形に収まる最も大きい大きさ（34 px まで）。24 px でも入らなければ 0
-  function numberSize(cs, texts, lines){
-    var w = Math.max.apply(null, [0].concat(texts.map(function(s){ return est(s, 1, 0.7); })));
-    for (var f = Math.min(34, Math.floor(cs * 0.28)); f >= 24; f--){
-      if (w * f <= cs - 12 && lines * f * 1.2 <= cs - 6) return f;
-    }
-    return w * 24 <= cs - 12 && lines * 24 * 1.2 <= cs - 6 ? 24 : 0;
-  }
-  // 段階：セルごとの段階 cell[r][c]、強調の段階、全体の段階の数
-  function steps(nr, nc, build, highlight){
-    var cell = [], k = 1, hs;
-    for (var r = 0; r < nr; r++){ cell.push([]); for (var c = 0; c < nc; c++) cell[r].push(build === "rows" ? r + 1 : 1); }
-    var last = build === "rows" ? nr : 1;
-    hs = (highlight || []).map(function(h, i){
-      var st = h.length > 2 && isFinite(h[2]) ? Math.max(1, Math.round(h[2])) : build === "cells" ? 2 + i : build === "rows" ? nr + 1 : 1;
-      return {r: h[0], c: h[1], st: st};
-    });
-    k = Math.max.apply(null, [last].concat(hs.map(function(h){ return h.st; })));
-    return {cell: cell, hl: hs, steps: Math.max(1, k)};
-  }
-  return {clean: clean, normalizeRows: normalizeRows, domain: domain, frac: frac, mix: mix, contrast: contrast, lum: lum, pick: pick,
-          est: est, layout: layout, shown: shown, numberSize: numberSize, steps: steps, MIN: MIN};
-})();
+// 2.0（Egatari spec §6.1 の部品）：base の MotionElement・el・prog・variant・previewOpacity と、計算は heatmap-core（1.x の
+// static calc）を使い、プレイヤーのグローバルは使わない。書き方やデータの知らせ（1.x の console.warn）は mount で ctx.report に。
+// 言語は ctx.lang（mount で読む）。凡例のグラデーションの id は heatmap-2-0-0-legend-<n>（1.x は m-heatmap-legend-<n>）
+egatariParts.define({name: "heatmap", version: "2.0.0", requires: {base: "1.0.0", "heatmap-core": "1.0.0"}, element: "m-heatmap"}, function(deps){
+"use strict";
+var base = deps.base;
+// ---- 計算（heatmap-core。tools/test-heatmap.mjs がブラウザなしで試す） ----
+var CALC = deps["heatmap-core"];
 // テーマの色を sRGB で読む（キャンバスに 1 点塗って読む。読めなければ null）。m-map-japan と同じ
 function rgbOf(css){
   try {
@@ -158,10 +31,11 @@ function rgbOf(css){
 }
 var ON = function(v){ return /^(on|true|yes)$/i.test(String(v || "").trim()); };
 var TONES = ["term", "emph", "accent2"];
-var SEQ = 0;   // 凡例のグラデーションの id（ページの中で部品ごとに別。mount は 1 回だけ）
-DECK.define("m-heatmap", class extends DECK.MotionElement {
+var ID = "heatmap-2-0-0-";   // name and version of this part, dots replaced (spec §6.1 Identifiers)
+var SEQ = 0;   // 凡例のグラデーションの id（ページの中で部品ごとに別。mount は 1 回だけ。このパーツだけの数え）
+return class extends base.MotionElement {
+  static partName = "heatmap";   // the registry name (define meta name), for report prefixes
   static variants = ["fade", "sweep"];
-  static calc = CALC;
   // データの形（kit/shape.js）
   static shape = {
     schema: {type: "object", additionalProperties: false, required: ["rows", "cols", "values"], properties: {
@@ -204,20 +78,20 @@ DECK.define("m-heatmap", class extends DECK.MotionElement {
     if (raw.length !== rows.length) throw new Error("m-heatmap: values has " + raw.length + " rows but rows has " + rows.length + " labels");
     raw.forEach(function(r, i){ if (r.length !== cols.length) throw new Error("m-heatmap: values row " + i + " has " + r.length + " numbers but cols has " + cols.length + " labels"); });
     var norm = P.normalize === "row";
-    if (["none", "row"].indexOf(P.normalize) < 0) notes.push('m-heatmap: normalize="' + P.normalize + '" is not row (none is used)');
+    if (["none", "row"].indexOf(P.normalize) < 0) notes.push(["attr", '[heatmap] normalize="' + P.normalize + '" is not row (none is used)']);
     var kind = P.scale === "diverging" ? "diverging" : "sequential";
-    if (["sequential", "diverging"].indexOf(P.scale) < 0) notes.push('m-heatmap: scale="' + P.scale + '" is not sequential or diverging (sequential is used)');
+    if (["sequential", "diverging"].indexOf(P.scale) < 0) notes.push(["attr", '[heatmap] scale="' + P.scale + '" is not sequential or diverging (sequential is used)']);
     var build = P.build || (norm ? "rows" : (d.highlight || []).length ? "cells" : "whole");
-    if (["rows", "whole", "cells"].indexOf(build) < 0){ notes.push('m-heatmap: build="' + build + '" is not rows, whole or cells (whole is used)'); build = "whole"; }
+    if (["rows", "whole", "cells"].indexOf(build) < 0){ notes.push(["attr", '[heatmap] build="' + build + '" is not rows, whole or cells (whole is used)']); build = "whole"; }
     var hl = (d.highlight || []).filter(function(h){
       var ok = h[0] >= 0 && h[0] < rows.length && h[1] >= 0 && h[1] < cols.length && h[0] === Math.round(h[0]) && h[1] === Math.round(h[1]);
-      if (!ok) notes.push("m-heatmap: highlight [" + h.join(", ") + "] is outside the " + rows.length + "×" + cols.length + " grid (0-based; ignored)");
+      if (!ok) notes.push(["data", "[heatmap] highlight [" + h.join(", ") + "] is outside the " + rows.length + "×" + cols.length + " grid (0-based; ignored)"]);
       return ok;
     });
     var shown = norm ? C.normalizeRows(raw) : raw;
     var show = norm ? P.show : "count";
-    if (norm && ["count", "percent", "both"].indexOf(show) < 0){ notes.push('m-heatmap: show="' + show + '" is not count, percent or both (percent is used)'); show = "percent"; }
-    if (norm && raw.some(function(r){ return !r.reduce(function(a, v){ return a + v; }, 0); })) notes.push("m-heatmap: a row sums to 0; its proportions are drawn as 0");
+    if (norm && ["count", "percent", "both"].indexOf(show) < 0){ notes.push(["attr", '[heatmap] show="' + show + '" is not count, percent or both (percent is used)']); show = "percent"; }
+    if (norm && raw.some(function(r){ return !r.reduce(function(a, v){ return a + v; }, 0); })) notes.push(["data", "[heatmap] a row sums to 0; its proportions are drawn as 0"]);
     var dom = C.domain(shown, kind, +P.center || 0, norm && !P.range ? [0, 1] : P.range);
     var st = C.steps(rows.length, cols.length, build, hl);
     var dec = function(v){ var m = String(v).match(/\.(\d+)$/); return m ? m[1].length : 0; };
@@ -244,17 +118,18 @@ DECK.define("m-heatmap", class extends DECK.MotionElement {
     var pct = this.fmt(pl.val[r][c] * 100, this.props.digits !== undefined ? this.props.digits : 0) + "%";
     return pl.show === "count" ? [cnt] : pl.show === "both" ? [cnt, pct] : [pct];
   }
-  mount(){
-    var P = this.props, D = DECK, C = CALC, self = this, pl = this.plan();
-    this.variant = VARIANT.of(this);
-    pl.notes.forEach(function(n){ console.warn(n); });
+  mount(ctx){
+    var P = this.props, D = base, C = CALC, self = this, pl = this.plan();
+    this.variant = base.variant(this);
+    // 書き方とデータの知らせ（plan が集めた [code, message]）
+    pl.notes.forEach(function(n){ ctx.report(n[0], n[1]); });
     this.classList.add("plot"); this.style.display = "block";
-    var ja = DECK.ja !== false, W = this.clientWidth, H = this.clientHeight, nr = pl.rows.length, nc = pl.cols.length;
+    var ja = this.ja = String(ctx.lang).startsWith("ja"), W = this.clientWidth, H = this.clientHeight, nr = pl.rows.length, nc = pl.cols.length;
     // ---- 色：テーマの色を読み、セルごとに混ぜる割合と字の色を決める ----
     var tone = TONES.indexOf(P.tone) >= 0 ? P.tone : "term", low = TONES.indexOf(P.lowtone) >= 0 ? P.lowtone : "emph";
-    if (TONES.indexOf(P.tone) < 0) console.warn('m-heatmap: tone="' + P.tone + '" is not term, emph or accent2 (term is used)');
-    if (TONES.indexOf(P.lowtone) < 0) console.warn('m-heatmap: lowtone="' + P.lowtone + '" is not term, emph or accent2 (emph is used)');
-    if (pl.kind === "diverging" && tone === low) console.warn("m-heatmap: tone and lowtone are the same colour; the two sides cannot be told apart");
+    if (TONES.indexOf(P.tone) < 0) ctx.report("attr", '[heatmap] tone="' + P.tone + '" is not term, emph or accent2 (term is used)');
+    if (TONES.indexOf(P.lowtone) < 0) ctx.report("attr", '[heatmap] lowtone="' + P.lowtone + '" is not term, emph or accent2 (emph is used)');
+    if (pl.kind === "diverging" && tone === low) ctx.report("attr", "[heatmap] tone and lowtone are the same colour; the two sides cannot be told apart");
     var cs0 = getComputedStyle(this), get = function(v){ return rgbOf(cs0.getPropertyValue(v).trim()); };
     var RGB = {bg: get("--bg"), fg: get("--fg"), term: get("--term"), emph: get("--emph"), accent2: get("--accent2")};
     var paint = function(f){
@@ -268,21 +143,21 @@ DECK.define("m-heatmap", class extends DECK.MotionElement {
     // ---- 配置 ----
     var dm = pl.dom, legend = [this.lfmt(dm.hi), this.lfmt(dm.c), this.lfmt(dm.lo)];
     var L = C.layout({W: W, H: H, rows: pl.rows, cols: pl.cols, legend: legend, xl: P.xl, yl: P.yl, rotate: P.rotate});
-    L.notes.forEach(function(n){ console.warn(n); });
+    L.notes.forEach(function(n){ ctx.report("size", "[heatmap] " + n); });
     var cs = L.cs, fs = L.fs;
     // セルの数字：12×12 を超えたら自動で消す。24 px で入らなければ消す（both は割合だけに）
-    var mode = ["auto", "on", "off"].indexOf(P.numbers) >= 0 ? P.numbers : (console.warn('m-heatmap: numbers="' + P.numbers + '" is not auto, on or off (auto is used)'), "auto");
+    var mode = ["auto", "on", "off"].indexOf(P.numbers) >= 0 ? P.numbers : (ctx.report("attr", '[heatmap] numbers="' + P.numbers + '" is not auto, on or off (auto is used)'), "auto");
     var nf = 0, lines = pl.show === "both" ? 2 : 1, all = [];
     for (var r0 = 0; r0 < nr; r0++) for (var c0 = 0; c0 < nc; c0++) all = all.concat(this.texts(r0, c0));
-    if (mode === "auto" && (nr > 12 || nc > 12)){ mode = "off"; console.warn("m-heatmap: " + nr + "×" + nc + " cells is more than 12×12; the numbers in the cells are turned off (numbers=\"on\" to keep them where they fit)"); }
+    if (mode === "auto" && (nr > 12 || nc > 12)){ mode = "off"; ctx.report("size", "[heatmap] " + nr + "×" + nc + " cells is more than 12×12; the numbers in the cells are turned off (numbers=\"on\" to keep them where they fit)"); }
     if (mode !== "off"){
       nf = C.numberSize(cs, all, lines);
       if (!nf && lines === 2){
         lines = 1; all = []; for (var r1 = 0; r1 < nr; r1++) for (var c1 = 0; c1 < nc; c1++) all.push(this.texts(r1, c1)[1]);
         nf = C.numberSize(cs, all, 1);
-        if (nf) console.warn('m-heatmap: the cells (' + Math.round(cs) + ' px) are too small for two lines at 24 px; show="both" shows the percentages only');
+        if (nf) ctx.report("size", '[heatmap] the cells (' + Math.round(cs) + ' px) are too small for two lines at 24 px; show="both" shows the percentages only');
       }
-      if (!nf) console.warn("m-heatmap: the cells (" + Math.round(cs) + " px) are too small for numbers at 24 px; the numbers are turned off");
+      if (!nf) ctx.report("size", "[heatmap] the cells (" + Math.round(cs) + " px) are too small for numbers at 24 px; the numbers are turned off");
     }
     this.lines = lines;
     var svg = D.el("svg", {width: W, height: H, viewBox: "0 0 " + W + " " + H, "aria-hidden": "true", style: "display:block;overflow:visible"}, this);
@@ -325,7 +200,7 @@ DECK.define("m-heatmap", class extends DECK.MotionElement {
       items.push({el: g, st: st, at: at, len: dur * 0.5});
     };
     if (ON(P.diag)) for (i = 0; i < Math.min(nr, nc); i++) frame(i, i, "var(--fg)", pl.cell[i][i], dur * 0.5);
-    else if (P.diag !== "off") console.warn('m-heatmap: diag="' + P.diag + '" is not on or off (off is used)');
+    else if (P.diag !== "off") ctx.report("attr", '[heatmap] diag="' + P.diag + '" is not on or off (off is used)');
     pl.hl.forEach(function(h){ frame(h.r, h.c, "var(--emph)", h.st, h.st === pl.cell[h.r][h.c] ? dur * 0.5 : 0); });
     // ---- 名前（段階 0 から） ----
     var lab = function(x, y, s, a){ return D.el("text", Object.assign({x: f1(x), y: f1(y), "font-size": fs, fill: "var(--fg)"}, a || {}), gLab); };
@@ -339,7 +214,7 @@ DECK.define("m-heatmap", class extends DECK.MotionElement {
     if (P.xl){ var tl = lab(L.gx + L.gw / 2, L.gy - (L.top - (P.xl ? 40 : 0)) - 12, "", {"text-anchor": "middle", "font-weight": 700, "font-size": 26}); tl.textContent = P.xl; }
     if (P.yl){ var yx = L.x0 + 26, yy = L.gy + L.gh / 2, ty = lab(yx, yy, "", {"text-anchor": "middle", "font-weight": 700, "font-size": 26, transform: "rotate(-90 " + f1(yx) + " " + f1(yy) + ")"}); ty.textContent = P.yl; }
     // ---- 凡例の帯：上が最大、真ん中が center（sequential は真ん中の値）、下が最小 ----
-    var bx = L.gx + L.gw + 22, bh = L.gh, gid = "m-heatmap-legend-" + (++SEQ);
+    var bx = L.gx + L.gw + 22, bh = L.gh, gid = ID + "legend-" + (++SEQ);
     // 帯は混ぜる割合をそのまま（セルの字のために寄せた割合ではなく、尺度そのもの）
     var grad = D.el("linearGradient", {id: gid, x1: 0, y1: 0, x2: 0, y2: 1}, D.el("defs", {}, svg));
     for (i = 0; i <= 20; i++){
@@ -383,12 +258,12 @@ DECK.define("m-heatmap", class extends DECK.MotionElement {
     return any ? this.props.dur : 0;
   }
   render(k, t, ctx){
-    var D = DECK, lecture = ctx && (ctx.preview || ctx.mode === "lecture"), FAINT = 0.45;
-    if (lecture){ var pv = parseFloat(getComputedStyle(this).getPropertyValue("--preview-opacity")); FAINT = pv >= 0 && pv <= 1 ? pv : 0.45; }   // 先の段階の薄さ：テーマの --preview-opacity（ないときは 0.45）
+    var D = base, lecture = !!ctx.preview, FAINT = 0.45;
+    if (lecture) FAINT = base.previewOpacity(this);   // 先の段階の薄さ：テーマの --preview-opacity（ないときは 0.45）
     this.items.forEach(function(it){
       var op = it.st < k ? 1 : it.st > k ? (lecture ? FAINT : 0) : D.prog(t, it.at, it.len);
       it.el.setAttribute("opacity", op.toFixed(3));
     });
   }
+};
 });
-})();

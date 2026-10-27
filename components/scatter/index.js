@@ -7,25 +7,14 @@
 // xt / yt を書かなければ目盛りも決める
 // 見せ方（docs/conventions.md §1）：fade（点がフェードして現れる、既定）・sweep（左から右へ順に現れる）・grow（点が小さい点から
 // 大きくなる）。傾向の線は fade では薄く現れ、sweep では左から引き、grow では真ん中から両側へ伸びる。段階の数・長さ・最後の中身は同じ
-(function(){
-// ---- BEGIN egatari-variant (source: tools/variant.js; copy with `node tools/variant-sync.mjs`; do not edit inside a component) ----
-// Choosing a presentation variant (Egatari spec §8.4, docs/conventions.md §1). A component lists its variant names in
-// `static variants` (the first is the default) and calls VARIANT.of(this) once, in mount. The variant is the component's
-// `variant` attribute when it names one of them, otherwise the first name. There is no seed: lessons do not carry one
-// (spec §8.4 since egatari-spec 28d8801), and `seed` / `data-egatari-seed` are not read.
-// The choice is a pure function of the attribute: the picture still depends on (i, k, t) only.
-var VARIANT = (function(){
-  "use strict";
-  function of(el){
-    var tag = el.tagName.toLowerCase(), C = customElements.get(tag), names = (C && C.variants) || [], v = el.getAttribute("variant");
-    if (v !== null && names.indexOf(v) >= 0) return v;
-    if (v !== null) console.warn(tag + ' variant="' + v + '" is not one of ' + names.join(", ") + " (the first, " + (names[0] || "none") + ", is used)");
-    return names[0] || null;
-  }
-  return {of: of};
-})();
-// ---- END egatari-variant ----
-DECK.define("m-scatter", class extends DECK.MotionElement {
+// 2.0（Egatari spec §6.1 の部品）：base の MotionElement・el・mtext・prog・lerp・variant・previewOpacity と plot の Plot を使い、
+// プレイヤーのグローバルは使わない。名前の置き場がない・傾向の線が軸の外・上の名前が図より広い、は ctx.report で知らせる
+// （1.x は console.warn）
+egatariParts.define({name: "scatter", version: "2.0.0", requires: {base: "1.0.0", plot: "1.0.0"}, element: "m-scatter"}, function(deps){
+"use strict";
+var base = deps.base, plot = deps.plot;
+return class extends base.MotionElement {
+  static partName = "scatter";   // the registry name (define meta name), for report prefixes
   static variants = ["fade", "sweep", "grow"];
   // データの形（kit/shape.js）
   static shape = (function(){
@@ -77,9 +66,9 @@ DECK.define("m-scatter", class extends DECK.MotionElement {
     });
     return (this._plan = {series: series, trends: trends});
   }
-  mount(){
-    var P = this.props, D = DECK, self = this, pl = this.plan();
-    this.variant = VARIANT.of(this);
+  mount(ctx){
+    var P = this.props, D = base, self = this, pl = this.plan();
+    this.variant = base.variant(this);
     this.classList.add("plot"); this.style.display = "block";
     var est = function(s, size){ return [...String(s).replace(/[*_^]/g, "")].reduce(function(a, c){ return a + (/[\u0000-ɏ]/.test(c) ? 0.56 : 1); }, 0) * size; };
     var colorOf = function(c, i){
@@ -107,7 +96,7 @@ DECK.define("m-scatter", class extends DECK.MotionElement {
     var named = pl.series.some(function(o){ return o.s.label; }) || pl.trends.some(function(o){ return o.t.label; });
     var yw = Math.max.apply(null, yt.map(function(v){ return est(fmt(v, P.yf), 24); }).concat([0]));
     var m = {l: Math.max(64, yw + 22 + (P.yl ? 40 : 0)), r: 24, t: named ? 72 : 20, b: P.xl ? 66 : 42};
-    var p = this.p = D.Plot(this, {xr: xr, yr: yr, xt: xt, yt: yt, xf: P.xf, yf: P.yf, xl: P.xl, yl: P.yl, m: m});
+    var p = this.p = plot.Plot(this, {xr: xr, yr: yr, xt: xt, yt: yt, xf: P.xf, yf: P.yf, xl: P.xl, yl: P.yl, m: m});
     // 軸の線（横軸と縦軸。目盛りの短い線は除く）に印を付ける（tools/test-components.mjs が字との交差を見る）
     var axl = p.svg.querySelectorAll("g.axes > line");
     for (var a = 0; a < Math.min(2, axl.length); a++) axl[a].setAttribute("class", "axis");
@@ -149,7 +138,7 @@ DECK.define("m-scatter", class extends DECK.MotionElement {
         var inBox = function(b){ return b.l >= 0 && b.r <= W && b.t >= 0 && b.b <= H; };
         var pick = pref.filter(function(k){ return inPlot(cands[k].b) && !hits(cands[k].b, mk.q); })[0]
           || pref.filter(function(k){ return inBox(cands[k].b) && !hits(cands[k].b, mk.q); })[0];
-        if (!pick){ pick = pref.filter(function(k){ return inBox(cands[k].b); })[0] || pref[0]; console.warn("m-scatter: the label \"" + mk.q.label + "\" has no free place (it may overlap)"); }
+        if (!pick){ pick = pref.filter(function(k){ return inBox(cands[k].b); })[0] || pref[0]; ctx.report("layout", "[scatter] the label \"" + mk.q.label + "\" has no free place (it may overlap)"); }
         var c = cands[pick];
         boxes.push({l: c.b.l, r: c.b.r, t: c.b.t, b: c.b.b, pt: mk.q});
         return D.mtext(gL, c.x, c.y, mk.q.label, {"text-anchor": c.a, "font-size": 24, fill: mk.q.tone ? colorOf(mk.q.tone, o.i) : "var(--fg)", opacity: 0});
@@ -191,7 +180,7 @@ DECK.define("m-scatter", class extends DECK.MotionElement {
         if (c[0] < 0) u0 = Math.max(u0, u); else u1 = Math.min(u1, u);
       });
       // 枠の外の線は描かない（名前も図の上に出さない）
-      if (u1 <= u0){ out = true; console.warn("m-scatter: the trend line is outside the axes (it is not drawn)"); }
+      if (u1 <= u0){ out = true; ctx.report("range", "[scatter] the trend line is outside the axes (it is not drawn)"); }
       else { B = [A[0] + dx * u1, A[1] + dy * u1]; A = [A[0] + dx * u0, A[1] + dy * u0]; }
       var line = D.el("path", {d: "M0,0", fill: "none", stroke: col, "stroke-width": 3.5, "stroke-linecap": "round", opacity: 0}, gT);
       if (t.dash) line.setAttribute("stroke-dasharray", "12 9");
@@ -216,7 +205,7 @@ DECK.define("m-scatter", class extends DECK.MotionElement {
       en.it.leg = g;
       lx = sx - 32;
     });
-    if (lx + 32 < 0) console.warn("m-scatter: the names above the figure are wider than the figure");
+    if (lx + 32 < 0) ctx.report("size", "[scatter] the names above the figure are wider than the figure");
     function tickStep(span){ var r = span / 5, e = Math.pow(10, Math.floor(Math.log10(r))), x = r / e;
       return (x <= 1 ? 1 : x <= 2 ? 2 : x <= 2.5 ? 2.5 : x <= 5 ? 5 : 10) * e; }
   }
@@ -232,8 +221,8 @@ DECK.define("m-scatter", class extends DECK.MotionElement {
     return c.length ? c.sort(function(a, b){ return a - b; }) : null;
   }
   render(k, t, ctx){
-    var P = this.props, D = DECK, vr = this.variant, dur = P.dur, lecture = ctx && (ctx.preview || ctx.mode === "lecture"), FAINT = 0.45;
-    if (lecture){ var pv = parseFloat(getComputedStyle(this).getPropertyValue("--preview-opacity")); FAINT = pv >= 0 && pv <= 1 ? pv : 0.45; }   // 先の段階の薄さ：テーマの --preview-opacity（ないときは 0.45）
+    var P = this.props, D = base, vr = this.variant, dur = P.dur, lecture = !!ctx.preview, FAINT = 0.45;
+    if (lecture) FAINT = base.previewOpacity(this);   // 先の段階の薄さ：テーマの --preview-opacity（ないときは 0.45）
     // この部品の段階の中の時刻（-1 = まだ。授業の表示では先の段階を薄く見せる）
     var local = function(o){ return o.step < k ? Infinity : o.step > k ? -1 : t - o.at; };
     var faint = function(o){ return lecture && o.step > k; };
@@ -265,5 +254,5 @@ DECK.define("m-scatter", class extends DECK.MotionElement {
       if (tr.leg) tr.leg.setAttribute("opacity", (f ? FAINT : tt < 0 ? 0 : D.prog(tt, span, dur * 0.3)).toFixed(3));
     });
   }
+};
 });
-})();
