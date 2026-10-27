@@ -14,6 +14,10 @@
 // Migrated element parts (2.0 parts with an element, e.g. m-bars): the pinned Studio has no parts registry, so the overlay
 // writes, as their index.js, the registry shim with the parts they require and the part itself (tools/parts.mjs c2Bundle).
 // The 1.x tests then build, play and check them through the shim's bridge to DECK. Library parts are not overlaid.
+// Build-time rendering (spec §6.2): the pinned Studio does not render parts' declared fields yet, so build() first runs the
+// stand-in producer (tools/katex-produce.mjs) on the deck when it uses a migrated part with katex fields, writing the result to
+// <deck>.produced.html beside it (same folder, so relative files resolve) and building that. build(src, out, {produce: false})
+// builds the deck as written (tools/test-c2-identity.mjs, for the 1.x side).
 // Environment: EGATARI_STUDIO=<path> uses an existing Studio checkout instead (it is overlaid in place, so use a scratch copy).
 import fs from 'node:fs';
 import path from 'node:path';
@@ -22,6 +26,7 @@ import { createHash } from 'node:crypto';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 import { normalizeEol, toCrlf } from './identity.mjs';
 import { isLibraryDir, migratedNames, c2Bundle } from './parts.mjs';
+import { katexOf, katexParts, produceWith } from './katex-produce.mjs';
 
 export const ROOT = path.dirname(path.dirname(fileURLToPath(import.meta.url)));
 export const PIN = JSON.parse(fs.readFileSync(path.join(ROOT, 'tools', 'studio.json'), 'utf8'));
@@ -119,15 +124,27 @@ function overlay(dir) {
 }
 
 let cached = null;
-// Returns {dir, layout, compDir(name), build(src, out), browser: {launch, fileUrl}}
+// Returns {dir, layout, compDir(name), build(src, out, {produce}), produced(src, dir), browser: {launch, fileUrl}}
 export async function studio() {
   if (cached) return cached;
   const dir = process.env.EGATARI_STUDIO ? path.resolve(process.env.EGATARI_STUDIO) : path.join(ROOT, '.studio');
   if (!process.env.EGATARI_STUDIO) fetchStudio(dir);
   const s = overlay(dir);
   const browser = await import(pathToFileURL(path.join(dir, 'kit', 'browser.mjs')).href);
-  const build = (src, out) => execFileSync(process.execPath, [path.join(dir, 'kit', 'build.mjs'), src, '-o', out], { stdio: 'pipe' });
-  cached = { ...s, build, browser };
+  const K = await katexOf(), parts = katexParts();
+  // The deck as the producer would build it: src itself, or <deck>.produced.html beside it (in dir, when given: a folder with
+  // the same files, e.g. the overlaid copy of a component, so that nothing is written into components/)
+  const produced = (src, dir = null) => {
+    if (!Object.keys(parts).length) return src;
+    const html = fs.readFileSync(src, 'utf8'), r = produceWith(K, html, { deckDir: path.dirname(path.resolve(src)), parts });
+    if (r.html === html) return src;
+    const out = path.join(dir || path.dirname(src), path.basename(src).replace(/\.html?$/i, '') + '.produced.html');
+    fs.writeFileSync(out, r.html);
+    return out;
+  };
+  const build = (src, out, { produce = true } = {}) =>
+    execFileSync(process.execPath, [path.join(dir, 'kit', 'build.mjs'), produce ? produced(src) : src, '-o', out], { stdio: 'pipe' });
+  cached = { ...s, build, produced, browser };
   return cached;
 }
 

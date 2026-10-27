@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="ja" data-theme="default">
+<head>
+<meta charset="utf-8">
+<title>m-fishbone: formulas (tools/test-c2-identity.mjs)</title>
+<!-- The v1.13.0 demo has no tex. 2.0 renders tex at build time (spec §6.2: effect.tex and nodes[].tex → texHtml) and reads it
+     through markup-reader; this deck checks that the DOM stays that of 1.13 (KaTeX at play time): the effect, a bone and
+     causes with formulas (the boxes and the causes on the lines, with a note after a formula), the variants. -->
+</head>
+<body>
+<div id="stage">
+
+<section class="slide">
+  <h2>推定の誤差の原因</h2>
+  <div class="body">
+    <m-fishbone style="height:460px">
+      <script type="application/json">{
+        "effect": {"tex": "\\mathrm{E}[(\\hat\\theta-\\theta)^2]", "note": "平均二乗誤差"},
+        "nodes": [
+          {"id": "b", "label": "偏り"},
+          {"id": "b1", "tex": "\\mathrm{E}[\\hat\\theta]-\\theta", "parent": "b", "note": "偏り"},
+          {"id": "b2", "label": "モデルの誤り", "parent": "b"},
+          {"id": "v", "tex": "\\mathrm{Var}", "tone": "emph"},
+          {"id": "v1", "tex": "\\frac{\\sigma^2}{n}", "parent": "v"},
+          {"id": "v11", "tex": "\\sqrt{n}", "parent": "v1"},
+          {"id": "n", "label": "雑音"},
+          {"id": "n1", "tex": "\\varepsilon_i", "parent": "n", "note": "測定"}
+        ]
+      }</script>
+    </m-fishbone>
+  </div>
+  <div class="concl"><span>→ 誤差は偏りの 2 乗と分散に分かれる</span></div>
+</section>
+
+<section class="slide noconcl">
+  <h2>見せ方</h2>
+  <div class="body">
+    <div class="cols">
+      <div><m-fishbone variant="draw" style="height:360px">
+        <script type="application/json">{"effect": {"tex": "y"}, "nodes": [{"id": "a", "tex": "x_1"}, {"id": "a1", "tex": "x_1^2", "parent": "a"}, {"id": "c", "label": "c"}, {"id": "c1", "tex": "\\bar c", "parent": "c"}]}</script>
+      </m-fishbone></div>
+      <div><m-fishbone variant="grow" style="height:360px">
+        <script type="application/json">{"effect": {"label": "y"}, "nodes": [{"id": "a", "tex": "\\alpha"}, {"id": "a1", "tex": "\\frac{1}{2}", "parent": "a"}]}</script>
+      </m-fishbone></div>
+    </div>
+  </div>
+</section>
+
+</div>
+</body>
+</html>

@@ -9,43 +9,36 @@
 // 段階：by="level"（既定、根、それから深さごとに 1 段）か by="node"（深さ優先の順に 1 つずつ）。節の step が勝つ
 // edges：親子のほかのつながり（破線、矢印つき）。段階は両端の遅いほう
 // 字の大きさは要素の大きさから決め（27 px から）、入らなければ 24 px まで縮める。それでも入らなければ、字は 24 px のまま
-// 葉だけの子を 2 段に互い違いに並べ、名前を 2 行に折る。それでも入らなければ要素の箱からはみ出して console.warn（足りない px）
+// 葉だけの子を 2 段に互い違いに並べ、名前を 2 行に折る。それでも入らなければ要素の箱からはみ出して ctx.report("size", …)（足りない px）
 // 見せ方（docs/conventions.md §2.5）：fade（箱が下から 12 px 上がりながら現れてから線を引く、既定）・draw（線を先に引き、
 // その先に箱が親の側から 12 px 寄りながら現れる）・grow（箱が親の側から 12 px 寄りながら 0.92 → 1 に大きくなる）。
 // 箱の動きはどれも 12 px まで。段階の数・長さ・最後の中身はどれも同じ
 // branch（子の節）：親からの線に添える字（確率・条件・はい/いいえ）。path：根から葉への id の列を --emph で示す
 // （既定は木の後に線 1 本ごとに 1 段階、pathStep があればその段階に）。pathNote：終わりの箱の外の一言
-// ---- BEGIN egatari-variant (source: tools/variant.js; copy with `node tools/variant-sync.mjs`; do not edit inside a component) ----
-// Choosing a presentation variant (Egatari spec §8.4, docs/conventions.md §1). A component lists its variant names in
-// `static variants` (the first is the default) and calls VARIANT.of(this) once, in mount. The variant is the component's
-// `variant` attribute when it names one of them, otherwise the first name. There is no seed: lessons do not carry one
-// (spec §8.4 since egatari-spec 28d8801), and `seed` / `data-egatari-seed` are not read.
-// The choice is a pure function of the attribute: the picture still depends on (i, k, t) only.
-var VARIANT = (function(){
-  "use strict";
-  function of(el){
-    var tag = el.tagName.toLowerCase(), C = customElements.get(tag), names = (C && C.variants) || [], v = el.getAttribute("variant");
-    if (v !== null && names.indexOf(v) >= 0) return v;
-    if (v !== null) console.warn(tag + ' variant="' + v + '" is not one of ' + names.join(", ") + " (the first, " + (names[0] || "none") + ", is used)");
-    return names[0] || null;
-  }
-  return {of: of};
-})();
-// ---- END egatari-variant ----
+// 2.0（Egatari spec §6.1 の部品）：base の MotionElement・el・mtext・prog・lerp・variant・previewOpacity を使い、プレイヤーのグローバルは使わない。
+// 式（tex）は組み立てのときに KaTeX で描く（spec §6.2）：build.fields の nodes[].tex を作り手が描いて texHtml を足し、
+// この部品は markup-reader で決まった要素と属性だけを読んで置く（再生のときに KaTeX は動かない）。描いた結果がなければ tex を字のまま出して知らせる。
+// 入らないときは ctx.report("size", "[tree] …") で知らせる（1.x の console.warn の代わり）
+egatariParts.define({name: "tree", version: "2.0.0", requires: {base: "1.0.0", "markup-reader": "1.0.0"}, element: "m-tree"}, function(deps){
+"use strict";
+var base = deps.base, MR = deps["markup-reader"];
 // 形の要素ごとに、書き直すと形が作り直される属性（render の終わりで使う）
 var SHAPE_GEOM = {rect: "width", circle: "r", ellipse: "rx", path: "d", line: "x1", polyline: "points", polygon: "points"};
-DECK.define("m-tree", class extends DECK.MotionElement {
+var Part = class extends base.MotionElement {
+  static partName = "tree";   // the registry name (define meta name), for report prefixes
+  // 組み立てのときに描く欄（spec §6.2）。式の意味は字（tex）でも持つので、KaTeX の出力は HTML だけ
+  static build = {fields: {"nodes[].tex": "katex"}, options: {katex: {output: "html"}}};
   static variants = ["fade", "draw", "grow"];
   // データの形（kit/shape.js）
   static shape = {
     schema: {type: "object", additionalProperties: false, required: ["nodes"], properties: {
       nodes: {type: "array", minItems: 1, items: {type: "object", required: ["id"], properties: {
-        id: {type: ["string", "integer"]}, label: {type: "string"}, tex: {type: "string"}, note: {type: "string"}, tone: {type: "string"},
+        id: {type: ["string", "integer"]}, label: {type: "string"}, tex: {type: "string"}, texHtml: {type: "string"}, note: {type: "string"}, tone: {type: "string"},
         parent: {type: ["string", "integer"]}, branch: {type: "string"}, step: {type: "integer"}, at: {type: "number"}}}},
       edges: {type: "array", items: {type: "object", required: ["from", "to"], properties: {
         from: {type: ["string", "integer"]}, to: {type: ["string", "integer"]}, label: {type: "string"}, tone: {type: "string"}, dash: {type: "boolean"},
         step: {type: "integer"}, at: {type: "number"}}}},
-      path: {type: "array", minItems: 2, items: {type: ["string", "integer"]}}, pathStep: {type: "integer"}, pathNote: {type: "string"}}},
+      path: {type: "array", minItems: 2, items: {type: ["string", "integer"]}}, pathStep: {type: "integer"}, pathNote: {type: "string"}, renderers: {type: "object"}}},
     example: {nodes: [{id: "r", label: "動物"}, {id: "a", label: "脊椎動物", parent: "r"}, {id: "b", label: "無脊椎動物", parent: "r"}]},
     note: "parent のない節（根）はちょうど 1 つ",
   };
@@ -101,9 +94,9 @@ DECK.define("m-tree", class extends DECK.MotionElement {
     p.nodes.concat(p.edges, p.path ? p.path.links : []).forEach(function(o){ m = Math.max(m, o.step); });
     return m;
   }
-  mount(){
-    var P = this.props, D = DECK, self = this, pl = this.plan();
-    this.variant = VARIANT.of(this);
+  mount(ctx){
+    var P = this.props, D = base, self = this, pl = this.plan(), sk = MR.sink(this, ctx);
+    this.variant = base.variant(this);
     this.style.display = "block"; this.style.position = "relative";
     var W = this.clientWidth, H = this.clientHeight, right = P.orient === "right";
     var svg = D.el("svg", {viewBox: "0 0 " + W + " " + H, width: W, height: H, style: "display:block;overflow:visible"}, this);
@@ -213,7 +206,7 @@ DECK.define("m-tree", class extends DECK.MotionElement {
     if (brs.length){ lgmin = Math.max(lgmin, right ? brW + 52 : 76); lgmax = Math.max(lgmax, lgmin); }
     // 入れ方を順に試す：字を 27 → 24 px、それでも入らなければ 24 px のまま、葉だけの子の多い親から順に子を 2 段にし、
     // さらに名前を 2 行に折る。字は 24 px より小さくしない（docs/conventions.md §2.3）。どれでも入らなければ、
-    // はみ出しのいちばん少ない形で描き、足りない px を console.warn で知らせる
+    // はみ出しのいちばん少ない形で描き、足りない px を ctx.report("size", …) で知らせる
     var cands = P.link === "straight" || brs.length ? [] : pl.nodes.filter(function(o){ return o.kids.length >= 3 && o.kids.every(function(c){ return !c.kids.length; }); })
       .sort(function(a, b){ return b.kids.length - a.kids.length; });
     var sizes = P.size ? [P.size] : [27, 26, 25, 24], s24 = sizes[sizes.length - 1], tries = [], cfg = null, best = null, nf;
@@ -234,7 +227,7 @@ DECK.define("m-tree", class extends DECK.MotionElement {
       else if (!best || miss[0] + miss[1] < best.m[0] + best.m[1]) best = {t: tries[i], m: miss};
     }
     var fit = !!cfg;
-    if (!fit){ cfg = best.t; console.warn("m-tree: the tree does not fit at " + cfg[0] + " px; it overflows its box by " + Math.ceil(best.m[0]) + " px across and " + Math.ceil(best.m[1]) + " px along the levels (text is not made smaller). Split the tree, shorten the labels or make the element larger"); }
+    if (!fit){ cfg = best.t; ctx.report("size", "[tree] the tree does not fit at " + cfg[0] + " px; it overflows its box by " + Math.ceil(best.m[0]) + " px across and " + Math.ceil(best.m[1]) + " px along the levels (text is not made smaller). Split the tree, shorten the labels or make the element larger"); }
     setup(cfg);
     var s = cfg[0], br, ds;
     // 並ぶ向きの間：入る範囲で広げる
@@ -262,7 +255,7 @@ DECK.define("m-tree", class extends DECK.MotionElement {
       o.cx = o.x + o.w / 2; o.cy = o.y + o.h / 2;
       o.g = D.el("g", {opacity: 0}, gN);
       D.el("rect", {class: "box", x: o.x.toFixed(1), y: o.y.toFixed(1), width: o.w.toFixed(1), height: o.h.toFixed(1), rx: 10, fill: c[1], stroke: c[0], "stroke-width": n.tone === "emph" ? 3 : 2.2}, o.g);
-      if (n.tex) D.svgMath(o.g, o.cx, o.cy + s * 0.36, n.tex, {size: s, anchor: "middle", color: c[2], w: o.w, h: o.h}).firstChild.style.verticalAlign = "top";
+      if (n.tex) MR.texFrame(o.g, o.cx, o.cy + s * 0.36, n, "tex", {size: s, anchor: "middle", color: c[2], w: o.w, h: o.h}, sk).firstChild.style.verticalAlign = "top";
       else {
         var lh = s * 1.25, y0 = o.cy - (o.lines.length - 1) * lh / 2 + s * 0.36;
         o.lines.forEach(function(t, j){ D.mtext(o.g, o.cx, y0 + j * lh, t, {"text-anchor": "middle", "font-size": s, fill: c[2]}); });
@@ -360,7 +353,7 @@ DECK.define("m-tree", class extends DECK.MotionElement {
     var end = out[out.length - 1];
     if (i < pts.length && want > pl.L[i - 1]){
       var u = (want - pl.L[i - 1]) / (pl.L[i] - pl.L[i - 1]);
-      end = [DECK.lerp(pts[i - 1][0], pts[i][0], u), DECK.lerp(pts[i - 1][1], pts[i][1], u)];
+      end = [base.lerp(pts[i - 1][0], pts[i][0], u), base.lerp(pts[i - 1][1], pts[i][1], u)];
       out.push(end);
     }
     var pv = out.length > 1 ? out[out.length - 2] : pts[0], nx = i < pts.length ? pts[i] : end;
@@ -380,8 +373,8 @@ DECK.define("m-tree", class extends DECK.MotionElement {
     return d;
   }
   render(k, t, ctx){
-    var P = this.props, D = DECK, self = this, vr = this.variant, lect = ctx && (ctx.preview || ctx.mode === "lecture"), S = this.span(), FAINT = 0.45;
-    if (lect){ var pv = parseFloat(getComputedStyle(this).getPropertyValue("--preview-opacity")); FAINT = pv >= 0 && pv <= 1 ? pv : 0.45; }   // 先の段階の薄さ：テーマの --preview-opacity（ないときは 0.45）
+    var P = this.props, D = base, self = this, vr = this.variant, lect = !!ctx.preview, S = this.span(), FAINT = 0.45;
+    if (lect) FAINT = base.previewOpacity(this);   // 先の段階の薄さ：テーマの --preview-opacity（ないときは 0.45）
     // 段階 step の要素の、その段階の中の時刻（-1 = まだ、Infinity = 済み）
     var tOf = function(step){ return step < k ? Infinity : step > k ? -1 : t; };
     var pr = function(tt, at, dur){ return tt < 0 ? 0 : D.prog(tt, at, dur); };
@@ -444,4 +437,6 @@ DECK.define("m-tree", class extends DECK.MotionElement {
     // 何回塗り直されたかは呼び出しの間にコマが描かれたかで決まるので、作り直さないと同じ (k, t) でも呼び出しの順と時刻で画素が変わる（docs/contract.md §3）
     this.shapes.forEach(function(e){ var a = SHAPE_GEOM[e.localName], v = e.getAttribute(a); if (v !== null) e.setAttribute(a, v); });
   }
+};
+return Part;
 });

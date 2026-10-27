@@ -12,6 +12,18 @@
 // At every frame the components' DOM (outerHTML of every component on the slide) must be byte-identical, except for the
 // id rewrites in ID_REWRITES below, and nothing else (warnings that became ctx.report are not in the DOM).
 // Also: the 2.0 part is defined through the registry (status ok); no console error on either side; no ctx.report on its demo.
+//
+// Parts with build-time rendered fields (spec §6.2: static build = {fields: {<path>: "katex"}}; m-collect, m-cycle, m-fishbone,
+// m-flow, m-timeline, m-tree): the 1.x deck is built as written (its part rendered the tex with KaTeX at play time); the 2.0
+// deck is the same source after the stand-in producer (tools/katex-produce.mjs, run by tools/studio.mjs build) rendered the
+// declared fields with the KaTeX the pinned Studio pins. The DOM must still be byte-identical, with one more allowed
+// deviation, DATA_REWRITE below: the text of the element's <script type="application/json"> holds the producer's additions,
+// so it is compared as data instead of bytes: the 2.0 data without the additions (<field>Html beside each declared field, the
+// top-level renderers record) must equal the 1.x data. The 2.0 page must also have no KaTeX at all (players never render).
+// A part whose v1.13.0 demo builds its data in a page script at play time (m-collect: no data exists at build time, so there
+// is nothing to render) names, in its fixture, the reason the fixture replaces the demo:
+//   <!-- c2-identity-replaces-demo: <reason> -->
+// The fixture is then the deck compared (built both ways from the same source), and the demo is not.
 //   node tools/test-c2-identity.mjs [work dir] [--only name,name]
 import fs from 'node:fs';
 import os from 'node:os';
@@ -19,6 +31,7 @@ import path from 'node:path';
 import { execFileSync } from 'node:child_process';
 import { ROOT, studio, pinLabel } from './studio.mjs';
 import { migratedNames, partMetas, c2Bundle, requiresClosure, C2_BASELINE } from './parts.mjs';
+import { katexParts, at } from './katex-produce.mjs';
 
 export const BASELINE = C2_BASELINE;
 // The only allowed deviations: ids a part writes into its DOM, renamed with the part's name and version (spec §6.1
@@ -34,6 +47,29 @@ export const ID_REWRITES = {
   venn: [{ v1: 'm-venn-\\d+', v2: 'venn-2-0-0-\\d+', why: 'm-venn clip paths (1.x: m-venn-<n>-in<i>, -out<i>)' }],
   kakijun: [{ v1: 'm-kakijun-clip-\\d+h?', v2: 'kakijun-2-0-0-clip-\\d+h?', why: 'm-kakijun stroke clip paths (and their start-cap masks, <n>h)' }],
 };
+// The second allowed deviation, for parts that declare build fields (above). Proposed in alpha.3(a); needs standards' approval.
+export const DATA_REWRITE = { why: 'the data script of a part with build fields carries the producer\'s additions (spec §6.2): compared as data without them' };
+// The third, for the same parts: KaTeX's DOM builder (katex.render, 1.x at play time) writes class="" on a span without
+// classes, where its markup builder (renderToString, the producer's output) writes no class attribute. Inside the formula
+// frames (<foreignObject class="smath">) an empty class on a span is therefore removed before comparing, on both sides.
+// Proposed in alpha.3(a); needs standards' approval.
+export const KATEX_EMPTY_CLASS = { why: 'katex.render writes class="" on spans without classes, renderToString writes none' };
+// The fourth, for the same parts: katex.render sets the style of an <svg> it draws (stretchy arrows, \oiint) as text with
+// setAttribute ("width:0.957em"), while the reader sets each declaration with setProperty (spec §6.2), which the browser
+// writes "width: 0.957em;". Inside the formula frames, an <svg>'s style attribute is compared as its declarations.
+// Proposed in alpha.3(a); needs standards' approval.
+export const KATEX_SVG_STYLE = { why: 'katex.render writes an svg style as text, the reader one declaration at a time' };
+const svgStyleOut = (f) => f.replace(/(<svg\b[^>]*?\sstyle=")([^"]*)(")/g, (all, a, v, c) => a + v.split(';').map((d) => d.trim()).filter(Boolean).map((d) => d.replace(/\s*:\s*/, ': ')).join('; ') + ';' + c);
+const SMATH = /<foreignObject\b[^>]*\bclass="smath"[^>]*>[\s\S]*?<\/foreignObject>/g;
+const emptyClassOut = (h) => { let n = 0; const out = h.replace(SMATH, (f) => svgStyleOut(f.replace(/<span class=""/g, () => { n++; return '<span'; }))); return { html: out, n }; };
+const JSON_SCRIPTS = /(<script type="application\/json"[^>]*>)([\s\S]*?)(<\/script>)/g;
+// The data without what the producer adds: <key>Html beside every declared field, and the top-level renderers record
+function unproduced(data, fields) {
+  const d = JSON.parse(JSON.stringify(data));
+  if (d && typeof d === 'object' && !Array.isArray(d)) delete d.renderers;
+  for (const f of fields) for (const { holder, key } of at(d, f)) delete holder[key + 'Html'];
+  return d;
+}
 const args = process.argv.slice(2);
 const oi = args.indexOf('--only');
 const only = oi >= 0 ? new Set(args.splice(oi, 2)[1].split(',').map((n) => n.replace(/^m-/, ''))) : null;
@@ -51,13 +87,13 @@ const names = migratedNames(ROOT).filter((n) => !only || only.has(n));
 ok(names.length > 0, `migrated element parts: ${names.join(', ') || 'none'} (baseline ${BASELINE}, Studio ${pinLabel()})`);
 
 // A deck whose folder has components/<name>/index.js (Studio reads a component from the deck's folder before its vendor copy)
-function build(name, deck, which, src, code) {
+function build(name, deck, which, src, code, opts) {
   const dir = path.join(work, name, deck, which);
   fs.mkdirSync(path.join(dir, 'components', name), { recursive: true });
   fs.writeFileSync(path.join(dir, 'deck.html'), src);
   fs.writeFileSync(path.join(dir, 'components', name, 'index.js'), code);
   const out = path.join(dir, 'deck.out.html');
-  S.build(path.join(dir, 'deck.html'), out);
+  S.build(path.join(dir, 'deck.html'), out, opts);
   return out;
 }
 
@@ -74,6 +110,7 @@ function rewriter(rules, side) {
   };
 }
 
+const KP = katexParts();
 const browser = await S.browser.launch();
 try {
   for (const name of names) {
@@ -82,13 +119,18 @@ try {
     const r1 = rewriter(rules, 'v1'), r2 = rewriter(rules, 'v2');
     const decks = [['demo', git(`${BASELINE}:components/${name}/demo.html`)]];
     const fx = path.join(ROOT, 'tools', 'fixtures', 'c2-identity', `${name}.html`);
-    if (fs.existsSync(fx)) decks.push([path.relative(ROOT, fx), fs.readFileSync(fx, 'utf8')]);
+    if (fs.existsSync(fx)) {
+      const src = fs.readFileSync(fx, 'utf8'), rd = src.match(/<!--\s*c2-identity-replaces-demo:\s*([\s\S]*?)-->/);
+      if (rd) { decks.shift(); console.log(`     m-${name}: ${path.relative(ROOT, fx)} replaces the ${BASELINE} demo: ${rd[1].trim().replace(/\s+/g, ' ')}`); }
+      decks.push([path.relative(ROOT, fx), src]);
+    }
+    const kp = KP[`m-${name}`];
     let status = null, reports = null;
     for (const [deck, src] of decks) {
       const label = deck === 'demo' ? `${BASELINE} demo` : deck;
       let v1, v2;
       try {
-        v1 = build(name, deck === 'demo' ? 'demo' : 'fixture', 'v1', src, git(`${BASELINE}:components/${name}/index.js`));
+        v1 = build(name, deck === 'demo' ? 'demo' : 'fixture', 'v1', src, git(`${BASELINE}:components/${name}/index.js`), { produce: false });
         v2 = build(name, deck === 'demo' ? 'demo' : 'fixture', 'v2', src, c2Bundle(ROOT, name));
       } catch (e) { ok(false, `m-${name} (${label}): build: ${String(e.stderr || e.message).slice(0, 400)}`); continue; }
       const errors = { v1: [], v2: [] };
@@ -102,9 +144,26 @@ try {
         if (mode !== 'talk') await p.evaluate((md) => { DECK.mode = md; document.documentElement.setAttribute('data-mode', md); }, mode);
         return p;
       };
-      let tourMarks = 0, frames = 0, comps = 0, rewritten = 0;
+      let tourMarks = 0, frames = 0, comps = 0, rewritten = 0, dataCompared = 0, emptyClasses = 0;
       const bad = [];
+      // DATA_REWRITE: the data scripts compared as data (2.0 without the producer's additions = 1.x), then left out of the bytes
+      const dataOut = (where, x, y) => {
+        const dx = [...x.matchAll(JSON_SCRIPTS)].map((m) => m[2]), dy = [...y.matchAll(JSON_SCRIPTS)].map((m) => m[2]);
+        let ok2 = dx.length === dy.length;
+        for (let j = 0; ok2 && j < dx.length; j++) {
+          try { ok2 = JSON.stringify(JSON.parse(dx[j])) === JSON.stringify(unproduced(JSON.parse(dy[j]), kp.fields)); } catch { ok2 = dx[j] === dy[j]; }
+        }
+        if (!ok2) bad.push(`${where}: the 2.0 data without the producer's additions differs from the 1.x data`);
+        dataCompared += dx.length;
+        const blank = (h) => h.replace(JSON_SCRIPTS, '$1«data»$3');
+        return [blank(x), blank(y)];
+      };
       const compare = (where, x, y) => {
+        if (kp) {
+          [x, y] = dataOut(where, x, y);
+          const ex = emptyClassOut(x), ey = emptyClassOut(y);
+          x = ex.html; y = ey.html; emptyClasses += ex.n + ey.n;
+        }
         const a = r1(x), b = r2(y);
         rewritten += b.n;
         frames++;
@@ -141,14 +200,15 @@ try {
           const x = await tour(a), y = await tour(b);
           plan.forEach((s, j) => { compare(`after the tour, slide ${s.i} step ${s.max}`, x[j], y[j]); comps += s.comps; });
           tourMarks += await b.evaluate(() => document.querySelectorAll('.mm-visited').length);
-          if (deck === 'demo') {
+          if (kp && await b.evaluate(() => typeof window.katex !== 'undefined')) bad.push('the 2.0 page has KaTeX (players never render, spec §6.2)');
+          if (deck === 'demo' || status === null) {
             status = await b.evaluate((key) => EGATARI_PARTS_SHIM.status(key), key);
             reports = await b.evaluate(() => EGATARI_PARTS_SHIM.reports().map((r) => r.code + ': ' + r.msg));
           }
         }
         await a.close(); await b.close();
       }
-      ok(bad.length === 0, `m-${name} (${label}): DOM byte-identical to ${BASELINE} at every frame: ${frames} frames (${comps} component DOMs; ${MODES.join(', ')} × steps × 35 %, 70 %, end; and after a tour of every slide${tourMarks ? `, ${tourMarks} visited marks` : ''}${rewritten ? `; ${rewritten} ids rewritten as allowed` : ''})`
+      ok(bad.length === 0, `m-${name} (${label}): DOM byte-identical to ${BASELINE} at every frame: ${frames} frames (${comps} component DOMs; ${MODES.join(', ')} × steps × 35 %, 70 %, end; and after a tour of every slide${tourMarks ? `, ${tourMarks} visited marks` : ''}${rewritten ? `; ${rewritten} ids rewritten as allowed` : ''}${dataCompared ? `; ${dataCompared} data scripts equal as data (DATA_REWRITE)` : ''}${emptyClasses ? `; ${emptyClasses} empty KaTeX classes left out (KATEX_EMPTY_CLASS)` : ''})`
         + (bad.length ? `\n     ${bad.length} differ; first: ${bad[0]}` : ''));
       ok(errors.v1.length === 0 && errors.v2.length === 0, `m-${name} (${label}): no console error (1.x ${errors.v1.length}, 2.0 ${errors.v2.length})` + (errors.v2.length ? ': ' + errors.v2[0] : errors.v1.length ? ': ' + errors.v1[0] : ''));
     }

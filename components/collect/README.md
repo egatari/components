@@ -1,6 +1,6 @@
 ---
 name: m-collect
-version: 1.13.0
+version: 2.0.0
 series: academic
 summary: 並んだ札（回答など）が動いて縮み、少数の箱（要約）にまとまる
 steps: 1
