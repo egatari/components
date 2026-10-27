@@ -1,6 +1,9 @@
 {
   "repository": "https://github.com/egatari/egatari-spec",
   "ref": "main",
-  "commit": "56ae5dadabe5228550ff5894ca8833b3cf5c4a1b",
-  "note": "The egatari-spec commit whose normative files the parts follow: schema/rendered-markup-1.json (§6.2) is generated into components/markup-reader by tools/markup-sync.mjs and checked by tools/test-markup-reader.mjs. commit is a full sha and is what is fetched (into .spec/) and checked."
+  "commit": "ce96072d1689d545577ab6cee171fa3412a16504",
+  "files": {
+    "schema/rendered-markup-1.json": "d94d0e9c1321157f9256a293908d539da2f207ba99715b380a963492e73c7922"
+  },
+  "note": "The one pin of egatari-spec: the commit whose normative files the parts and tests follow, and the SHA-256 of each file read (tools/spec.mjs checks both). schema/rendered-markup-1.json (§6.2) is generated into components/markup-reader by tools/markup-sync.mjs (m-score reads that same list) and checked by tools/test-markup-reader.mjs and tools/test-score.mjs. commit is a full sha and is what is fetched (into .spec/) and checked."
 }

@@ -63,9 +63,12 @@ const CASES = [
     '<svg width="400em" height="1.08em" viewBox="0 0 400000 1080" preserveAspectRatio="xMinYMin slice"><path d="M0 0h1z"></path></svg>', []],
   ['<svg xmlns="http://www.w3.org/1999/xhtml"><path d="M0"/></svg>', 'html', '', ['declared in namespace']],
   ['<svg><g fill="currentColor"><path fill="url(#x)" d="M0"/><path fill="currentColor" stroke="none" d="M1"/><rect fill="red" width="1"/></g><foreignObject><span>x</span></foreignObject><use href="#a"/><image href="x.png"/></svg>', 'html',
-    '<svg><g><path d="M0"></path><path fill="currentColor" stroke="none" d="M1"></path><rect width="1"></rect></g></svg>', ['attribute fill="currentColor" on <g>', 'attribute fill="url(#x)"', 'attribute fill="red"', 'element <foreignObject>', 'element <use>', 'element <image>']],
+    '<svg><g fill="currentColor"><path d="M0"></path><path fill="currentColor" stroke="none" d="M1"></path><rect width="1"></rect></g></svg>', ['attribute fill="url(#x)"', 'attribute fill="red"', 'element <foreignObject>', 'element <use>', 'element <image>']],
   ['<svg><text x="1" y="2" fill="currentColor">a<tspan baseline-shift="sub">b</tspan></text><title>t</title></svg>', 'html',
     '<svg><text x="1" y="2" fill="currentColor">a<tspan baseline-shift="sub">b</tspan></text><title>t</title></svg>', []],
+  // egatari-spec ce96072: paint on svg and g (inherited by what they group), stroke on text and tspan
+  ['<svg fill="none" stroke="currentColor" stroke-width="2"><g stroke="none" stroke-width="0.5"><text x="1" y="2" stroke="none">a<tspan stroke="currentColor" fill="red">b</tspan></text></g></svg>', 'html',
+    '<svg fill="none" stroke="currentColor" stroke-width="2"><g stroke="none" stroke-width="0.5"><text x="1" y="2" stroke="none">a<tspan stroke="currentColor">b</tspan></text></g></svg>', ['attribute fill="red" on <tspan>']],
   ['<math xmlns="http://www.w3.org/1998/Math/MathML" display="block"><semantics><mrow><mi mathvariant="normal">x</mi><mo stretchy="false">(</mo></mrow><annotation encoding="application/x-tex">x(</annotation></semantics></math>', 'html',
     '<math display="block"><semantics><mrow><mi mathvariant="normal">x</mi><mo stretchy="false">(</mo></mrow><annotation encoding="application/x-tex">x(</annotation></semantics></math>', []],
   ['<math><mstyle mathcolor="red"><mi href="x">a</mi></mstyle><maction actiontype="toggle"><mi>b</mi></maction></math>', 'html', '<math><mstyle><mi>a</mi></mstyle></math>', ['attribute mathcolor', 'attribute href', 'element <maction>']],

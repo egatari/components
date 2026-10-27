@@ -1,6 +1,6 @@
 // m-score's score data (its `static sc`), without a browser, on the abcjs fixtures (components/score/fixtures/*.json):
 //   0. the part's reader list (static sc.MARKUP) is the svg part of the spec's rendered-markup list (egatari-spec
-//      schema/rendered-markup-1.json at the commit pinned in tools/spec-schema.mjs): elements, attributes, values, style
+//      schema/rendered-markup-1.json at the commit pinned in tools/spec.json): elements, attributes, values, style
 //   1. the frozen SVG is read into a tree of admitted elements, attributes and values only (no script, foreign content,
 //      event handlers, links, colours other than currentColor / none, style other than the listed declarations), entities
 //      decoded, everything dropped listed once per kind (elements, attributes, style declarations)
@@ -24,7 +24,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { ROOT } from './studio.mjs';
 import { partClass } from './parts.mjs';
-import { specJson, SPEC } from './spec-schema.mjs';
+import { specJson, SPEC_PIN } from './spec.mjs';
 
 // the part's class read without a browser (tools/parts.mjs partClass: a stub registry; the score data needs no DOM)
 const SC = partClass(fs.readFileSync(path.join(ROOT, 'components', 'score', 'index.js'), 'utf8'), 'score/index.js').sc;
@@ -48,7 +48,7 @@ const walk = (node, f) => { f(node); node.kids.forEach((k) => walk(k, f)); };
 
 // ---- 0. the reader list is the spec's ----
 const RM = specJson('schema/rendered-markup-1.json');
-eq(SC.MARKUP.elements, RM.elements.svg, `elements and their attributes = schema/rendered-markup-1.json elements.svg (egatari-spec ${SPEC.commit.slice(0, 7)})`);
+eq(SC.MARKUP.elements, RM.elements.svg, `elements and their attributes = schema/rendered-markup-1.json elements.svg (egatari-spec ${SPEC_PIN.commit.slice(0, 7)})`);
 eq(SC.MARKUP.global, RM.global.svg, 'global attributes = global.svg');
 eq(SC.MARKUP.values, RM.values, 'values (id, data-*, fill, stroke, length) = values');
 const noComment = (o) => JSON.parse(JSON.stringify(o, (k, v) => (k === '$comment' ? undefined : v)));

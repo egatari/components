@@ -1,8 +1,11 @@
-// The pinned egatari-spec (tools/spec.json): its normative files, read at test time.
-//   import { specFile } from './spec.mjs'; specFile('schema/rendered-markup-1.json')   → the file's text at the pinned commit
+// The pinned egatari-spec (tools/spec.json, the only pin of the spec): its normative files, read at test time and by the
+// generators (tools/markup-sync.mjs).
+//   import { specFile, specJson } from './spec.mjs'; specFile('schema/rendered-markup-1.json')   → the file's text at the pinned
+//   commit (checked against the SHA-256 in tools/spec.json "files" when one is given); specJson parses it
 // .spec/ is a shallow fetch of exactly that commit (checked after checkout), like .studio/ (tools/studio.mjs).
 // Environment: EGATARI_SPEC=<path> reads an existing checkout instead (its HEAD must be the pinned commit).
 import fs from 'node:fs';
+import crypto from 'node:crypto';
 import path from 'node:path';
 import { execFileSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
@@ -36,4 +39,11 @@ export function specDir() {
   }
   return (dir = d);
 }
-export const specFile = (rel) => fs.readFileSync(path.join(specDir(), rel), 'utf8');
+const sha = (b) => crypto.createHash('sha256').update(b).digest('hex');
+// A file of the pinned commit; a file with a hash in tools/spec.json "files" must have that hash
+export function specFile(rel) {
+  const b = fs.readFileSync(path.join(specDir(), rel)), want = (SPEC_PIN.files || {})[rel];
+  if (want && sha(b) !== want) throw new Error(`spec: ${rel} at egatari-spec ${SPEC_PIN.commit.slice(0, 7)} has sha256 ${sha(b)}, tools/spec.json pins ${want}`);
+  return b.toString('utf8');
+}
+export const specJson = (rel) => JSON.parse(specFile(rel));
