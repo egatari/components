@@ -2,6 +2,8 @@
 name: m-seq
 version: 2.0.0
 series: academic
+tier: specialized
+set: stats
 summary: 観測を 1 つずつ加え、分布と数値が更新されていく様子を見せる（前の分布は薄く残す）
 steps: ceil((steps の数 − 1) / per-step)
 purposes: spread

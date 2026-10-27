@@ -2,6 +2,8 @@
 name: m-market
 version: 2.0.0
 series: business
+tier: specialized
+set: business
 summary: 市場規模の入れ子の円（TAM / SAM / SOM）。外の円から 1 つずつ、前の円の大きさから縮んで現れる
 steps: rings の数
 purposes: part-whole

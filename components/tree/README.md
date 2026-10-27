@@ -2,6 +2,7 @@
 name: m-tree
 version: 2.0.0
 series: common
+tier: standard
 summary: 階層・分類の木（組織図、生物の分類など）を、根から 1 段ずつ組み立てる。座標は書かず、配置は部品が決める
 steps: 節の深さの数（by="level"、既定）か節の数（by="node"）。節と edges の step があればその最大
 purposes: hierarchy

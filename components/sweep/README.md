@@ -2,6 +2,8 @@
 name: m-sweep
 version: 2.0.0
 series: academic
+tier: specialized
+set: math
 summary: パラメータを動かして関数の形の変化を見せる（前の形は灰色で残す）
 steps: values の数 − 1
 purposes: parameter

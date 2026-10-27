@@ -1,6 +1,6 @@
 // m-kakijun, built with the pinned Egatari Studio:
-//   1. the data in components/kakijun/index.js equals the data files: kakijun-data (MIT) = data/kana/kana.json (count, ends,
-//      place) with each stroke's inked length; between /* BEGIN OFL-1.1 data … */ and /* END OFL-1.1 data */ only the JSON of
+//   1. the data in components/kakijun/index.js equals the data files: the stroke-meta block (MIT) = data/kana/kana.json (count, ends,
+//      place) with each stroke's inked length; in the strokes block (/*@egatari-block strokes*/ … /*@egatari-block-end*/, after the OFL notice) the values of
 //      data/kana/strokes.ofl.json, verbatim, its "_license" first; the licence files are in the part's folder; manifest.json
 //      gives the part the licence MIT AND OFL-1.1 (tools/kana-embed.mjs --check)
 //   2. the final state of every one of the 166 characters covers 100 % of its outlines, and nothing outside them
@@ -37,13 +37,15 @@ const diff = CHARS.filter((ch) => {
   const want = { count: c.count, strokes: c.strokes.map((s, i) => ({ end: s.end, len: inkLength(ofl.chars[ch][i]) })), ...(c.place ? { place: c.place } : {}) };
   return !e || !same(e, want) || ofl.chars[ch].length !== c.count;
 });
-ok(!diff.length && Object.keys(emb.kana).length === CHARS.length, `kakijun-data equals kana.json for all ${CHARS.length} characters, stroke counts equal the shapes'` + (diff.length ? ' (differs: ' + diff.join('') + ')' : ''));
+ok(!diff.length && Object.keys(emb.kana).length === CHARS.length, `stroke-meta equals kana.json for all ${CHARS.length} characters, stroke counts equal the shapes'` + (diff.length ? ' (differs: ' + diff.join('') + ')' : ''));
 const deep = (o) => JSON.stringify(o, Object.keys(o).sort());
-ok(same(Object.keys(emb.strokes), Object.keys(ofl)) && Object.keys(ofl).every((k) => same(emb.strokes[k], ofl[k])), 'the OFL-1.1 data equals data/kana/strokes.ofl.json (same keys, same values)');
+ok(same(Object.keys(emb.strokes), Object.keys(ofl)) && Object.keys(ofl).every((k) => same(emb.strokes[k], ofl[k])), 'the strokes block gives data/kana/strokes.ofl.json (same keys, same values; its fields other than _license and chars as _<name>)');
 const js = fs.readFileSync(path.join(ROOT, 'components', 'kakijun', 'index.js'), 'utf8');
 const count = (t) => js.split(t).length - 1;
-ok(count(OFL_MARKERS.begin) === 1 && count(OFL_MARKERS.end) === 1 && emb.inner !== null && /^\s*\{"_license": \{/.test(emb.inner) && /\}\s*$/.test(emb.inner) && same(emb.strokes._license, ofl._license),
-  'index.js has /* BEGIN OFL-1.1 data … */ and /* END OFL-1.1 data */ once each; everything between them is the shapes JSON, "_license" first and verbatim');
+const iN = js.indexOf(OFL_MARKERS.notice), iB = js.indexOf(OFL_MARKERS.begin);
+ok(count(OFL_MARKERS.begin) === 1 && count(OFL_MARKERS.notice) === 1 && iN >= 0 && iN < iB && !/\S/.test(js.slice(js.indexOf('*/', iN) + 2, iB)) && emb.inner !== null
+  && /^\{"_license": \{/.test(emb.inner) && /\}$/.test(emb.inner) && same(emb.strokes._license, ofl._license) && count('/*@egatari-block stroke-meta*/') === 1,
+  'index.js has the blocks strokes and stroke-meta once each (/*@egatari-block <name>*/ … /*@egatari-block-end*/); the OFL notice comment stands directly before the strokes marker; everything between is JSON, "_license" first and verbatim');
 ok(release(JSON.parse(fs.readFileSync(path.join(ROOT, 'package.json'), 'utf8')).version).manifest.components.kakijun.license === 'MIT AND OFL-1.1', 'manifest.json: components.kakijun.license is "MIT AND OFL-1.1"');
 ok(LICENSE_FILES.every((f) => fs.existsSync(path.join(ROOT, 'components', 'kakijun', f))) && !fs.readdirSync(path.join(ROOT, 'components', 'kakijun')).some((f) => /klee/i.test(f)), `the part's folder has ${LICENSE_FILES.join(', ')}, and no file name with "Klee"`);
 const ke = spawnSync(process.execPath, [path.join(ROOT, 'tools', 'kana-embed.mjs'), '--check'], { encoding: 'utf8' });

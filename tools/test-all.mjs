@@ -1,4 +1,5 @@
-// Every test, in order (npm test). No network except the first fetch of the pinned Egatari Studio (tools/studio.mjs).
+// Every test, in order (npm test). No network except the first fetch of the pinned Egatari Studio (tools/studio.mjs) and of
+// the pinned spec files the tests compare with (tools/spec-schema.mjs: egatari-spec's schema/rendered-markup-1.json).
 //   1. lint             layout and README frontmatter of each component (tools/lint.mjs)
 //   2. catalog          CATALOG.md is up to date (tools/catalog.mjs --check); gallery.html likewise (tools/gallery.mjs --check)
 //   3. scan-code        no eval-like code path in component code (tools/scan-code.mjs; Egatari spec §6)
@@ -12,6 +13,8 @@
 //       tools/test-numberline.mjs: m-numberline tick positions and labels, fractions, two lines aligned at 0, range levels and shared part)
 //       tools/test-hissan.mjs: m-hissan's written calculations reproduce plain arithmetic; places in columns, quotient over the right digits;
 //       tools/test-keyboard.mjs: m-keyboard's black-key positions and widths, key names, sound events per step, range errors;
+//       tools/test-score.mjs: m-score's frozen abcjs SVG read with allowed elements only, abcMap parsing, steps by note and by measure,
+//         sound events (pitch, dur from beats and tempo, chords at one t, ties), elements per note, note names and their placement;
 //       tools/test-kakijun.mjs: m-kakijun's embedded stroke data equals data/kana/kana.json and its font block is the Egatari Kana subset;
 //       every one of the 166 characters shows ≥ 99 % of its glyph in the final state; small kana inside their quarter in both writings)
 //   7. studio           fetch Egatari Studio at the pinned commit and overlay these components (tools/studio.mjs)
@@ -36,11 +39,14 @@
 //                     reports a fixture lists as expected (tools/test-c2-noreports.mjs)
 //      studio-check     Studio's own checker (kit/check.mjs) on each demo.html: no error; warnings other than R-narr-steps listed (tools/test-studio-check.mjs)
 //   8. components       each demo.html: builds, no console errors, screenshots per step, determinism, text ≥ 24px, overlap, outside the slide (tools/test-components.mjs)
+//      subset         the producer's subset step (spec §6.2) on m-kakijun: あさ keeps only those strokes, the licence notice survives,
+//                     the recorded {keys, sha256} is reproduced from the trusted full copy, same DOM as the full part (tools/test-subset.mjs)
 //   9. kanbun-num      m-kanbun's two-digit reading-order numbers stay inside their box and off the character boxes; one-digit numbers unchanged (tools/test-kanbun-num.mjs)
 //      kanbun-fit     m-kanbun fits its columns to the element's height and width (size down to 42, kana ≥ 24 px, no overlap) and warns when it cannot (tools/test-kanbun-fit.mjs)
 //  10. kobun-reset     m-kobun's open conjugation card closes on ctx.reset (tools/test-kobun-reset.mjs)
 //      predict        m-predict's viewer input: ±1, typed counts, input(), reset on step entry, video, print, live, keys (tools/test-predict.mjs)
 //      keyboard-preview m-keyboard's lecture preview: later keys faint at the theme's --preview-opacity, no dot (tools/test-keyboard-preview.mjs)
+//      score-noclass  m-score reads no abcjs class: the demo with every abcjs-* class stripped has the same steps, events, names and DOM (tools/test-score-noclass.mjs)
 //      timer          m-timer: duration = sec, the clock, ja/en strings and labels, ctx.extend buttons (fake), video, print (tools/test-timer.mjs)
 //  11. codetree-dom    m-codetree's DOM and pixels do not depend on the order of render calls (tools/test-codetree-dom.mjs)
 //      dom-order      every part's DOM at (k, end) is byte-identical straight and after seeking k+1, 0, k, in the talk and lecture views (tools/test-dom-order.mjs)
@@ -90,6 +96,7 @@ const TESTS = [
   ['test-numberline', ['tools/test-numberline.mjs']],
   ['test-hissan', ['tools/test-hissan.mjs']],
   ['test-keyboard', ['tools/test-keyboard.mjs']],
+  ['test-score', ['tools/test-score.mjs']],
   ['test-codetree', ['tools/test-codetree.mjs']],
   ['test-kokugo', ['tools/test-kokugo.mjs']],
   ['studio', ['tools/studio.mjs']],
@@ -104,11 +111,13 @@ const TESTS = [
   ['test-studio-check', ['tools/test-studio-check.mjs']],
   ['test-components', ['tools/test-components.mjs', '--shots', path.join(tmp, 'shots')]],
   ['test-kakijun', ['tools/test-kakijun.mjs', path.join(tmp, 'kakijun')]],
+  ['test-subset', ['tools/test-subset.mjs', path.join(tmp, 'subset')]],
   ['test-kanbun-num', ['tools/test-kanbun-num.mjs', path.join(tmp, 'kanbun-num')]],
   ['test-kanbun-fit', ['tools/test-kanbun-fit.mjs', path.join(tmp, 'kanbun-fit')]],
   ['test-kobun-reset', ['tools/test-kobun-reset.mjs', path.join(tmp, 'kobun-reset')]],
   ['test-predict', ['tools/test-predict.mjs', path.join(tmp, 'predict')]],
   ['test-timer', ['tools/test-timer.mjs', path.join(tmp, 'timer')]],
+  ['test-score-noclass', ['tools/test-score-noclass.mjs', path.join(tmp, 'score-noclass')]],
   ['test-keyboard-preview', ['tools/test-keyboard-preview.mjs', path.join(tmp, 'keyboard-preview')]],
   ['test-codetree-dom', ['tools/test-codetree-dom.mjs', path.join(tmp, 'codetree-dom')]],
   ['test-dom-order', ['tools/test-dom-order.mjs', path.join(tmp, 'dom-order')]],

@@ -2,6 +2,8 @@
 name: m-numberline
 version: 2.0.0
 series: academic
+tier: specialized
+set: math
 summary: 数直線。点・□・ジャンプ・不等式の範囲・0.1 の拡大。2 本で比例数直線
 steps: build の順（既定 ticks,marks,links,jumps,ranges,magnify）に項目 1 つ = 1 段階。whole：全部で 1 段階
 purposes: compare

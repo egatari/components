@@ -549,7 +549,8 @@ return class extends base.MotionElement {
   mount(ctx){
     var self = this, P = this.props, D = base, pl = this.plan(), M = pl.M, C = CALC;
     this.variant = base.variant(this);
-    pl.notes.forEach(function(n){ ctx.report(n[0], "[hissan] " + n[1]); });
+    // ctx.report with each code as a literal (lint checks them): plan's notes are attr, range or size
+    pl.notes.forEach(function(n){ var code = n[0], msg = "[hissan] " + n[1]; if (code === "attr") ctx.report("attr", msg); else if (code === "range") ctx.report("range", msg); else ctx.report("size", msg); });
     this.style.display = "block";
     var W = this.clientWidth, H = this.clientHeight, whole = pl.build === "whole", words = !whole && ON(P.words), FS = C.FS, SS = C.SS, CAPS = C.CAP;
     var Lo = C.layout(M, W, H, !words), CW = Lo.cw, G = Lo.G, X = Lo.X, Yb = Lo.Yb, Yt = Lo.Yt, Ybot = Lo.Ybot, capX = Lo.capX, labW = Lo.labW, divItem = Lo.divItem, opCol = Lo.opCol;

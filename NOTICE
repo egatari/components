@@ -10,7 +10,7 @@ from kit/deck.js; shape from kit/shape.js.
 
 This repository also contains third-party material under other licences:
 
-components/kakijun/index.js, the JSON between /* BEGIN OFL-1.1 data … */ and /* END OFL-1.1 data */ (and its source,
+components/kakijun/index.js, the JSON between /*@egatari-block strokes*/ and /*@egatari-block-end*/ (after the OFL notice comment) (and its source,
 data/kana/strokes.ofl.json) — kana stroke shapes
   Derived from strokesvg (https://github.com/zhengkyl/strokesvg), whose kana SVGs are derived from the Klee One font.
   Copyright 2020 The Klee Project Authors (https://github.com/fontworks-fonts/Klee)
@@ -21,3 +21,8 @@ data/kana/strokes.ofl.json) — kana stroke shapes
   placement data (data/kana/kana.json), are original work under the MIT License.
 
 components/map-japan/index.js, components/map-world/index.js — map data derived from Natural Earth (public domain).
+
+components/score/fixtures/*.json and components/score/demo.html — the abcSvg strings:
+  notation drawn with abcjs 6.7.2 (MIT, © Paul Rosen and Gregory Dyke); glyph outlines are part of abcjs
+  (https://github.com/paulrosen/abcjs; licence text: components/score/fixtures/LICENSE-abcjs.txt).
+  The tunes are exercises written for this repository and かえるの合唱 (German folk song, public domain).

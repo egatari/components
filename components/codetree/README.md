@@ -2,11 +2,15 @@
 name: m-codetree
 version: 2.0.0
 series: info
+tier: extra
+display: 文脈木 / Context tree
 summary: 符号の木で 2 値の系列を 1 語ずつ復号する（MH 符号）。ランは画素の升目に伸びる
 steps: 符号語の数 ＋ まとめの 1
 purposes: hierarchy, process
 props: bits, depth, bit
 ---
+
+**文脈木**（Context tree）。タグとフォルダの名前は `m-codetree`・`components/codetree` のまま。
 
 table は `[{"run", "white", "black"}]` か `{"white": {"符号": ラン}, …}`。木は表から作る。run ≥ 64 はメイクアップ符号（次も同じ色）。
 

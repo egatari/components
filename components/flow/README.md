@@ -2,6 +2,7 @@
 name: m-flow
 version: 2.0.0
 series: common
+tier: standard
 summary: 流れ図の箱と矢印を段階ごとに出して、図を組み立てる
 steps: nodes と edges の step の最大
 purposes: process

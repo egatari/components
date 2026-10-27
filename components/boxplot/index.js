@@ -126,8 +126,9 @@ return class extends base.MotionElement {
     var P = this.props, D = base, self = this, pl = this.plan(), S = STATS;
     this.variant = base.variant(this);
     // 書き方とデータの知らせ（plan が集めた [code, message]）
-    pl.notes.forEach(function(n){ ctx.report(n[0], n[1]); });
-    var report = function(code, msg){ ctx.report(code, msg); };
+    // ctx.report with each code as a literal (lint checks them): plan's notes (attr, data) and the label placer's (layout)
+    var report = function(code, msg){ if (code === "attr") ctx.report("attr", msg); else if (code === "layout") ctx.report("layout", msg); else ctx.report("data", msg); };
+    pl.notes.forEach(function(n){ report(n[0], n[1]); });
     this.classList.add("plot"); this.style.display = "block";
     var ja = this.ja = /^ja\b/i.test(ctx.lang), hor = P.orient !== "v";
     if (P.orient !== "h" && P.orient !== "v") ctx.report("attr", '[boxplot] orient="' + P.orient + '" is not h or v (h is used)');

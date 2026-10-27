@@ -2,6 +2,7 @@
 name: m-venn
 version: 2.0.0
 series: common
+tier: standard
 summary: 2 つか 3 つの集合の円（ベン図）。集合を 1 つずつ出し、最後に重なりを強めてその中の項目を出す
 steps: 集合の数 + 1（overlaps="each" なら 集合の数 + 項目のある重なりの数）
 purposes: overlap

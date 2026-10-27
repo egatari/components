@@ -122,7 +122,8 @@ return class extends base.MotionElement {
     var P = this.props, D = base, C = CALC, self = this, pl = this.plan();
     this.variant = base.variant(this);
     // 書き方とデータの知らせ（plan が集めた [code, message]）
-    pl.notes.forEach(function(n){ ctx.report(n[0], n[1]); });
+    // ctx.report with each code as a literal (lint checks them): plan's notes are attr or data
+    pl.notes.forEach(function(n){ var code = n[0], msg = n[1]; if (code === "attr") ctx.report("attr", msg); else ctx.report("data", msg); });
     this.classList.add("plot"); this.style.display = "block";
     var ja = this.ja = /^ja\b/i.test(ctx.lang), W = this.clientWidth, H = this.clientHeight, nr = pl.rows.length, nc = pl.cols.length;
     // ---- 色：テーマの色を読み、セルごとに混ぜる割合と字の色を決める ----

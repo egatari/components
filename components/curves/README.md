@@ -2,6 +2,7 @@
 name: m-curves
 version: 2.0.0
 series: common
+tier: standard
 summary: 同じ座標軸に線を 1 本ずつ引く（線の名前は凡例でなく線の端に直接書く）
 steps: step の最大（既定は系列の数）
 purposes: change
