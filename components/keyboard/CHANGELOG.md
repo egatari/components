@@ -9,7 +9,7 @@ The part's own versions (Egatari spec §6.1). Releases of the whole library are 
   The DOM is byte-identical to 1.13.0 on its demo and on `tools/fixtures/c2-identity/keyboard.html` (an English lesson:
   default `abc` names; `iroha`, `rise`, `cumulative`) at every step (tools/test-c2-identity.mjs).
 - Steps never depend on the context (spec §8.4): the default key names (`solfa` for a Japanese lesson, else `abc`) are
-  chosen in `mount` from `ctx.lang.startsWith("ja")` (1.13.0: in `plan()`, from `DECK.ja`). `plan()` no longer carries
+  chosen in `mount` from `/^ja\b/i.test(ctx.lang)` (1.13.0: in `plan()`, from `DECK.ja`). `plan()` no longer carries
   `names`; the step count, durations and sound events never depended on them.
 - Variants: `base.variant(this)` instead of the embedded `egatari-variant` block.
 - Reports: a step `tone` that is not a theme colour is `ctx.report("data", "[keyboard] …")`; an element too small for the

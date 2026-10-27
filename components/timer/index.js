@@ -66,7 +66,7 @@ return class extends base.MotionElement {
     return (this._L = o);
   }
   mount(ctx){
-    this.ja = String(ctx.lang).startsWith("ja");
+    this.ja = /^ja\b/i.test(ctx.lang);
     var self = this, D = base, d = this.data || {}, L = this.L;
     this.P = d.phases || [];
     if (this.P.some(function(p){ return !(p.sec > 0); })) throw new Error("every phase needs sec > 0 (whole seconds)");

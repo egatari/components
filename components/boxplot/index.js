@@ -129,7 +129,7 @@ return class extends base.MotionElement {
     pl.notes.forEach(function(n){ ctx.report(n[0], n[1]); });
     var report = function(code, msg){ ctx.report(code, msg); };
     this.classList.add("plot"); this.style.display = "block";
-    var ja = this.ja = String(ctx.lang).startsWith("ja"), hor = P.orient !== "v";
+    var ja = this.ja = /^ja\b/i.test(ctx.lang), hor = P.orient !== "v";
     if (P.orient !== "h" && P.orient !== "v") ctx.report("attr", '[boxplot] orient="' + P.orient + '" is not h or v (h is used)');
     var est = function(s, size){ return [...String(s)].reduce(function(a, c){ return a + (/[\u0000-ɏ]/.test(c) ? 0.56 : 1); }, 0) * size; };
     var toneOf = function(c){ return /^(term|emph|muted|accent2|fg|series-[1-4])$/.test(c || "") ? "var(--" + c + ")" : null; };

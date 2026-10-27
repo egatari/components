@@ -14,7 +14,7 @@ The part's own versions (Egatari spec §6.1). Releases of the whole library are 
 - `render(k, t, ctx)` handles `ctx.entered` / `ctx.reset`, keeps the ctx without them and draws with `paint(k, t, ctx)`; a
   redraw after viewer input (±1 min, print) calls `paint` with the last (k, t), so it never goes through the player's or
   base's `render` again (1.13.0 called `render` with the kept ctx).
-- Language: `ctx.lang.startsWith("ja")`, read in `mount` and kept as `this.ja` (1.13.0: `DECK.ja`), for the built-in
+- Language: `/^ja\b/i.test(ctx.lang)`, read in `mount` and kept as `this.ja` (1.13.0: `DECK.ja`), for the built-in
   strings, the phase list and the durations ("1分30秒" / "1 min 30 s"). Video: `ctx.mode === "video"` (1.13.0: `DECK.mode`).
 - Print: `beforeprint` / `afterprint` on `document.defaultView` (1.13.0: `window`).
 - Reports: a title or a phase-list entry that does not fit at 24 px, a text longer than 2 lines, an element too low for the

@@ -11,7 +11,7 @@ The part's own versions (Egatari spec §6.1). Releases of the whole library are 
   (`[{key, title, steps, concl}]`): a numbered step key above the slide's `steps`, and `#<key>:concl` on a slide without
   a conclusion (`concl` false), are refused, as `DECK.resolveFragment` did.
 - "Visited" marks: `ctx.visited(key)`, refreshed on the render where `ctx.entered` is true (1.13.0 listened to DECK's
-  `deck:pos`). Language: `ctx.lang.startsWith("ja")` (1.13.0: `DECK.ja`).
+  `deck:pos`). Language: `/^ja\b/i.test(ctx.lang)` (1.13.0: `DECK.ja`).
 - Ids: its style element is `menu-2-0-0-css` (1.13.0: `m-menu-css`); it is in `<head>`, not in the component's DOM, so no
   id rewrite is needed in the identity test.
 

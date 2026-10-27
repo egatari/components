@@ -204,7 +204,7 @@ return class extends base.MotionElement {
     // 書き方とデータの知らせ（plan が集めた [code, message]）
     pl.notes.forEach(function(n){ ctx.report(n[0], n[1]); });
     this.classList.add("plot"); this.style.display = "block";
-    var ja = this.ja = String(ctx.lang).startsWith("ja");
+    var ja = this.ja = /^ja\b/i.test(ctx.lang);
     var est = function(s, size){ return [...String(s).replace(/[*_^]/g, "")].reduce(function(a, c){ return a + (/[\u0000-ɏ]/.test(c) ? 0.56 : 1); }, 0) * size; };
     var colorOf = function(c, i){ return /^(term|emph|muted|accent2|fg|series-[1-4])$/.test(c || "") ? "var(--" + c + ")" : null; };
     var two = pl.ser.length > 1, dots = pl.kind === "dots", bins = pl.bins;

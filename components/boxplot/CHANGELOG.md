@@ -14,7 +14,7 @@ The part's own versions (Egatari spec §6.1). Releases of the whole library are 
   `ctx.report("attr", "[boxplot] …")`; `outliers="on"` with a group written as `five` as `ctx.report("data", …)`; an element
   too small or too narrow as `ctx.report("size", …)`; no free place for a value's name as `ctx.report("layout", …)`. Data
   that fits the shape but not the rules still throws (base contains it).
-- Language: `ctx.lang.startsWith("ja")`, read in `mount` (1.13.0: `DECK.ja`). Variants through `base.variant` (the copied
+- Language: `/^ja\b/i.test(ctx.lang)`, read in `mount` (1.13.0: `DECK.ja`). Variants through `base.variant` (the copied
   `egatari-variant` block is gone); the preview view is `ctx.preview` alone (1.13.0 also accepted `ctx.mode === "lecture"`).
 - Ids: the axes' clip path is plot's `plot-1-0-0-clip<n>` (1.13.0: DECK.Plot's `clip<n>`); the part writes none of its own.
 

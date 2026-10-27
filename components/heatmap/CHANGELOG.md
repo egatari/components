@@ -15,7 +15,7 @@ The part's own versions (Egatari spec §6.1). Releases of the whole library are 
   `ctx.report("attr", "[heatmap] …")`; a highlight outside the grid, a row summing to 0 as `ctx.report("data", …)`; thinned
   labels, an element too small, numbers turned off (more than 12×12, cells too small) as `ctx.report("size", …)`. The
   English messages are unchanged. Data that fits the shape but not the rules still throws (base contains it).
-- Language: `ctx.lang.startsWith("ja")`, read in `mount` (1.13.0: `DECK.ja`). Variants through `base.variant` (the copied
+- Language: `/^ja\b/i.test(ctx.lang)`, read in `mount` (1.13.0: `DECK.ja`). Variants through `base.variant` (the copied
   `egatari-variant` block is gone); the preview view is `ctx.preview` alone (1.13.0 also accepted `ctx.mode === "lecture"`).
 - Ids (spec §6.1 Identifiers): the legend's gradient is `heatmap-2-0-0-legend-<n>`, numbered by this part's own counter
   (1.13.0: `m-heatmap-legend-<n>`).

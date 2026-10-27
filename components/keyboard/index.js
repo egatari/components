@@ -150,7 +150,7 @@ return class extends base.MotionElement {
     var self = this, D = base, pl = this.plan(), kb = pl.kb, d = this.data || {};
     this.variant = base.variant(this);
     // 鍵盤の名前：書いていなければ日本語の授業はドレミ、ほかは CDE（段階の数は変わらないので plan() ではなくここで選ぶ）
-    var names = d.names === undefined ? (String(ctx.lang).startsWith("ja") ? "solfa" : "abc") : d.names;
+    var names = d.names === undefined ? (/^ja\b/i.test(ctx.lang) ? "solfa" : "abc") : d.names;
     pl.notes.forEach(function(n){ ctx.report("data", n); });
     this.style.display = "block";
     var W = this.clientWidth, H = this.clientHeight;

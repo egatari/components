@@ -98,7 +98,7 @@ return class extends base.MotionElement {
       var css = (a.getAttribute("style") || "").trim().replace(/\s*;$/, ""); if (css) css += ";";
       return {a: a, sr: sr, css: css, frag: inDoc ? href.slice(1) : null, ext: !inDoc, step: per ? Math.floor(j / per) + 1 : 0, at: per ? (j % per) * P.stagger : 0};
     });
-    this.ja = String(ctx.lang).startsWith("ja");
+    this.ja = /^ja\b/i.test(ctx.lang);
     this.visitedOn = P.visited && ctx.mode !== "video";
     if (this.visitedOn) this.markVisited(ctx);
   }

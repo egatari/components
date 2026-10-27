@@ -57,7 +57,7 @@ return class extends base.MotionElement {
     var TONES = /^(term|emph|muted|accent2|series-[1-4])$/, DEF = ["term", "accent2", "series-4"];
     var tone = function(s, i){ return "var(--" + (TONES.test(s.tone || "") ? s.tone : DEF[i] || "term") + ")"; };
     var hasDiff = this.hasDiff(), hasDiffCol = rows.some(function(r){ return r.diff !== undefined && r.diff !== ""; });
-    this.ja = String(ctx.lang).startsWith("ja");
+    this.ja = /^ja\b/i.test(ctx.lang);
     var diffHead = P["diff-label"] || (this.ja ? "違い" : "Difference");
     // 字の幅の見積もり（和文 1 字 = 1 字幅、英数字 0.6、空白 0.33。太字は 1.04 倍）
     var est = function(s, fs, bold){ return [...String(s)].reduce(function(a, c){ return a + (c === " " ? 0.33 : /[\u0000-ɏ]/.test(c) ? 0.6 : 1); }, 0) * fs * (bold ? 1.04 : 1); };

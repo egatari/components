@@ -130,6 +130,8 @@ export function lintMeta(name, js, meta) {
   }
   // static testing = {…} is for this part's own tests only: no part reads it (another part's or its own)
   if (/\.\s*testing\b|\[\s*["'`]testing["'`]\s*\]/.test(code)) errs.push(`${at}: reads .testing; static testing is for tests only and no part reads it (shared logic goes in a library part, docs/c2-migration.md)`);
+  // one language test everywhere, 1.x's DECK.ja: /^ja\b/i.test(ctx.lang) (not startsWith("ja"), which also takes "jav" and not "JA")
+  if (/startsWith\(\s*["'`]ja["'`]\s*\)/.test(code)) errs.push(`${at}: test the language with /^ja\\b/i.test(ctx.lang), as 1.x's DECK.ja (docs/c2-migration.md item 7)`);
   for (const e of reportCalls(code)) {
     const line = js.slice(0, js.indexOf(e.src)).split('\n').length;
     if (e.code !== null && !REPORT_CODES.includes(e.code)) errs.push(`${at}: ctx.report(${JSON.stringify(e.code)}, …): the code must be one of ${REPORT_CODES.join(', ')} (spec §8.4)${line > 1 ? ` (near line ${line})` : ''}`);

@@ -52,7 +52,7 @@ and after a tour of every slide. Change behaviour in a later version, not while 
    too small) → `ctx.report(kind, "[<name>] …")` (`kind` a short code such as `data`, `size`, `range`; keep the English
    message). That needs a ctx: report from `mount`, `render` or `layout`. Warnings only a developer can act on stay
    `console.warn("[<name>] …")`. Throws for data that fits the shape but not the rules may stay: base contains them.
-7. **Language.** `DECK.ja` → `ctx.lang.startsWith("ja")`, read in `mount` and kept on the instance (`this.ja`); see 3.
+7. **Language.** `DECK.ja` → `/^ja\b/i.test(ctx.lang)` (the test 1.x's `DECK.ja` made on `<html lang>`; every part uses this one form, not `startsWith("ja")`), read in `mount` and kept on the instance (`this.ja`); see 3.
 8. **Position events.** A `document.addEventListener("deck:pos", …)` listener becomes
    - `layout(ctx)` when it re-measured text or sizes (the player calls it on resize, font load and when the slide shows,
      then renders again), and/or

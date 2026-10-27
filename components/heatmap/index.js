@@ -124,7 +124,7 @@ return class extends base.MotionElement {
     // 書き方とデータの知らせ（plan が集めた [code, message]）
     pl.notes.forEach(function(n){ ctx.report(n[0], n[1]); });
     this.classList.add("plot"); this.style.display = "block";
-    var ja = this.ja = String(ctx.lang).startsWith("ja"), W = this.clientWidth, H = this.clientHeight, nr = pl.rows.length, nc = pl.cols.length;
+    var ja = this.ja = /^ja\b/i.test(ctx.lang), W = this.clientWidth, H = this.clientHeight, nr = pl.rows.length, nc = pl.cols.length;
     // ---- 色：テーマの色を読み、セルごとに混ぜる割合と字の色を決める ----
     var tone = TONES.indexOf(P.tone) >= 0 ? P.tone : "term", low = TONES.indexOf(P.lowtone) >= 0 ? P.lowtone : "emph";
     if (TONES.indexOf(P.tone) < 0) ctx.report("attr", '[heatmap] tone="' + P.tone + '" is not term, emph or accent2 (term is used)');
