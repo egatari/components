@@ -262,7 +262,7 @@ return class extends base.MotionElement {
     var P = this.props, D = base, G = NL, self = this, pl = this.plan();
     this.variant = base.variant(this);
     pl.notes.forEach(function(n){ ctx.report("data", n); });
-    if (P.arrow !== "on" && P.arrow !== "off") ctx.report("data", '[numberline] arrow="' + P.arrow + '" is not on or off');
+    if (P.arrow !== "on" && P.arrow !== "off") ctx.report("attr", '[numberline] arrow="' + P.arrow + '" is not on or off');
     this.style.display = "block";
     var W = this.clientWidth, H = this.clientHeight, L = pl.lines.length, dur = P.dur, arrow = P.arrow === "on";
     var svg = D.el("svg", {viewBox: "0 0 " + W + " " + H, width: W, height: H, style: "display:block;overflow:visible"}, this);
