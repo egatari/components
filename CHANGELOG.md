@@ -4,6 +4,14 @@ Versions follow [README.md § Releases and versions](README.md#releases-and-vers
 
 ## Unreleased
 
+### Fixed
+
+- `m-cycle` (same fix as 1.13.1): render writes an attribute only when its value changes. Writing the same value again still made Chrome repaint, and on macOS re-entering the same step moved two pixels on a box's edge while the DOM stayed byte-identical (Egatari Studio's `tools/test-step-reset.mjs`, demo slide 1 step 5). The DOM at every step is unchanged.
+
+### Tests
+
+- `tools/test-cycle-rewrite.mjs` (in `tools/test-all.mjs`): on every step of every m-cycle demo slide, entering the same step again makes no attribute mutation and keeps the DOM
+
 ### Later (candidates, not in this release)
 
 - `m-compare` `by="row"`; an "outside every set" region for `m-venn`; planned-vs-actual bars for `m-timeline`
