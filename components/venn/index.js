@@ -5,31 +5,21 @@
 // （JSON の終わり）</m-venn>
 // 円は左右対称の決まった配置（面積は値に比例させない）。2 つは左右に、3 つは左上・右上・下に置く。集合の名前は円の外に書く
 // regions の鍵は集合の文字（1 つ目 A、2 つ目 B、3 つ目 C）の組：A は「A だけ」、AB は「A と B（C ではない）」、ABC は 3 つとも
-// 項目は 1 つ 1 行で、その領域の中に収まる位置を探して置く（字数から幅を見積もる）。字は size から 24 px まで縮め、収まらなければ console.warn
+// 項目は 1 つ 1 行で、その領域の中に収まる位置を探して置く（字数から幅を見積もる）。字は size から 24 px まで縮め、収まらなければ ctx.report（size）
 // 段階：既定は 集合を 1 つずつ（その集合だけの項目と一緒に）→ 重なり（項目のある重なりを --emph で囲んで薄く塗り、項目を出す）。
 // overlaps="each" なら重なりを 1 つずつ（AB・AC・BC・ABC の順）
 // 見せ方（docs/conventions.md §1）：fade（既定。円が薄く現れる）・draw（円の線を引いてから、塗りと字が現れる）。
 // どちらも長さは dur で、段階の数・長さ・最後の中身は変わらない
-// ---- BEGIN egatari-variant (source: tools/variant.js; copy with `node tools/variant-sync.mjs`; do not edit inside a component) ----
-// Choosing a presentation variant (Egatari spec §8.4, docs/conventions.md §1). A component lists its variant names in
-// `static variants` (the first is the default) and calls VARIANT.of(this) once, in mount. The variant is the component's
-// `variant` attribute when it names one of them, otherwise the first name. There is no seed: lessons do not carry one
-// (spec §8.4 since egatari-spec 28d8801), and `seed` / `data-egatari-seed` are not read.
-// The choice is a pure function of the attribute: the picture still depends on (i, k, t) only.
-var VARIANT = (function(){
-  "use strict";
-  function of(el){
-    var tag = el.tagName.toLowerCase(), C = customElements.get(tag), names = (C && C.variants) || [], v = el.getAttribute("variant");
-    if (v !== null && names.indexOf(v) >= 0) return v;
-    if (v !== null) console.warn(tag + ' variant="' + v + '" is not one of ' + names.join(", ") + " (the first, " + (names[0] || "none") + ", is used)");
-    return names[0] || null;
-  }
-  return {of: of};
-})();
-// ---- END egatari-variant ----
+// 2.0（Egatari spec §6.1 の部品）：base の MotionElement・el・mtext・prog・lerp・variant・previewOpacity を使い、プレイヤーのグローバルは使わない。
+// 切り抜き（clipPath）の id は venn-2-0-0-<n>-in<i>・-out<i>（部品の名前と版。n はこの部品の数え。1.x は m-venn-<n>）
+egatariParts.define({name: "venn", version: "2.0.0", requires: {base: "1.0.0"}, element: "m-venn"}, function(deps){
+"use strict";
+var base = deps.base;
+var ID = "venn-2-0-0-", count = 0;   // ids this part writes: its name and version, and a counter of its own (spec §6.1 Identifiers)
 // 形の要素ごとに、書き直すと形が作り直される属性（render の終わりで使う）
 var SHAPE_GEOM = {rect: "width", circle: "r", ellipse: "rx", path: "d", line: "x1", polyline: "points", polygon: "points"};
-DECK.define("m-venn", class MVenn extends DECK.MotionElement {
+return class extends base.MotionElement {
+  static partName = "venn";   // the registry name (define meta name), for report prefixes
   static variants = ["fade", "draw"];
   // データの形（kit/shape.js）
   static shape = (function(){
@@ -48,7 +38,6 @@ DECK.define("m-venn", class MVenn extends DECK.MotionElement {
     spread:   {type: "number", default: 1, doc: "円の中心の間の距離 ÷ 半径（小さいほど重なりが広い。0.7〜1.3）"},
     overlaps: {type: "string", default: "together", doc: "together（重なりを 1 段階でまとめて）か each（1 つずつ）"},
   };
-  static n = 0;
   // 項目のある重なりの鍵（なければ 2 つの集合の重なりすべて）。順は AB・AC・BC・ABC
   overlapKeys(){
     var d = this.data || {}, n = Math.min(3, (d.sets || []).length), R = d.regions || {};
@@ -61,9 +50,9 @@ DECK.define("m-venn", class MVenn extends DECK.MotionElement {
     var n = ((this.data || {}).sets || []).length;
     return n + (this.props.overlaps === "each" ? this.overlapKeys().length : 1);
   }
-  mount(){
-    var P = this.props, D = DECK, data = this.data || {sets: []}, self = this, id = "m-venn-" + (++MVenn.n);
-    this.variant = VARIANT.of(this);
+  mount(ctx){
+    var P = this.props, D = base, data = this.data || {sets: []}, self = this, id = ID + (++count);
+    this.variant = base.variant(this);
     // 形（static shape）では書けない決まり：集合が 2 つなら C を含む領域（C・AC・BC・ABC）は書けない。黙って項目を落とさない
     if ((data.sets || []).length < 3){
       var bad = Object.keys(data.regions || {}).filter(function(k){ return k.indexOf("C") >= 0; });
@@ -133,7 +122,7 @@ DECK.define("m-venn", class MVenn extends DECK.MotionElement {
       L = {fs: fs, lh: lh, pos: pos, ok: ok};
       if (ok) break;
     }
-    if (!L.ok) console.warn("m-venn: the items do not fit in their regions even at 24 px (shorten them or make the element larger)");
+    if (!L.ok) ctx.report("size", "[venn] the items do not fit in their regions even at 24 px (shorten them or make the element larger)");
     // 切り抜き：円 i の内（in）と外（out。大きな四角から円をくりぬく）
     var defs = D.el("defs", {}, svg);
     var circ = function(c){ return "M" + (c.x - r).toFixed(2) + "," + c.y.toFixed(2) + "a" + r.toFixed(2) + "," + r.toFixed(2) + " 0 1,0 " + (2 * r).toFixed(2) + ",0a" + r.toFixed(2) + "," + r.toFixed(2) + " 0 1,0 " + (-2 * r).toFixed(2) + ",0Z"; };
@@ -190,10 +179,9 @@ DECK.define("m-venn", class MVenn extends DECK.MotionElement {
   }
   cues(){ return null; }
   render(k, t, ctx){
-    var D = DECK, F = this.props.dur, draw = this.variant === "draw", lecture = ctx && (ctx.preview || ctx.mode === "lecture");
+    var D = base, F = this.props.dur, draw = this.variant === "draw", lecture = !!ctx.preview;
     // 先の段階の薄さ：テーマの --preview-opacity（ないときは 0.45）
-    var dim = 0.45;
-    if (lecture){ var dv = parseFloat(getComputedStyle(this).getPropertyValue("--preview-opacity")); if (dv >= 0 && dv <= 1) dim = dv; }
+    var dim = lecture ? base.previewOpacity(this) : 0.45;
     // 段階 s の中の進み具合（0〜1）：start から len 秒。授業の表示では先の段階を dim の濃さで見せる
     var pr = function(s, start, len){
       var e = s < k ? 1 : s > k ? 0 : D.prog(t, start, len);
@@ -225,4 +213,5 @@ DECK.define("m-venn", class MVenn extends DECK.MotionElement {
     // 何回塗り直されたかは呼び出しの間にコマが描かれたかで決まるので、作り直さないと同じ (k, t) でも呼び出しの順と時刻で画素が変わる（docs/contract.md §3）
     this.shapes.forEach(function(e){ var a = SHAPE_GEOM[e.localName], v = e.getAttribute(a); if (v !== null) e.setAttribute(a, v); });
   }
+};
 });

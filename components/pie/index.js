@@ -7,25 +7,13 @@
 // donut="0.55" でドーナツ（内側の半径の割合）。中の字は JSON の center（{total} は合計に置き換わる）
 // 見せ方（docs/conventions.md §1）：fade（フェードして少し上がりながら現れる、既定）・sweep（12 時の位置から時計回りに掃くように現れる）・
 // grow（中心から少し小さい大きさで現れて元の大きさに戻る）。段階の数・長さ・最後の中身は同じ
-(function(){
-// ---- BEGIN egatari-variant (source: tools/variant.js; copy with `node tools/variant-sync.mjs`; do not edit inside a component) ----
-// Choosing a presentation variant (Egatari spec §8.4, docs/conventions.md §1). A component lists its variant names in
-// `static variants` (the first is the default) and calls VARIANT.of(this) once, in mount. The variant is the component's
-// `variant` attribute when it names one of them, otherwise the first name. There is no seed: lessons do not carry one
-// (spec §8.4 since egatari-spec 28d8801), and `seed` / `data-egatari-seed` are not read.
-// The choice is a pure function of the attribute: the picture still depends on (i, k, t) only.
-var VARIANT = (function(){
-  "use strict";
-  function of(el){
-    var tag = el.tagName.toLowerCase(), C = customElements.get(tag), names = (C && C.variants) || [], v = el.getAttribute("variant");
-    if (v !== null && names.indexOf(v) >= 0) return v;
-    if (v !== null) console.warn(tag + ' variant="' + v + '" is not one of ' + names.join(", ") + " (the first, " + (names[0] || "none") + ", is used)");
-    return names[0] || null;
-  }
-  return {of: of};
-})();
-// ---- END egatari-variant ----
-DECK.define("m-pie", class extends DECK.MotionElement {
+// 2.0（Egatari spec §6.1 の部品）：base の MotionElement・el・mtext・prog・variant・previewOpacity を使い、プレイヤーのグローバルは使わない。
+// 負の値と、字が収まらないことは ctx.report で知らせる（1.x の console.warn の代わり）
+egatariParts.define({name: "pie", version: "2.0.0", requires: {base: "1.0.0"}, element: "m-pie"}, function(deps){
+"use strict";
+var base = deps.base;
+return class extends base.MotionElement {
+  static partName = "pie";   // the registry name (define meta name), for report prefixes
   static variants = ["fade", "sweep", "grow"];
   // データの形（kit/shape.js）
   static shape = {
@@ -59,16 +47,16 @@ DECK.define("m-pie", class extends DECK.MotionElement {
       return {s: s, i: i, step: s.step !== undefined ? s.step : per > 0 ? Math.floor(i / per) + 1 : 1};
     }));
   }
-  mount(){
-    var P = this.props, D = DECK, self = this, pl = this.plan(), d = this.data || {};
-    this.variant = VARIANT.of(this);
+  mount(ctx){
+    var P = this.props, D = base, self = this, pl = this.plan(), d = this.data || {};
+    this.variant = base.variant(this);
     this.style.display = "block"; this.style.position = "relative";
     var W = this.clientWidth, H = this.clientHeight, TAU = Math.PI * 2;
     var svg = D.el("svg", {viewBox: "0 0 " + W + " " + H, width: W, height: H, style: "display:block;overflow:visible"}, this);
     var est = function(s, size){ return [...String(s).replace(/[*_^]/g, "")].reduce(function(a, c){ return a + (/[\u0000-ɏ]/.test(c) ? 0.56 : 1); }, 0) * size; };
     var total = pl.reduce(function(a, o){ return a + Math.max(0, +o.s.value); }, 0);
     if (!(total > 0)) throw new Error("slices: the values add up to 0 (write positive numbers)");
-    pl.forEach(function(o){ if (+o.s.value < 0) console.warn("m-pie: the slice \"" + (o.s.label || o.i) + "\" has a negative value (drawn as 0)"); });
+    pl.forEach(function(o){ if (+o.s.value < 0) ctx.report("data", "[pie] the slice \"" + (o.s.label || o.i) + "\" has a negative value (drawn as 0)"); });
     // 割合：足して 100 になるように丸める（最大剰余法）
     var pd = P["pct-digits"], sc = Math.pow(10, pd), raw = pl.map(function(o){ return Math.max(0, +o.s.value) / total * 100 * sc; });
     var fl = raw.map(Math.floor), left = Math.round(100 * sc) - fl.reduce(function(a, b){ return a + b; }, 0);
@@ -157,7 +145,7 @@ DECK.define("m-pie", class extends DECK.MotionElement {
         var mx = q === outs.length - 1 ? H - 2 - outs[q].h / 2 : outs[q + 1].yc - (outs[q + 1].h + outs[q].h) / 2 - 8;
         if (outs[q].yc > mx) outs[q].yc = mx;
       }
-      if (outs.length && outs[0].yc - outs[0].h / 2 < 0) console.warn("m-pie: the labels outside do not fit the height (make the element taller or put fewer slices)");
+      if (outs.length && outs[0].yc - outs[0].h / 2 < 0) ctx.report("size", "[pie] the labels outside do not fit the height (make the element taller or put fewer slices)");
       var colX = cx + side * (R + gap - 8);
       outs.forEach(function(s){
         // 引き出し線：切れの外の縁から、円の外側を回って字の列へ
@@ -166,7 +154,7 @@ DECK.define("m-pie", class extends DECK.MotionElement {
         s.leader = D.el("path", {d: "M" + p1[0].toFixed(1) + "," + p1[1].toFixed(1) + "L" + qx.toFixed(1) + "," + s.yc.toFixed(1) + "L" + (colX - side * 6).toFixed(1) + "," + s.yc.toFixed(1),
           fill: "none", stroke: "var(--muted)", "stroke-width": 1.5}, gL);
         s.tx = colX; s.anchor = side > 0 ? "start" : "end";
-        if (side > 0 ? colX + s.w > W + 1 : colX - s.w < -1) console.warn("m-pie: the label \"" + s.lines[0].t + "\" is wider than the space beside the pie");
+        if (side > 0 ? colX + s.w > W + 1 : colX - s.w < -1) ctx.report("size", "[pie] the label \"" + s.lines[0].t + "\" is wider than the space beside the pie");
       });
     });
     sl.forEach(function(s){
@@ -189,7 +177,7 @@ DECK.define("m-pie", class extends DECK.MotionElement {
       var cl = String(d.center).replace(/\{total\}/g, this.fmt(total)).split("\n"), size = 26;
       var cw = Math.max.apply(null, cl.map(function(t){ return est(t, size); }));
       if (cw > ri * 1.8){ size = 24; cw = cw * 24 / 26; }
-      if (cw > ri * 1.8) console.warn("m-pie: the center text is wider than the hole (make donut larger or the text shorter)");
+      if (cw > ri * 1.8) ctx.report("size", "[pie] the center text is wider than the hole (make donut larger or the text shorter)");
       var cg = this.center = D.el("g", {opacity: 0}, gL);
       cl.forEach(function(t, j){ D.mtext(cg, cx, cy - (cl.length - 1) * 16 + j * 32 + 9, t, {"text-anchor": "middle", "font-size": size, "font-weight": j === 0 ? 700 : 400}); });
     }
@@ -217,8 +205,8 @@ DECK.define("m-pie", class extends DECK.MotionElement {
     return this.plan().some(function(o){ return o.step === k; }) ? this.props.dur : 0;
   }
   render(k, t, ctx){
-    var P = this.props, D = DECK, self = this, vr = this.variant, dur = P.dur, span = dur * 0.6, lecture = ctx && (ctx.preview || ctx.mode === "lecture"), FAINT = 0.45;
-    if (lecture){ var pv = parseFloat(getComputedStyle(this).getPropertyValue("--preview-opacity")); FAINT = pv >= 0 && pv <= 1 ? pv : 0.45; }   // 先の段階の薄さ：テーマの --preview-opacity（ないときは 0.45）
+    var P = this.props, D = base, self = this, vr = this.variant, dur = P.dur, span = dur * 0.6, lecture = !!ctx.preview, FAINT = 0.45;
+    if (lecture) FAINT = base.previewOpacity(this);   // 先の段階の薄さ：テーマの --preview-opacity（ないときは 0.45）
     var TAU = Math.PI * 2, R = this.R, ri = this.ri;
     // 同じ段階の切れが占める角度の範囲（sweep はこの範囲を掃く）
     var rng = {};
@@ -256,5 +244,5 @@ DECK.define("m-pie", class extends DECK.MotionElement {
       this.center.setAttribute("opacity", c.toFixed(3));
     }
   }
+};
 });
-})();

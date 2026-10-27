@@ -1,20 +1,16 @@
-// The geometry of m-numberline (its `static geom`), without a browser: values written as numbers or fractions ("1/3"),
+// The geometry of m-numberline (its `static testing.geom`), without a browser: values written as numbers or fractions ("1/3"),
 // tick positions and labels (fractions over a common denominator, decimals without trailing zeros, the real minus sign),
 // sub-ticks, two lines aligned at 0, labels split into text and stacked fractions, thinning of tick labels, the levels of
 // overlapping ranges and jumps, the shared part of ranges, and the height of a jump's arc.
 //   node tools/test-numberline.mjs
 import fs from 'node:fs';
 import path from 'node:path';
-import vm from 'node:vm';
 import { ROOT } from './studio.mjs';
+import { partClass } from './parts.mjs';
 
-function load(name) {
-  const classes = {};
-  const DECK = { define: (tag, C) => { classes[tag] = C; }, MotionElement: class {} };
-  vm.runInNewContext(fs.readFileSync(path.join(ROOT, 'components', name, 'index.js'), 'utf8'), { DECK, console, Math, String, JSON, Number, Array, Object, Error, isFinite });
-  return classes['m-' + name];
-}
-const G = load('numberline').geom;
+// numberline 2.0 (egatariParts.define) keeps its geometry on the class as static testing.geom, for this test only
+const file = path.join(ROOT, 'components', 'numberline', 'index.js');
+const G = partClass(fs.readFileSync(file, 'utf8'), file).testing.geom;
 let fail = 0, n = 0;
 const near = (a, b) => Math.abs(a - b) < 1e-9;
 const eq = (got, want, msg) => {

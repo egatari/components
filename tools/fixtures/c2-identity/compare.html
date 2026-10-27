@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="default">
+<head>
+<meta charset="utf-8">
+<title>m-compare: an English lesson (tools/test-c2-identity.mjs)</title>
+<!-- The heading of the difference column comes from the lesson's language when diff-label is not given: 1.x read DECK.ja
+     (<html lang>), 2.0 reads ctx.lang in mount. The v1.13.0 demo is in Japanese only; this deck checks "Difference". -->
+</head>
+<body>
+<div id="stage">
+
+<section class="slide noconcl" id="s-en">
+  <h2>Paper and online forms</h2>
+  <div class="body">
+    <m-compare style="height:420px">
+      <script type="application/json">{
+        "sides": [{"label": "Paper", "tone": "muted"}, {"label": "Online"}],
+        "rows": [
+          {"label": "Hours", "values": ["Weekdays 9 to 5", "Any time"], "better": 1, "diff": "nights and weekends"},
+          {"label": "Fee", "values": ["300 yen", "300 yen"], "diff": "the same"}
+        ]
+      }</script>
+    </m-compare>
+  </div>
+</section>
+
+<section class="slide noconcl" id="s-label">
+  <h2>Three sides, a label of its own</h2>
+  <div class="body">
+    <m-compare diff-label="Gap" variant="reveal" style="height:380px">
+      <script type="application/json">{
+        "sides": [{"label": "A"}, {"label": "B"}, {"label": "C", "step": 2}],
+        "rows": [{"values": ["1", "2", "3"], "better": 2, "diff": "C is best"}]
+      }</script>
+    </m-compare>
+  </div>
+</section>
+
+</div>
+</body>
+</html>

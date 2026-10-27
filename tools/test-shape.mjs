@@ -129,8 +129,12 @@ try {
   ok(okc && !okc.box && !r.errs.some((x) => x.slide === r.acc), 'm-curves: series step, tone, labelAt and anchor right/left/above/below are accepted (no placeholder, no error)');
   ok(r.accMax === 4, 'm-curves: steps = the largest series step (got ' + r.accMax + ')');
   // 形（static shape）では書けない中身の決まり：mount で例外を投げ、札を出す（値を黙って落とさない）
-  const sem = r.errs.filter((x) => x.slide === r.max.length - 3);
-  const semOk = (tag, re) => sem.some((x) => x.tag === tag && x.phase === 'mount' && x.kind === 'exception' && re.test(x.msg));
+  // A 2.0 part (m-compare 2.0.0) contains the exception itself (spec §6.1 Containment): base reports it once through
+  // ctx.report("error", "[<name>] mount: …"), which the registry shim records with phase "report"; its records carry the slide's
+  // key (their slide index is -1 under the pinned Studio), so the slide is matched by key too
+  const sem = r.errs.filter((x) => x.slide === r.max.length - 3 || x.key === 's-semantic');
+  const semOk = (tag, re) => sem.some((x) => x.tag === tag && re.test(x.msg) && ((x.phase === 'mount' && x.kind === 'exception') ||
+    (x.phase === 'report' && x.code === 'error' && new RegExp('^\\[' + tag.slice(2) + '\\] mount: ').test(x.msg))));
   ok(r.semantic.every(Boolean) && sem.length === 3, 'content that fits the shape but not the rule: placeholder for each (' + sem.map((x) => x.msg).join(' | ') + ')');
   ok(semOk('m-compare', /rows\[0\]\.values has 1 value/), 'm-compare: values not one per side is refused at mount');
   ok(semOk('m-compare', /rows\[0\]\.better is 2/), 'm-compare: better outside the sides is refused at mount');
