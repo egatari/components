@@ -1,7 +1,7 @@
 # Migrating a part to components 2.0 (alpha.2 recipe)
 
 A checklist for moving one element part from `DECK.define` (1.x) to `egatariParts.define` (2.0, Egatari spec §6.1, §8.4,
-as of egatari-spec b7520a8). Parts are migrated in parallel, and **a migration touches only the part's own folder**
+as of egatari-spec 71cb10c). Parts are migrated in parallel, and **a migration touches only the part's own folder**
 (`components/<name>/`) plus, when needed, its own fixture `tools/fixtures/c2-identity/<name>.html`. Every list the tools
 need is derived from the parts themselves (below), so there is no shared list to edit. The pilots are `components/bars`
 (simple) and `components/menu` (position events, visited, fragments): read
@@ -49,18 +49,24 @@ and after a tour of every slide. Change behaviour in a later version, not while 
    `DECK.clamp01` → `base.clamp`; `DECK.ease(x)` → `base.prog(x, 0, 1)`; `DECK.Plot` → `deps.plot.Plot`. A local alias
    `var D = DECK` can become `var D = base` when only these helpers are used through it.
 6. **Reports.** `console.warn` about the lesson's data or the author's markup (a wrong value, a missing label, an element
-   too small) → `ctx.report(kind, "[<name>] …")` (`kind` a short code such as `data`, `size`, `range`; keep the English
-   message). That needs a ctx: report from `mount`, `render` or `layout`. Warnings only a developer can act on stay
+   too small) → `ctx.report(code, "[<name>] …")`, where `code` is one of spec §8.4's `data` (does not fit its shape),
+   `attr` (an attribute value the part does not know), `range` (a value outside what the part can show), `size` (too much
+   to fit), `layout` (no room at the laid-out size), `theme` (theme colours too close to tell apart) or `error` (base's,
+   for a contained exception); keep the English message. Lint checks the code and the `[<name>]` prefix wherever they
+   are string literals. That needs a ctx: report from `mount`, `render` or `layout`. Warnings only a developer can act on stay
    `console.warn("[<name>] …")`. Throws for data that fits the shape but not the rules may stay: base contains them.
 7. **Language.** `DECK.ja` → `/^ja\b/i.test(ctx.lang)` (the test 1.x's `DECK.ja` made on `<html lang>`; every part uses this one form, not `startsWith("ja")`), read in `mount` and kept on the instance (`this.ja`); see 3.
 8. **Position events.** A `document.addEventListener("deck:pos", …)` listener becomes
    - `layout(ctx)` when it re-measured text or sizes (the player calls it on resize, font load and when the slide shows,
      then renders again), and/or
    - work done in `render` when `ctx.entered` is true, when it refreshed viewer state that can only change while the
-     viewer is on another slide (m-menu's visited marks).
+     viewer is on another slide (m-menu's visited marks). Renders for printing, export, thumbnails or video frames, and
+     the render that returns to the viewer's position after them, are not entering (spec §8.4): `ctx.entered` stays
+     `false` and viewer input survives them (the shim does so around `beforeprint` / `afterprint`; `tools/test-predict.mjs`).
 9. **Navigation and viewer state.** `DECK.seek(i, k, t)` / `DECK.go(i, k)` → `ctx.go(slideKey, stepKey?)`;
-   `DECK.slides` → `ctx.slides` (`[{key, title, steps}]`, `steps` = the slide's largest numbered step key, 0 if none,
-   `concl` not counted; find a slide by key, not by index or element); `DECK.visited(i)` → `ctx.visited(slideKey)`;
+   `DECK.slides` → `ctx.slides` (`[{key, title, steps, concl}]`, `steps` = the slide's largest numbered step key, 0 if
+   none, the conclusion step not counted; `concl` = `true` when the slide has a conclusion step; find a slide by key, not
+   by index or element); `DECK.visited(i)` → `ctx.visited(slideKey)`;
    `DECK.mode` → `ctx.mode` (from `mount`); `DECK.resolveFragment` → parse the fragment in the part (`slideOf` in
    `components/menu/index.js`: `#<key>`, `#<key>:<stepKey>` refused above `steps`, legacy `#N`, `%`-escapes).
 10. **Errors.** `DECK.componentErrors.push(…)` → `ctx.report(kind, "[<name>] …")`.
@@ -77,8 +83,9 @@ and after a tour of every slide. Change behaviour in a later version, not while 
     `<name>-<version with dashes>-…` and is deterministic (spec §6.1): a counter of the part's own, never `Math.random`,
     time or another part's counter (`++D.Plot.n` in m-curves). Ids inside the component's DOM change its outerHTML, so
     each rewrite must be in the identity test's table `ID_REWRITES` (`tools/test-c2-identity.mjs`) and nothing else is
-    allowed. The table already holds the decided ones: `plot-1-0-0-clip<n>` (plot), `curves-2-0-0-<n>` (m-curves masks,
-    was `mc<n>`), `heatmap-2-0-0-legend-<n>` (m-heatmap, was `m-heatmap-legend-<n>`). A new rewrite needs a standards
+    allowed. The table holds the decided ones: `plot-1-0-0-clip<n>` (plot), `curves-2-0-0-<n>` (m-curves masks,
+    was `mc<n>`), `heatmap-2-0-0-legend-<n>` (m-heatmap, was `m-heatmap-legend-<n>`), `venn-2-0-0-<n>` (m-venn clip
+    paths, was `m-venn-<n>`), `kakijun-2-0-0-clip-<n>` and `…<n>h` (m-kakijun, was `m-kakijun-clip-<n>`). A new rewrite needs a standards
     decision first. Ids outside the component (m-menu's `<style id="menu-2-0-0-css">` in `<head>`) are renamed without
     an entry.
 13. **README and changelog.** Frontmatter `version: 2.0.0` (this is what makes the part count as migrated). Add the part's
@@ -108,6 +115,7 @@ and after a tour of every slide. Change behaviour in a later version, not while 
 node tools/lint.mjs && node tools/scan-code.mjs && node tools/variant-sync.mjs --check && node tools/expr-sync.mjs --check
 node tools/test-c2-identity.mjs --only <name>      # byte-identical to v1.13.0
 node tools/test-dom-order.mjs --only <name>        # through the shim; also says the part is defined through the registry
+node tools/test-c2-noreports.mjs --only <name>    # its demo and fixture play without any ctx.report (a fixture lists expected ones)
 node tools/test-all.mjs                            # the 1.x tests now run the part through the shim
 ```
 
@@ -116,12 +124,17 @@ shim, its requirements and the part (`c2Bundle` in `tools/parts.mjs`; test only,
 at a console warning that is now a report, match the report instead (the shim's bridge prints
 `[egatariParts] m-<name> (<slide>): <kind>: [<name>] …`; see `tools/test-map-small.mjs`).
 
+A demo or fixture must play without any `ctx.report` (`tools/test-c2-noreports.mjs`): a report on valid data usually means
+the part threw and base hid it behind the placeholder. A fixture written to produce reports lists them, exactly, in a
+`<!-- c2-expected-reports: … [{"tag", "key", "code", "msg"}, …] -->` comment. `tools/test-shape.mjs` accepts a contained
+throw (`code: "error"`) only for the cases it names as meant to throw.
+
 ## Not in alpha.2
 
 The six parts that draw math with `svgMath` (KaTeX at play time) wait for build-time `tex` (spec §6.2), in alpha.3:
 **m-collect, m-cycle, m-fishbone, m-flow, m-timeline, m-tree**. Do not migrate them yet.
 
-## Known gap
+## Closed gaps
 
-`#<key>:concl` on a slide without a conclusion: `ctx.slides` does not say whether a slide has one, so m-menu accepts it
-(and marks the card visited), where 1.x refused it. The fixture leaves this case out.
+- `#<key>:concl` on a slide without a conclusion: `ctx.slides` entries carry `concl` (egatari-spec d2b2474), so m-menu
+  refuses it again, as 1.x did; `tools/fixtures/c2-identity/menu.html` has the case.
