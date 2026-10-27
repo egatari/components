@@ -55,6 +55,7 @@ Components 2.0 (alpha, not for lessons yet): parts other parts require (Egatari 
 | [`heatmap-core`](components/heatmap-core/README.md) | 1.0.0 | m-heatmap の計算（行ごとの割合、色の範囲と混ぜる割合、セルの字の色と縁、名前の間引きとセルの大きさ、段階）。教材の作者が直接は書かない | — |
 | [`hist-core`](components/hist-core/README.md) | 1.0.0 | m-hist の代表値と度数の計算（平均値・中央値・最頻値、階級への数え上げ、度数分布表からの代表値）。教材の作者が直接は書かない | — |
 | [`kanbun-core`](components/kanbun-core/README.md) | 1.0.0 | 漢文の読み取り（白文・返り点・送り仮名・振り仮名）と訓読の順・書き下し文の計算。m-kanbun が使う。教材の作者が直接は書かない | — |
+| [`markup-reader`](components/markup-reader/README.md) | 1.0.0 | 組み立てのときに描いた結果（KaTeX の HTML・MathML、abcjs の SVG）を、決まった要素と属性だけで読んで置く。教材の作者が直接は書かない | base@1.0.0 |
 | [`plot`](components/plot/README.md) | 1.0.0 | 2.0 のパーツが使う座標軸つきの図（軸・目盛り・軸の名前・切り抜き）。教材の作者が直接は書かない | base@1.0.0 |
 | [`shape`](components/shape/README.md) | 1.0.0 | 2.0 のパーツのデータの形（static shape）を確かめる小さな検査器。base が使う。教材の作者が直接は書かない | — |
 

@@ -12,40 +12,33 @@
 // 見せ方（docs/conventions.md §2.5）：fade（既定。箱が軸の側から 12 px 寄りながら現れてから軸からの線を引く）・draw（軸からの線を先に引き、
 // その先に箱が軸の側から 12 px 寄りながら出る。帯は始まりから終わりへ引く）・grow（箱が軸の側から 12 px 寄りながら 0.92 → 1 に大きくなる。
 // 帯は両端が 12 px ずつ伸びる）。箱の動きはどれも 12 px まで。段階の数・長さ・合図・最後の中身はどれも同じ
-// 字の幅は字数から見積もる（字の読み込みを待たない）。入らなければ字を 24px まで縮め、それでも入らなければ console.warn
+// 字の幅は字数から見積もる（字の読み込みを待たない）。入らなければ字を 24px まで縮め、それでも入らなければ ctx.report("size", …)
 // 工程表：node の after（前の作業の id。終わり → 始まりの直角の矢印。あれば作業ごとに 1 段）・progress（0–100 % を濃く塗る）、
 // 属性 today（今日の縦の線）・unit（day・week・month の目盛り。書かなければ今まで通り）。どれも書かなければ描き方は今までと同じ
-// ---- BEGIN egatari-variant (source: tools/variant.js; copy with `node tools/variant-sync.mjs`; do not edit inside a component) ----
-// Choosing a presentation variant (Egatari spec §8.4, docs/conventions.md §1). A component lists its variant names in
-// `static variants` (the first is the default) and calls VARIANT.of(this) once, in mount. The variant is the component's
-// `variant` attribute when it names one of them, otherwise the first name. There is no seed: lessons do not carry one
-// (spec §8.4 since egatari-spec 28d8801), and `seed` / `data-egatari-seed` are not read.
-// The choice is a pure function of the attribute: the picture still depends on (i, k, t) only.
-var VARIANT = (function(){
-  "use strict";
-  function of(el){
-    var tag = el.tagName.toLowerCase(), C = customElements.get(tag), names = (C && C.variants) || [], v = el.getAttribute("variant");
-    if (v !== null && names.indexOf(v) >= 0) return v;
-    if (v !== null) console.warn(tag + ' variant="' + v + '" is not one of ' + names.join(", ") + " (the first, " + (names[0] || "none") + ", is used)");
-    return names[0] || null;
-  }
-  return {of: of};
-})();
-// ---- END egatari-variant ----
-(function(){
+// 2.0（Egatari spec §6.1 の部品）：base の MotionElement・el・mtext・prog・lerp・variant・previewOpacity を使い、プレイヤーのグローバルは使わない。
+// 式（tex）は組み立てのときに KaTeX で描く（spec §6.2）：build.fields の nodes[].tex を作り手が描いて texHtml を足し、
+// この部品は markup-reader で決まった要素と属性だけを読んで置く（再生のときに KaTeX は動かない）。描いた結果がなければ tex を字のまま出して知らせる。
+// データと属性の問題、入らないときは ctx.report で知らせる（1.x の console.warn の代わり）。言語は ctx.lang（mount で this.ja）。
+// 配置を決める内部の関数は arrange(size)（1.x の layout(size)。2.0 の layout(ctx) は再生器が呼ぶので名前を分けた）
+egatariParts.define({name: "timeline", version: "2.0.0", requires: {base: "1.0.0", "markup-reader": "1.0.0"}, element: "m-timeline"}, function(deps){
 "use strict";
-DECK.define("m-timeline", class extends DECK.MotionElement {
+var base = deps.base, MR = deps["markup-reader"];
+var Part = class extends base.MotionElement {
+  static partName = "timeline";   // the registry name (define meta name), for report prefixes
+  // 組み立てのときに描く欄（spec §6.2）。式の意味は字（tex）でも持つので、KaTeX の出力は HTML だけ
+  static build = {fields: {"nodes[].tex": "katex"}, options: {katex: {output: "html"}}};
   static variants = ["fade", "draw", "grow"];
   // データの形（kit/shape.js）
   static shape = {
     schema: {type: "object", additionalProperties: false, required: ["nodes"], properties: {
       nodes: {type: "array", minItems: 1, items: {type: "object", required: ["when"], properties: {
-        id: {type: ["string", "integer"]}, label: {type: "string"}, tex: {type: "string"}, note: {type: "string"}, tone: {type: "string"},
+        id: {type: ["string", "integer"]}, label: {type: "string"}, tex: {type: "string"}, texHtml: {type: "string"}, note: {type: "string"}, tone: {type: "string"},
         when: {type: ["number", "string"]}, whenLabel: {type: "string"}, end: {type: ["number", "string"]}, lane: {type: "string"}, step: {type: "integer"}, at: {type: "number"},
         after: {type: "array", items: {type: ["string", "integer"]}}, progress: {type: "number"}}}},
       edges: {type: "array", items: {type: "object", required: ["from", "to"], properties: {
         from: {type: ["string", "integer"]}, to: {type: ["string", "integer"]}, label: {type: "string"}, tone: {type: "string"}, dash: {type: "boolean"},
-        step: {type: "integer"}, at: {type: "number"}}}}}},
+        step: {type: "integer"}, at: {type: "number"}}}},
+      renderers: {type: "object"}}},
     example: {nodes: [{id: "a", label: "明治維新", when: "1868", whenLabel: "明治元年"}, {id: "b", label: "憲法の発布", when: "1889", note: "2 月 11 日"},
       {id: "c", label: "日清戦争", when: "1894", end: "1895", tone: "emph"}]},
     note: "when / end: a number or \"YYYY\", \"YYYY-MM\", \"YYYY-MM-DD\"; end is exclusive (\"1912\" is the start of 1912). whenLabel: the date text shown instead of the computed one (when still sets the position). A node with end is a period (a band); lane groups bands into named lanes",
@@ -69,15 +62,16 @@ DECK.define("m-timeline", class extends DECK.MotionElement {
   }
   plan(){
     if (this._plan) return this._plan;
+    var notes = this._notes = [];   // データの問題：mount が ctx.report("data", …) で知らせる（段階の数を数えるときには ctx がない）
     var P = this.props, per = P["per-step"], data = this.data || {}, items = [], T = parseTime;
     (data.nodes || []).forEach(function(n, idx){
       var a = T(n.when);
-      if (!a){ console.warn("m-timeline: when=" + JSON.stringify(n.when) + " is not a time (number, \"YYYY\", \"YYYY-MM\" or \"YYYY-MM-DD\"); skipped"); return; }
+      if (!a){ notes.push("[timeline] when=" + JSON.stringify(n.when) + " is not a time (number, \"YYYY\", \"YYYY-MM\" or \"YYYY-MM-DD\"); skipped"); return; }
       var b = null;
       if (n.end !== undefined){
         b = T(n.end);
-        if (!b) console.warn("m-timeline: end=" + JSON.stringify(n.end) + " is not a time; drawn as an event");
-        else if (b.v < a.v){ console.warn("m-timeline: end " + JSON.stringify(n.end) + " is before when " + JSON.stringify(n.when) + "; swapped"); var x = a; a = b; b = x; }
+        if (!b) notes.push("[timeline] end=" + JSON.stringify(n.end) + " is not a time; drawn as an event");
+        else if (b.v < a.v){ notes.push("[timeline] end " + JSON.stringify(n.end) + " is before when " + JSON.stringify(n.when) + "; swapped"); var x = a; a = b; b = x; }
       }
       items.push({n: n, idx: idx, a: a, b: b, kind: b ? "band" : n.lane !== undefined ? "ms" : "point"});
     });
@@ -98,7 +92,7 @@ DECK.define("m-timeline", class extends DECK.MotionElement {
     items.forEach(function(o){ if (o.n.id !== undefined) byId[o.n.id] = o; });
     var edges = (data.edges || []).map(function(e){
       var a = byId[e.from], b = byId[e.to];
-      if (!a || !b){ console.warn("m-timeline: edge to an unknown node", e.from, e.to); return null; }
+      if (!a || !b){ notes.push("[timeline] an edge refers to an unknown node: " + JSON.stringify(e.from) + " → " + JSON.stringify(e.to) + " (not drawn)"); return null; }
       var step = e.step !== undefined ? e.step : Math.max(a.step, b.step), at = 0;
       [a, b].forEach(function(o){ if (o.step === step) at = Math.max(at, o.at + P.dur); });
       return {e: e, a: a, b: b, step: step, at: e.at !== undefined ? e.at : at};
@@ -109,33 +103,39 @@ DECK.define("m-timeline", class extends DECK.MotionElement {
       if (b.n.after === undefined) return;
       (Array.isArray(b.n.after) ? b.n.after : [b.n.after]).forEach(function(id){
         var a = byId[id];
-        if (!a){ console.warn("m-timeline: after " + JSON.stringify(id) + " is not the id of a node; no arrow"); return; }
-        if (a === b || a.kind === "point" || b.kind === "point"){ console.warn("m-timeline: after " + JSON.stringify(id) + " needs two periods or lane milestones (lane); no arrow"); return; }
+        if (!a){ notes.push("[timeline] after " + JSON.stringify(id) + " is not the id of a node; no arrow"); return; }
+        if (a === b || a.kind === "point" || b.kind === "point"){ notes.push("[timeline] after " + JSON.stringify(id) + " needs two periods or lane milestones (lane); no arrow"); return; }
         var w = a.step > b.step ? a : b;
         deps.push({a: a, b: b, step: w.step, at: w.at});
       });
     });
     return (this._plan = {items: items, edges: edges, deps: deps, axisStep: axisStep === Infinity ? 1 : axisStep});
   }
-  mount(){
-    var P = this.props, D = DECK, self = this;
-    this.variant = VARIANT.of(this);
+  mount(ctx){
+    var P = this.props, D = base, self = this, seen = {};
+    this.variant = base.variant(this);
+    this.plan();
+    this._notes.forEach(function(m){ ctx.report("data", m); });
+    // arrange は字の大きさごとに何度も呼ばれるので、同じ知らせは 1 回だけ
+    this.rep = function(code, msg){ if (seen[code + msg]) return; seen[code + msg] = true; ctx.report(code, msg); };
+    this.texSink = MR.sink(this, ctx);
     this.style.display = "block"; this.style.position = "relative";
     var W = this.W = this.clientWidth, H = this.H = this.clientHeight;
     this.hz = P.orient !== "v";
-    this.ja = /^ja/i.test(document.documentElement.getAttribute("lang") || "");
+    this.ja = /^ja\b/i.test(ctx.lang);
     var svg = this.svg = D.el("svg", {viewBox: "0 0 " + W + " " + H, width: W, height: H, style: "display:block;overflow:visible"}, this);
     // 字の大きさ：size から 24 まで、入るまで 2px ずつ縮める
     var L = null;
     for (var s = P.size; ; s = Math.max(24, s - 2)){
-      L = this.layout(s);
+      L = this.arrange(s);
       if (L.fits || s <= 24) break;
     }
-    if (!L.fits) console.warn("m-timeline: the timeline does not fit its box even at 24px (" + L.why + "); make the element larger, shorten the labels or use per-step / scale=\"even\"");
+    if (!L.fits) ctx.report("size", "[timeline] the timeline does not fit its box even at 24px (" + L.why + "); make the element larger, shorten the labels or use per-step / scale=\"even\"");
     this.draw(L);
+    this.texSink.flush();   // what the formulas have to report, once per kind (spec §6.2)
   }
   // ---- 配置（u：軸に沿った位置、c：軸に直交する位置。h なら u = x、v なら u = y）
-  layout(size){
+  arrange(size){
     var self = this, P = this.props, hz = this.hz, W = this.W, H = this.H, Lu = hz ? W : H, Lc = hz ? H : W;
     var pl = this.plan(), its = pl.items, ja = this.ja;
     var STEM = 30, ROWG = 10, GAP = 14, LANEG = 6, GROUPG = 16, why = [];
@@ -167,8 +167,8 @@ DECK.define("m-timeline", class extends DECK.MotionElement {
     var today = null;
     if (P.today){
       today = parseTime(P.today);
-      if (!today) console.warn("m-timeline: today=" + JSON.stringify(P.today) + " is not a time; no today line");
-      else if (!hasL){ console.warn("m-timeline: today needs a period (a node with end); no today line"); today = null; }
+      if (!today) self.rep("attr", "[timeline] today=" + JSON.stringify(P.today) + " is not a time; no today line");
+      else if (!hasL){ self.rep("attr", "[timeline] today needs a period (a node with end); no today line"); today = null; }
       else ts.push(today.v);
     }
     var tmin = Math.min.apply(null, ts), tmax = Math.max.apply(null, ts);
@@ -237,7 +237,7 @@ DECK.define("m-timeline", class extends DECK.MotionElement {
       // 進み（%）：帯の名前の後ろに書けるときだけ書く（24px）
       o.pct = null; o.showPct = false;
       if (o.kind === "band" && typeof o.n.progress === "number" && isFinite(o.n.progress)){
-        if (o.n.progress < 0 || o.n.progress > 100) console.warn("m-timeline: progress " + o.n.progress + " is outside 0–100; clamped");
+        if (o.n.progress < 0 || o.n.progress > 100) self.rep("range", "[timeline] progress " + o.n.progress + " is outside 0–100; clamped");
         o.pct = Math.max(0, Math.min(100, o.n.progress));
         o.pctText = "  " + (Math.round(o.pct * 10) / 10) + "%";
       }
@@ -293,7 +293,7 @@ DECK.define("m-timeline", class extends DECK.MotionElement {
       lanesExt += g.ext + (gk ? GROUPG : 0);
     });
     var weekends = [], unit = P.unit;
-    if (unit && !/^(day|week|month)$/.test(unit)){ console.warn("m-timeline: unit=\"" + unit + "\" is not day, week or month; automatic ticks"); unit = ""; }
+    if (unit && !/^(day|week|month)$/.test(unit)){ self.rep("attr", "[timeline] unit=\"" + unit + "\" is not day, week or month; automatic ticks"); unit = ""; }
     if (hasL){
       if (unit){ var ut = unitTicks(unit, tmin, tmax, U, ja, hz, M, Lu, uA, uB); ticks = ut.ticks; weekends = ut.weekends; }
       else ticks = makeTicks(its, tmin, tmax, uniq, U, uA, uB, even, ja, hz, M, Lu);
@@ -329,7 +329,7 @@ DECK.define("m-timeline", class extends DECK.MotionElement {
   // (u, c) → [x, y]
   xy(u, c){ return this.hz ? [u, c] : [c, u]; }
   draw(L){
-    var D = DECK, self = this, P = this.props, hz = this.hz, svg = this.svg, size = L.size, ja = this.ja;
+    var D = base, self = this, P = this.props, hz = this.hz, svg = this.svg, size = L.size, ja = this.ja;
     var gLane = D.el("g", {}, svg), gStem = D.el("g", {}, svg), gAxis = D.el("g", {opacity: 0}, svg), gBand = D.el("g", {}, svg),
         gDot = D.el("g", {}, svg), gBox = D.el("g", {}, svg), gEdge = D.el("g", {}, svg);
     this.L = L;
@@ -394,7 +394,7 @@ DECK.define("m-timeline", class extends DECK.MotionElement {
       var text = function(x, yc, anchor, lh){
         var nl = o.labs.length, y0 = yc - (nl - 1) * lh / 2 + size * 0.36;
         o.labs.forEach(function(l, j){
-          if (l.tex){ D.svgMath(lg, x, y0 + j * lh, l.tex, {size: size, anchor: anchor, color: "var(--fg)", w: o.tw + 8, h: size * 1.6}).firstChild.style.verticalAlign = "top"; return; }
+          if (l.tex){ MR.texFrame(lg, x, y0 + j * lh, l.src, "tex", {size: size, anchor: anchor, color: "var(--fg)", w: o.tw + 8, h: size * 1.6}, self.texSink).firstChild.style.verticalAlign = "top"; return; }
           var t = D.mtext(lg, x, y0 + j * lh, l.text, {"text-anchor": anchor, "font-size": size, fill: "var(--fg)"});
           if (j === nl - 1){
             noteSpan(t);
@@ -501,9 +501,9 @@ DECK.define("m-timeline", class extends DECK.MotionElement {
     return c.length ? c.sort(function(a, b){ return a - b; }) : null;
   }
   render(k, t, ctx){
-    var D = DECK, P = this.props, self = this, vr = this.variant, T = P.dur, hz = this.hz;
-    var lecture = !!(ctx && (ctx.preview || ctx.mode === "lecture")), pl = this.plan(), FAINT = 0.45;
-    if (lecture){ var pv = parseFloat(getComputedStyle(this).getPropertyValue("--preview-opacity")); FAINT = pv >= 0 && pv <= 1 ? pv : 0.45; }
+    var D = base, P = this.props, self = this, vr = this.variant, T = P.dur, hz = this.hz;
+    var lecture = !!ctx.preview, pl = this.plan(), FAINT = 0.45;
+    if (lecture) FAINT = base.previewOpacity(this);
     // 段階 s の、start から len 秒の進み（前の段階なら 1、後の段階なら 0）
     var pr = function(s, start, len){ return s < k ? 1 : s > k ? 0 : D.prog(t, start, len); };
     // 授業の表示：後の段階は最後の形を薄く（テーマの --preview-opacity、ないときは 0.45）、今の段階はその薄さから濃くなる。形は動かさない（どの見せ方でも同じ）
@@ -589,7 +589,7 @@ DECK.define("m-timeline", class extends DECK.MotionElement {
     if (this.today) this.today.g.setAttribute("opacity", tickO.toFixed(3));
     if (this.weekG) this.weekG.setAttribute("opacity", tickO.toFixed(3));
   }
-});
+};
 
 // ---- 下の関数は m-timeline の中だけで使う（字の幅の見積もり・箱の中の行・詰め方・目盛り）
 // 時刻：{v: 年を単位にした数, p: "n" | "y" | "m" | "d", y, m, d}。読めなければ null（日付の計算は Date を使わない）
@@ -618,14 +618,14 @@ function est(s, fs){
 }
 // KaTeX の式の幅：一度置いて測る
 function texWidth(el, l){
-  var g = DECK.el("g", {opacity: 0}, el.svg), fo = DECK.svgMath(g, 0, 0, l.tex, {size: l.size, anchor: "start"});
+  var g = base.el("g", {opacity: 0}, el.svg), fo = MR.texFrame(g, 0, 0, l.src, "tex", {size: l.size, anchor: "start"}, el.texSink);
   var w = Math.max(0, (+fo.getAttribute("width") || 4) - 4);
   el.svg.removeChild(g);
   return w;
 }
 function labelLines(n, size, fill){
   fill = fill || "var(--fg)";
-  if (n.tex) return [{tex: n.tex, size: size, fill: fill}];
+  if (n.tex) return [{tex: n.tex, src: n, size: size, fill: fill}];
   return String(n.label || "").split("\n").map(function(s){ return {text: s, size: size, fill: fill}; });
 }
 // 箱の大きさと行の位置（基線は前の行の下 0.3 字 ＋ 今の行の 1.12 字：字の箱どうしが重ならない）
@@ -641,8 +641,8 @@ function boxSize(el, lines){
 }
 function boxDraw(el, g, x, y, bs){
   bs.lines.forEach(function(l){
-    if (l.tex) DECK.svgMath(g, x + bs.w / 2, y + l.y, l.tex, {size: l.size, anchor: "middle", color: l.fill, w: l.w + 8, h: l.size * 1.6}).firstChild.style.verticalAlign = "top";
-    else DECK.mtext(g, x + bs.w / 2, y + l.y, l.text, {"text-anchor": "middle", "font-size": l.size, fill: l.fill, "font-weight": l.weight || 400});
+    if (l.tex) MR.texFrame(g, x + bs.w / 2, y + l.y, l.src, "tex", {size: l.size, anchor: "middle", color: l.fill, w: l.w + 8, h: l.size * 1.6}, el.texSink).firstChild.style.verticalAlign = "top";
+    else base.mtext(g, x + bs.w / 2, y + l.y, l.text, {"text-anchor": "middle", "font-size": l.size, fill: l.fill, "font-weight": l.weight || 400});
   });
 }
 // 箱を軸に沿って並べる：望む位置（o.u）を中心に、重ならないように塊にまとめてずらす（順は変えない）。o.u0b に左（上）端
@@ -871,4 +871,5 @@ function unitTicks(unit, tmin, tmax, U, ja, hz, M, Lu, uA, uB){
   }
   return {ticks: placeTicks(out, hz, M, Lu), weekends: weekends};
 }
-})();
+return Part;
+});

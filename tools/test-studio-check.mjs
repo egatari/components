@@ -1,6 +1,7 @@
 // Egatari Studio's own checker (kit/check.mjs of the pinned Studio, tools/studio.json) on every components/*/demo.html,
 // run the way Studio's CI runs it on its examples: `node kit/check.mjs <deck.html>` from the Studio folder (it builds the
-// source in memory with the overlaid components; nothing is written next to the demo). Here with --json, to sort the results:
+// source in memory with the overlaid components; nothing is written next to the demo; a demo with tex fields is first rendered by the stand-in producer, tools/katex-produce.mjs,
+// into the overlaid copy of its component). Here with --json, to sort the results:
 //   - any error fails (exit code 1 of the checker), and so does a check that did not finish (exit code 2, status "crashed")
 //   - R-narr-steps warnings are ignored: the demos have no narration.md
 //   - other warnings are listed, and do not fail
@@ -18,7 +19,8 @@ const names = process.argv.slice(2).length ? process.argv.slice(2)
   : fs.readdirSync(path.join(ROOT, 'components')).filter((n) => fs.existsSync(path.join(ROOT, 'components', n, 'demo.html'))).sort();
 const JOBS = Math.max(1, Math.min(4, (os.availableParallelism?.() || os.cpus().length) - 1));
 const check = (name) => new Promise((resolve) => {
-  const demo = path.join(ROOT, 'components', name, 'demo.html');
+  // with the formulas rendered at build time (spec §6.2) as the producer will, into the overlaid copy of the component
+  const demo = S.produced(path.join(ROOT, 'components', name, 'demo.html'), S.compDir(name));
   const p = spawn(process.execPath, [path.join(S.dir, 'kit', 'check.mjs'), demo, '--json', '--lang', 'en'], { cwd: S.dir });
   let stdout = '', stderr = '';
   p.stdout.setEncoding('utf8').on('data', (d) => { stdout += d; });

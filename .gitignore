@@ -5,3 +5,5 @@ node_modules/
 dist/
 tools/map/.cache/
 data/kana/font
+.spec/
+.katex-docs/

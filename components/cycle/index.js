@@ -4,44 +4,37 @@
 //    "nodes": [{"label": "計画", "note": "目標と手順"}, {"label": "実行"}, {"label": "評価"}, {"label": "改善"}]}
 // （JSON の終わり）</m-cycle>
 // 座標はデータに書かない（docs/conventions.md §2）。配列の順に回り、最後から最初へ戻る矢印は自動で引く（最後の段階と一緒に出る）
-// 段階は 3〜8 個を想定。箱の幅は字数から見積もる（字の読み込みを待たない）。入らなければ字を 24px まで縮め、それでも入らなければ console.warn
+// 段階は 3〜8 個を想定。箱の幅は字数から見積もる（字の読み込みを待たない）。入らなければ字を 24px まで縮め、それでも入らなければ ctx.report("size", …)
 // center（任意）：真ん中の名前。最初の段階と一緒に出る（center.step で変えられる）
 // 段階：既定は 1 段階に 1 つ（per-step で n 個ずつ、node の step で直接、at で段階の中の開始秒）
 // 見せ方（docs/conventions.md §2.5）：fade（既定。箱が下から 12 px 上がりながら現れてから入ってくる矢印を引く）・draw（矢印を先に引き、
 // その先に箱が前の箱の側から 12 px 寄りながら出る）・grow（矢印を引きながら、箱が前の箱の側から 12 px 寄って 0.92 → 1 に大きくなる）。
 // 箱の動きはどれも 12 px まで。段階の数・長さ・合図・最後の中身はどれも同じ
-// ---- BEGIN egatari-variant (source: tools/variant.js; copy with `node tools/variant-sync.mjs`; do not edit inside a component) ----
-// Choosing a presentation variant (Egatari spec §8.4, docs/conventions.md §1). A component lists its variant names in
-// `static variants` (the first is the default) and calls VARIANT.of(this) once, in mount. The variant is the component's
-// `variant` attribute when it names one of them, otherwise the first name. There is no seed: lessons do not carry one
-// (spec §8.4 since egatari-spec 28d8801), and `seed` / `data-egatari-seed` are not read.
-// The choice is a pure function of the attribute: the picture still depends on (i, k, t) only.
-var VARIANT = (function(){
-  "use strict";
-  function of(el){
-    var tag = el.tagName.toLowerCase(), C = customElements.get(tag), names = (C && C.variants) || [], v = el.getAttribute("variant");
-    if (v !== null && names.indexOf(v) >= 0) return v;
-    if (v !== null) console.warn(tag + ' variant="' + v + '" is not one of ' + names.join(", ") + " (the first, " + (names[0] || "none") + ", is used)");
-    return names[0] || null;
-  }
-  return {of: of};
-})();
-// ---- END egatari-variant ----
-(function(){
+// 2.0（Egatari spec §6.1 の部品）：base の MotionElement・el・mtext・prog・lerp・variant・previewOpacity を使い、プレイヤーのグローバルは使わない。
+// 式（tex）は組み立てのときに KaTeX で描く（spec §6.2）：build.fields の nodes[].tex・center.tex を作り手が描いて texHtml を足し、
+// この部品は markup-reader で決まった要素と属性だけを読んで置く（再生のときに KaTeX は動かない）。描いた結果がなければ tex を字のまま出して知らせる。
+// データの問題（ない箱を指す辺）と、入らないときは ctx.report で知らせる（1.x の console.warn の代わり）。
+// 配置を決める内部の関数は arrange(size)（1.x の layout(size)。2.0 の layout(ctx) は再生器が呼ぶので名前を分けた）
+egatariParts.define({name: "cycle", version: "2.0.0", requires: {base: "1.0.0", "markup-reader": "1.0.0"}, element: "m-cycle"}, function(deps){
 "use strict";
-DECK.define("m-cycle", class extends DECK.MotionElement {
+var base = deps.base, MR = deps["markup-reader"];
+var Part = class extends base.MotionElement {
+  static partName = "cycle";   // the registry name (define meta name), for report prefixes
+  // 組み立てのときに描く欄（spec §6.2）。式の意味は字（tex）でも持つので、KaTeX の出力は HTML だけ
+  static build = {fields: {"nodes[].tex": "katex", "center.tex": "katex"}, options: {katex: {output: "html"}}};
   static variants = ["fade", "draw", "grow"];
   // データの形（kit/shape.js）
   static shape = {
     schema: {type: "object", additionalProperties: false, required: ["nodes"], properties: {
       nodes: {type: "array", minItems: 2, items: {type: "object", properties: {
-        id: {type: ["string", "integer"]}, label: {type: "string"}, tex: {type: "string"}, note: {type: "string"}, tone: {type: "string"},
+        id: {type: ["string", "integer"]}, label: {type: "string"}, tex: {type: "string"}, texHtml: {type: "string"}, note: {type: "string"}, tone: {type: "string"},
         step: {type: "integer"}, at: {type: "number"}}}},
-      center: {type: "object", properties: {label: {type: "string"}, tex: {type: "string"}, note: {type: "string"}, tone: {type: "string"},
+      center: {type: "object", properties: {label: {type: "string"}, tex: {type: "string"}, texHtml: {type: "string"}, note: {type: "string"}, tone: {type: "string"},
         step: {type: "integer"}, at: {type: "number"}}},
       edges: {type: "array", items: {type: "object", required: ["from", "to"], properties: {
         from: {type: ["string", "integer"]}, to: {type: ["string", "integer"]}, label: {type: "string"}, tone: {type: "string"}, dash: {type: "boolean"},
-        step: {type: "integer"}, at: {type: "number"}}}}}},
+        step: {type: "integer"}, at: {type: "number"}}}},
+      renderers: {type: "object"}}},
     example: {center: {label: "PDCA"}, nodes: [{label: "計画"}, {label: "実行"}, {label: "評価"}, {label: "改善"}]},
   };
   static props = {
@@ -58,6 +51,7 @@ DECK.define("m-cycle", class extends DECK.MotionElement {
   }
   plan(){
     if (this._plan) return this._plan;
+    var notes = this._notes = [];   // データの問題：mount が ctx.report で知らせる（段階の数を数えるときには ctx がない）
     var P = this.props, per = P["per-step"], T = P.dur, data = this.data || {}, seen = {};
     var stages = (data.nodes || []).map(function(n, i){
       var step = n.step !== undefined ? n.step : per > 0 ? Math.floor(i / per) + 1 : 1, j = seen[step] = (seen[step] || 0) + 1;
@@ -80,28 +74,32 @@ DECK.define("m-cycle", class extends DECK.MotionElement {
     stages.forEach(function(o){ if (o.n.id !== undefined) byId[o.n.id] = o; });
     var edges = (data.edges || []).map(function(e){
       var a = byId[e.from], b = byId[e.to];
-      if (!a || !b){ console.warn("m-cycle: edge to an unknown node", e.from, e.to); return null; }
+      if (!a || !b){ notes.push("[cycle] an edge refers to an unknown node: " + JSON.stringify(e.from) + " → " + JSON.stringify(e.to) + " (not drawn)"); return null; }
       var step = e.step !== undefined ? e.step : Math.max(a.step, b.step), at = 0;
       [a, b].forEach(function(o){ if (o.step === step) at = Math.max(at, o.at + T); });
       return {e: e, a: a, b: b, step: step, at: e.at !== undefined ? e.at : at};
     }).filter(Boolean);
     return (this._plan = {stages: stages, arrows: arrows, center: c, edges: edges});
   }
-  mount(){
-    var P = this.props, D = DECK, self = this;
-    this.variant = VARIANT.of(this);
+  mount(ctx){
+    var P = this.props, D = base, self = this;
+    this.variant = base.variant(this);
+    this.plan();
+    this._notes.forEach(function(m){ ctx.report("data", m); });
+    this.texSink = MR.sink(this, ctx);
     this.style.display = "block"; this.style.position = "relative";
     var W = this.W = this.clientWidth, H = this.H = this.clientHeight;
     this.svg = D.el("svg", {viewBox: "0 0 " + W + " " + H, width: W, height: H, style: "display:block;overflow:visible"}, this);
     var L = null;
     for (var s = P.size; ; s = Math.max(24, s - 2)){
-      L = this.layout(s);
+      L = this.arrange(s);
       if (L.fits || s <= 24) break;
     }
-    if (!L.fits) console.warn("m-cycle: the cycle does not fit its box even at 24px (" + L.why + "); make the element larger or shorten the labels");
+    if (!L.fits) ctx.report("size", "[cycle] the cycle does not fit its box even at 24px (" + L.why + "); make the element larger or shorten the labels");
     this.draw(L);
+    this.texSink.flush();   // what the formulas have to report, once per kind (spec §6.2)
   }
-  layout(size){
+  arrange(size){
     var self = this, W = this.W, H = this.H, pl = this.plan(), N = pl.stages.length, why = [];
     var th = function(i){ return -Math.PI / 2 + 2 * Math.PI * i / N; };
     var boxes = pl.stages.map(function(o, i){
@@ -157,7 +155,7 @@ DECK.define("m-cycle", class extends DECK.MotionElement {
     return {fits: !why.length, why: why.join("; "), size: size, boxes: boxes, arcs: arcs, cen: cen, cx: cx, cy: cy, rx: rx, ry: ry};
   }
   draw(L){
-    var D = DECK, self = this, svg = this.svg;
+    var D = base, self = this, svg = this.svg;
     var gA = D.el("g", {}, svg), gB = D.el("g", {}, svg), gE = D.el("g", {}, svg), gC = D.el("g", {}, svg);
     this.L = L;
     this.pt = function(t){ return [L.cx + L.rx * Math.cos(t), L.cy + L.ry * Math.sin(t)]; };
@@ -217,9 +215,9 @@ DECK.define("m-cycle", class extends DECK.MotionElement {
     return c.length ? c.sort(function(a, b){ return a - b; }) : null;
   }
   render(k, t, ctx){
-    var D = DECK, self = this, vr = this.variant, T = this.props.dur, L = this.L;
-    var lecture = !!(ctx && (ctx.preview || ctx.mode === "lecture")), FAINT = 0.45;
-    if (lecture){ var pv = parseFloat(getComputedStyle(this).getPropertyValue("--preview-opacity")); FAINT = pv >= 0 && pv <= 1 ? pv : 0.45; }
+    var D = base, self = this, vr = this.variant, T = this.props.dur, L = this.L;
+    var lecture = !!ctx.preview, FAINT = 0.45;
+    if (lecture) FAINT = base.previewOpacity(this);
     var pr = function(s, start, len){ return s < k ? 1 : s > k ? 0 : D.prog(t, start, len); };
     // 授業の表示：後の段階は最後の形を薄く（テーマの --preview-opacity、ないときは 0.45）、今の段階はその薄さから濃くなる。形は動かさない（どの見せ方でも同じ）
     var faint = function(s, start, len){ return s < k ? 1 : s > k ? FAINT : FAINT + (1 - FAINT) * D.prog(t, start, len); };
@@ -263,7 +261,7 @@ DECK.define("m-cycle", class extends DECK.MotionElement {
     if (this.center) this.center.g.setAttribute("opacity", (lecture ? faint(c.step, c.at, 0.45) : pr(c.step, c.at, 0.45)).toFixed(3));
     this.edges.forEach(function(o){ o.g.setAttribute("opacity", (lecture ? faint(o.step, o.at, 0.4) : pr(o.step, o.at, 0.4)).toFixed(3)); });
   }
-});
+};
 
 // ---- 下の関数は m-cycle の中だけで使う（字の幅の見積もり・箱の中の行）
 function tone(t){ return "var(--" + (/^(term|emph|muted|accent2|series-[1-4])$/.test(t || "") ? t : "term") + ")"; }
@@ -279,14 +277,14 @@ function est(s, fs){
 }
 // KaTeX の式の幅：一度置いて測る
 function texWidth(el, l){
-  var g = DECK.el("g", {opacity: 0}, el.svg), fo = DECK.svgMath(g, 0, 0, l.tex, {size: l.size, anchor: "start"});
+  var g = base.el("g", {opacity: 0}, el.svg), fo = MR.texFrame(g, 0, 0, l.src, "tex", {size: l.size, anchor: "start"}, el.texSink);
   var w = Math.max(0, (+fo.getAttribute("width") || 4) - 4);
   el.svg.removeChild(g);
   return w;
 }
 function labelLines(n, size, fill){
   fill = fill || "var(--fg)";
-  if (n.tex) return [{tex: n.tex, size: size, fill: fill}];
+  if (n.tex) return [{tex: n.tex, src: n, size: size, fill: fill}];
   return String(n.label || "").split("\n").map(function(s){ return {text: s, size: size, fill: fill}; });
 }
 // 箱の大きさと行の位置（基線は前の行の下 0.3 字 ＋ 今の行の 1.12 字：字の箱どうしが重ならない）
@@ -302,8 +300,9 @@ function boxSize(el, lines){
 }
 function boxDraw(el, g, x, y, bs){
   bs.lines.forEach(function(l){
-    if (l.tex) DECK.svgMath(g, x + bs.w / 2, y + l.y, l.tex, {size: l.size, anchor: "middle", color: l.fill, w: l.w + 8, h: l.size * 1.6}).firstChild.style.verticalAlign = "top";
-    else DECK.mtext(g, x + bs.w / 2, y + l.y, l.text, {"text-anchor": "middle", "font-size": l.size, fill: l.fill, "font-weight": l.weight || 400});
+    if (l.tex) MR.texFrame(g, x + bs.w / 2, y + l.y, l.src, "tex", {size: l.size, anchor: "middle", color: l.fill, w: l.w + 8, h: l.size * 1.6}, el.texSink).firstChild.style.verticalAlign = "top";
+    else base.mtext(g, x + bs.w / 2, y + l.y, l.text, {"text-anchor": "middle", "font-size": l.size, fill: l.fill, "font-weight": l.weight || 400});
   });
 }
-})();
+return Part;
+});

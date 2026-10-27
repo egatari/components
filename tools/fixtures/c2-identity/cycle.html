@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="ja" data-theme="default">
+<head>
+<meta charset="utf-8">
+<title>m-cycle: formulas (tools/test-c2-identity.mjs)</title>
+<!-- The v1.13.0 demo has no tex. 2.0 renders tex at build time (spec §6.2: nodes[].tex and center.tex → texHtml) and reads it
+     through markup-reader; this deck checks that the DOM stays that of 1.13 (KaTeX at play time): nodes and the centre with
+     formulas (fractions, roots with KaTeX's SVG, accents, sub- and superscripts), a note under a formula, the three variants. -->
+</head>
+<body>
+<div id="stage">
+
+<section class="slide">
+  <h2>EM アルゴリズム</h2>
+  <div class="body">
+    <m-cycle style="height:460px">
+      <script type="application/json">{
+        "center": {"tex": "\\log p(x\\mid\\theta)", "note": "単調に増える"},
+        "nodes": [
+          {"tex": "\\theta^{(t)}", "note": "今の推定"},
+          {"tex": "q(z)=p(z\\mid x,\\theta^{(t)})", "note": "E ステップ"},
+          {"tex": "\\hat\\theta=\\arg\\max_\\theta Q", "note": "M ステップ", "tone": "emph"},
+          {"tex": "\\sqrt{\\frac{1}{n}\\sum_i r_i^2}", "note": "収束の判定"}
+        ]
+      }</script>
+    </m-cycle>
+  </div>
+  <div class="concl"><span>→ 対数尤度は 1 周ごとに下がらない</span></div>
+</section>
+
+<section class="slide noconcl">
+  <h2>見せ方</h2>
+  <div class="body">
+    <div class="cols">
+      <div><m-cycle variant="fade" style="height:360px">
+        <script type="application/json">{"nodes": [{"tex": "x_1"}, {"tex": "x_2^2"}, {"tex": "\\bar{x}"}]}</script>
+      </m-cycle></div>
+      <div><m-cycle variant="draw" style="height:360px">
+        <script type="application/json">{"nodes": [{"tex": "a"}, {"label": "字"}, {"tex": "\\frac{a}{b}"}]}</script>
+      </m-cycle></div>
+      <div><m-cycle variant="grow" style="height:360px">
+        <script type="application/json">{"center": {"tex": "\\pi"}, "nodes": [{"tex": "\\alpha"}, {"tex": "\\beta"}, {"tex": "\\gamma"}]}</script>
+      </m-cycle></div>
+    </div>
+  </div>
+</section>
+
+</div>
+</body>
+</html>

@@ -1,7 +1,8 @@
 // Components 2.0: valid data never reports. Every migrated element part's demo.html and every identity fixture
 // (tools/fixtures/c2-identity/*.html), built with the pinned Egatari Studio through the registry shim, must produce no
 // ctx.report record at all (of any code, registry failures included) while it is played: every slide and step at t = 0.3 and
-// at its end, in the talk and lecture views, and after a tour of every slide. A part that starts throwing on valid data is
+// at its end, in the talk and lecture views, and after a tour of every slide; played once first and the fonts awaited, so
+// that parts which report measured sizes only once the fonts are loaded (m-syntax) see the same fonts on every run. A part that starts throwing on valid data is
 // otherwise hidden behind its placeholder (spec §6.1 Containment), and the identity test compares only the DOM of the
 // baseline demo.
 //
@@ -67,7 +68,15 @@ try {
       await p.evaluate(() => document.fonts.ready);
       reports = await p.evaluate(async (mode) => {
         if (mode !== 'talk') { DECK.mode = mode; document.documentElement.setAttribute('data-mode', mode); }
-        DECK.slides.forEach((s, i) => { for (let k = 0; k <= s._max; k++) { DECK.seek(i, k, 0.3); DECK.seek(i, k, Infinity); } });
+        const play = () => DECK.slides.forEach((s, i) => { for (let k = 0; k <= s._max; k++) { DECK.seek(i, k, 0.3); DECK.seek(i, k, Infinity); } });
+        // The fonts first: a slide's text can need a face (a unicode-range subset) that only starts loading when the slide is
+        // first laid out, after document.fonts.ready resolved on load. A part that reports only measured sizes waits for
+        // the fonts (m-syntax: document.fonts.status === "loaded"), so one pass while a face was still loading reported
+        // nothing (0 of its 2 reports, now in one view, now in the other). So: play once to start every load, wait until
+        // no face is loading, then play for the records. Reports are made once per instance, so the first pass adds none.
+        play();
+        for (let n = 0; n < 50 && document.fonts.status !== 'loaded'; n++) { await document.fonts.ready; await new Promise((r) => requestAnimationFrame(() => r())); }
+        play();
         for (let j = 0; j < DECK.slides.length; j++) { DECK.go(j, DECK.slides[j]._max, false); await new Promise((r) => setTimeout(r, 20)); }
         await new Promise((r) => requestAnimationFrame(() => requestAnimationFrame(r)));
         return EGATARI_PARTS_SHIM.reports().map((r) => ({ tag: r.tag, key: r.key, code: r.code, msg: r.msg }));

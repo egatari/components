@@ -10,16 +10,27 @@
 // （pulse: true なら辺の段階に 1 回、[段階, …] ならその段階ごとに 1 回。位置は (k, t) だけで決まり、流れ終わると消える）
 // 流れ図の判断：node の shape: "diamond"（箱の x, y, w, h に内接するひし形）。はい／いいえは出ていく辺の label
 // 戻る辺：edge の loop（true / "left" / "right" / "top" / "bottom"）。箱の横から出て、間の箱の外側を回って戻り先の箱の横に入る
-DECK.define("m-flow", class extends DECK.MotionElement {
+// 2.0（Egatari spec §6.1 の部品）：base の MotionElement・el・mtext・prog・lerp・previewOpacity を使い、プレイヤーのグローバルは使わない。
+// 式（tex）は組み立てのときに KaTeX で描く（spec §6.2）：build.fields の nodes[].tex を作り手が描いて texHtml を足し、
+// この部品は markup-reader で決まった要素と属性だけを読んで置く（再生のときに KaTeX は動かない）。描いた結果がなければ tex を字のまま出して知らせる。
+// 知らないデータ（loop の値、ない箱を指す辺）は ctx.report で知らせる（1.x の console.warn / console.error の代わり）
+egatariParts.define({name: "flow", version: "2.0.0", requires: {base: "1.0.0", "markup-reader": "1.0.0"}, element: "m-flow"}, function(deps){
+"use strict";
+var base = deps.base, MR = deps["markup-reader"];
+return class extends base.MotionElement {
+  static partName = "flow";   // the registry name (define meta name), for report prefixes
+  // 組み立てのときに描く欄（spec §6.2）。式の意味は字（tex）でも持つので、KaTeX の出力は HTML だけ
+  static build = {fields: {"nodes[].tex": "katex"}, options: {katex: {output: "html"}}};
   // データの形（kit/shape.js）。座標は要素の箱の px（x, y は箱の左上）
   static shape = {
     schema: {type: "object", additionalProperties: false, required: ["nodes"], properties: {
       nodes: {type: "array", minItems: 1, items: {type: "object", required: ["id", "x", "y", "w", "h"], properties: {
-        id: {type: ["string", "integer"]}, label: {type: "string"}, tex: {type: "string"}, x: {type: "number"}, y: {type: "number"}, w: {type: "number"}, h: {type: "number"},
+        id: {type: ["string", "integer"]}, label: {type: "string"}, tex: {type: "string"}, texHtml: {type: "string"}, x: {type: "number"}, y: {type: "number"}, w: {type: "number"}, h: {type: "number"},
         step: {type: "integer"}, tone: {type: "string"}, at: {type: "number"}}}},
       edges: {type: "array", items: {type: "object", required: ["from", "to"], properties: {
         from: {type: ["string", "integer"]}, to: {type: ["string", "integer"]}, step: {type: "integer"}, label: {type: "string"}, tone: {type: "string"}, dash: {type: "boolean"},
-        kind: {enum: ["money", "service", "data"]}, amount: {type: ["string", "number"]}, shift: {type: "number"}, pulse: {type: ["boolean", "array"]}, offset: {type: "number"}, at: {type: "number"}}}}}},
+        kind: {enum: ["money", "service", "data"]}, amount: {type: ["string", "number"]}, shift: {type: "number"}, pulse: {type: ["boolean", "array"]}, offset: {type: "number"}, at: {type: "number"}}}},
+      renderers: {type: "object"}}},
     example: {nodes: [{id: "a", label: "観測", x: 20, y: 40, w: 200, h: 70, step: 1}, {id: "b", label: "更新", x: 320, y: 40, w: 200, h: 70, step: 2}], edges: [{from: "a", to: "b", step: 2}]},
   };
   static props = {
@@ -38,8 +49,8 @@ DECK.define("m-flow", class extends DECK.MotionElement {
     (d.edges || []).forEach(function(x){ if (Array.isArray(x.pulse)) x.pulse.forEach(function(k){ m = Math.max(m, k); }); });
     return m;
   }
-  mount(){
-    var P = this.props, D = DECK, self = this, data = this.data || {nodes: [], edges: []};
+  mount(ctx){
+    var P = this.props, D = base, self = this, data = this.data || {nodes: [], edges: []}, sk = MR.sink(this, ctx);
     this.style.display = "block"; this.style.position = "relative";
     var W = this.clientWidth, H = this.clientHeight;
     var svg = D.el("svg", {viewBox: "0 0 " + W + " " + H, width: W, height: H, style: "display:block;overflow:visible"}, this);
@@ -53,8 +64,8 @@ DECK.define("m-flow", class extends DECK.MotionElement {
       var g = D.el("g", {opacity: 0}, gN);
       if (n.shape === "diamond") D.el("polygon", {class: "box", points: [cx, n.y, n.x + n.w, cy, cx, n.y + n.h, n.x, cy].join(" "), "stroke-linejoin": "round", fill: c[1], stroke: c[0], "stroke-width": n.tone === "emph" ? 3 : 2.2}, g);
       else D.el("rect", {class: "box", x: n.x, y: n.y, width: n.w, height: n.h, rx: 10, fill: c[1], stroke: c[0], "stroke-width": n.tone === "emph" ? 3 : 2.2}, g);
-      // svgMath の div は行の中の inline-block なので、上端にそろえないと親の行の高さの分だけ下へずれる
-      if (n.tex) D.svgMath(g, cx, cy + P.size * 0.36, n.tex, {size: P.size, anchor: "middle", color: c[2], w: n.w, h: n.h}).firstChild.style.verticalAlign = "top";
+      // 式の div は行の中の inline-block なので、上端にそろえないと親の行の高さの分だけ下へずれる
+      if (n.tex) MR.texFrame(g, cx, cy + P.size * 0.36, n, "tex", {size: P.size, anchor: "middle", color: c[2], w: n.w, h: n.h}, sk).firstChild.style.verticalAlign = "top";
       else {
         var lines = String(n.label || "").split("\n"), lh = P.size * 1.25, y0 = cy - (lines.length - 1) * lh / 2 + P.size * 0.36;
         lines.forEach(function(s, j){ D.mtext(g, cx, y0 + j * lh, s, {"text-anchor": "middle", "font-size": P.size, fill: c[2]}); });
@@ -73,7 +84,7 @@ DECK.define("m-flow", class extends DECK.MotionElement {
     // 戻る辺の道：箱の side の側の辺の中点から出て、両端の間にある箱（と両端）の外側 28 px を回り、戻り先の同じ側に入る
     function loopRoute(lp, A, B){
       var sd = lp === true ? (Math.abs(B.y + B.h / 2 - A.y - A.h / 2) >= Math.abs(B.x + B.w / 2 - A.x - A.w / 2) ? "right" : "bottom") : lp;
-      if (!/^(left|right|top|bottom)$/.test(sd)){ console.warn("m-flow: loop=" + JSON.stringify(lp) + " is not true, left, right, top or bottom (right is used)"); sd = "right"; }
+      if (!/^(left|right|top|bottom)$/.test(sd)){ ctx.report("data", "[flow] loop=" + JSON.stringify(lp) + " is not true, left, right, top or bottom (right is used)"); sd = "right"; }
       var hz = sd === "left" || sd === "right", sg = sd === "right" || sd === "bottom" ? 1 : -1;
       var out = function(n){ return hz ? [sg > 0 ? n.x + n.w + 6 : n.x - 6, n.y + n.h / 2] : [n.x + n.w / 2, sg > 0 ? n.y + n.h + 6 : n.y - 6]; };
       var q0 = out(A), q1 = out(B), j = hz ? 1 : 0, lo = Math.min(q0[j], q1[j]), hi = Math.max(q0[j], q1[j]);
@@ -90,7 +101,7 @@ DECK.define("m-flow", class extends DECK.MotionElement {
     }
     this.edges = (data.edges || []).map(function(e){
       var a = byId[e.from], b = byId[e.to];
-      if (!a || !b){ console.error("m-flow: unknown node", e.from, e.to); return null; }
+      if (!a || !b){ ctx.report("data", "[flow] an edge refers to an unknown node: " + JSON.stringify(e.from) + " → " + JSON.stringify(e.to) + " (not drawn)"); return null; }
       var dx = b.cx - a.cx, dy = b.cy - a.cy, L = Math.hypot(dx, dy) || 1;
       var p0 = edgePt(a.n, dx / L, dy / L, 6), p1 = edgePt(b.n, -dx / L, -dy / L, 6), route = null;
       if (e.loop) route = loopRoute(e.loop, a.n, b.n);
@@ -160,6 +171,7 @@ DECK.define("m-flow", class extends DECK.MotionElement {
       if (route) o.poly = route.poly;
       return o;
     }).filter(Boolean);
+    sk.flush();   // what the formulas have to report, once per kind (spec §6.2)
   }
   // 折れ線：点と累積の長さ（戻る辺）
   poly(pts){
@@ -171,7 +183,7 @@ DECK.define("m-flow", class extends DECK.MotionElement {
   polyAt(pl, len){
     var pts = pl.pts, want = Math.max(0, Math.min(pl.len, len)), i = 1, d = "M" + pts[0][0].toFixed(2) + "," + pts[0][1].toFixed(2);
     while (i < pts.length - 1 && pl.L[i] < want){ d += "L" + pts[i][0].toFixed(2) + "," + pts[i][1].toFixed(2); i++; }
-    var u = (want - pl.L[i - 1]) / ((pl.L[i] - pl.L[i - 1]) || 1), x = DECK.lerp(pts[i - 1][0], pts[i][0], u), y = DECK.lerp(pts[i - 1][1], pts[i][1], u);
+    var u = (want - pl.L[i - 1]) / ((pl.L[i] - pl.L[i - 1]) || 1), x = base.lerp(pts[i - 1][0], pts[i][0], u), y = base.lerp(pts[i - 1][1], pts[i][1], u);
     return {x: x, y: y, ang: Math.atan2(pts[i][1] - pts[i - 1][1], pts[i][0] - pts[i - 1][0]) * 180 / Math.PI, d: d + "L" + x.toFixed(2) + "," + y.toFixed(2)};
   }
   // pulse の点の列が流れ終わるまでの長さ（点の間は 0.22 秒）
@@ -192,10 +204,10 @@ DECK.define("m-flow", class extends DECK.MotionElement {
     return c.length ? c.sort(function(a, b){ return a - b; }) : null;
   }
   render(k, t, ctx){
-    var P = this.props, D = DECK, self = this, preview = !!(ctx && (ctx.preview || ctx.mode === "lecture")), PV = 0;
+    var P = this.props, D = base, self = this, preview = !!ctx.preview, PV = 0;
     // 先を薄く見せる表示：後の段階の箱と矢印（名前・金額も）を、最後の形のままテーマの --preview-opacity（なければ 0.45）で描く。
     // pulse の点は今の段階のものだけ
-    if (preview){ PV = parseFloat(getComputedStyle(this).getPropertyValue("--preview-opacity")); if (!(PV >= 0 && PV <= 1)) PV = 0.45; }
+    if (preview) PV = base.previewOpacity(this);
     var ahead = function(step){ return preview && step > k; };
     var pr = function(step, at, dur){ return step < k || ahead(step) ? 1 : step > k ? 0 : D.prog(t, at, dur); };
     this.nodes.forEach(function(o){
@@ -230,11 +242,12 @@ DECK.define("m-flow", class extends DECK.MotionElement {
       o.dots.forEach(function(dot, j){
         var u = q && t !== Infinity ? (t - q.at - 0.22 * j) / P["pulse-dur"] : -1;
         if (u <= 0 || u >= 1 || e < 1){ dot.setAttribute("opacity", 0); return; }
-        var w = D.ease(u);
+        var w = D.prog(u, 0, 1);
         if (o.poly){ var pp = self.polyAt(o.poly, w * o.poly.len); dot.setAttribute("cx", pp.x.toFixed(2)); dot.setAttribute("cy", pp.y.toFixed(2)); }
         else { dot.setAttribute("cx", D.lerp(o.p0[0], o.p1[0], w).toFixed(2)); dot.setAttribute("cy", D.lerp(o.p0[1], o.p1[1], w).toFixed(2)); }
         dot.setAttribute("opacity", Math.min(1, u * 8, (1 - u) * 8).toFixed(3));
       });
     });
   }
+};
 });

@@ -8,39 +8,33 @@
 // 段階：order="causes-first"（既定：大骨 1 本ずつ（その原因と一緒に）、最後に頭）か order="effect-first"（頭と背骨、それから大骨 1 本ずつ）。節の step が勝つ
 // edges：原因どうしなど、ほかのつながり（破線、矢印つき）。段階は両端の遅いほう
 // 字の大きさは要素の大きさから決め（27 px から）、入らなければ 24 px まで縮める。それでも入らなければ、字は 24 px のまま
-// 大骨の間を詰め、要素の箱からはみ出して console.warn（足りない px）
+// 大骨の間を詰め、要素の箱からはみ出して ctx.report("size", …)（足りない px）
 // 見せ方（docs/conventions.md §2.5）：fade（箱と字が下から 12 px 上がりながら現れてから線を引く、既定）・draw（線を先に引き、
 // その先に箱と字が現れる）・grow（分類の箱が背骨の側から 12 px 寄りながら 0.92 → 1 に、原因の字が大骨の側から 12 px 寄って出る）。
 // 箱と字の動きはどれも 12 px まで。段階の数・長さ・最後の中身はどれも同じ
-// ---- BEGIN egatari-variant (source: tools/variant.js; copy with `node tools/variant-sync.mjs`; do not edit inside a component) ----
-// Choosing a presentation variant (Egatari spec §8.4, docs/conventions.md §1). A component lists its variant names in
-// `static variants` (the first is the default) and calls VARIANT.of(this) once, in mount. The variant is the component's
-// `variant` attribute when it names one of them, otherwise the first name. There is no seed: lessons do not carry one
-// (spec §8.4 since egatari-spec 28d8801), and `seed` / `data-egatari-seed` are not read.
-// The choice is a pure function of the attribute: the picture still depends on (i, k, t) only.
-var VARIANT = (function(){
-  "use strict";
-  function of(el){
-    var tag = el.tagName.toLowerCase(), C = customElements.get(tag), names = (C && C.variants) || [], v = el.getAttribute("variant");
-    if (v !== null && names.indexOf(v) >= 0) return v;
-    if (v !== null) console.warn(tag + ' variant="' + v + '" is not one of ' + names.join(", ") + " (the first, " + (names[0] || "none") + ", is used)");
-    return names[0] || null;
-  }
-  return {of: of};
-})();
-// ---- END egatari-variant ----
-DECK.define("m-fishbone", class extends DECK.MotionElement {
+// 2.0（Egatari spec §6.1 の部品）：base の MotionElement・el・mtext・prog・lerp・variant・previewOpacity を使い、プレイヤーのグローバルは使わない。
+// 式（tex）は組み立てのときに KaTeX で描く（spec §6.2）：build.fields の effect.tex・nodes[].tex を作り手が描いて texHtml を足し、
+// この部品は markup-reader で決まった要素と属性だけを読んで置く（再生のときに KaTeX は動かない）。描いた結果がなければ tex を字のまま出して知らせる。
+// 入らないときは ctx.report("size", "[fishbone] …") で知らせる（1.x の console.warn の代わり）
+egatariParts.define({name: "fishbone", version: "2.0.0", requires: {base: "1.0.0", "markup-reader": "1.0.0"}, element: "m-fishbone"}, function(deps){
+"use strict";
+var base = deps.base, MR = deps["markup-reader"];
+var Part = class extends base.MotionElement {
+  static partName = "fishbone";   // the registry name (define meta name), for report prefixes
+  // 組み立てのときに描く欄（spec §6.2）。式の意味は字（tex）でも持つので、KaTeX の出力は HTML だけ
+  static build = {fields: {"effect.tex": "katex", "nodes[].tex": "katex"}, options: {katex: {output: "html"}}};
   static variants = ["fade", "draw", "grow"];
   // データの形（kit/shape.js）
   static shape = {
     schema: {type: "object", additionalProperties: false, required: ["effect", "nodes"], properties: {
-      effect: {type: "object", properties: {label: {type: "string"}, tex: {type: "string"}, note: {type: "string"}, tone: {type: "string"}, step: {type: "integer"}, at: {type: "number"}}},
+      effect: {type: "object", properties: {label: {type: "string"}, tex: {type: "string"}, texHtml: {type: "string"}, note: {type: "string"}, tone: {type: "string"}, step: {type: "integer"}, at: {type: "number"}}},
       nodes: {type: "array", minItems: 1, items: {type: "object", required: ["id"], properties: {
-        id: {type: ["string", "integer"]}, label: {type: "string"}, tex: {type: "string"}, note: {type: "string"}, tone: {type: "string"},
+        id: {type: ["string", "integer"]}, label: {type: "string"}, tex: {type: "string"}, texHtml: {type: "string"}, note: {type: "string"}, tone: {type: "string"},
         parent: {type: ["string", "integer"]}, step: {type: "integer"}, at: {type: "number"}}}},
       edges: {type: "array", items: {type: "object", required: ["from", "to"], properties: {
         from: {type: ["string", "integer"]}, to: {type: ["string", "integer"]}, label: {type: "string"}, tone: {type: "string"}, dash: {type: "boolean"},
-        step: {type: "integer"}, at: {type: "number"}}}}}},
+        step: {type: "integer"}, at: {type: "number"}}}},
+      renderers: {type: "object"}}},
     example: {effect: {label: "配送の遅れ"}, nodes: [{id: "p", label: "人"}, {id: "p1", label: "人手が足りない", parent: "p"}, {id: "m", label: "機械"}, {id: "m1", label: "車の故障", parent: "m"}]},
     note: "parent のない節が大骨（分類）、その子が原因、孫が細かい原因（3 段まで）",
   };
@@ -95,9 +89,9 @@ DECK.define("m-fishbone", class extends DECK.MotionElement {
   }
   // 1 つのものが現れて線を引き終わるまで（どの見せ方でも同じ）
   span(){ return this.props.fade * 0.6 + this.props.draw; }
-  mount(){
-    var P = this.props, D = DECK, self = this, pl = this.plan();
-    this.variant = VARIANT.of(this);
+  mount(ctx){
+    var P = this.props, D = base, self = this, pl = this.plan(), sk = MR.sink(this, ctx);
+    this.variant = base.variant(this);
     this.style.display = "block"; this.style.position = "relative";
     var W = this.clientWidth, H = this.clientHeight;
     var svg = D.el("svg", {viewBox: "0 0 " + W + " " + H, width: W, height: H, style: "display:block;overflow:visible"}, this);
@@ -184,7 +178,7 @@ DECK.define("m-fishbone", class extends DECK.MotionElement {
       var s24 = sizes[sizes.length - 1], miss = function(t){ return Math.max(0, t.width - W) + Math.max(0, t.height - H); };
       for (var cg0 = 28; cg0 >= 12; cg0 -= 4){ var t0 = layout(s24, 40, 0.3, cg0); if (!L || miss(t0) < miss(L)) L = t0; }
       L.s = s24; L.rh = 40; L.k = 0.3;
-      console.warn("m-fishbone: the diagram does not fit at " + s24 + " px; it overflows its box by " + Math.ceil(Math.max(0, L.width - W)) + " px across and " +
+      ctx.report("size", "[fishbone] the diagram does not fit at " + s24 + " px; it overflows its box by " + Math.ceil(Math.max(0, L.width - W)) + " px across and " +
         Math.ceil(Math.max(0, L.height - H)) + " px up and down (text is not made smaller). Use fewer causes per bone, shorter causes or a larger element");
     }
     // 横に余れば、大骨の間を広げる（80 px まで）
@@ -195,7 +189,7 @@ DECK.define("m-fishbone", class extends DECK.MotionElement {
     var mkLine = function(parent, w, col){ return D.el("path", {d: "", fill: "none", stroke: col || "var(--muted)", "stroke-width": w, "stroke-linecap": "round", "stroke-linejoin": "round"}, parent); };
     var boxText = function(g, b, n, x, y, c, sz){
       var cx = x + b.w / 2, cy = y + b.h / 2;
-      if (n.tex) D.svgMath(g, cx, cy + sz * 0.36, n.tex, {size: sz, anchor: "middle", color: c[2], w: b.w, h: b.h}).firstChild.style.verticalAlign = "top";
+      if (n.tex) MR.texFrame(g, cx, cy + sz * 0.36, n, "tex", {size: sz, anchor: "middle", color: c[2], w: b.w, h: b.h}, sk).firstChild.style.verticalAlign = "top";
       else {
         var lh = sz * 1.25, y0 = cy - (b.lines.length - 1) * lh / 2 + sz * 0.36;
         b.lines.forEach(function(t, j){ D.mtext(g, cx, y0 + j * lh, t, {"text-anchor": "middle", "font-size": sz, fill: c[2]}); });
@@ -244,8 +238,8 @@ DECK.define("m-fishbone", class extends DECK.MotionElement {
         }
         var tx, xe = X(bx + r.xe);
         if (o.n.tex){
-          // 式（KaTeX）：箱と同じ svgMath で、行の右端に寄せる。note はその右に別の字で
-          D.svgMath(gr, xe - r.nw, y - 8, o.n.tex, {size: r.sz, anchor: "end", color: tc, w: r.tw - r.nw + 40, h: r.sz * 1.6}).firstChild.style.verticalAlign = "top";
+          // 式（組み立てのときに描いた KaTeX）：箱と同じ枠（MR.texFrame）で、行の右端に寄せる。note はその右に別の字で
+          MR.texFrame(gr, xe - r.nw, y - 8, o.n, "tex", {size: r.sz, anchor: "end", color: tc, w: r.tw - r.nw + 40, h: r.sz * 1.6}, sk).firstChild.style.verticalAlign = "top";
           if (o.n.note) D.mtext(gr, xe, y - 8, "  " + o.n.note, {"text-anchor": "end", "font-size": NS, fill: "var(--muted)"});
         } else {
           tx = D.mtext(gr, xe, y - 8, o.n.label || "", {"text-anchor": "end", "font-size": r.sz, fill: tc});
@@ -287,6 +281,7 @@ DECK.define("m-fishbone", class extends DECK.MotionElement {
       [ra, rb].forEach(function(r){ if (r.step === x.step) after = Math.max(after, r.at + 0.45); });
       return {g: g, line: line, head: head, lab: lab, path: self.poly(pts), step: x.step, at: e.at !== undefined ? e.at : after};
     });
+    sk.flush();   // what the formulas have to report, once per kind (spec §6.2)
   }
   poly(pts){
     var L = [0];
@@ -299,7 +294,7 @@ DECK.define("m-fishbone", class extends DECK.MotionElement {
     var end = out[out.length - 1];
     if (i < pts.length && want > pl.L[i - 1]){
       var u = (want - pl.L[i - 1]) / (pl.L[i] - pl.L[i - 1]);
-      end = [DECK.lerp(pts[i - 1][0], pts[i][0], u), DECK.lerp(pts[i - 1][1], pts[i][1], u)];
+      end = [base.lerp(pts[i - 1][0], pts[i][0], u), base.lerp(pts[i - 1][1], pts[i][1], u)];
       out.push(end);
     }
     var pv = out.length > 1 ? out[out.length - 2] : pts[0], nx = i < pts.length ? pts[i] : end;
@@ -318,8 +313,8 @@ DECK.define("m-fishbone", class extends DECK.MotionElement {
     return d;
   }
   render(k, t, ctx){
-    var P = this.props, D = DECK, self = this, vr = this.variant, lect = ctx && (ctx.preview || ctx.mode === "lecture"), S = this.span(), FAINT = 0.45;
-    if (lect){ var pv = parseFloat(getComputedStyle(this).getPropertyValue("--preview-opacity")); FAINT = pv >= 0 && pv <= 1 ? pv : 0.45; }   // 先の段階の薄さ：テーマの --preview-opacity（ないときは 0.45）
+    var P = this.props, D = base, self = this, vr = this.variant, lect = !!ctx.preview, S = this.span(), FAINT = 0.45;
+    if (lect) FAINT = base.previewOpacity(this);   // 先の段階の薄さ：テーマの --preview-opacity（ないときは 0.45）
     var tOf = function(step){ return step < k ? Infinity : step > k ? -1 : t; };
     var pr = function(tt, at, dur){ return tt < 0 ? 0 : D.prog(tt, at, dur); };
     // 授業の表示：後の段階は薄く（--preview-opacity）、今の段階は薄い状態から濃くなる。位置は動かさない（どの見せ方でも同じ）
@@ -399,4 +394,6 @@ DECK.define("m-fishbone", class extends DECK.MotionElement {
       if (o.lab) o.lab.setAttribute("opacity", lo.toFixed(3));
     });
   }
+};
+return Part;
 });

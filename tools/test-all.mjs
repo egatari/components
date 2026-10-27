@@ -23,9 +23,15 @@
 //                     before mount the same records, placeholder and messages as DECK's (tools/test-base.mjs)
 //      part-shape     components/shape ≡ the pinned Studio's DECK.shape on the components' shapes and altered data (tools/test-part-shape.mjs)
 //      part-plot      components/plot ≡ the pinned Studio's DECK.Plot, but for its prefixed clip ids (tools/test-part-plot.mjs)
+//      katex-produce  the stand-in producer of build-time tex (spec §6.2): KaTeX = the pinned Studio's, deterministic bytes, the
+//                     renderers record once at the top of the data, <field>Html beside each declared field (tools/test-katex-produce.mjs)
+//      markup-reader  components/markup-reader admits exactly egatari-spec's schema/rendered-markup-1.json (pinned in tools/spec.json),
+//                     drops and reports the rest, reads KaTeX's html as katex.render drew it; KaTeX 0.19.0's documented corpus
+//                     read with nothing dropped, else each gap listed for the spec (tools/test-markup-reader.mjs)
 //      c2-identity    each migrated element part (2.0, e.g. m-bars, m-menu) draws byte-identical DOM to its v1.13.0 version on the
 //                     v1.13.0 demo, through the registry shim: every step at 35 %, 70 % and its end, talk and preview views,
-//                     and after a tour of every slide (tools/test-c2-identity.mjs; docs/c2-migration.md)
+//                     and after a tour of every slide (tools/test-c2-identity.mjs; docs/c2-migration.md); parts with tex fields
+//                     with their formulas rendered at build time on the 2.0 side (tools/katex-produce.mjs)
 //      c2-noreports   every migrated part's demo.html and every identity fixture play without any ctx.report record, but for the
 //                     reports a fixture lists as expected (tools/test-c2-noreports.mjs)
 //      studio-check     Studio's own checker (kit/check.mjs) on each demo.html: no error; warnings other than R-narr-steps listed (tools/test-studio-check.mjs)
@@ -91,6 +97,8 @@ const TESTS = [
   ['test-base', ['tools/test-base.mjs', path.join(tmp, 'base')]],
   ['test-part-shape', ['tools/test-part-shape.mjs']],
   ['test-part-plot', ['tools/test-part-plot.mjs', path.join(tmp, 'part-plot')]],
+  ['test-katex-produce', ['tools/test-katex-produce.mjs']],
+  ['test-markup-reader', ['tools/test-markup-reader.mjs', path.join(tmp, 'markup-reader')]],
   ['test-c2-identity', ['tools/test-c2-identity.mjs', path.join(tmp, 'c2-identity')]],
   ['test-c2-noreports', ['tools/test-c2-noreports.mjs', path.join(tmp, 'c2-noreports')]],
   ['test-studio-check', ['tools/test-studio-check.mjs']],

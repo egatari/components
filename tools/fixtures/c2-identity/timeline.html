@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="ja" data-theme="default">
+<head>
+<meta charset="utf-8">
+<title>m-timeline: formulas (tools/test-c2-identity.mjs)</title>
+<!-- The v1.13.0 demo has no tex. 2.0 renders tex at build time (spec §6.2: nodes[].tex → texHtml) and reads it through
+     markup-reader; this deck checks that the DOM stays that of 1.13 (KaTeX at play time): events with formulas (in their
+     boxes, with notes), periods (bands) named with formulas, horizontal and vertical. -->
+</head>
+<body>
+<div id="stage">
+
+<section class="slide">
+  <h2>微積分の記号</h2>
+  <div class="body">
+    <m-timeline style="height:430px">
+      <script type="application/json">{
+        "nodes": [
+          {"tex": "\\frac{dy}{dx}", "when": "1675", "note": "ライプニッツ"},
+          {"tex": "\\dot{x}", "when": "1691", "note": "ニュートン"},
+          {"tex": "f'(x)", "when": "1797", "note": "ラグランジュ"},
+          {"tex": "\\int_a^b f(x)\\,dx", "when": "1822", "tone": "emph"},
+          {"tex": "\\sqrt{x}", "when": "1840"},
+          {"label": "ε-δ", "when": "1861"}
+        ]
+      }</script>
+    </m-timeline>
+  </div>
+  <div class="concl"><span>→ 記号は 200 年かけて今の形になった</span></div>
+</section>
+
+<section class="slide">
+  <h2>期間</h2>
+  <div class="body">
+    <m-timeline orient="v" style="height:460px">
+      <script type="application/json">{
+        "nodes": [
+          {"tex": "\\mathcal{L}", "when": "1700", "end": "1760", "lane": "解析"},
+          {"tex": "\\nabla f", "when": "1750", "end": "1820", "lane": "解析", "note": "勾配"},
+          {"tex": "e^{i\\pi}+1=0", "when": "1748"},
+          {"label": "群", "when": "1830", "end": "1870", "lane": "代数"}
+        ]
+      }</script>
+    </m-timeline>
+  </div>
+  <div class="concl"><span>→ 解析と代数は並んで進んだ</span></div>
+</section>
+
+</div>
+</body>
+</html>
