@@ -430,6 +430,10 @@ var NUM_R = 15;       // 画の番号の丸の半径（px）。番号の字は 2
 return class extends base.MotionElement {
   static partName = "kakijun";   // the registry name (define meta name), for report prefixes
   static variants = ["draw", "pen"];
+  // 組み立てのときの絞り込み（spec §6.2 Subset）：コードの中の OFL のデータ（上の STROKES の、OFL-1.1 data の BEGIN と END の印の間の JSON）の
+  // chars を、レッスンで使う字だけに絞る（tools/subset-produce.mjs が代わり）。glyphs：再生のときに描く字（画の番号・とめ・はね・はらい）
+  static build = {subset: {data: "OFL-1.1 data:chars", key: "char"}};
+  static glyphs = "0123456789とめはねらい";
   // データは属性だけ（字は text、size は整数の JSON）
   static shape = {schema: null, example: '<m-kakijun text="あさ" style="height:320px"></m-kakijun>'};
   static props = {
@@ -460,8 +464,9 @@ return class extends base.MotionElement {
     var dur = isFinite(P.dur) && P.dur > 0 ? P.dur : 0.6;
     var cells = chars.map(function(ch, ci){
       var k = KANA[ch];
-      if (!k){
-        notes.push(["data", "no stroke data for " + JSON.stringify(ch) + " (it is drawn plainly in the theme font, without stroke order)"]);
+      if (!k || !STROKES.chars[ch]){
+        // !STROKES.chars[ch]: a copy subset at build time for other characters (spec §6.2 Subset), e.g. after a tier A edit of text
+        notes.push(["data", "no stroke data for " + JSON.stringify(ch) + (k ? " in this copy (the build kept only the characters the lesson used)" : "") + " (it is drawn plainly in the theme font, without stroke order)"]);
         return {ch: ch, ci: ci, known: false, strokes: []};
       }
       if (ch === "ー" && writing === "tate") notes.push(["data", "ー is drawn in its horizontal form (the stroke data has no vertical ー)"]);
@@ -499,7 +504,8 @@ return class extends base.MotionElement {
   mount(ctx){
     var self = this, P = this.props, pl = this.plan(), D = base;
     this.variant = base.variant(this);
-    pl.notes.forEach(function(n){ ctx.report(n[0], "[kakijun] " + n[1]); });
+    // ctx.report with each code as a literal (lint checks them): plan's notes are attr or data
+    pl.notes.forEach(function(n){ var code = n[0], msg = "[kakijun] " + n[1]; if (code === "attr") ctx.report("attr", msg); else ctx.report("data", msg); });
     this.style.display = "block";
     var nums = ON(P.nums), ends = ON(P.ends), grid = P.grid !== "none", tate = pl.writing === "tate";
     if (P.grid !== "cross" && P.grid !== "none") ctx.report("attr", '[kakijun] grid="' + P.grid + '" is not cross or none (cross is used)');

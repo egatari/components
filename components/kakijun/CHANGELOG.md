@@ -15,6 +15,13 @@ The part's own versions (Egatari spec §6.1). Releases of the whole library are 
   `ctx.report("attr", …)`, and boxes that do not fit or small-kana labels that do not fit beside them
   `ctx.report("size", …)`. `plan()`, which gives the step count, still reads only the attributes and collects its notes
   for `mount`.
+- Subset at build time (spec §6.2): `static build = {subset: {data: "OFL-1.1 data:chars", key: "char"}}` (the `chars`
+  of the JSON between the OFL-1.1 data markers) and `static glyphs = "0123456789とめはねらい"` (the stroke numbers and
+  ending labels it draws). A producer keeps only the characters the lesson uses and records `subset: {keys, sha256}`
+  (`tools/subset-produce.mjs` is the stand-in; `tools/test-subset.mjs`). A character whose strokes a subset left out
+  (e.g. after a tier A edit of `text`) is drawn plainly, like a character without data, and reported as `data`.
+- The collected notes are forwarded with a literal code per `ctx.report` call (lint checks each); no change in what is
+  reported.
 - The preview view is `ctx.preview` alone (1.13.0 also accepted `ctx.mode === "lecture"`).
 - The part's code now runs in strict mode (1.13.0's had no `"use strict"`).
 - Ids: the clip paths are renamed `kakijun-2-0-0-clip-<n>` (1.13.0: `m-kakijun-clip-<n>`), and their start-cap masks
