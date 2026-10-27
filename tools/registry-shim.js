@@ -109,7 +109,7 @@ function fallback(tag, key, code, message){
       var D = G.DECK, s = this.closest && this.closest(".slide");
       var all = D && D.slides ? D.slides : [].slice.call(document.querySelectorAll("#stage > .slide")), i = s ? all.indexOf(s) : -1;
       var sk = s ? slideKey(s) || (i >= 0 ? "s" + (i + 1) : "") : "";   // DECK's own key for a slide without id, before it sets _key
-      var rec = {slide: i, key: sk, tag: tag, phase: "registry", kind: "report", code: "registry",
+      var rec = {slide: i, key: sk, tag: tag, phase: "registry", kind: "report", code: "error",
         msg: "[" + key.slice(0, key.lastIndexOf("@")) + "] " + key + " is not defined (" + code + ": " + message + ")"};
       reports.push(rec);
       if (D && Array.isArray(D.componentErrors)) D.componentErrors.push(rec);

@@ -287,9 +287,9 @@ try {
   ok(r.failures.some((x) => x.key === 'c2fail@0.0.1' && x.code === 'factory'), 'its failure is recorded');
   ok(r.other === '1', 'the rest of the slide still steps (the data-step item is shown at step 2)');
   ok(warns.some((w) => /c2fail@0\.0\.1: factory: its factory threw probe failure; it is not defined/.test(w)), 'and warned on the console');
-  ok(r.dep.box && r.dep.text === 'a part whose library failed' && r.depReport && r.depReport.code === 'registry' && /^\[c2dep\] c2dep@0\.0\.1 is not defined \(dependency: requires c2badlib@0\.0\.1, which failed \(factory: its factory threw TypeError: library probe failure\)\)$/.test(r.depReport.msg),
+  ok(r.dep.box && r.dep.text === 'a part whose library failed' && r.depReport && r.depReport.code === 'error' && r.depReport.phase === 'registry' && /^\[c2dep\] c2dep@0\.0\.1 is not defined \(dependency: requires c2badlib@0\.0\.1, which failed \(factory: its factory threw TypeError: library probe failure\)\)$/.test(r.depReport.msg),
     `a dependant of a library part whose factory threw shows its text equivalent and has its own report in DECK.componentErrors (${r.depReport && r.depReport.msg})`);
-  const failRecs = r.reports.filter((x) => x.code === 'registry').map((x) => [x.tag, x.slide, x.key]);
+  const failRecs = r.reports.filter((x) => x.phase === 'registry' && x.code === 'error').map((x) => [x.tag, x.slide, x.key]);
   ok(failRecs.length === 2 && failRecs.every((x) => x[1] === r.i && x[2] === 's-probe'),
     `a registry failure's record has its slide's index and key, also when made before DECK lists the slides (${JSON.stringify(failRecs)})`);
 
