@@ -66,6 +66,42 @@ export function frontmatter(text) {
 
 // A 2.0 part (one that calls egatariParts.define, spec §6.1): its meta, and no DECK, import or require
 const strip = (js) => js.replace(/\/\*[\s\S]*?\*\//g, '').replace(/(^|[^:"'\\])\/\/.*$/gm, '$1');
+// ctx.report's codes (spec §8.4, egatari-spec 71cb10c)
+export const REPORT_CODES = ['data', 'attr', 'range', 'size', 'layout', 'theme', 'error'];
+// Every `.report(` call in (comment-stripped) code, read statically: {code, msg, src}, where code is the first argument when
+// it is a string literal on its own (else null) and msg the string literal the second argument starts with (else null)
+export function reportCalls(code) {
+  const out = [], re = /\.report\s*\(/g;
+  const lit = (i) => {
+    const q = code[i];
+    if (q !== '"' && q !== "'" && q !== '`') return null;
+    let v = '', j = i + 1;
+    for (; j < code.length && code[j] !== q; j++) {
+      if (code[j] === '\\') { j++; v += code[j] === 'n' ? '\n' : code[j]; } else if (q === '`' && code[j] === '$' && code[j + 1] === '{') return null; else v += code[j];
+    }
+    return j < code.length ? { v, end: j + 1 } : null;
+  };
+  const ws = (i) => { while (/\s/.test(code[i] || '')) i++; return i; };
+  let m;
+  while ((m = re.exec(code))) {
+    let i = ws(m.index + m[0].length), c = null, msg = null;
+    const a = lit(i);
+    if (a) { const k = ws(a.end); if (code[k] === ',') { c = a.v; i = k; } }
+    if (c !== null) { const b = lit(ws(i + 1)); if (b) msg = b.v; }
+    else {
+      // the first argument is an expression: find the comma that ends it at depth 0, then read the second
+      let d = 0, j = i;
+      for (; j < code.length; j++) {
+        const ch = code[j];
+        if (ch === '"' || ch === "'" || ch === '`') { const s = lit(j); if (!s) break; j = s.end - 1; continue; }
+        if ('([{'.includes(ch)) d++; else if (')]}'.includes(ch)) { if (d === 0) break; d--; } else if (ch === ',' && d === 0) break;
+      }
+      if (code[j] === ',') { const b = lit(ws(j + 1)); if (b) msg = b.v; }
+    }
+    out.push({ code: c, msg, src: code.slice(m.index, Math.min(code.length, m.index + 60)) });
+  }
+  return out;
+}
 export function lintMeta(name, js, meta) {
   const errs = [], at = `components/${name}/index.js`;
   const keys = Object.keys(meta);
@@ -94,6 +130,11 @@ export function lintMeta(name, js, meta) {
   }
   // static testing = {…} is for this part's own tests only: no part reads it (another part's or its own)
   if (/\.\s*testing\b|\[\s*["'`]testing["'`]\s*\]/.test(code)) errs.push(`${at}: reads .testing; static testing is for tests only and no part reads it (shared logic goes in a library part, docs/c2-migration.md)`);
+  for (const e of reportCalls(code)) {
+    const line = js.slice(0, js.indexOf(e.src)).split('\n').length;
+    if (e.code !== null && !REPORT_CODES.includes(e.code)) errs.push(`${at}: ctx.report(${JSON.stringify(e.code)}, …): the code must be one of ${REPORT_CODES.join(', ')} (spec §8.4)${line > 1 ? ` (near line ${line})` : ''}`);
+    if ('element' in meta && e.msg !== null && !e.msg.startsWith(`[${meta.name}]`)) errs.push(`${at}: ctx.report(…, ${JSON.stringify(e.msg.slice(0, 40))}…): the message must start with "[${meta.name}]" (spec §8.4)${line > 1 ? ` (near line ${line})` : ''}`);
+  }
   if ((code.match(/egatariParts\.define\s*\(/g) || []).length !== 1) errs.push(`${at}: a part calls egatariParts.define exactly once`);
   return errs;
 }
