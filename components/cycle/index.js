@@ -97,6 +97,7 @@ var Part = class extends base.MotionElement {
     }
     if (!L.fits) ctx.report("size", "[cycle] the cycle does not fit its box even at 24px (" + L.why + "); make the element larger or shorten the labels");
     this.draw(L);
+    this.texSink.flush();   // what the formulas have to report, once per kind (spec §6.2)
   }
   arrange(size){
     var self = this, W = this.W, H = this.H, pl = this.plan(), N = pl.stages.length, why = [];

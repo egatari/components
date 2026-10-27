@@ -8,9 +8,10 @@
 //   3. corpus     KaTeX's builder corpus (tools/katex-corpus.mjs: every formula of KaTeX 0.19.0's support_table.md and
 //                 supported.md, and Egatari's \hlE \hlT \hlM \htmlId \htmlData \htmlClass \morph), rendered with the
 //                 producer's options (tools/katex-produce.mjs) as htmlAndMathml (the default) and as html, read through the
-//                 reader. It FAILS on anything dropped: each distinct drop is listed with how often and a formula that shows
-//                 it. A drop is a gap between KaTeX and the spec's list, reported to standards as a needed spec change (or a
-//                 decision that the construct is not for lessons); the reader never gets an exception.
+//                 reader. The drops the spec documents as losses (EXPECTED_LOSSES: \color, \textcolor, the errorColor of
+//                 untrusted commands, \colorbox, \fcolorbox, \pmb, mathcolor, mathbackground) are listed with their counts;
+//                 anything else dropped FAILS, listed with how often and a formula that shows it: a gap between KaTeX and the
+//                 spec's list, for standards as a needed spec change. The reader never gets an exception.
 //   4. faithful   for the html output, every formula with nothing dropped reads to the same DOM as katex.render made at play
 //                 time (1.x), byte for byte, except the empty class="" katex.render writes and the style of an <svg> it
 //                 writes as text (tools/test-c2-identity.mjs KATEX_EMPTY_CLASS, KATEX_SVG_STYLE)
@@ -68,6 +69,11 @@ const CASES = [
   ['<math xmlns="http://www.w3.org/1998/Math/MathML" display="block"><semantics><mrow><mi mathvariant="normal">x</mi><mo stretchy="false">(</mo></mrow><annotation encoding="application/x-tex">x(</annotation></semantics></math>', 'html',
     '<math display="block"><semantics><mrow><mi mathvariant="normal">x</mi><mo stretchy="false">(</mo></mrow><annotation encoding="application/x-tex">x(</annotation></semantics></math>', []],
   ['<math><mstyle mathcolor="red"><mi href="x">a</mi></mstyle><maction actiontype="toggle"><mi>b</mi></maction></math>', 'html', '<math><mstyle><mi>a</mi></mstyle></math>', ['attribute mathcolor', 'attribute href', 'element <maction>']],
+  ['<span style="color:transparent;margin:0 -0.02em;border-style:solid;border-width:0.04em;padding:1px 2px 3px 4px">x</span>', 'html',
+    '<span style="color: transparent; margin: 0px -0.02em; border-style: solid; border-width: 0.04em; padding: 1px 2px 3px 4px;">x</span>', []],
+  ['<span style="color:#000;border:0.04em solid red;margin:1px 2px 3px 4px 5px;border-top:1px dotted">x</span>', 'html', '<span>x</span>', ['style color:#000', 'style border:0.04em solid red', 'style margin:1px 2px 3px 4px 5px', 'style border-top:1px dotted']],
+  ['<math><mstyle mathsize="1.2em" style="text-shadow:1px 1px;padding-left:0.1em"><mi separator="true">x</mi><mo largeop="false">∫</mo></mstyle><mtable><mtr><mtd width="50%">a</mtd></mtr></mtable></math>', 'html',
+    '<math><mstyle mathsize="1.2em" style="padding-left: 0.1em;"><mi separator="true">x</mi><mo largeop="false">∫</mo></mstyle><mtable><mtr><mtd width="50%">a</mtd></mtr></mtable></math>', ['style text-shadow']],
   ['<span>unclosed<span>x', 'html', '<span>unclosed<span>x</span></span>', []],
   ['a</span>b', 'html', 'ab', ['an end tag </span> without its start']],
 ];
@@ -100,16 +106,32 @@ const tf = await page.evaluate(() => {
   MR.texFrame(svg, 10, 20, { tex: 'y' }, 'tex', { size: 26 }, sk);
   MR.texFrame(svg, 10, 20, { tex: 'z', texHtml: '<span style="color:red">z</span>' }, 'tex', { size: 26 }, sk);
   MR.texFrame(svg, 10, 20, { tex: 'w', texHtml: '<b>w</b>' }, 'tex', { size: 26 }, sk);
-  return { a: a.firstChild.outerHTML, b: b.firstChild.textContent, cls: a.getAttribute('class'), reports };
+  MR.texFrame(svg, 10, 20, { tex: 'v', texHtml: '<span style="color:blue">v</span><b>v</b>' }, 'tex', { size: 26 }, sk);
+  MR.texFrame(svg, 10, 20, { tex: 'v', texHtml: '<span style="color:blue">v</span><b>v</b>' }, 'tex', { size: 26 }, sk);   // the same formula again (measured, then drawn)
+  const before = reports.length;
+  sk.flush(); sk.flush(); MR.sink(part, ctx).flush();
+  return { before, a: a.firstChild.outerHTML, b: b.firstChild.textContent, cls: a.getAttribute('class'), reports };
 });
 ok(tf.cls === 'smath' && tf.a.startsWith('<div xmlns="http://www.w3.org/1999/xhtml" style="display: inline-block; vertical-align: top; white-space: nowrap; line-height: 1; font-size: 26px;') && tf.a.endsWith('><span class="katex">x</span></div>'),
   'texFrame: the producer\'s texHtml read into the frame (foreignObject.smath, the div kit/deck.js made)' + (tf.cls === 'smath' ? '' : ` (${tf.cls})`));
 ok(tf.b === '\\frac{a}{b}', 'texFrame without texHtml: the tex source as plain text (spec §6.2 Missing output)');
-ok(JSON.stringify(tf.reports) === JSON.stringify([['data', '[flow] tex "\\\\frac{a}{b}" not rendered at build time (its source is shown as text)'],
-  ['data', '[flow] rendered markup of tex "z": dropped style color:red on <span> (not in rendered-markup-1, spec §6.2)']]),
-  'reports: once for missing output, once for dropped markup (ctx.report("data", "[<name>] …"))' + (fails ? '' : '') + (JSON.stringify(tf.reports).includes('not rendered') ? '' : `\n     ${JSON.stringify(tf.reports)}`));
+ok(tf.before === 0 && JSON.stringify(tf.reports) === JSON.stringify([['data', '[flow] 2 tex field(s) not rendered at build time, e.g. "\\\\frac{a}{b}" (the source is shown as text)'],
+  ['data', '[flow] rendered markup: dropped style color on <span> ×2, e.g. style color:red on <span> in tex "z" (not in rendered-markup-1, spec §6.2)'],
+  ['data', '[flow] rendered markup: dropped element <b> ×2, e.g. element <b> in <div> in tex "w" (not in rendered-markup-1, spec §6.2)']]),
+  'reports: at flush (end of mount), once per instance and kind, with the count; a formula read twice counts once (ctx.report("data", "[<name>] …"))' + `\n     ${JSON.stringify(tf.reports)}`);
 
 // ---- 3. corpus, 4. faithful
+// The losses egatari-spec 56ae5da documents (§6.2, schema/rendered-markup-1.json style.$comment): colours come only from
+// classes and the theme. A drop is one of them when its text (and, where given, the formula) matches; any other drop fails.
+export const EXPECTED_LOSSES = [
+  { name: '\\color, \\textcolor: the colour', tex: /\\(color|textcolor)\b/, drop: /^(style color:(?!transparent\b)|attribute mathcolor=)/ },
+  { name: 'untrusted commands (\\href, \\url, \\includegraphics, \\htmlStyle): KaTeX\'s errorColor', tex: /\\(href|url|includegraphics|htmlStyle)\b/, drop: /^(style color:#cc0000|attribute mathcolor="#cc0000")/i },
+  { name: '\\colorbox, \\fcolorbox: the background and the frame colour', tex: /\\f?colorbox\b/, drop: /^(style (background-color|border-color|border):|attribute mathbackground=)/ },
+  { name: '\\pmb: the shadow', tex: /\\pmb\b/, drop: /^style text-shadow:/ },
+  { name: 'mathcolor (MathML colour)', drop: /^attribute mathcolor=/ },
+  { name: 'mathbackground (MathML background)', drop: /^attribute mathbackground=/ },
+];
+const kindOf = (x) => x.replace(/^(attribute [^=]+)=".*" on (<[^>]+>)$/, '$1 on $2').replace(/^(element <[^>]+>) in <[^>]+>$/, '$1').replace(/^style ([a-z-]+):.* on (<[^>]+>)$/, 'style $1 on $2');
 const K = await katexOf();
 const corpus = await katexCorpus();
 const macros = { ...macrosOf('', null, K.readMacros), ...DOC_MACROS };
@@ -122,18 +144,11 @@ for (const [out, options] of Object.entries(outputs)) {
   }
   ok(warn.length === 0, `corpus (${out}): KaTeX ${KATEX_VERSION} renders all ${corpus.length} formulas with the producer's options` + (warn.length ? `: ${warn.length} refused, e.g. ${warn[0]}` : ''));
   const r = await page.evaluate(({ items, out, macros }) => {
-    const MR = EGATARI_PARTS_SHIM.get('markup-reader', '1.0.0'), byKey = {}, unfaithful = [];
+    const MR = EGATARI_PARTS_SHIM.get('markup-reader', '1.0.0'), drops = [], unfaithful = [];
     let same = 0;
     for (const it of items) {
       const d = document.createElement('div'), drop = MR.read(it.m, d, 'html');
-      for (const x of drop) {
-        // the kind of drop, without the value (style properties keep it when the property is listed but the value is not)
-        const k = x.replace(/^(attribute [^=]+)=".*?" on (<[^>]+>)$/, '$1 on $2').replace(/^(element <[^>]+>) in <[^>]+>$/, '$1')
-          .replace(/^style ([a-z-]+):.* on (<[^>]+>)$/, (all, p, t) => `style ${p} on ${t}`);
-        const e = (byKey[k] ||= { n: 0, tex: [], example: x });
-        e.n++;
-        if (e.tex.length < 4 && !e.tex.includes(it.tex)) e.tex.push(it.tex);
-      }
+      for (const x of drop) drops.push({ tex: it.tex, x });
       if (out === 'html' && !drop.length) {
         const k = document.createElement('div');
         katex.render(it.tex, k, { displayMode: it.display, throwOnError: false, strict: 'ignore', output: 'html', macros: Object.assign({}, macros), trust: (c) => ['\\htmlClass', '\\htmlData', '\\htmlId'].includes(c.command) });
@@ -144,16 +159,25 @@ for (const [out, options] of Object.entries(outputs)) {
         if (a === b) same++; else if (unfaithful.length < 3) { let j = 0; while (a[j] === b[j]) j++; unfaithful.push({ tex: it.tex, at: j, katex: a.slice(Math.max(0, j - 60), j + 60), reader: b.slice(Math.max(0, j - 60), j + 60) }); }
       }
     }
-    return { byKey, same, unfaithful };
+    return { drops, same, unfaithful };
   }, { items, out, macros });
-  const keys = Object.keys(r.byKey).sort((a, b) => r.byKey[b].n - r.byKey[a].n);
-  ok(keys.length === 0, `corpus (${out}): ${items.length} formulas read with nothing dropped` + (keys.length ? ` — ${keys.length} kinds of drop (each a gap for the spec's list, never a reader exception):\n`
-    + keys.map((k) => `       ${String(r.byKey[k].n).padStart(5)} × ${k}   e.g. ${r.byKey[k].example}  in  ${r.byKey[k].tex.map((t) => JSON.stringify(t.length > 70 ? t.slice(0, 70) + '…' : t)).join(', ')}`).join('\n') : ''));
+  // each drop is one of the documented losses, or unexpected (a gap for the spec)
+  const named = {}, unexpected = {};
+  for (const d of r.drops) {
+    const loss = EXPECTED_LOSSES.find((l) => l.drop.test(d.x) && (!l.tex || l.tex.test(d.tex)));
+    const k = loss ? loss.name : kindOf(d.x), into = loss ? named : unexpected;
+    const e = (into[k] ||= { n: 0, tex: [], example: d.x });
+    e.n++;
+    if (e.tex.length < 4 && !e.tex.includes(d.tex)) e.tex.push(d.tex);
+  }
+  const line = (o, k) => `       ${String(o[k].n).padStart(5)} × ${k}   e.g. ${o[k].example}  in  ${o[k].tex.map((t) => JSON.stringify(t.length > 70 ? t.slice(0, 70) + '…' : t)).join(', ')}`;
+  const nk = Object.keys(named).sort((a, b) => named[b].n - named[a].n), uk = Object.keys(unexpected).sort((a, b) => unexpected[b].n - unexpected[a].n);
+  console.log(`     corpus (${out}): documented losses (egatari-spec §6.2: colours come from classes and the theme):` + (nk.length ? '\n' + nk.map((k) => line(named, k)).join('\n') : ' none'));
+  ok(uk.length === 0, `corpus (${out}): ${items.length} formulas read with nothing dropped but the documented losses` + (uk.length ? ` — ${uk.length} kinds of unexpected drop (each a gap for the spec's list, never a reader exception):\n`
+    + uk.map((k) => line(unexpected, k)).join('\n') : ''));
   if (out === 'html') {
-    const clean = items.length - Object.values(r.byKey).length; // informative only
     ok(r.unfaithful.length === 0, `faithful (html): ${r.same} formulas with nothing dropped read to the DOM katex.render made at play time (1.x), but for its empty class="" and its svg style written as text`
       + (r.unfaithful.length ? `\n     differ: ${JSON.stringify(r.unfaithful, null, 1)}` : ''));
-    void clean;
   }
 }
 ok(errors.length === 0, 'no page error' + (errors.length ? ': ' + errors[0] : ''));

@@ -281,6 +281,7 @@ var Part = class extends base.MotionElement {
       [ra, rb].forEach(function(r){ if (r.step === x.step) after = Math.max(after, r.at + 0.45); });
       return {g: g, line: line, head: head, lab: lab, path: self.poly(pts), step: x.step, at: e.at !== undefined ? e.at : after};
     });
+    sk.flush();   // what the formulas have to report, once per kind (spec §6.2)
   }
   poly(pts){
     var L = [0];

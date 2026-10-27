@@ -75,6 +75,7 @@ return class extends base.MotionElement {
       });
     });
     this.rows = rows;
+    sk.flush();   // what the formulas have to report, once per kind (spec §6.2)
   }
   duration(k){ var d = 0; this.targets.forEach(function(tg){ d = Math.max(d, tg.last + 0.3); }); return k >= 1 ? d : 0; }
   render(k, t, ctx){

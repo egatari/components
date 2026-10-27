@@ -171,6 +171,7 @@ return class extends base.MotionElement {
       if (route) o.poly = route.poly;
       return o;
     }).filter(Boolean);
+    sk.flush();   // what the formulas have to report, once per kind (spec §6.2)
   }
   // 折れ線：点と累積の長さ（戻る辺）
   poly(pts){

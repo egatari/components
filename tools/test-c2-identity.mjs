@@ -47,17 +47,17 @@ export const ID_REWRITES = {
   venn: [{ v1: 'm-venn-\\d+', v2: 'venn-2-0-0-\\d+', why: 'm-venn clip paths (1.x: m-venn-<n>-in<i>, -out<i>)' }],
   kakijun: [{ v1: 'm-kakijun-clip-\\d+h?', v2: 'kakijun-2-0-0-clip-\\d+h?', why: 'm-kakijun stroke clip paths (and their start-cap masks, <n>h)' }],
 };
-// The second allowed deviation, for parts that declare build fields (above). Proposed in alpha.3(a); needs standards' approval.
+// The second allowed deviation, for parts that declare build fields (above). Approved by standards (egatari-spec 56ae5da).
 export const DATA_REWRITE = { why: 'the data script of a part with build fields carries the producer\'s additions (spec §6.2): compared as data without them' };
 // The third, for the same parts: KaTeX's DOM builder (katex.render, 1.x at play time) writes class="" on a span without
 // classes, where its markup builder (renderToString, the producer's output) writes no class attribute. Inside the formula
 // frames (<foreignObject class="smath">) an empty class on a span is therefore removed before comparing, on both sides.
-// Proposed in alpha.3(a); needs standards' approval.
+// Approved by standards (egatari-spec 56ae5da).
 export const KATEX_EMPTY_CLASS = { why: 'katex.render writes class="" on spans without classes, renderToString writes none' };
 // The fourth, for the same parts: katex.render sets the style of an <svg> it draws (stretchy arrows, \oiint) as text with
 // setAttribute ("width:0.957em"), while the reader sets each declaration with setProperty (spec §6.2), which the browser
 // writes "width: 0.957em;". Inside the formula frames, an <svg>'s style attribute is compared as its declarations.
-// Proposed in alpha.3(a); needs standards' approval.
+// Approved by standards (egatari-spec 56ae5da).
 export const KATEX_SVG_STYLE = { why: 'katex.render writes an svg style as text, the reader one declaration at a time' };
 const svgStyleOut = (f) => f.replace(/(<svg\b[^>]*?\sstyle=")([^"]*)(")/g, (all, a, v, c) => a + v.split(';').map((d) => d.trim()).filter(Boolean).map((d) => d.replace(/\s*:\s*/, ': ')).join('; ') + ';' + c);
 const SMATH = /<foreignObject\b[^>]*\bclass="smath"[^>]*>[\s\S]*?<\/foreignObject>/g;

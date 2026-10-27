@@ -132,19 +132,22 @@ throw (`code: "error"`) only for the cases it names as meant to throw.
 ## Build-time formulas (alpha.3)
 
 The six parts that drew math with DECK's KaTeX at play time (**m-collect, m-cycle, m-fishbone, m-flow, m-timeline,
-m-tree**) are migrated with build-time `tex` (spec §6.2, egatari-spec 8a410b0):
+m-tree**) are migrated with build-time `tex` (spec §6.2, egatari-spec 56ae5da):
 
 - The part declares its fields, `static build = {fields: {"nodes[].tex": "katex"}, options: {katex: {output: "html"}}}`
   (paths in the spec's syntax), and allows `texHtml` beside `tex` and `renderers` at the top of its shape.
 - It requires `"markup-reader": "1.0.0"` and draws a formula with `MR.texFrame(parent, x, y, node, "tex", o, sk)`
   (`sk = MR.sink(this, ctx)` in mount): the frame DECK drew, filled from `node.texHtml` through the reader, or with the
-  `tex` source as text and one `"[<name>] … not rendered at build time"` report when there is no output.
+  `tex` source as text when there is no output; `sk.flush()` at the end of mount reports once per kind with the count
+  (`"[<name>] N tex field(s) not rendered at build time …"`, `"[<name>] rendered markup: dropped <kind> ×N …"`).
 - The reader's list is generated from the spec (`node tools/markup-sync.mjs`, pinned in `tools/spec.json`); never edit it.
-  A construct the list lacks is a gap for the spec (`tools/test-markup-reader.mjs` lists them), never a reader exception.
+  Besides the losses the spec documents (colours: `\color`, `\textcolor`, `\colorbox`, `\fcolorbox`, `\pmb`, `mathcolor`,
+  `mathbackground`, the errorColor of untrusted commands), a construct the list lacks is a gap for the spec
+  (`tools/test-markup-reader.mjs` fails on it), never a reader exception.
 - The tests build every deck through the stand-in producer (`tools/katex-produce.mjs`, run by `tools/studio.mjs`), with
   the KaTeX the pinned Studio locks. `tools/test-c2-identity.mjs` builds the 1.x side as written and compares the data
   script as data (`DATA_REWRITE`), KaTeX's empty classes (`KATEX_EMPTY_CLASS`) and an `<svg>`'s style text
-  (`KATEX_SVG_STYLE`) as equal (proposed, for standards' approval). A demo that builds its data at play time has nothing
+  (`KATEX_SVG_STYLE`) as equal (approved, egatari-spec 56ae5da). A demo that builds its data at play time has nothing
   to render: its fixture says `<!-- c2-identity-replaces-demo: … -->`.
 - A method named `layout` that is not the player's `layout(ctx)` must be renamed (m-cycle, m-timeline: `arrange(size)`).
 

@@ -1,6 +1,6 @@
 {
   "repository": "https://github.com/egatari/egatari-spec",
   "ref": "main",
-  "commit": "8a410b0e30e7f831a8ecd2828ba26e58964a11bc",
+  "commit": "56ae5dadabe5228550ff5894ca8833b3cf5c4a1b",
   "note": "The egatari-spec commit whose normative files the parts follow: schema/rendered-markup-1.json (§6.2) is generated into components/markup-reader by tools/markup-sync.mjs and checked by tools/test-markup-reader.mjs. commit is a full sha and is what is fetched (into .spec/) and checked."
 }

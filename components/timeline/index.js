@@ -132,6 +132,7 @@ var Part = class extends base.MotionElement {
     }
     if (!L.fits) ctx.report("size", "[timeline] the timeline does not fit its box even at 24px (" + L.why + "); make the element larger, shorten the labels or use per-step / scale=\"even\"");
     this.draw(L);
+    this.texSink.flush();   // what the formulas have to report, once per kind (spec §6.2)
   }
   // ---- 配置（u：軸に沿った位置、c：軸に直交する位置。h なら u = x、v なら u = y）
   arrange(size){

@@ -337,6 +337,7 @@ var Part = class extends base.MotionElement {
     }
     // 形の一覧（render の終わりに形を作り直すため。下の render を見る）
     this.shapes = [].slice.call(svg.querySelectorAll("rect,circle,ellipse,path,line,polyline,polygon"));
+    sk.flush();   // what the formulas have to report, once per kind (spec §6.2)
   }
   // 箱 1 つの動きの長さ（どの見せ方でも同じ）：箱が現れて線を引き終わるまで
   span(){ return this.props.fade * 0.6 + this.props.draw; }
