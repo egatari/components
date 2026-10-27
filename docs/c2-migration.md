@@ -107,9 +107,10 @@ and after a tour of every slide. Change behaviour in a later version, not while 
   left in it is an error).
 - **Classes read without a browser** (`tools/pack-bytes.mjs`, `tools/test-part-shape.mjs`): `partClass()` in
   `tools/parts.mjs` reads both forms.
-- **Baselines**: every part is compared with its v1.13.0 version (`C2_BASELINE`), but for a part never released in 1.x, which
-  is compared with its own last pre-2.0 commit (`C2_BASELINE_OF` in `tools/parts.mjs`: m-score, by pixels on its current demo,
-  since egatari-spec 8a410b0 changed its data). Such an entry is the only list here, and needs a reason next to it.
+- **Baselines and the identity rule** (egatari-spec ce96072): DOM byte identity against v1.13.0 (`C2_BASELINE`) where the
+  part's data format is unchanged; where the spec changed the format, 0-pixel identity against the last commit before the
+  change, recorded in the part's CHANGELOG (`C2_BASELINE_OF` in `tools/parts.mjs`: m-score, cc0e60a, on its current demo).
+  Such an entry is the only list here, and needs a reason next to it.
 - **Gallery marks**: a migrated part's `index.js` is not "changed" unless it changed between the baseline and v1.13.0.
 
 ## Check
