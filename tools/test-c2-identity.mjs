@@ -31,6 +31,7 @@ export const ID_REWRITES = {
   plot: [{ v1: 'clip\\d+', v2: 'plot-1-0-0-clip\\d+', why: 'plot clip paths (DECK.Plot: clip<n>)' }],
   curves: [{ v1: 'mc\\d+', v2: 'curves-2-0-0-\\d+', why: 'm-curves masks (1.x: mc<n> on DECK.Plot\'s counter)' }],
   heatmap: [{ v1: 'm-heatmap-legend-\\d+', v2: 'heatmap-2-0-0-legend-\\d+', why: 'm-heatmap legend gradient' }],
+  venn: [{ v1: 'm-venn-\\d+', v2: 'venn-2-0-0-\\d+', why: 'm-venn clip paths (1.x: m-venn-<n>-in<i>, -out<i>)' }],
 };
 const args = process.argv.slice(2);
 const oi = args.indexOf('--only');
