@@ -104,8 +104,12 @@ function fallback(tag, key, code, message){
       box.title = key + ": " + code + ": " + message;
       this.appendChild(box);
       // the element's own report (spec §6.1 Failure: shown as its text equivalent, and the failure is available to checks)
+      // the slide's index as ctx.report's record finds it: among DECK.slides, or before DECK lists them (an element connected
+      // before DECK starts) among the stage's slides
       var D = G.DECK, s = this.closest && this.closest(".slide");
-      var rec = {slide: D && D.slides ? D.slides.indexOf(s) : -1, key: s ? (s._key || s.getAttribute("data-key") || s.id || "") : "", tag: tag, phase: "registry", kind: "report", code: "registry",
+      var all = D && D.slides ? D.slides : [].slice.call(document.querySelectorAll("#stage > .slide")), i = s ? all.indexOf(s) : -1;
+      var sk = s ? slideKey(s) || (i >= 0 ? "s" + (i + 1) : "") : "";   // DECK's own key for a slide without id, before it sets _key
+      var rec = {slide: i, key: sk, tag: tag, phase: "registry", kind: "report", code: "registry",
         msg: "[" + key.slice(0, key.lastIndexOf("@")) + "] " + key + " is not defined (" + code + ": " + message + ")"};
       reports.push(rec);
       if (D && Array.isArray(D.componentErrors)) D.componentErrors.push(rec);

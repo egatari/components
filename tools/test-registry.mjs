@@ -289,6 +289,9 @@ try {
   ok(warns.some((w) => /c2fail@0\.0\.1: factory: its factory threw probe failure; it is not defined/.test(w)), 'and warned on the console');
   ok(r.dep.box && r.dep.text === 'a part whose library failed' && r.depReport && r.depReport.code === 'registry' && /^\[c2dep\] c2dep@0\.0\.1 is not defined \(dependency: requires c2badlib@0\.0\.1, which failed \(factory: its factory threw TypeError: library probe failure\)\)$/.test(r.depReport.msg),
     `a dependant of a library part whose factory threw shows its text equivalent and has its own report in DECK.componentErrors (${r.depReport && r.depReport.msg})`);
+  const failRecs = r.reports.filter((x) => x.code === 'registry').map((x) => [x.tag, x.slide, x.key]);
+  ok(failRecs.length === 2 && failRecs.every((x) => x[1] === r.i && x[2] === 's-probe'),
+    `a registry failure's record has its slide's index and key, also when made before DECK lists the slides (${JSON.stringify(failRecs)})`);
 
   // ---------------------------------------------------------------- containment (spec §6.1): base catches what the part throws
   const t = await page.evaluate(async () => {
