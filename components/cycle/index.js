@@ -241,31 +241,33 @@ DECK.define("m-cycle", class extends DECK.MotionElement {
         e = op = pr(s, st, 0.55 * T); sc = 0.92 + 0.08 * e; ar = pr(s, st + 0.45 * T, 0.55 * T);
       }
       var dx = -d[0] * OFF * (1 - e), dy = -d[1] * OFF * (1 - e), cx = o.b.cx, cy = o.b.cy;
-      o.g.setAttribute("opacity", op.toFixed(3));
-      o.g.setAttribute("transform", sc >= 1 && Math.abs(dx) < 0.01 && Math.abs(dy) < 0.01 ? "" :
+      setIf(o.g, "opacity", op.toFixed(3));
+      setIf(o.g, "transform", sc >= 1 && Math.abs(dx) < 0.01 && Math.abs(dy) < 0.01 ? "" :
         "translate(" + (cx + dx).toFixed(2) + " " + (cy + dy).toFixed(2) + ") scale(" + sc.toFixed(4) + ") translate(" + (-cx).toFixed(2) + " " + (-cy).toFixed(2) + ")");
       if (o.o.inArrow) arrE[o.o.inArrow.i] = lecture ? [1, op] : [ar, 1];
     });
     this.arcs.forEach(function(o){
       var r = o.r, v = arrE[r.i] || (lecture ? [1, faint(r.step, r.at, 0.5)] : [pr(r.step, r.at, 0.5), 1]);
       var e = v[0], a = o.a, tc = a.t0 + (a.t1 - a.t0) * e;
-      o.g.setAttribute("opacity", e > 0 ? v[1].toFixed(3) : 0);
+      setIf(o.g, "opacity", e > 0 ? v[1].toFixed(3) : 0);
       // 見えない矢印も、render が書く属性はすべて書き直す（前の呼び出しの transform を残さない。docs/contract.md §3）
-      if (e <= 0){ o.path.setAttribute("d", ""); o.head.removeAttribute("transform"); return; }
+      if (e <= 0){ setIf(o.path, "d", ""); if (o.head.hasAttribute("transform")) o.head.removeAttribute("transform"); return; }
       // 線は矢じりの根元まで（矢じりは 14px、線が 20px 伸びるまでに大きくなる）
       var p = self.pt(tc), sp = Math.hypot(L.rx * Math.sin(tc), L.ry * Math.cos(tc)) || 1;
       var back = Math.min(14 / sp, tc - a.t0), te = tc - back, q0 = self.pt(a.t0), q1 = self.pt(te);
-      o.path.setAttribute("d", "M" + q0[0].toFixed(2) + "," + q0[1].toFixed(2) + "A" + L.rx.toFixed(2) + "," + L.ry.toFixed(2) + " 0 " + (te - a.t0 > Math.PI ? 1 : 0) + " 1 " + q1[0].toFixed(2) + "," + q1[1].toFixed(2));
+      setIf(o.path, "d", "M" + q0[0].toFixed(2) + "," + q0[1].toFixed(2) + "A" + L.rx.toFixed(2) + "," + L.ry.toFixed(2) + " 0 " + (te - a.t0 > Math.PI ? 1 : 0) + " 1 " + q1[0].toFixed(2) + "," + q1[1].toFixed(2));
       var ang = Math.atan2(L.ry * Math.cos(tc), -L.rx * Math.sin(tc)) * 180 / Math.PI, hs = Math.min(1, a.len * e / 20);
-      o.head.setAttribute("transform", "translate(" + p[0].toFixed(2) + " " + p[1].toFixed(2) + ") rotate(" + ang.toFixed(2) + ") scale(" + hs.toFixed(4) + ")");
+      setIf(o.head, "transform", "translate(" + p[0].toFixed(2) + " " + p[1].toFixed(2) + ") rotate(" + ang.toFixed(2) + ") scale(" + hs.toFixed(4) + ")");
     });
     var c = this.plan().center;
-    if (this.center) this.center.g.setAttribute("opacity", (lecture ? faint(c.step, c.at, 0.45) : pr(c.step, c.at, 0.45)).toFixed(3));
-    this.edges.forEach(function(o){ o.g.setAttribute("opacity", (lecture ? faint(o.step, o.at, 0.4) : pr(o.step, o.at, 0.4)).toFixed(3)); });
+    if (this.center) setIf(this.center.g, "opacity", (lecture ? faint(c.step, c.at, 0.45) : pr(c.step, c.at, 0.45)).toFixed(3));
+    this.edges.forEach(function(o){ setIf(o.g, "opacity", (lecture ? faint(o.step, o.at, 0.4) : pr(o.step, o.at, 0.4)).toFixed(3)); });
   }
 });
 
 // ---- 下の関数は m-cycle の中だけで使う（字の幅の見積もり・箱の中の行）
+// 属性は値が変わるときだけ書く：同じ値を書き直しても Chrome は塗り直し、macOS では入り直すたびに箱の縁の画素が揺れた（DOM は同じ）
+function setIf(el, a, v){ v = String(v); if (el.getAttribute(a) !== v) el.setAttribute(a, v); }
 function tone(t){ return "var(--" + (/^(term|emph|muted|accent2|series-[1-4])$/.test(t || "") ? t : "term") + ")"; }
 // 箱の地と字の色（m-tree・m-fishbone と同じ決まり）：term と emph はテーマの薄い色の地、emph は字も emph
 function boxFill(t){ return t === "emph" ? "var(--emph-tint)" : /^(muted|accent2|series-[1-4])$/.test(t || "") ? tint(tone(t), 12) : "var(--term-tint)"; }

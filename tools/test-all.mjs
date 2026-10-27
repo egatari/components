@@ -26,6 +26,7 @@
 //  11. codetree-dom    m-codetree's DOM and pixels do not depend on the order of render calls (tools/test-codetree-dom.mjs)
 //      dom-order      every part's DOM at (k, end) is byte-identical straight and after seeking k+1, 0, k, in the talk and lecture views (tools/test-dom-order.mjs)
 //      raster-history m-tree / m-venn / m-numberline: the pixels of a step do not depend on how often it was drawn before, nor on a click and ctx.reset (tools/test-raster-history.mjs)
+//      cycle-rewrite  m-cycle: entering the same step again writes no attribute (a same-value write repaints; macOS edge pixels moved) (tools/test-cycle-rewrite.mjs)
 //      syntax         m-syntax: reading the mark-up (roles, nested brackets, arrows, parts of speech, errors), steps, and in a browser the arrow ends,
 //                     brackets beside their words across a wrapped line, console.warn for errors (tools/test-syntax.mjs)
 //      heatmap        m-heatmap's colour scale, row normalisation, label thinning and steps (no browser); every cell's number
@@ -86,6 +87,7 @@ const TESTS = [
   ['test-codetree-dom', ['tools/test-codetree-dom.mjs', path.join(tmp, 'codetree-dom')]],
   ['test-dom-order', ['tools/test-dom-order.mjs', path.join(tmp, 'dom-order')]],
   ['test-raster-history', ['tools/test-raster-history.mjs', path.join(tmp, 'raster-history')]],
+  ['test-cycle-rewrite', ['tools/test-cycle-rewrite.mjs', path.join(tmp, 'cycle-rewrite')]],
   ['test-syntax', ['tools/test-syntax.mjs', path.join(tmp, 'syntax')]],
   ['test-timeline-gantt', ['tools/test-timeline-gantt.mjs', path.join(tmp, 'timeline-gantt')]],
   ['test-heatmap', ['tools/test-heatmap.mjs', path.join(tmp, 'heatmap')]],
