@@ -25,15 +25,16 @@ var SC = (function(){
   var SOLFA = {C: "ド", D: "レ", E: "ミ", F: "ファ", G: "ソ", A: "ラ", B: "シ"};
   var IROHA = {C: "ハ", D: "ニ", E: "ホ", F: "ヘ", G: "ト", A: "イ", B: "ロ"};
   var PC = {C: 0, D: 2, E: 4, F: 5, G: 7, A: 9, B: 11};
-  // ---- 描いた SVG を読む（spec §6.2「Rendered output is data」、egatari-spec 8a410b0 の schema/rendered-markup-1.json の svg の欄） ----
+  // ---- 描いた SVG を読む（spec §6.2「Rendered output is data」、egatari-spec ce96072 の schema/rendered-markup-1.json の svg の欄） ----
   // 許した要素・属性・値だけの木にする（innerHTML も DOMParser も使わない。データは信用しない）。MARKUP は schema の svg の欄と
   // 同じもの（tools/test-score.mjs が spec のファイルと比べる。足すのは spec の側で、ここでは足さない）。
-  // それ以外の要素は中身ごと、属性・style の宣言は 1 つずつ捨て、捨てたものを root.dropped に書く（mount が 1 回だけ ctx.report("data")）
+  // 要素は中身ごと、属性・style の宣言はそれだけを捨て、捨てたものを種類（要素・属性・style）ごとに root.dropped に書く
+  // （mount が種類ごとに 1 回 ctx.report("data")）。xmlns は名前空間の宣言：要素の名前空間と比べるだけで、属性にはしない
   var MARKUP = {
     global: ["class", "aria-hidden", "id", "data-*", "style", "transform"],
     elements: {
-      svg: ["width", "height", "viewBox", "preserveAspectRatio", "role", "aria-label"],
-      g: [],
+      svg: ["width", "height", "viewBox", "preserveAspectRatio", "role", "aria-label", "fill", "stroke", "stroke-width"],
+      g: ["fill", "stroke", "stroke-width"],
       path: ["d", "fill", "stroke", "stroke-width", "stroke-linecap", "stroke-linejoin", "stroke-dasharray"],
       line: ["x1", "y1", "x2", "y2", "stroke", "stroke-width", "stroke-dasharray"],
       rect: ["x", "y", "width", "height", "rx", "ry", "fill", "stroke", "stroke-width"],
@@ -41,19 +42,22 @@ var SC = (function(){
       ellipse: ["cx", "cy", "rx", "ry", "fill", "stroke", "stroke-width"],
       polygon: ["points", "fill", "stroke", "stroke-width"],
       polyline: ["points", "fill", "stroke", "stroke-width"],
-      text: ["x", "y", "dx", "dy", "text-anchor", "dominant-baseline", "font-size", "font-style", "font-weight", "fill"],
-      tspan: ["x", "y", "dx", "dy", "font-size", "font-style", "font-weight", "baseline-shift", "fill"],
+      text: ["x", "y", "dx", "dy", "text-anchor", "dominant-baseline", "font-size", "font-style", "font-weight", "fill", "stroke"],
+      tspan: ["x", "y", "dx", "dy", "font-size", "font-style", "font-weight", "baseline-shift", "fill", "stroke"],
       title: []
     },
     values: {
       id: "^[A-Za-z][A-Za-z0-9_.:-]{0,127}$",
-      "data-*": {name: "^data-[a-z][a-z0-9-]{0,63}$", value: "^[^<>]{0,256}$"},
+      "data-*": {
+        name: "^data-[a-z][a-z0-9-]{0,63}$",
+        value: "^[^<>]{0,256}$"
+      },
       fill: ["none", "currentColor"],
       stroke: ["none", "currentColor"],
       length: "^-?(\\d+\\.?\\d*|\\.\\d+)(em|ex|px|%|pt|mu)?$"
     },
     style: {
-      lengths: ["height", "width", "min-width", "max-width", "vertical-align", "top", "bottom", "left", "right", "margin-left", "margin-right", "margin-top", "margin-bottom", "padding-left", "padding-right", "padding-top", "padding-bottom", "border-bottom-width", "border-top-width", "border-right-width", "border-left-width", "font-size", "line-height"],
+      lengths: ["border-bottom-width", "border-left-width", "border-right-width", "border-top-width", "border-width", "bottom", "font-size", "height", "left", "line-height", "margin-bottom", "margin-left", "margin-right", "margin-top", "max-width", "min-width", "padding-bottom", "padding-left", "padding-right", "padding-top", "right", "top", "vertical-align", "width"],
       keywords: {
         position: ["relative", "absolute"],
         display: ["inline-block", "inline", "block", "none"],
@@ -63,29 +67,74 @@ var SC = (function(){
         "border-left-style": ["solid", "dashed"],
         "vertical-align": ["top", "middle", "bottom", "baseline"],
         "white-space": ["nowrap"],
-        overflow: ["hidden", "visible"]
+        overflow: ["hidden", "visible"],
+        color: ["transparent"]
+      },
+      shorthands: {
+        margin: {
+          max: 4
+        },
+        padding: {
+          max: 4
+        },
+        "border-width": {
+          max: 4
+        },
+        "border-style": {
+          max: 4,
+          keywords: ["solid", "dashed", "dotted", "double", "none"]
+        },
+        border: {
+          max: 3,
+          keywords: ["solid", "dashed", "dotted", "double", "none"]
+        },
+        "border-top": {
+          max: 3,
+          keywords: ["solid", "dashed", "none"]
+        },
+        "border-bottom": {
+          max: 3,
+          keywords: ["solid", "dashed", "none"]
+        },
+        "border-left": {
+          max: 3,
+          keywords: ["solid", "dashed", "none"]
+        },
+        "border-right": {
+          max: 3,
+          keywords: ["solid", "dashed", "none"]
+        }
       }
     }
   };
+  var SVG_NS = "http://www.w3.org/2000/svg";
   var RE = {id: new RegExp(MARKUP.values.id), dataName: new RegExp(MARKUP.values["data-*"].name), dataValue: new RegExp(MARKUP.values["data-*"].value), length: new RegExp(MARKUP.values.length)};
   // 属性 name="v" を element tag に置いてよいか
   function admits(tag, name, v){
-    var listed = MARKUP.global.indexOf(name) >= 0 || MARKUP.elements[tag].indexOf(name) >= 0;
     if (/^data-/.test(name)) return MARKUP.global.indexOf("data-*") >= 0 && RE.dataName.test(name) && RE.dataValue.test(v);
-    if (!listed) return false;
+    if (MARKUP.global.indexOf(name) < 0 && MARKUP.elements[tag].indexOf(name) < 0) return false;
     if (name === "id") return RE.id.test(v);
-    if (MARKUP.values[name] && Array.isArray(MARKUP.values[name])) return MARKUP.values[name].indexOf(v) >= 0;
+    if (Array.isArray(MARKUP.values[name])) return MARKUP.values[name].indexOf(v) >= 0;
     return true;
   }
-  // style="p: v; …" → 許した宣言 [[p, v]]（長さか決まった語。color はない）と、捨てた宣言
+  // style の 1 つの宣言 p: x を許すか（長さ・決まった語・短縮形は部分ごとに長さか語）
+  function admitsDecl(p, x){
+    var kw = MARKUP.style.keywords[p], sh = MARKUP.style.shorthands[p];
+    if (MARKUP.style.lengths.indexOf(p) >= 0 && RE.length.test(x)) return true;
+    if (kw && kw.indexOf(x) >= 0) return true;
+    if (sh){
+      var parts = x.split(/\s+/).filter(Boolean);
+      return parts.length >= 1 && parts.length <= sh.max && parts.every(function(q){ return RE.length.test(q) || (sh.keywords || []).indexOf(q) >= 0; });
+    }
+    return false;
+  }
+  // style="p: v; …" → 許した宣言 [[p, v]]（setProperty で 1 つずつ置く）。捨てた宣言は drop に
   function styleDecls(v, drop, where){
     var out = [];
     v.split(";").forEach(function(d){
       if (!d.trim()) return;
       var c = d.indexOf(":"), p = c < 0 ? d.trim() : d.slice(0, c).trim().toLowerCase(), x = c < 0 ? "" : d.slice(c + 1).trim();
-      var kw = MARKUP.style.keywords[p];
-      if ((MARKUP.style.lengths.indexOf(p) >= 0 && RE.length.test(x)) || (kw && kw.indexOf(x) >= 0)) out.push([p, x]);
-      else drop(where + " style " + p);
+      if (admitsDecl(p, x)) out.push([p, x]); else drop("style", where + " " + p);
     });
     return out;
   }
@@ -99,8 +148,8 @@ var SC = (function(){
   // "<svg …>…</svg>" → {tag: "svg", a: {…}, st: [[p, v]], kids: [{tag, a, st, kids, text}], dropped: ["<style>", "g@fill", …]}
   function parseSvg(src){
     var re = /<!--[\s\S]*?-->|<!\[CDATA\[[\s\S]*?\]\]>|<[?!][^>]*>|<(\/?)([A-Za-z][\w:.-]*)((?:\s+[\w:.-]+(?:\s*=\s*(?:"[^"]*"|'[^']*'))?)*)\s*(\/?)>|([^<]+)/g;
-    var root = null, stack = [], skip = 0, m, dropped = [];
-    var drop = function(what){ if (dropped.indexOf(what) < 0) dropped.push(what); };
+    var root = null, stack = [], skip = 0, m, dropped = {element: [], attribute: [], style: []};
+    var drop = function(kind, what){ if (dropped[kind].indexOf(what) < 0) dropped[kind].push(what); };
     src = String(src || "");
     while ((m = re.exec(src))){
       if (m[5] !== undefined){   // 文字
@@ -115,14 +164,16 @@ var SC = (function(){
         if (stack.length && stack[stack.length - 1].tag === tag) stack.pop();
         continue;
       }
-      if (skip || !MARKUP.elements.hasOwnProperty(tag) || (tag === "svg" && root) || (!root && tag !== "svg")){ if (!skip) drop("<" + tag + ">"); if (!self) skip++; continue; }
-      var a = {}, st = [], ar = /([\w:.-]+)(?:\s*=\s*(?:"([^"]*)"|'([^']*)'))?/g, x;
+      if (skip || !MARKUP.elements.hasOwnProperty(tag) || (tag === "svg" && root) || (!root && tag !== "svg")){ if (!skip) drop("element", "<" + tag + ">"); if (!self) skip++; continue; }
+      var a = {}, st = [], ar = /([\w:.-]+)(?:\s*=\s*(?:"([^"]*)"|'([^']*)'))?/g, x, wrongNs = false;
       while ((x = ar.exec(m[3]))){
         var name = x[1], v = decode(x[2] !== undefined ? x[2] : x[3] !== undefined ? x[3] : "").trim();
-        if (name === "style" && MARKUP.global.indexOf("style") >= 0) st = styleDecls(v, drop, tag);
+        if (name === "xmlns"){ if (v !== SVG_NS) wrongNs = true; }
+        else if (name === "style" && MARKUP.global.indexOf("style") >= 0) st = styleDecls(v, drop, tag);
         else if (admits(tag, name, v)) a[name] = v;
-        else drop(tag + "@" + name);
+        else drop("attribute", tag + "@" + name);
       }
+      if (wrongNs){ drop("element", "<" + tag + "> (xmlns is not SVG)"); if (!self) skip++; if (!root) break; continue; }
       var node = {tag: tag, a: a, st: st, kids: []};
       if (!root) root = node; else stack[stack.length - 1].kids.push(node);
       if (!self) stack.push(node);
@@ -378,7 +429,10 @@ return class extends base.MotionElement {
     this.style.display = "block";
     var W = this.clientWidth, H = this.clientHeight;
     var tree = SC.parseSvg(this.data.abcSvg), as = SC.assign(tree, pl);
-    if (tree.dropped.length) ctx.report("data", "[score] abcSvg: dropped what the rendered-markup list does not admit: " + tree.dropped.join(", "));
+    // drops, once per kind (spec §6.2): elements with their subtree, attributes, style declarations
+    if (tree.dropped.element.length) ctx.report("data", "[score] abcSvg: dropped elements the rendered-markup list does not admit: " + tree.dropped.element.join(", "));
+    if (tree.dropped.attribute.length) ctx.report("data", "[score] abcSvg: dropped attributes the rendered-markup list does not admit: " + tree.dropped.attribute.join(", "));
+    if (tree.dropped.style.length) ctx.report("data", "[score] abcSvg: dropped style declarations the rendered-markup list does not admit: " + tree.dropped.style.join(", "));
     as.mismatch.forEach(function(x){ ctx.report("data", "[score] abcSvg and abcMap do not match: " + x + " (an element without a known tag is shown from step 0)"); });
     var svg = D.el("svg", {viewBox: "0 0 " + W + " " + H, width: W, height: H, "aria-hidden": "true", style: "display:block;overflow:visible"}, this);
     // 楽譜の木を組み直す（許した属性だけ。色は currentColor → color: var(--fg)）

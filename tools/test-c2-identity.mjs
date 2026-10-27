@@ -20,7 +20,7 @@ import os from 'node:os';
 import path from 'node:path';
 import { execFileSync } from 'node:child_process';
 import { ROOT, studio, pinLabel } from './studio.mjs';
-import { LAUNCH, TOLERANCE, hideChrome, settle, pixelDiff } from './shot-helpers.mjs';
+import { LAUNCH, hideChrome, settle, pixelDiff } from './shot-helpers.mjs';
 import { migratedNames, partMetas, c2Bundle, requiresClosure, C2_BASELINE, c2Baseline } from './parts.mjs';
 
 export const BASELINE = C2_BASELINE;
@@ -171,20 +171,21 @@ try {
         }
         await a.close(); await b.close();
       }
-      // pixels: as tools/test-default-variant.mjs compares screenshots (shot-helpers.mjs: at most TOLERANCE clearly different pixels)
+      // pixels: 0-pixel identity (the identity rule, egatari-spec ce96072 decision: byte identity where a part's data format is
+      // unchanged, 0 pixels against the last commit before the change where the spec changed it); pixelDiff as tools/shot-helpers.mjs
       if (pending.length) {
         const cmp = await browser.newPage();
         for (const { where, x, y } of pending) {
           if (x.length !== y.length) { bad.push(`${where}: ${x.length} components on the 1.x side, ${y.length} on the 2.0 side`); continue; }
           for (let j = 0; j < x.length; j++) {
             const d = !x[j] || !y[j] ? (x[j] || y[j] ? Infinity : 0) : await pixelDiff(cmp, x[j], y[j]);
-            if (d > TOLERANCE) bad.push(`${where}: component ${j}: ${d} pixels differ`);
+            if (d > 0) bad.push(`${where}: component ${j}: ${d} pixels differ`);
             maxDiff = Math.max(maxDiff, d); if (d === 0) exact++;
           }
         }
         await cmp.close();
       }
-      ok(bad.length === 0, `m-${name} (${label}${demo2 !== null && deck === 'demo' ? ' and, on the 2.0 side, the current demo' : ''}): ${PIX ? `pixel-identical (≤ ${TOLERANCE} anti-aliased pixels, tools/shot-helpers.mjs)` : 'DOM byte-identical'} to ${BL} at every frame: ${frames} frames (${comps} component DOMs; ${MODES.join(', ')} × steps × 35 %, 70 %, end; and after a tour of every slide${tourMarks ? `, ${tourMarks} visited marks` : ''}${rewritten ? `; ${rewritten} ids rewritten as allowed` : ''}${PIX ? `; ${exact} of them exactly, at most ${maxDiff} pixels differ` : ''})`
+      ok(bad.length === 0, `m-${name} (${label}${demo2 !== null && deck === 'demo' ? ' and, on the 2.0 side, the current demo' : ''}): ${PIX ? 'pixel-identical (0 pixels differ)' : 'DOM byte-identical'} to ${BL} at every frame: ${frames} frames (${comps} component DOMs; ${MODES.join(', ')} × steps × 35 %, 70 %, end; and after a tour of every slide${tourMarks ? `, ${tourMarks} visited marks` : ''}${rewritten ? `; ${rewritten} ids rewritten as allowed` : ''}${PIX ? `; ${exact} compared` : ''})`
         + (bad.length ? `\n     ${bad.length} differ; first: ${bad[0]}` : ''));
       ok(errors.v1.length === 0 && errors.v2.length === 0, `m-${name} (${label}): no console error (1.x ${errors.v1.length}, 2.0 ${errors.v2.length})` + (errors.v2.length ? ': ' + errors.v2[0] : errors.v1.length ? ': ' + errors.v1[0] : ''));
     }

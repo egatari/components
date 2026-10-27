@@ -21,15 +21,21 @@ The first version of m-score: it was never released in 1.x (branch `m-score`, la
   `console.warn("m-score: …")`. abcMap errors still throw (base contains them).
 - The preview view is `ctx.preview` alone (pre-2.0 also accepted `ctx.mode === "lecture"`).
 - `static sc` (the score data, read by tools/test-score.mjs through `partClass`) is unchanged.
-- Rendered output (egatari-spec 8a410b0, §6.2): `abcSvg` is read through the spec's rendered-markup list
+- Rendered output (egatari-spec 8a410b0 and ce96072, §6.2): `abcSvg` is read through the spec's rendered-markup list
   (`schema/rendered-markup-1.json`, svg; the part's `MARKUP` equals it, tools/test-score.mjs compares them with the
-  spec file at a pinned commit): `style` only as listed declarations set with `setProperty`, `fill` / `stroke` only
-  `none` / `currentColor` and only on drawing elements, no URL-valued attribute; anything else is dropped (an element
-  with its subtree) and reported once, `ctx.report("data", "[score] abcSvg: dropped …")`. The data carries
-  `renderers: {abcjs: {version, options}}` at its top (was `renderer: {name, version, options}`); the fixtures and demo
-  are rendered again with `foregroundColor: "currentColor"` and hold only admitted markup (fill / stroke moved from `g`
-  down to the drawing elements). The 2.0 part on the new demo is pixel-identical to cc0e60a on its own demo at every
-  frame of the identity test.
+  spec file pinned at ce96072): `style` only as listed declarations and shorthands set with `setProperty` (`color`
+  only `transparent`), `fill` / `stroke` only `none` / `currentColor` (also on `svg` and `g`, `stroke` also on text),
+  no URL-valued attribute, `xmlns` checked against the SVG namespace and never set. A dropped element goes with its
+  subtree, a dropped attribute or declaration by itself, reported once per kind, `ctx.report("data", "[score] abcSvg:
+  dropped …")`. The data carries `renderers: {abcjs: {version, options}}` at its top (was `renderer: {name, version,
+  options}`); the fixtures and demo are rendered again with `foregroundColor: "currentColor"` and without abcjs's
+  `<style>`, `<title>`, `selectable`, `xmlns:xlink`, `data-name` and `data-index`. On text, `font-family` and
+  `text-decoration` are expected losses (only the test-only `fixtures/extras.json` has abcjs text).
+- **Identity baseline: cc0e60a** (the identity rule of egatari-spec ce96072: 0-pixel identity against the last commit
+  before a spec change of the data format). The data format changed with egatari-spec 8a410b0; cc0e60a is the last
+  commit before that in a form the identity test can run (the migration dc4468e was DOM byte-identical to it). The 2.0
+  part on the current demo is pixel-identical (0 pixels) to cc0e60a on its own demo at every frame
+  (tools/test-c2-identity.mjs; tools/parts.mjs `C2_BASELINE_OF`).
 - Missing output (spec §6.2): data with `abc` only (not rendered at build time) shows the ABC source as plain text, has
   no steps and no sound, and is reported once, `ctx.report("data", "[score] abc not rendered at build time …")` (was:
   the data-shape placeholder). The shape requires `abc`; `abcSvg` and `abcMap` come together.

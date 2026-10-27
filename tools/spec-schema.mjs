@@ -10,8 +10,8 @@ import { execFileSync } from 'node:child_process';
 import { ROOT } from './studio.mjs';
 
 export const SPEC = {
-  commit: '8a410b0e30e7f831a8ecd2828ba26e58964a11bc',   // §6.2: normative rendered-markup list, renderers record, missing output
-  files: { 'schema/rendered-markup-1.json': 'be39f19a58acfbf7115e28ef0fd751b03206e683e029344bda52ec3d19407116' },
+  commit: 'ce96072d1689d545577ab6cee171fa3412a16504',   // §6.2: rendered-markup list (group paint, text stroke), subset blocks
+  files: { 'schema/rendered-markup-1.json': 'd94d0e9c1321157f9256a293908d539da2f207ba99715b380a963492e73c7922' },
 };
 const sha = (s) => crypto.createHash('sha256').update(s).digest('hex');
 

@@ -142,36 +142,19 @@ function adapt({ abc, options }) {
   // lowest pitch's tie path): it cannot be seen, and the part must not have to know about it
   const seen = new Set(); let dropped = 0;
   pieces.forEach((p) => { const k = p.el.getAttribute('d'); if (seen.has(k)) { p.el.remove(); dropped++; } else seen.add(k); });
-  // Write only what the rendered-markup list (egatari-spec 8a410b0, schema/rendered-markup-1.json) admits, drawing the same:
+  // Write only what the rendered-markup list (egatari-spec ce96072, schema/rendered-markup-1.json) admits:
   //   - abcjs's <style> (its drag-and-drop CSS) and <title> ("Sheet Music"; the part's drawing is aria-hidden) are left out;
   //   - the attributes that are abcjs's own and that the list does not admit (xmlns:xlink, selectable) are left out, and so
-  //     are abcjs's data-name / data-index (admitted as data-*, but they are abcjs's, not build tags: parts must not use them);
-  //   - fill / stroke, which the list admits on drawing elements but not on svg or g, move from svg and g down to every drawing
-  //     element below that does not set its own (so each draws as before). currentColor is not moved: the part's own root
-  //     sets currentColor for both (components/score/index.js), so an element that inherits it still gets it.
-  //     A text or tspan admits fill only: a stroke they would inherit is counted (norm.textStroke) and must be "none" or
-  //     the part's currentColor for the drawing to stay the same.
-  const svg = d.querySelector('svg'), norm = { removed: {}, pushed: 0, textStroke: 0 };
+  //     are abcjs's data-name / data-index (admitted as data-*, but they are abcjs's, not build tags: parts must not use them).
+  //   fill / stroke stay where abcjs puts them (the list admits them on svg and g, and stroke on text, since ce96072).
+  //   On text, font-family and text-decoration are not admitted: they stay in the data and the part drops them (expected
+  //   losses; the slide's font is used). The demo has no abcjs text.
+  const svg = d.querySelector('svg'), norm = { removed: {} };
   const count = (k) => { norm.removed[k] = (norm.removed[k] || 0) + 1; };
   svg.querySelectorAll('style, title').forEach((x) => { count('<' + x.localName + '>'); x.remove(); });
-  const DRAW = { path: ['fill', 'stroke'], line: ['stroke'], rect: ['fill', 'stroke'], circle: ['fill', 'stroke'], ellipse: ['fill', 'stroke'], polygon: ['fill', 'stroke'], polyline: ['fill', 'stroke'], text: ['fill'], tspan: ['fill'] };
-  const inherited = (el, prop) => { for (let x = el.parentElement; x; x = x.parentElement) { if (x.hasAttribute(prop)) return x.getAttribute(prop); if (x === svg) break; } return null; };
-  svg.querySelectorAll('*').forEach((el) => {
-    const ok = DRAW[el.localName];
-    if (!ok) return;
-    for (const prop of ['fill', 'stroke']) {
-      if (el.hasAttribute(prop)) continue;
-      const v = inherited(el, prop);
-      if (v === null || v === 'currentColor') continue;   // currentColor is what the part's own root sets for both
-      if (ok.includes(prop)) { el.setAttribute(prop, v); norm.pushed++; }
-      else if (v !== 'currentColor') norm.textStroke++;
-    }
-  });
   [svg, ...svg.querySelectorAll('*')].forEach((el) => {
     for (const a of [...el.attributes]) {
-      const own = a.name === 'xmlns:xlink' || a.name === 'selectable' || a.name === 'data-name' || a.name === 'data-index'
-        || ((a.name === 'fill' || a.name === 'stroke') && (el.localName === 'g' || el.localName === 'svg'));
-      if (own) { count(el.localName + '@' + a.name); el.removeAttribute(a.name); }
+      if (a.name === 'xmlns:xlink' || a.name === 'selectable' || a.name === 'data-name' || a.name === 'data-index') { count(el.localName + '@' + a.name); el.removeAttribute(a.name); }
     }
   });
   return { norm, svg: svg.outerHTML, map: { tempo, notes: notes.map((n) => n.out), beams, arcs }, problems, dropped, pieces: pieces.length };
@@ -190,7 +173,7 @@ try {
     // spec §6.2: each renderer recorded once, at the top level of the part's data
     out[T.name] = { abc: T.abc, abcSvg: r.svg, abcMap: r.map, renderers: { abcjs: { version: VERSION, options: OPTIONS(T) } } };
     fs.writeFileSync(path.join(DIR, 'fixtures', T.name + '.json'), JSON.stringify(out[T.name], null, 1) + '\n');
-    console.log(`${T.name}: ${r.map.notes.length} notes, ${r.map.arcs.length} arcs, ${r.pieces} arc pieces (${r.dropped} hidden duplicate dropped), ${r.svg.length} bytes of SVG; left out ${JSON.stringify(r.norm.removed)}, fill/stroke moved down ${r.norm.pushed}×` + (r.norm.textStroke ? `, ${r.norm.textStroke} text strokes not representable` : ''));
+    console.log(`${T.name}: ${r.map.notes.length} notes, ${r.map.arcs.length} arcs, ${r.pieces} arc pieces (${r.dropped} hidden duplicate dropped), ${r.svg.length} bytes of SVG; left out ${JSON.stringify(r.norm.removed)}`);
   }
 } finally { await b.close(); }
 

@@ -3,10 +3,10 @@
 //      schema/rendered-markup-1.json at the commit pinned in tools/spec-schema.mjs): elements, attributes, values, style
 //   1. the frozen SVG is read into a tree of admitted elements, attributes and values only (no script, foreign content,
 //      event handlers, links, colours other than currentColor / none, style other than the listed declarations), entities
-//      decoded, everything dropped listed once
+//      decoded, everything dropped listed once per kind (elements, attributes, style declarations)
 //   1b. the abcjs corpus (every fixture, and fixtures/extras.json: dynamics, articulations, a fermata, a trill, chord
-//      symbols, lyrics, a title, a tempo mark) read through the reader: nothing dropped, but for the gaps reported for a
-//      spec change (KNOWN_GAPS: exactly those, so that a new gap or a spec fix fails here); renderers recorded once on top
+//      symbols, lyrics, a title, a tempo mark) read through the reader: nothing dropped, but for the expected losses the
+//      spec leaves out on purpose (EXPECTED_LOSSES: exactly those, so that anything else fails here); renderers recorded once on top
 //   2. abcMap parsing and errors (pitch names, tempo, dur, measure, beams, arcs, by); held pitches from tie arcs; the fixtures have the §4.1 fields
 //   3. step grouping: one note, chord or rest per step (by="note"), one measure per step (by="measure")
 //   4. sound events: pitch, dur in seconds from beats and tempo, chords at one t, notes of a measure at their beat,
@@ -51,7 +51,8 @@ const RM = specJson('schema/rendered-markup-1.json');
 eq(SC.MARKUP.elements, RM.elements.svg, `elements and their attributes = schema/rendered-markup-1.json elements.svg (egatari-spec ${SPEC.commit.slice(0, 7)})`);
 eq(SC.MARKUP.global, RM.global.svg, 'global attributes = global.svg');
 eq(SC.MARKUP.values, RM.values, 'values (id, data-*, fill, stroke, length) = values');
-eq(SC.MARKUP.style, { lengths: RM.style.lengths, keywords: RM.style.keywords }, 'style declarations = style (lengths, keywords)');
+const noComment = (o) => JSON.parse(JSON.stringify(o, (k, v) => (k === '$comment' ? undefined : v)));
+eq(SC.MARKUP.style, noComment(RM.style), 'style declarations = style (lengths, keywords, shorthands)');
 
 // ---- 1. the frozen SVG ----
 const evil = SC.parseSvg('<?xml version="1.0"?><!-- c --><svg width="100" height="50" onload="x()" style="a"><style>g{}</style><title>t</title>'
@@ -62,22 +63,28 @@ const tags = [], attrs = new Set();
 walk(evil, (x) => { tags.push(x.tag); Object.keys(x.a).forEach((a) => attrs.add(a)); });
 eq(tags, ['svg', 'title', 'g', 'path', 'text', 'tspan', 'path'], 'only listed elements, others dropped with their content');
 ok(!attrs.has('onload') && !attrs.has('onclick') && !attrs.has('style') && !attrs.has('href'), 'no event handler, style attribute or link');
-eq(Object.entries(evil.kids[1].a).sort(), [['class', 'abcjs-note abcjs-n0'], ['data-note', '0']], 'g: fill and stroke are not listed on g; a data-* value with < or > is dropped');
+eq(Object.entries(evil.kids[1].a).sort(), [['class', 'abcjs-note abcjs-n0'], ['data-note', '0'], ['stroke', 'currentColor']], 'g: stroke currentColor kept, fill #ff0000 dropped; a data-* value with < or > is dropped');
 eq(evil.kids[1].kids[0].a.fill, undefined, 'fill="url(…)" is dropped');
 eq(evil.kids[1].kids[0].a.stroke, 'none', 'stroke="none" kept on a path');
 eq(evil.kids[2].st, [['font-size', '3em'], ['display', 'none']], 'style: only listed declarations (no color, no url), to be set one by one');
 eq(evil.kids[2].text + evil.kids[2].kids[0].text, 'A & B ♯"', 'entities are decoded in text');
 eq(evil.kids[3].a.transform, 'translate(1 2) scale(2)', 'transform kept');
 eq(evil.kids[3].a.id, undefined, 'an id that does not match values.id is dropped');
-eq(evil.dropped, ['svg@onload', 'svg style a', '<style>', '<script>', '<foreignObject>', '<a>', 'g@fill', 'g@stroke', 'g@onclick', 'g@data-x', 'path@fill',
-  'text style color', 'text style width', '<image>', 'path@id', '<use>'], 'everything dropped is listed once, in order');
+eq(evil.dropped, { element: ['<style>', '<script>', '<foreignObject>', '<a>', '<image>', '<use>'], attribute: ['svg@onload', 'g@fill', 'g@onclick', 'g@data-x', 'path@fill', 'path@id'],
+  style: ['svg a', 'text color', 'text width'] }, 'everything dropped is listed once, by kind, in order');
+const ns = SC.parseSvg('<svg xmlns="http://www.w3.org/2000/svg" width="10"><g xmlns="http://www.w3.org/1999/xhtml"><path d="M0 0"/></g><path d="M1 1" style="margin: 1px 2px; color: transparent; border: 1px solid red"/></svg>');
+eq([ns.a, ns.kids.length, ns.kids[0].st, ns.dropped], [{ width: '10' }, 1, [['margin', '1px 2px'], ['color', 'transparent']], { element: ['<g> (xmlns is not SVG)'], attribute: [], style: ['path border'] }],
+  'xmlns: checked, never set (an element in another namespace dropped); shorthands by parts; color only transparent');
 
 // ---- 1b. the abcjs corpus through the reader ----
 // Gaps found by this corpus, reported to standards for a spec change (not admitted by the reader): abcjs writes
 // stroke="none", font-family and text-decoration on the text of chord symbols, lyrics, the title and the tempo
-const KNOWN_GAPS = { extras: ['text@stroke', 'text@font-family', 'text@text-decoration'] };
+// Expected losses (egatari-spec ce96072 leaves them out on purpose): abcjs's font-family and text-decoration on the text of
+// chord symbols, lyrics, the title and the tempo (the slide's font is used instead)
+const EXPECTED_LOSSES = { extras: { element: [], attribute: ['text@font-family', 'text@text-decoration'], style: [] } };
+const NONE = { element: [], attribute: [], style: [] };
 for (const [name, fx] of Object.entries({ ...FX, ties: TIES, extras: EXTRAS })) {
-  eq(SC.parseSvg(fx.abcSvg).dropped, KNOWN_GAPS[name] || [], `${name}: the reader drops nothing` + (KNOWN_GAPS[name] ? ' but the reported gaps' : ''));
+  eq(SC.parseSvg(fx.abcSvg).dropped, EXPECTED_LOSSES[name] || NONE, `${name}: the reader drops nothing` + (EXPECTED_LOSSES[name] ? ' but the expected losses (text font-family, text-decoration)' : ''));
   const o = fx.renderers && fx.renderers.abcjs && fx.renderers.abcjs.options;
   ok(fx.renderers && Object.keys(fx.renderers).join() === 'abcjs' && fx.renderers.abcjs.version === '6.7.2' && !('renderer' in fx)
     && o && o.add_classes === true && o.foregroundColor === 'currentColor' && o.staffwidth > 0, `${name}: renderers.abcjs {version, options} once at the top (foregroundColor currentColor)`);

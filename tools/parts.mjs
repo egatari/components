@@ -11,12 +11,12 @@ import vm from 'node:vm';
 // The release the 2.0 migration starts from: a migrated part draws what it drew there (tools/test-c2-identity.mjs), and its
 // move to egatariParts.define is not a change for the gallery's marks (tools/gallery.mjs)
 export const C2_BASELINE = 'v1.13.0';
-// A part that was never released in 1.x has no C2_BASELINE version: it is compared with its own last pre-2.0 commit (kept in
-// this history by the merge that brought the part in). The only such part is m-score (origin/m-score, merged 745654d). Its
-// migration (dc4468e) was byte-identical to that commit on that commit's demo; then egatari-spec 8a410b0 (§6.2, the
-// normative rendered-markup list and the top-level renderers record) changed what its data holds and what its reader
-// admits, so the old demo is no longer valid data. Since then the 2.0 part on the current demo is compared, at the same
-// frames, with that commit on its own demo by pixels (compare: 'pixels'): the same abcjs and tunes, the same drawing.
+// Identity rule (egatari-spec ce96072 decision): byte identity of the DOM where a part's data format is unchanged; where the
+// spec changed the format, 0-pixel identity against the last commit before the change, recorded in the part's CHANGELOG.
+// A part that was never released in 1.x has no C2_BASELINE version either. The only such entry is m-score: its last commit
+// before egatari-spec 8a410b0 changed its data (top-level renderers, the rendered-markup list) in a form this test can run
+// as the 1.x side is cc0e60a (origin/m-score, merged 745654d; its 2.0 migration dc4468e was byte-identical to it). The 2.0
+// side plays the part's current demo; frames are compared by pixels.
 export const C2_BASELINE_OF = { score: { rev: 'cc0e60ab42e1dcddbe109c4ce97272ce77bd35a7', demo: 'current', compare: 'pixels' } };
 export const c2Baseline = (name) => C2_BASELINE_OF[name] || { rev: C2_BASELINE, demo: 'baseline', compare: 'dom' };
 export const EXACT = /^\d+\.\d+\.\d+(-[0-9A-Za-z.-]+)?$/;
