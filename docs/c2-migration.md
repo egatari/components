@@ -1,7 +1,7 @@
-# Migrating a part to components 2.0 (alpha.2 recipe)
+# Migrating a part to components 2.0 (alpha.3 recipe)
 
 A checklist for moving one element part from `DECK.define` (1.x) to `egatariParts.define` (2.0, Egatari spec §6.1, §8.4,
-as of egatari-spec 71cb10c). Parts are migrated in parallel, and **a migration touches only the part's own folder**
+as of egatari-spec 71cb10c; §6.2 build-time rendering and subsets as of egatari-spec ce96072). Parts are migrated in parallel, and **a migration touches only the part's own folder**
 (`components/<name>/`) plus, when needed, its own fixture `tools/fixtures/c2-identity/<name>.html`. Every list the tools
 need is derived from the parts themselves (below), so there is no shared list to edit. The pilots are `components/bars`
 (simple) and `components/menu` (position events, visited, fragments): read
@@ -136,7 +136,7 @@ throw (`code: "error"`) only for the cases it names as meant to throw.
 ## Build-time formulas (alpha.3)
 
 The six parts that drew math with DECK's KaTeX at play time (**m-collect, m-cycle, m-fishbone, m-flow, m-timeline,
-m-tree**) are migrated with build-time `tex` (spec §6.2, egatari-spec 56ae5da):
+m-tree**) are migrated with build-time `tex` (spec §6.2; list as of egatari-spec ce96072):
 
 - The part declares its fields, `static build = {fields: {"nodes[].tex": "katex"}, options: {katex: {output: "html"}}}`
   (paths in the spec's syntax), and allows `texHtml` beside `tex` and `renderers` at the top of its shape.
@@ -144,7 +144,8 @@ m-tree**) are migrated with build-time `tex` (spec §6.2, egatari-spec 56ae5da):
   (`sk = MR.sink(this, ctx)` in mount): the frame DECK drew, filled from `node.texHtml` through the reader, or with the
   `tex` source as text when there is no output; `sk.flush()` at the end of mount reports once per kind with the count
   (`"[<name>] N tex field(s) not rendered at build time …"`, `"[<name>] rendered markup: dropped <kind> ×N …"`).
-- The reader's list is generated from the spec (`node tools/markup-sync.mjs`, pinned in `tools/spec.json`); never edit it.
+- The reader's list is generated from the spec (`node tools/markup-sync.mjs`, from the commit pinned in `tools/spec.json`,
+  the only pin of the spec, with the file's SHA-256); never edit it. m-score reads the same `LIST`.
   Besides the losses the spec documents (colours: `\color`, `\textcolor`, `\colorbox`, `\fcolorbox`, `\pmb`, `mathcolor`,
   `mathbackground`, the errorColor of untrusted commands), a construct the list lacks is a gap for the spec
   (`tools/test-markup-reader.mjs` fails on it), never a reader exception.
@@ -154,6 +155,27 @@ m-tree**) are migrated with build-time `tex` (spec §6.2, egatari-spec 56ae5da):
   (`KATEX_SVG_STYLE`) as equal (approved, egatari-spec 56ae5da). A demo that builds its data at play time has nothing
   to render: its fixture says `<!-- c2-identity-replaces-demo: … -->`.
 - A method named `layout` that is not the player's `layout(ctx)` must be renamed (m-cycle, m-timeline: `arrange(size)`).
+
+## Build-time music, subsets (alpha.3)
+
+- **m-score** (new in 2.0, never released in 1.x) declares `static build = {fields: {abc: "abcjs"}}` and reads the
+  producer's `abcSvg` with its own tree reader (its step plan needs the admitted tree without a DOM), admitting exactly the
+  svg entries of markup-reader's generated `LIST`. Its data format changed with egatari-spec 8a410b0, so it is compared
+  at 0 pixels against cc0e60a (`C2_BASELINE_OF`, above). The abcjs corpus (`tools/test-score.mjs`) may drop only its
+  `EXPECTED_LOSSES` (text `font-family`, `text-decoration`), which the pinned list must not admit.
+- **Data a part carries in its code, keyed by character**, is a block `/*@egatari-block <name>*/…/*@egatari-block-end*/`
+  declared in `build.subset` (`{data: "block:<name>", key}`); the producer (stand-in `tools/subset-produce.mjs`) keeps the
+  members the lesson uses, `_…` members first and unchanged, and nothing outside the markers changes. To tell a key a
+  subset left out from one that never had data, keep the full key list in a `_…` member (m-kakijun's `_keys`) and report
+  the first "(not in this lesson's subset …)".
+- **Parts declare** `tier` (and `set` for specialized parts) and, where it differs from the tag, `display` in the README
+  frontmatter; `build` and `glyphs` on the class. The release manifest repeats them.
+
+## Alpha.3 summary
+
+All 36 element parts are at 2.0.0 (the six build-time `tex` parts and the new m-score included), with the library parts
+shape, base, plot, expr, markup-reader and the five `*-core` parts at 1.0.0. One egatari-spec pin (`tools/spec.json`,
+ce96072) feeds the one generated rendered-markup list. Identity: 50 decks (35 demos and 15 fixtures; m-collect's fixture replaces its demo), 4271 frames, 4982 component DOMs; DOM byte-identical but for 18951 ids rewritten as allowed, 1172 data scripts equal as data (`DATA_REWRITE`) and 2568 empty KaTeX classes (`KATEX_EMPTY_CLASS`), and m-score's 288 frames pixel-identical to cc0e60a.
 
 ## Closed gaps
 
