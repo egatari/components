@@ -115,13 +115,30 @@ export function c2Bundle(root, name) {
 }
 
 // The element class a part's index.js defines, read without a browser (for its static props and shape: tools/pack-bytes.mjs,
-// tools/test-part-shape.mjs). A 1.x part through a stub DECK.define; a 2.0 part through a stub egatariParts.define whose
-// dependencies are stubs (MotionElement an empty class, every other member a no-op function). null if it cannot be read.
+// tools/test-part-shape.mjs). A 1.x part through a stub DECK.define; a 2.0 part through a stub egatariParts.define. Its
+// dependencies are the library parts' own values where they load without a browser (markup-reader's LIST, which m-score's
+// module code reads; the core parts), with stubs for what they require in turn; otherwise, and always for base, stubs
+// (MotionElement an empty class, every other member a no-op function). null if it cannot be read.
+const stubLib = () => new Proxy({}, { get: (_, k) => (k === 'MotionElement' ? class {} : function () {}) });
+const stubDeps = new Proxy({}, { get: () => stubLib() });
+const libCache = new Map();
+function libraryValue(name) {
+  if (libCache.has(name)) return libCache.get(name);
+  let v = null;
+  const f = path.join(path.dirname(path.dirname(new URL(import.meta.url).pathname)), 'components', name, 'index.js');
+  if (name !== 'base' && fs.existsSync(f)) {
+    try {
+      const ctx = vm.createContext({ console: { warn() {} }, egatariParts: { define: (meta, fac) => { if (meta && !meta.element) v = fac(stubDeps); } } });
+      vm.runInContext(fs.readFileSync(f, 'utf8'), ctx, { filename: `${name}/index.js` });
+    } catch { v = null; }
+  }
+  libCache.set(name, v);
+  return v;
+}
 export function partClass(js, filename = 'index.js') {
   let cls = null;
   const D = { define: (n, c) => { cls = c; }, MotionElement: class {} };
-  const lib = () => new Proxy({}, { get: (_, k) => (k === 'MotionElement' ? class {} : function () {}) });
-  const deps = new Proxy({}, { get: () => lib() });
+  const deps = new Proxy({}, { get: (_, k) => (typeof k === 'string' && libraryValue(k)) || stubLib() });
   const ctx = vm.createContext({ DECK: D, window: { DECK: D }, console: { warn() {} },
     egatariParts: { define: (meta, f) => { if (meta && meta.element) cls = f(deps); } } });
   vm.runInContext(js, ctx, { filename });

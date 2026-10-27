@@ -17,7 +17,7 @@
 // 読める層：音の名前を文字で（「ド レ ミ ファ｜ソ …」）。描いた図は aria-hidden
 // 2.0（Egatari spec §6.1 の部品）：base の MotionElement・el・prog・variant・previewOpacity を使い、プレイヤーのグローバルは使わない。
 // 楽譜の描画は組み立てのとき（spec §6.2 build.fields の abcjs）。レッスンのデータや要素の大きさの問題は ctx.report で知らせる（console.warn の代わり）
-egatariParts.define({name: "score", version: "2.0.0", requires: {base: "1.0.0"}, element: "m-score"}, function(deps){
+egatariParts.define({name: "score", version: "2.0.0", requires: {base: "1.0.0", "markup-reader": "1.0.0"}, element: "m-score"}, function(deps){
 "use strict";
 var base = deps.base;
 // ---- 楽譜のデータ（DOM を使わない。tools/test-score.mjs が試す） ----
@@ -26,87 +26,13 @@ var SC = (function(){
   var IROHA = {C: "ハ", D: "ニ", E: "ホ", F: "ヘ", G: "ト", A: "イ", B: "ロ"};
   var PC = {C: 0, D: 2, E: 4, F: 5, G: 7, A: 9, B: 11};
   // ---- 描いた SVG を読む（spec §6.2「Rendered output is data」、egatari-spec ce96072 の schema/rendered-markup-1.json の svg の欄） ----
-  // 許した要素・属性・値だけの木にする（innerHTML も DOMParser も使わない。データは信用しない）。MARKUP は schema の svg の欄と
-  // 同じもの（tools/test-score.mjs が spec のファイルと比べる。足すのは spec の側で、ここでは足さない）。
+  // 許した要素・属性・値だけの木にする（innerHTML も DOMParser も使わない。データは信用しない）。MARKUP は schema の svg の欄で、
+  // markup-reader の LIST から取る（同じ一覧が 1 つだけ。tools/test-score.mjs が spec のファイルと比べる。足すのは spec の側で、ここでは足さない）。
   // 要素は中身ごと、属性・style の宣言はそれだけを捨て、捨てたものを種類（要素・属性・style）ごとに root.dropped に書く
   // （mount が種類ごとに 1 回 ctx.report("data")）。xmlns は名前空間の宣言：要素の名前空間と比べるだけで、属性にはしない
-  var MARKUP = {
-    global: ["class", "aria-hidden", "id", "data-*", "style", "transform"],
-    elements: {
-      svg: ["width", "height", "viewBox", "preserveAspectRatio", "role", "aria-label", "fill", "stroke", "stroke-width"],
-      g: ["fill", "stroke", "stroke-width"],
-      path: ["d", "fill", "stroke", "stroke-width", "stroke-linecap", "stroke-linejoin", "stroke-dasharray"],
-      line: ["x1", "y1", "x2", "y2", "stroke", "stroke-width", "stroke-dasharray"],
-      rect: ["x", "y", "width", "height", "rx", "ry", "fill", "stroke", "stroke-width"],
-      circle: ["cx", "cy", "r", "fill", "stroke", "stroke-width"],
-      ellipse: ["cx", "cy", "rx", "ry", "fill", "stroke", "stroke-width"],
-      polygon: ["points", "fill", "stroke", "stroke-width"],
-      polyline: ["points", "fill", "stroke", "stroke-width"],
-      text: ["x", "y", "dx", "dy", "text-anchor", "dominant-baseline", "font-size", "font-style", "font-weight", "fill", "stroke"],
-      tspan: ["x", "y", "dx", "dy", "font-size", "font-style", "font-weight", "baseline-shift", "fill", "stroke"],
-      title: []
-    },
-    values: {
-      id: "^[A-Za-z][A-Za-z0-9_.:-]{0,127}$",
-      "data-*": {
-        name: "^data-[a-z][a-z0-9-]{0,63}$",
-        value: "^[^<>]{0,256}$"
-      },
-      fill: ["none", "currentColor"],
-      stroke: ["none", "currentColor"],
-      length: "^-?(\\d+\\.?\\d*|\\.\\d+)(em|ex|px|%|pt|mu)?$"
-    },
-    style: {
-      lengths: ["border-bottom-width", "border-left-width", "border-right-width", "border-top-width", "border-width", "bottom", "font-size", "height", "left", "line-height", "margin-bottom", "margin-left", "margin-right", "margin-top", "max-width", "min-width", "padding-bottom", "padding-left", "padding-right", "padding-top", "right", "top", "vertical-align", "width"],
-      keywords: {
-        position: ["relative", "absolute"],
-        display: ["inline-block", "inline", "block", "none"],
-        "border-bottom-style": ["solid", "dashed"],
-        "border-top-style": ["solid", "dashed"],
-        "border-right-style": ["solid", "dashed"],
-        "border-left-style": ["solid", "dashed"],
-        "vertical-align": ["top", "middle", "bottom", "baseline"],
-        "white-space": ["nowrap"],
-        overflow: ["hidden", "visible"],
-        color: ["transparent"]
-      },
-      shorthands: {
-        margin: {
-          max: 4
-        },
-        padding: {
-          max: 4
-        },
-        "border-width": {
-          max: 4
-        },
-        "border-style": {
-          max: 4,
-          keywords: ["solid", "dashed", "dotted", "double", "none"]
-        },
-        border: {
-          max: 3,
-          keywords: ["solid", "dashed", "dotted", "double", "none"]
-        },
-        "border-top": {
-          max: 3,
-          keywords: ["solid", "dashed", "none"]
-        },
-        "border-bottom": {
-          max: 3,
-          keywords: ["solid", "dashed", "none"]
-        },
-        "border-left": {
-          max: 3,
-          keywords: ["solid", "dashed", "none"]
-        },
-        "border-right": {
-          max: 3,
-          keywords: ["solid", "dashed", "none"]
-        }
-      }
-    }
-  };
+  // 一覧は部品 markup-reader の LIST（tools/markup-sync.mjs が tools/spec.json の egatari-spec から作る。ここでは書かない）の svg の欄
+  var LIST = deps["markup-reader"].LIST;
+  var MARKUP = {global: LIST.global.svg, elements: LIST.elements.svg, values: LIST.values, style: LIST.style};
   var SVG_NS = "http://www.w3.org/2000/svg";
   var RE = {id: new RegExp(MARKUP.values.id), dataName: new RegExp(MARKUP.values["data-*"].name), dataValue: new RegExp(MARKUP.values["data-*"].value), length: new RegExp(MARKUP.values.length)};
   // 属性 name="v" を element tag に置いてよいか

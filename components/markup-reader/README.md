@@ -8,7 +8,8 @@ requires: base@1.0.0
 
 **2.0 alpha (branch `c2-a3a`; not for lessons).** A library part (Egatari spec §6.1). Parts that show build-time rendered
 output (spec §6.2) insert it only through this reader: today the six parts with `tex` fields (`m-collect`, `m-cycle`,
-`m-fishbone`, `m-flow`, `m-timeline`, `m-tree`), later `m-score` (abcjs SVG). They require it as
+`m-fishbone`, `m-flow`, `m-timeline`, `m-tree`). `m-score` (abcjs SVG) reads only `LIST` (its svg entries) and keeps its
+own tree reader, which its step plan uses without a DOM; the list is the same one. They require it as
 `requires: {base: "1.0.0", "markup-reader": "1.0.0"}` and receive `{read, texFrame, sink, LIST}`:
 
 ```js
