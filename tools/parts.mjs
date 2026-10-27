@@ -7,6 +7,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import vm from 'node:vm';
+import { fileURLToPath } from 'node:url';
 
 // The release the 2.0 migration starts from: a migrated part draws what it drew there (tools/test-c2-identity.mjs), and its
 // move to egatariParts.define is not a change for the gallery's marks (tools/gallery.mjs)
@@ -125,7 +126,7 @@ const libCache = new Map();
 function libraryValue(name) {
   if (libCache.has(name)) return libCache.get(name);
   let v = null;
-  const f = path.join(path.dirname(path.dirname(new URL(import.meta.url).pathname)), 'components', name, 'index.js');
+  const f = path.join(path.dirname(path.dirname(fileURLToPath(import.meta.url))), 'components', name, 'index.js');
   if (name !== 'base' && fs.existsSync(f)) {
     try {
       const ctx = vm.createContext({ console: { warn() {} }, egatariParts: { define: (meta, fac) => { if (meta && !meta.element) v = fac(stubDeps); } } });

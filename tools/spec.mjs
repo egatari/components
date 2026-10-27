@@ -31,6 +31,8 @@ export function specDir() {
     fs.mkdirSync(d, { recursive: true });
     console.log(`spec: fetching ${SPEC_PIN.repository} ${SPEC_PIN.commit.slice(0, 7)} into .spec/`);
     run(['init', '--quiet'], d);
+    // the pinned files are hashed byte for byte: no line-ending conversion on checkout (a Windows checkout with CRLF differed)
+    run(['config', 'core.autocrlf', 'false'], d);
     run(['remote', 'add', 'origin', SPEC_PIN.repository], d);
     run(['fetch', '--quiet', '--depth', '1', '--no-tags', 'origin', SPEC_PIN.commit], d);
     run(['-c', 'advice.detachedHead=false', 'checkout', '--quiet', '--detach', 'FETCH_HEAD'], d);
