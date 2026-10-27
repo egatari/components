@@ -4,7 +4,15 @@ Versions follow [README.md § Releases and versions](README.md#releases-and-vers
 
 ## Unreleased
 
-### 2.0 alpha.3 (branch; not for lessons)
+### Later (candidates, not in this release)
+
+- `m-compare` `by="row"`; an "outside every set" region for `m-venn`; planned-vs-actual bars for `m-timeline`
+
+## 2.0.0-rc.1 - 2026-10-27 (pre-release)
+
+Pre-release for building Egatari Studio's 2.0 host (v0.6.3). Not for lessons: Studio up to v0.6.2 stays on 1.13.x. The final 2.0.0 ships with Studio v0.6.3.
+
+### 2.0 alpha.3
 
 Every element part is at 2.0.0: the six parts that drew math at play time move to build-time KaTeX (c2-a3a), and m-score joins with build-time abcjs, subset blocks, tiers and the manifest fields (c2-a3b); both follow egatari-spec ce96072, pinned once.
 
@@ -37,7 +45,7 @@ Every element part is at 2.0.0: the six parts that drew math at play time move t
 - `tools/test-score-noclass.mjs` (in `tools/test-all.mjs`): the demo with every `abcjs-*` class stripped from abcSvg has the same steps, events, note names and DOM (mid-step, final, preview) as the demo as built, in a browser
 - `tools/test-shape.mjs`: m-score's wrong-shape case (`abc` without the rendered `abcSvg` / `abcMap`)
 
-### 2.0 alpha.2 (branch; not for lessons)
+### 2.0 alpha.2
 
 Every element part but the six that draw math with `svgMath` moves to `egatariParts.define` (Egatari spec §6.1, §8.4 as of egatari-spec 71cb10c; design `components-2.0-design.md` §11; recipe `docs/c2-migration.md`). The pattern was piloted on m-bars and m-menu, then applied to the other parts in four parallel branches (c2-w1 … c2-w4). Studio does not host 2.0 yet: the migrated parts reach the pinned Studio through the test-only registry shim.
 
@@ -85,7 +93,7 @@ Every element part but the six that draw math with `svgMath` moves to `egatariPa
 - **Per-part changelogs**: a migrated part keeps `components/<name>/CHANGELOG.md` with a `## <version>` section (lint); m-bars and m-menu have theirs. Per-part identity fixtures: `tools/fixtures/c2-identity/<name>.html`
 - Recipe `docs/c2-migration.md` updated with all of the above
 
-### 2.0 alpha.1 (branch; not for lessons)
+### 2.0 alpha.1
 
 Components 2.0 starts on the branch `c2-base` (Egatari spec §6.1 parts and their dependencies, as of egatari-spec 56061ac; design `components-2.0-design.md` §11). No element part changes behaviour: every `index.js` of the 35 components is unchanged, and Studio still sees exactly those 35. New library parts start at 1.0.0; migrated element parts will be 2.0.0 (alpha.2), and the catalogue 2.0.0 later.
 
@@ -110,10 +118,6 @@ Components 2.0 starts on the branch `c2-base` (Egatari spec §6.1 parts and thei
 - `tools/test-part-shape.mjs`: `shape` ≡ `DECK.shape` text for text (check, describe, brief, gotOf, typeOf, near, dataLike) on the components' 30 declared shapes and 5 more, with altered data reaching every kind of mismatch (about 10,000 comparisons)
 - `tools/test-part-plot.mjs`: `plot.Plot` ≡ `DECK.Plot` (SVG markup and returned values) on 24 boxes × options; clip paths numbered from `plot-1-0-0-clip1` by its own counter, the prefix being the one allowed difference
 - `tools/test-registry.mjs`, containment (in a browser, through the bridge): a part throwing from `steps`, `mount`, `render` (two instances) and `layout` → exactly one `ctx.report("error", "[c2throw] <phase>: …")` per instance, one placeholder with the text equivalent, `steps` = the attribute or 0, the part not called again, DECK never sees an exception, no page error, and the other part and the slide's items are unaffected. Registry: the factory-throw message and console line, the dependant's message naming the cause, a thrown non-Error, `define` never rethrowing; in a browser, a dependant of a failing library part shows its text equivalent and has its own report
-
-### Later (candidates, not in this release)
-
-- `m-compare` `by="row"`; an "outside every set" region for `m-venn`; planned-vs-actual bars for `m-timeline`
 
 ## 1.13.0 - 2026-10-27
 

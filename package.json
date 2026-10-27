@@ -1,6 +1,6 @@
 {
   "name": "egatari-components",
-  "version": "1.13.0",
+  "version": "2.0.0-rc.1",
   "private": true,
   "description": "Components for Egatari Studio (motion figures for Egatari lessons)",
   "license": "MIT",

@@ -6,8 +6,6 @@
 <title>部品の一覧（見本）</title>
 <!-- tools/gallery.mjs が各部品の demo.html と README.md から作る。手で直さない。数値・会社はすべて架空か公の事実 -->
 <style>
-/* m-tree */
-.vcap{font-size:27px;color:var(--muted);text-align:center;margin-bottom:6px}
 /* m-compare */
 .vlabel{font-size:27px;color:var(--muted);margin:0 0 6px}
 /* m-cycle */
@@ -16,6 +14,8 @@
 .vcap{font-size:27px;color:var(--muted);text-align:center;margin-bottom:6px}
 /* m-timeline */
 .vcap{font-size:27px;line-height:1.3;margin:0 0 6px;color:var(--muted)}
+/* m-tree */
+.vcap{font-size:27px;color:var(--muted);text-align:center;margin-bottom:6px}
 /* m-venn */
 .vlabel{font-size:27px;color:var(--muted);margin:0 0 6px}
 </style>
@@ -61,129 +61,12 @@ document.addEventListener("DOMContentLoaded", function(){
   <h2>部品の一覧（36 個、131 枚）</h2>
   <div class="body">
     <p>部品ごとに、説明の 1 枚と見本のスライドが続きます。→ で段階を進めます。</p>
-    <p>m-heatmap（新しい）　m-map-world（新しい）　m-score（新しい）　m-bars（変わった）　m-collect（変わった）　m-flow（変わった）　m-tree（変わった）　m-boxplot　m-codetree　m-compare　m-curves　m-cycle　m-fishbone　m-gendai　m-hissan　m-hist　m-kakijun　m-kanbun　m-keyboard　m-kobun　m-kpi　m-map-japan　m-market　m-menu　m-numberline　m-pie　m-predict　m-quad　m-scatter　m-seq　m-sweep　m-syntax　m-tape　m-timeline　m-timer　m-venn</p>
+    <p>m-score（新しい）　m-collect（変わった）　m-bars　m-boxplot　m-codetree　m-compare　m-curves　m-cycle　m-fishbone　m-flow　m-gendai　m-heatmap　m-hissan　m-hist　m-kakijun　m-kanbun　m-keyboard　m-kobun　m-kpi　m-map-japan　m-map-world　m-market　m-menu　m-numberline　m-pie　m-predict　m-quad　m-scatter　m-seq　m-sweep　m-syntax　m-tape　m-timeline　m-timer　m-tree　m-venn</p>
   </div>
 </section>
 
 <section class="slide">
-  <h2>m-heatmap（新しい、v1.13.0）</h2>
-  <div class="body">
-    <p>ヒートマップ。値で塗ったセルの格子（混同行列・相関行列・注意の重み）</p>
-    <ul>
-      <li>伝えたいこと：比べる（量・特徴）・2 つの量の関係</li>
-      <li>見せ方：fade・sweep</li>
-      <li>系列：数理・統計　見本のスライド：3 枚</li>
-    </ul>
-  </div>
-</section>
-
-<section class="slide">
-  <h2>動物の写真の分類：混同行列（架空）</h2>
-  <div class="body">
-    <m-heatmap normalize="row" show="both" diag="on" xl="予測" yl="正解" aria-label="架空の分類器の混同行列（各 50 枚）" style="height:440px">
-      <script type="application/json">{"rows": ["ねこ", "いぬ", "うさぎ"], "cols": ["ねこ", "いぬ", "うさぎ"], "values": [[45, 3, 2], [6, 38, 6], [1, 4, 45]]}</script>
-    </m-heatmap>
-  </div>
-  <div class="concl"><span>→ 正解の行ごとに、どのクラスと間違えたかを読む</span></div>
-</section>
-
-<section class="slide">
-  <h2>点数とスマホの時間の相関（架空の 40 人）</h2>
-  <div class="body">
-    <m-heatmap scale="diverging" range="[-1,1]" digits="2" aria-label="架空の 40 人の、試験の点数とスマホの時間の相関行列" style="height:440px">
-      <script type="application/json">{"rows": ["数学", "理科", "英語", "スマホ"], "cols": ["数学", "理科", "英語", "スマホ"], "values": [[1, 0.68, 0.41, -0.35], [0.68, 1, 0.3, -0.28], [0.41, 0.3, 1, -0.52], [-0.35, -0.28, -0.52, 1]]}</script>
-    </m-heatmap>
-  </div>
-  <div class="concl"><span>→ 0 から離れるほど濃く、正と負は色で分かれる</span></div>
-</section>
-
-<section class="slide">
-  <h2>見せ方の種類（variant）：注意の重み（架空）</h2>
-  <div class="body">
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:0 36px">
-      <m-heatmap variant="fade" digits="2" xl="フェード（fade、既定）" aria-label="架空の注意の重み（fade）" style="height:430px">
-        <script type="application/json">{"rows": ["猫", "が", "魚", "を"], "cols": ["猫", "が", "魚", "を"], "values": [[0.62, 0.1, 0.2, 0.08], [0.45, 0.3, 0.15, 0.1], [0.12, 0.05, 0.71, 0.12], [0.08, 0.04, 0.58, 0.3]], "highlight": [[2, 2], [3, 2]]}</script>
-      </m-heatmap>
-      <m-heatmap variant="sweep" digits="2" xl="左上から（sweep）" aria-label="架空の注意の重み（sweep）" style="height:430px">
-        <script type="application/json">{"rows": ["猫", "が", "魚", "を"], "cols": ["猫", "が", "魚", "を"], "values": [[0.62, 0.1, 0.2, 0.08], [0.45, 0.3, 0.15, 0.1], [0.12, 0.05, 0.71, 0.12], [0.08, 0.04, 0.58, 0.3]], "highlight": [[2, 2], [3, 2]]}</script>
-      </m-heatmap>
-    </div>
-  </div>
-  <div class="concl"><span>→ 全体を出してから、強調するセルを 1 つずつ囲む</span></div>
-</section>
-
-<section class="slide">
-  <h2>m-map-world（新しい、v1.13.0）</h2>
-  <div class="body">
-    <p>世界の国・地域の地図（太平洋が中央）。国や州の強調、区分と値の塗り分け、点、矢印を段階ごとに出す</p>
-    <ul>
-      <li>伝えたいこと：場所・地図</li>
-      <li>見せ方：fade・sweep・draw</li>
-      <li>系列：地図（社会）　見本のスライド：3 枚</li>
-    </ul>
-  </div>
-</section>
-
-<section class="slide">
-  <h2>世界の六つの州</h2>
-  <div class="body">
-    <m-map-world aria-label="六州の地図" style="height:440px">
-      <script type="application/json">{
-        "regions": [
-          {"group": "asia", "tone": "series-1", "step": 1},
-          {"group": "europe", "tone": "series-2", "step": 2},
-          {"group": "africa", "tone": "series-3", "step": 3},
-          {"group": "north-america", "tone": "series-4", "step": 4},
-          {"group": "south-america", "tone": "series-1", "step": 5},
-          {"group": "oceania", "tone": "series-2", "step": 6}
-        ]
-      }</script>
-    </m-map-world>
-  </div>
-  <div class="concl"><span>→ 六つの州に分けて世界を見る</span></div>
-</section>
-
-<section class="slide">
-  <h2>国別の値の塗り分け（架空の値）</h2>
-  <div class="body">
-    <m-map-world aria-label="架空の値の塗り分け" legend="架空の指標" unit="点" style="height:440px">
-      <script type="application/json">{
-        "classes": [0, 20, 40, 60],
-        "values": {"JPN": 72, "CHN": 48, "TWN": 66, "KOR": 61, "IND": 18, "IDN": 27, "AUS": 64, "NZL": 58, "USA": 75, "CAN": 69,
-          "MEX": 33, "BRA": 36, "ARG": 41, "CHL": 45, "GBR": 67, "FRA": 63, "DEU": 70, "ITA": 52, "ESP": 49, "RUS": 38,
-          "TUR": 31, "SAU": 44, "EGY": 15, "NGA": 9, "ZAF": 29, "KEN": 12, "ETH": 6, "VNM": 24, "THA": 35, "PHL": 22}
-      }</script>
-    </m-map-world>
-  </div>
-  <div class="concl"><span>→ 値は架空。台湾は台湾自身の値で塗る</span></div>
-</section>
-
-<section class="slide">
-  <h2>東京から世界の都市へ</h2>
-  <div class="body">
-    <m-map-world aria-label="東京と世界の都市を結ぶ矢印" labels="none" grid="equator" style="height:440px">
-      <script type="application/json">{
-        "points": [
-          {"lon": 139.69, "lat": 35.69, "label": "東京", "anchor": "above", "step": 1},
-          {"lon": -118.24, "lat": 34.05, "label": "ロサンゼルス", "anchor": "below", "step": 2},
-          {"lon": 103.82, "lat": 1.35, "label": "シンガポール", "anchor": "left", "step": 3},
-          {"lon": 151.21, "lat": -33.87, "label": "シドニー", "anchor": "right", "step": 4},
-          {"lon": -0.13, "lat": 51.51, "label": "ロンドン", "anchor": "above", "step": 5}
-        ],
-        "flows": [
-          {"from": [139.69, 35.69], "to": [-118.24, 34.05], "step": 2},
-          {"from": [139.69, 35.69], "to": [103.82, 1.35], "bend": -0.2, "step": 3},
-          {"from": [139.69, 35.69], "to": [151.21, -33.87], "bend": -0.15, "step": 4},
-          {"from": [103.82, 1.35], "to": [-0.13, 51.51], "step": 5}
-        ]
-      }</script>
-    </m-map-world>
-  </div>
-  <div class="concl"><span>→ 太平洋が中央の地図では、日本が真ん中に来る</span></div>
-</section>
-
-<section class="slide">
-  <h2>m-score（新しい、v1.13.0）</h2>
+  <h2>m-score（新しい、v2.0.0-rc.1）</h2>
   <div class="body">
     <p>楽譜（五線譜）を 1 音・和音ずつ、または 1 小節ずつ出して音も鳴らす。ABC 記譜法で書く</p>
     <ul>
@@ -235,7 +118,36 @@ document.addEventListener("DOMContentLoaded", function(){
 </section>
 
 <section class="slide">
-  <h2>m-bars（変わった、v1.13.0）</h2>
+  <h2>m-collect（変わった、v2.0.0-rc.1）</h2>
+  <div class="body">
+    <p>並んだ札（回答など）が動いて縮み、少数の箱（要約）にまとまる</p>
+    <ul>
+      <li>伝えたいこと：まとめる・分ける</li>
+      <li>見せ方：1 種類</li>
+      <li>系列：数理・統計　見本のスライド：1 枚</li>
+    </ul>
+  </div>
+</section>
+
+<section class="slide">
+  <h2>観測の要約</h2>
+  <div class="body">
+    <p data-step="1">8 回の観測は，事後分布の 2 つのモーメントにまとまる</p>
+    <!-- 見本の数値：8 回のコイン投げ（表なら 1：1 1 0 1 1 0 1 1）から、一様な事前分布 Beta(1,1) のもとでの事後平均 7/10 と事後分散 21/1100。
+         式（tex）は組み立てのときに描く（spec §6.2）ので、データは原稿に書く（再生のときにスクリプトで作ったデータの式は描かれない） -->
+    <m-collect data-from="2" box-w="300" box-h="120" style="height:340px">
+      <script type="application/json">{"cols": 4,
+        "chips": [{"label": "試行 1：表", "to": [0, 1]}, {"label": "試行 2：表", "to": [0, 1]}, {"label": "試行 3：裏", "to": [0, 1]}, {"label": "試行 4：表", "to": [0, 1]},
+                  {"label": "試行 5：表", "to": [0, 1]}, {"label": "試行 6：裏", "to": [0, 1]}, {"label": "試行 7：表", "to": [0, 1]}, {"label": "試行 8：表", "to": [0, 1]}],
+        "targets": [{"label": "事後平均", "tex": "\\mathrm{E}[\\theta\\mid D]", "value": "0.700"},
+                    {"label": "事後分散", "tex": "\\mathrm{Var}[\\theta\\mid D]", "value": "0.0191"}]}</script>
+    </m-collect>
+  </div>
+  <div class="concl"><span>→ 次の予測には，この 2 つの値だけ持てばよい</span></div>
+</section>
+
+<section class="slide">
+  <h2>m-bars</h2>
   <div class="body">
     <p>棒を段階ごとに 0 から伸ばす（縦棒・横棒・組の棒・積み上げ棒）。値の軸の上限を段階で広げて「軸を突き抜ける伸び」も見せられる</p>
     <ul>
@@ -343,227 +255,6 @@ document.addEventListener("DOMContentLoaded", function(){
     </div>
   </div>
   <div class="concl"><span>→ 駅前店だけが大きく減った。学年が上がるほど「はい」が増える</span></div>
-</section>
-
-<section class="slide">
-  <h2>m-collect（変わった、v1.13.0）</h2>
-  <div class="body">
-    <p>並んだ札（回答など）が動いて縮み、少数の箱（要約）にまとまる</p>
-    <ul>
-      <li>伝えたいこと：まとめる・分ける</li>
-      <li>見せ方：1 種類</li>
-      <li>系列：数理・統計　見本のスライド：1 枚</li>
-    </ul>
-  </div>
-</section>
-
-<section class="slide">
-  <h2>観測の要約</h2>
-  <div class="body">
-    <p data-step="1">8 回の観測は，事後分布の 2 つのモーメントにまとまる</p>
-    <!-- 見本の数値：8 回のコイン投げ（表なら 1：1 1 0 1 1 0 1 1）から、一様な事前分布 Beta(1,1) のもとでの事後平均 7/10 と事後分散 21/1100。
-         式（tex）は組み立てのときに描く（spec §6.2）ので、データは原稿に書く（再生のときにスクリプトで作ったデータの式は描かれない） -->
-    <m-collect data-from="2" box-w="300" box-h="120" style="height:340px">
-      <script type="application/json">{"cols": 4,
-        "chips": [{"label": "試行 1：表", "to": [0, 1]}, {"label": "試行 2：表", "to": [0, 1]}, {"label": "試行 3：裏", "to": [0, 1]}, {"label": "試行 4：表", "to": [0, 1]},
-                  {"label": "試行 5：表", "to": [0, 1]}, {"label": "試行 6：裏", "to": [0, 1]}, {"label": "試行 7：表", "to": [0, 1]}, {"label": "試行 8：表", "to": [0, 1]}],
-        "targets": [{"label": "事後平均", "tex": "\\mathrm{E}[\\theta\\mid D]", "value": "0.700"},
-                    {"label": "事後分散", "tex": "\\mathrm{Var}[\\theta\\mid D]", "value": "0.0191"}]}</script>
-    </m-collect>
-  </div>
-  <div class="concl"><span>→ 次の予測には，この 2 つの値だけ持てばよい</span></div>
-</section>
-
-<section class="slide">
-  <h2>m-flow（変わった、v1.13.0）</h2>
-  <div class="body">
-    <p>流れ図の箱と矢印を段階ごとに出して、図を組み立てる</p>
-    <ul>
-      <li>伝えたいこと：手順・工程</li>
-      <li>見せ方：1 種類</li>
-      <li>系列：標準パーツ　見本のスライド：3 枚</li>
-    </ul>
-  </div>
-</section>
-
-<section class="slide">
-  <h2>ベイズ決定の流れ</h2>
-  <div class="body">
-    <m-flow style="height:420px">
-      <script type="application/json">{
-        "nodes": [
-          {"id": "w",  "label": "観測 *w*",            "x": 0,   "y": 40,  "w": 220, "h": 80, "step": 1},
-          {"id": "p",  "tex": "p(y\\mid w)",          "x": 330, "y": 40,  "w": 240, "h": 80, "step": 1},
-          {"id": "L",  "label": "損失 *L*(*y*, *a*)\n（与えられる）", "x": 330, "y": 260, "w": 240, "h": 100, "step": 2, "tone": "muted"},
-          {"id": "r",  "tex": "r(a\\mid w)",          "x": 680, "y": 150, "w": 220, "h": 80, "step": 3},
-          {"id": "a",  "label": "決定 *a*^*",          "x": 1000, "y": 150, "w": 184, "h": 80, "step": 4, "tone": "emph"}
-        ],
-        "edges": [
-          {"from": "w", "to": "p", "step": 1, "label": "予測"},
-          {"from": "p", "to": "r", "step": 3},
-          {"from": "L", "to": "r", "step": 3, "dash": true},
-          {"from": "r", "to": "a", "step": 4, "label": "最小化", "tone": "emph"}
-        ]
-      }</script>
-    </m-flow>
-  </div>
-  <div class="concl"><span>→ 予測と損失から期待損失 <i>r</i> を作り，それを最小にする <i>a</i> を選ぶ</span></div>
-</section>
-
-<section class="slide">
-  <h2>お金とサービスの流れ（架空）</h2>
-  <div class="body">
-    <m-flow style="height:420px">
-      <script type="application/json">{
-        "nodes": [
-          {"id": "co",  "label": "自社",         "x": 470, "y": 20,  "w": 240, "h": 80, "step": 1, "tone": "emph"},
-          {"id": "cu",  "label": "顧客の会社",   "x": 60,  "y": 300, "w": 260, "h": 80, "step": 1},
-          {"id": "us",  "label": "社員（使う人）", "x": 860, "y": 300, "w": 300, "h": 80, "step": 2},
-          {"id": "cl",  "label": "クラウド",     "x": 950, "y": 20,  "w": 220, "h": 80, "step": 3, "tone": "muted"}
-        ],
-        "edges": [
-          {"from": "co", "to": "cu", "kind": "service", "label": "使う権利", "shift": 14, "step": 1},
-          {"from": "cu", "to": "co", "kind": "money", "amount": "月 3 万円", "shift": 14, "step": 2, "pulse": [2, 3]},
-          {"from": "cu", "to": "us", "kind": "service", "label": "配る", "step": 2},
-          {"from": "us", "to": "co", "kind": "data", "label": "使い方の記録", "step": 3, "pulse": true},
-          {"from": "co", "to": "cl", "kind": "money", "amount": "売上の 15 %", "step": 3}
-        ]
-      }</script>
-    </m-flow>
-  </div>
-  <div class="concl"><span>→ 会社が払い，社員が使い，記録が戻る</span></div>
-</section>
-
-<section class="slide">
-  <h2>1 から <i>n</i> までの和を求める手順（判断とくり返し）</h2>
-  <div class="body">
-    <m-flow aria-label="1 から n までの和を求める流れ図" style="height:420px">
-      <script type="application/json">{
-        "nodes": [
-          {"id": "init", "label": "*S* ← 0, *i* ← 1",  "x": 0,   "y": 70,  "w": 220, "h": 80, "step": 1},
-          {"id": "dec",  "label": "*i* ≤ *n* ?",       "x": 290, "y": 40,  "w": 260, "h": 140, "step": 1, "shape": "diamond"},
-          {"id": "add",  "label": "*S* ← *S* + *i*",   "x": 640, "y": 70,  "w": 230, "h": 80, "step": 2},
-          {"id": "inc",  "label": "*i* ← *i* + 1",     "x": 950, "y": 70,  "w": 220, "h": 80, "step": 2},
-          {"id": "out",  "label": "*S* を出力",        "x": 305, "y": 300, "w": 230, "h": 80, "step": 4, "tone": "emph"}
-        ],
-        "edges": [
-          {"from": "init", "to": "dec", "step": 1},
-          {"from": "dec", "to": "add", "label": "はい", "step": 2},
-          {"from": "add", "to": "inc", "step": 2},
-          {"from": "inc", "to": "dec", "loop": "top", "label": "くり返す", "step": 3},
-          {"from": "dec", "to": "out", "label": "いいえ", "step": 4, "tone": "emph"}
-        ]
-      }</script>
-    </m-flow>
-  </div>
-  <div class="concl"><span>→ <i>i</i> が <i>n</i> をこえるまで足してから，<i>S</i> を出力する</span></div>
-</section>
-
-<section class="slide">
-  <h2>m-tree（変わった、v1.13.0）</h2>
-  <div class="body">
-    <p>階層・分類の木（組織図、生物の分類など）を、根から 1 段ずつ組み立てる。座標は書かず、配置は部品が決める</p>
-    <ul>
-      <li>伝えたいこと：階層・分類</li>
-      <li>見せ方：fade・draw・grow</li>
-      <li>系列：標準パーツ　見本のスライド：4 枚</li>
-    </ul>
-  </div>
-</section>
-
-<section class="slide">
-  <h2>会社の組織（架空）</h2>
-  <div class="body">
-    <m-tree aria-label="架空の会社の組織図" style="height:440px">
-      <script type="application/json">{
-        "nodes": [
-          {"id": "ceo", "label": "社長", "tone": "emph"},
-          {"id": "s", "label": "営業本部", "parent": "ceo"},
-          {"id": "d", "label": "開発本部", "parent": "ceo"},
-          {"id": "a", "label": "管理本部", "parent": "ceo"},
-          {"id": "s1", "label": "国内営業部", "parent": "s"},
-          {"id": "s2", "label": "海外営業部", "parent": "s"},
-          {"id": "d1", "label": "製品開発部", "parent": "d"},
-          {"id": "d2", "label": "品質保証部", "parent": "d"},
-          {"id": "a1", "label": "人事部", "parent": "a"},
-          {"id": "a2", "label": "経理部", "parent": "a"},
-          {"id": "d11", "label": "設計課", "parent": "d1"},
-          {"id": "d12", "label": "試作課", "parent": "d1"},
-          {"id": "d13", "label": "試験課", "parent": "d1", "note": "2026 年に新設"}
-        ]
-      }</script>
-    </m-tree>
-  </div>
-  <div class="concl"><span>→ 上から 1 段ずつ：本部、部、課</span></div>
-</section>
-
-<section class="slide">
-  <h2>動物の分け方（orient="right"）</h2>
-  <div class="body">
-    <m-tree orient="right" aria-label="動物の分類" style="height:440px">
-      <script type="application/json">{
-        "nodes": [
-          {"id": "an", "label": "動物"},
-          {"id": "v", "label": "脊椎動物", "parent": "an", "note": "背骨がある"},
-          {"id": "i", "label": "無脊椎動物", "parent": "an", "note": "背骨がない", "tone": "muted"},
-          {"id": "f", "label": "魚類", "parent": "v"},
-          {"id": "am", "label": "両生類", "parent": "v"},
-          {"id": "r", "label": "は虫類", "parent": "v"},
-          {"id": "b", "label": "鳥類", "parent": "v"},
-          {"id": "m", "label": "哺乳類", "parent": "v", "tone": "emph"},
-          {"id": "ar", "label": "節足動物", "parent": "i", "tone": "muted"},
-          {"id": "mo", "label": "軟体動物", "parent": "i", "tone": "muted"}
-        ],
-        "edges": [
-          {"from": "r", "to": "b", "label": "近い仲間", "step": 4}
-        ]
-      }</script>
-    </m-tree>
-  </div>
-  <div class="concl"><span>→ 背骨の有無で分け、脊椎動物をさらに 5 つに分ける</span></div>
-</section>
-
-<section class="slide">
-  <h2>見せ方の種類（variant）</h2>
-  <div class="body">
-    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:28px">
-      <div><div class="vcap">箱、それから線（fade、既定）</div>
-      <m-tree variant="fade" aria-label="植物の分類（fade）" style="height:330px">
-        <script type="application/json">{"nodes": [{"id": "p", "label": "植物"}, {"id": "s", "label": "種子植物", "parent": "p"}, {"id": "f", "label": "胞子植物", "parent": "p"}, {"id": "a", "label": "被子植物", "parent": "s"}, {"id": "g", "label": "裸子植物", "parent": "s"}]}</script>
-      </m-tree></div>
-      <div><div class="vcap">線を引いてから箱（draw）</div>
-      <m-tree variant="draw" aria-label="植物の分類（draw）" style="height:330px">
-        <script type="application/json">{"nodes": [{"id": "p", "label": "植物"}, {"id": "s", "label": "種子植物", "parent": "p"}, {"id": "f", "label": "胞子植物", "parent": "p"}, {"id": "a", "label": "被子植物", "parent": "s"}, {"id": "g", "label": "裸子植物", "parent": "s"}]}</script>
-      </m-tree></div>
-      <div><div class="vcap">親の側から大きくなる（grow）</div>
-      <m-tree variant="grow" aria-label="植物の分類（grow）" style="height:330px">
-        <script type="application/json">{"nodes": [{"id": "p", "label": "植物"}, {"id": "s", "label": "種子植物", "parent": "p"}, {"id": "f", "label": "胞子植物", "parent": "p"}, {"id": "a", "label": "被子植物", "parent": "s"}, {"id": "g", "label": "裸子植物", "parent": "s"}]}</script>
-      </m-tree></div>
-    </div>
-  </div>
-  <div class="concl"><span>→ 書かなければ最初の見せ方（fade）になる</span></div>
-</section>
-
-<section class="slide">
-  <h2>確率の木：雨の日に遅れる確率（branch・path）</h2>
-  <div class="body">
-    <m-tree orient="right" aria-label="天気と遅刻の確率の木" style="height:440px">
-      <script type="application/json">{
-        "nodes": [
-          {"id": "s", "label": "出発"},
-          {"id": "r", "label": "雨", "parent": "s", "branch": "0.3"},
-          {"id": "f", "label": "晴れ", "parent": "s", "branch": "0.7"},
-          {"id": "rl", "label": "遅れる", "parent": "r", "branch": "0.4"},
-          {"id": "ro", "label": "間に合う", "parent": "r", "branch": "0.6"},
-          {"id": "fl", "label": "遅れる", "parent": "f", "branch": "0.1"},
-          {"id": "fo", "label": "間に合う", "parent": "f", "branch": "0.9"}
-        ],
-        "path": ["s", "r", "rl"],
-        "pathNote": "0.3 × 0.4 = 0.12"
-      }</script>
-    </m-tree>
-  </div>
-  <div class="concl"><span>→ 道に沿って枝の確率をかける：雨で遅れる確率は 0.12</span></div>
 </section>
 
 <section class="slide">
@@ -910,6 +601,91 @@ document.addEventListener("DOMContentLoaded", function(){
 </section>
 
 <section class="slide">
+  <h2>m-flow</h2>
+  <div class="body">
+    <p>流れ図の箱と矢印を段階ごとに出して、図を組み立てる</p>
+    <ul>
+      <li>伝えたいこと：手順・工程</li>
+      <li>見せ方：1 種類</li>
+      <li>系列：標準パーツ　見本のスライド：3 枚</li>
+    </ul>
+  </div>
+</section>
+
+<section class="slide">
+  <h2>ベイズ決定の流れ</h2>
+  <div class="body">
+    <m-flow style="height:420px">
+      <script type="application/json">{
+        "nodes": [
+          {"id": "w",  "label": "観測 *w*",            "x": 0,   "y": 40,  "w": 220, "h": 80, "step": 1},
+          {"id": "p",  "tex": "p(y\\mid w)",          "x": 330, "y": 40,  "w": 240, "h": 80, "step": 1},
+          {"id": "L",  "label": "損失 *L*(*y*, *a*)\n（与えられる）", "x": 330, "y": 260, "w": 240, "h": 100, "step": 2, "tone": "muted"},
+          {"id": "r",  "tex": "r(a\\mid w)",          "x": 680, "y": 150, "w": 220, "h": 80, "step": 3},
+          {"id": "a",  "label": "決定 *a*^*",          "x": 1000, "y": 150, "w": 184, "h": 80, "step": 4, "tone": "emph"}
+        ],
+        "edges": [
+          {"from": "w", "to": "p", "step": 1, "label": "予測"},
+          {"from": "p", "to": "r", "step": 3},
+          {"from": "L", "to": "r", "step": 3, "dash": true},
+          {"from": "r", "to": "a", "step": 4, "label": "最小化", "tone": "emph"}
+        ]
+      }</script>
+    </m-flow>
+  </div>
+  <div class="concl"><span>→ 予測と損失から期待損失 <i>r</i> を作り，それを最小にする <i>a</i> を選ぶ</span></div>
+</section>
+
+<section class="slide">
+  <h2>お金とサービスの流れ（架空）</h2>
+  <div class="body">
+    <m-flow style="height:420px">
+      <script type="application/json">{
+        "nodes": [
+          {"id": "co",  "label": "自社",         "x": 470, "y": 20,  "w": 240, "h": 80, "step": 1, "tone": "emph"},
+          {"id": "cu",  "label": "顧客の会社",   "x": 60,  "y": 300, "w": 260, "h": 80, "step": 1},
+          {"id": "us",  "label": "社員（使う人）", "x": 860, "y": 300, "w": 300, "h": 80, "step": 2},
+          {"id": "cl",  "label": "クラウド",     "x": 950, "y": 20,  "w": 220, "h": 80, "step": 3, "tone": "muted"}
+        ],
+        "edges": [
+          {"from": "co", "to": "cu", "kind": "service", "label": "使う権利", "shift": 14, "step": 1},
+          {"from": "cu", "to": "co", "kind": "money", "amount": "月 3 万円", "shift": 14, "step": 2, "pulse": [2, 3]},
+          {"from": "cu", "to": "us", "kind": "service", "label": "配る", "step": 2},
+          {"from": "us", "to": "co", "kind": "data", "label": "使い方の記録", "step": 3, "pulse": true},
+          {"from": "co", "to": "cl", "kind": "money", "amount": "売上の 15 %", "step": 3}
+        ]
+      }</script>
+    </m-flow>
+  </div>
+  <div class="concl"><span>→ 会社が払い，社員が使い，記録が戻る</span></div>
+</section>
+
+<section class="slide">
+  <h2>1 から <i>n</i> までの和を求める手順（判断とくり返し）</h2>
+  <div class="body">
+    <m-flow aria-label="1 から n までの和を求める流れ図" style="height:420px">
+      <script type="application/json">{
+        "nodes": [
+          {"id": "init", "label": "*S* ← 0, *i* ← 1",  "x": 0,   "y": 70,  "w": 220, "h": 80, "step": 1},
+          {"id": "dec",  "label": "*i* ≤ *n* ?",       "x": 290, "y": 40,  "w": 260, "h": 140, "step": 1, "shape": "diamond"},
+          {"id": "add",  "label": "*S* ← *S* + *i*",   "x": 640, "y": 70,  "w": 230, "h": 80, "step": 2},
+          {"id": "inc",  "label": "*i* ← *i* + 1",     "x": 950, "y": 70,  "w": 220, "h": 80, "step": 2},
+          {"id": "out",  "label": "*S* を出力",        "x": 305, "y": 300, "w": 230, "h": 80, "step": 4, "tone": "emph"}
+        ],
+        "edges": [
+          {"from": "init", "to": "dec", "step": 1},
+          {"from": "dec", "to": "add", "label": "はい", "step": 2},
+          {"from": "add", "to": "inc", "step": 2},
+          {"from": "inc", "to": "dec", "loop": "top", "label": "くり返す", "step": 3},
+          {"from": "dec", "to": "out", "label": "いいえ", "step": 4, "tone": "emph"}
+        ]
+      }</script>
+    </m-flow>
+  </div>
+  <div class="concl"><span>→ <i>i</i> が <i>n</i> をこえるまで足してから，<i>S</i> を出力する</span></div>
+</section>
+
+<section class="slide">
   <h2>m-gendai</h2>
   <div class="body">
     <p>現代文の読解の図：傍線・二重傍線を引き、指示語から指す内容へ矢印、段落を役割（主張・具体例・対比）の枠で囲んで線でつなぐ</p>
@@ -919,6 +695,53 @@ document.addEventListener("DOMContentLoaded", function(){
       <li>系列：国語　見本のスライド：0 枚</li>
     </ul>
   </div>
+</section>
+
+<section class="slide">
+  <h2>m-heatmap</h2>
+  <div class="body">
+    <p>ヒートマップ。値で塗ったセルの格子（混同行列・相関行列・注意の重み）</p>
+    <ul>
+      <li>伝えたいこと：比べる（量・特徴）・2 つの量の関係</li>
+      <li>見せ方：fade・sweep</li>
+      <li>系列：数理・統計　見本のスライド：3 枚</li>
+    </ul>
+  </div>
+</section>
+
+<section class="slide">
+  <h2>動物の写真の分類：混同行列（架空）</h2>
+  <div class="body">
+    <m-heatmap normalize="row" show="both" diag="on" xl="予測" yl="正解" aria-label="架空の分類器の混同行列（各 50 枚）" style="height:440px">
+      <script type="application/json">{"rows": ["ねこ", "いぬ", "うさぎ"], "cols": ["ねこ", "いぬ", "うさぎ"], "values": [[45, 3, 2], [6, 38, 6], [1, 4, 45]]}</script>
+    </m-heatmap>
+  </div>
+  <div class="concl"><span>→ 正解の行ごとに、どのクラスと間違えたかを読む</span></div>
+</section>
+
+<section class="slide">
+  <h2>点数とスマホの時間の相関（架空の 40 人）</h2>
+  <div class="body">
+    <m-heatmap scale="diverging" range="[-1,1]" digits="2" aria-label="架空の 40 人の、試験の点数とスマホの時間の相関行列" style="height:440px">
+      <script type="application/json">{"rows": ["数学", "理科", "英語", "スマホ"], "cols": ["数学", "理科", "英語", "スマホ"], "values": [[1, 0.68, 0.41, -0.35], [0.68, 1, 0.3, -0.28], [0.41, 0.3, 1, -0.52], [-0.35, -0.28, -0.52, 1]]}</script>
+    </m-heatmap>
+  </div>
+  <div class="concl"><span>→ 0 から離れるほど濃く、正と負は色で分かれる</span></div>
+</section>
+
+<section class="slide">
+  <h2>見せ方の種類（variant）：注意の重み（架空）</h2>
+  <div class="body">
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:0 36px">
+      <m-heatmap variant="fade" digits="2" xl="フェード（fade、既定）" aria-label="架空の注意の重み（fade）" style="height:430px">
+        <script type="application/json">{"rows": ["猫", "が", "魚", "を"], "cols": ["猫", "が", "魚", "を"], "values": [[0.62, 0.1, 0.2, 0.08], [0.45, 0.3, 0.15, 0.1], [0.12, 0.05, 0.71, 0.12], [0.08, 0.04, 0.58, 0.3]], "highlight": [[2, 2], [3, 2]]}</script>
+      </m-heatmap>
+      <m-heatmap variant="sweep" digits="2" xl="左上から（sweep）" aria-label="架空の注意の重み（sweep）" style="height:430px">
+        <script type="application/json">{"rows": ["猫", "が", "魚", "を"], "cols": ["猫", "が", "魚", "を"], "values": [[0.62, 0.1, 0.2, 0.08], [0.45, 0.3, 0.15, 0.1], [0.12, 0.05, 0.71, 0.12], [0.08, 0.04, 0.58, 0.3]], "highlight": [[2, 2], [3, 2]]}</script>
+      </m-heatmap>
+    </div>
+  </div>
+  <div class="concl"><span>→ 全体を出してから、強調するセルを 1 つずつ囲む</span></div>
 </section>
 
 <section class="slide">
@@ -1329,6 +1152,76 @@ document.addEventListener("DOMContentLoaded", function(){
     </div>
   </div>
   <div class="concl"><span>→ 書かなければ最初の見せ方（fade）になる</span></div>
+</section>
+
+<section class="slide">
+  <h2>m-map-world</h2>
+  <div class="body">
+    <p>世界の国・地域の地図（太平洋が中央）。国や州の強調、区分と値の塗り分け、点、矢印を段階ごとに出す</p>
+    <ul>
+      <li>伝えたいこと：場所・地図</li>
+      <li>見せ方：fade・sweep・draw</li>
+      <li>系列：地図（社会）　見本のスライド：3 枚</li>
+    </ul>
+  </div>
+</section>
+
+<section class="slide">
+  <h2>世界の六つの州</h2>
+  <div class="body">
+    <m-map-world aria-label="六州の地図" style="height:440px">
+      <script type="application/json">{
+        "regions": [
+          {"group": "asia", "tone": "series-1", "step": 1},
+          {"group": "europe", "tone": "series-2", "step": 2},
+          {"group": "africa", "tone": "series-3", "step": 3},
+          {"group": "north-america", "tone": "series-4", "step": 4},
+          {"group": "south-america", "tone": "series-1", "step": 5},
+          {"group": "oceania", "tone": "series-2", "step": 6}
+        ]
+      }</script>
+    </m-map-world>
+  </div>
+  <div class="concl"><span>→ 六つの州に分けて世界を見る</span></div>
+</section>
+
+<section class="slide">
+  <h2>国別の値の塗り分け（架空の値）</h2>
+  <div class="body">
+    <m-map-world aria-label="架空の値の塗り分け" legend="架空の指標" unit="点" style="height:440px">
+      <script type="application/json">{
+        "classes": [0, 20, 40, 60],
+        "values": {"JPN": 72, "CHN": 48, "TWN": 66, "KOR": 61, "IND": 18, "IDN": 27, "AUS": 64, "NZL": 58, "USA": 75, "CAN": 69,
+          "MEX": 33, "BRA": 36, "ARG": 41, "CHL": 45, "GBR": 67, "FRA": 63, "DEU": 70, "ITA": 52, "ESP": 49, "RUS": 38,
+          "TUR": 31, "SAU": 44, "EGY": 15, "NGA": 9, "ZAF": 29, "KEN": 12, "ETH": 6, "VNM": 24, "THA": 35, "PHL": 22}
+      }</script>
+    </m-map-world>
+  </div>
+  <div class="concl"><span>→ 値は架空。台湾は台湾自身の値で塗る</span></div>
+</section>
+
+<section class="slide">
+  <h2>東京から世界の都市へ</h2>
+  <div class="body">
+    <m-map-world aria-label="東京と世界の都市を結ぶ矢印" labels="none" grid="equator" style="height:440px">
+      <script type="application/json">{
+        "points": [
+          {"lon": 139.69, "lat": 35.69, "label": "東京", "anchor": "above", "step": 1},
+          {"lon": -118.24, "lat": 34.05, "label": "ロサンゼルス", "anchor": "below", "step": 2},
+          {"lon": 103.82, "lat": 1.35, "label": "シンガポール", "anchor": "left", "step": 3},
+          {"lon": 151.21, "lat": -33.87, "label": "シドニー", "anchor": "right", "step": 4},
+          {"lon": -0.13, "lat": 51.51, "label": "ロンドン", "anchor": "above", "step": 5}
+        ],
+        "flows": [
+          {"from": [139.69, 35.69], "to": [-118.24, 34.05], "step": 2},
+          {"from": [139.69, 35.69], "to": [103.82, 1.35], "bend": -0.2, "step": 3},
+          {"from": [139.69, 35.69], "to": [151.21, -33.87], "bend": -0.15, "step": 4},
+          {"from": [103.82, 1.35], "to": [-0.13, 51.51], "step": 5}
+        ]
+      }</script>
+    </m-map-world>
+  </div>
+  <div class="concl"><span>→ 太平洋が中央の地図では、日本が真ん中に来る</span></div>
 </section>
 
 <section class="slide">
@@ -1956,6 +1849,113 @@ document.addEventListener("DOMContentLoaded", function(){
       <li>系列：標準パーツ　見本のスライド：0 枚</li>
     </ul>
   </div>
+</section>
+
+<section class="slide">
+  <h2>m-tree</h2>
+  <div class="body">
+    <p>階層・分類の木（組織図、生物の分類など）を、根から 1 段ずつ組み立てる。座標は書かず、配置は部品が決める</p>
+    <ul>
+      <li>伝えたいこと：階層・分類</li>
+      <li>見せ方：fade・draw・grow</li>
+      <li>系列：標準パーツ　見本のスライド：4 枚</li>
+    </ul>
+  </div>
+</section>
+
+<section class="slide">
+  <h2>会社の組織（架空）</h2>
+  <div class="body">
+    <m-tree aria-label="架空の会社の組織図" style="height:440px">
+      <script type="application/json">{
+        "nodes": [
+          {"id": "ceo", "label": "社長", "tone": "emph"},
+          {"id": "s", "label": "営業本部", "parent": "ceo"},
+          {"id": "d", "label": "開発本部", "parent": "ceo"},
+          {"id": "a", "label": "管理本部", "parent": "ceo"},
+          {"id": "s1", "label": "国内営業部", "parent": "s"},
+          {"id": "s2", "label": "海外営業部", "parent": "s"},
+          {"id": "d1", "label": "製品開発部", "parent": "d"},
+          {"id": "d2", "label": "品質保証部", "parent": "d"},
+          {"id": "a1", "label": "人事部", "parent": "a"},
+          {"id": "a2", "label": "経理部", "parent": "a"},
+          {"id": "d11", "label": "設計課", "parent": "d1"},
+          {"id": "d12", "label": "試作課", "parent": "d1"},
+          {"id": "d13", "label": "試験課", "parent": "d1", "note": "2026 年に新設"}
+        ]
+      }</script>
+    </m-tree>
+  </div>
+  <div class="concl"><span>→ 上から 1 段ずつ：本部、部、課</span></div>
+</section>
+
+<section class="slide">
+  <h2>動物の分け方（orient="right"）</h2>
+  <div class="body">
+    <m-tree orient="right" aria-label="動物の分類" style="height:440px">
+      <script type="application/json">{
+        "nodes": [
+          {"id": "an", "label": "動物"},
+          {"id": "v", "label": "脊椎動物", "parent": "an", "note": "背骨がある"},
+          {"id": "i", "label": "無脊椎動物", "parent": "an", "note": "背骨がない", "tone": "muted"},
+          {"id": "f", "label": "魚類", "parent": "v"},
+          {"id": "am", "label": "両生類", "parent": "v"},
+          {"id": "r", "label": "は虫類", "parent": "v"},
+          {"id": "b", "label": "鳥類", "parent": "v"},
+          {"id": "m", "label": "哺乳類", "parent": "v", "tone": "emph"},
+          {"id": "ar", "label": "節足動物", "parent": "i", "tone": "muted"},
+          {"id": "mo", "label": "軟体動物", "parent": "i", "tone": "muted"}
+        ],
+        "edges": [
+          {"from": "r", "to": "b", "label": "近い仲間", "step": 4}
+        ]
+      }</script>
+    </m-tree>
+  </div>
+  <div class="concl"><span>→ 背骨の有無で分け、脊椎動物をさらに 5 つに分ける</span></div>
+</section>
+
+<section class="slide">
+  <h2>見せ方の種類（variant）</h2>
+  <div class="body">
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:28px">
+      <div><div class="vcap">箱、それから線（fade、既定）</div>
+      <m-tree variant="fade" aria-label="植物の分類（fade）" style="height:330px">
+        <script type="application/json">{"nodes": [{"id": "p", "label": "植物"}, {"id": "s", "label": "種子植物", "parent": "p"}, {"id": "f", "label": "胞子植物", "parent": "p"}, {"id": "a", "label": "被子植物", "parent": "s"}, {"id": "g", "label": "裸子植物", "parent": "s"}]}</script>
+      </m-tree></div>
+      <div><div class="vcap">線を引いてから箱（draw）</div>
+      <m-tree variant="draw" aria-label="植物の分類（draw）" style="height:330px">
+        <script type="application/json">{"nodes": [{"id": "p", "label": "植物"}, {"id": "s", "label": "種子植物", "parent": "p"}, {"id": "f", "label": "胞子植物", "parent": "p"}, {"id": "a", "label": "被子植物", "parent": "s"}, {"id": "g", "label": "裸子植物", "parent": "s"}]}</script>
+      </m-tree></div>
+      <div><div class="vcap">親の側から大きくなる（grow）</div>
+      <m-tree variant="grow" aria-label="植物の分類（grow）" style="height:330px">
+        <script type="application/json">{"nodes": [{"id": "p", "label": "植物"}, {"id": "s", "label": "種子植物", "parent": "p"}, {"id": "f", "label": "胞子植物", "parent": "p"}, {"id": "a", "label": "被子植物", "parent": "s"}, {"id": "g", "label": "裸子植物", "parent": "s"}]}</script>
+      </m-tree></div>
+    </div>
+  </div>
+  <div class="concl"><span>→ 書かなければ最初の見せ方（fade）になる</span></div>
+</section>
+
+<section class="slide">
+  <h2>確率の木：雨の日に遅れる確率（branch・path）</h2>
+  <div class="body">
+    <m-tree orient="right" aria-label="天気と遅刻の確率の木" style="height:440px">
+      <script type="application/json">{
+        "nodes": [
+          {"id": "s", "label": "出発"},
+          {"id": "r", "label": "雨", "parent": "s", "branch": "0.3"},
+          {"id": "f", "label": "晴れ", "parent": "s", "branch": "0.7"},
+          {"id": "rl", "label": "遅れる", "parent": "r", "branch": "0.4"},
+          {"id": "ro", "label": "間に合う", "parent": "r", "branch": "0.6"},
+          {"id": "fl", "label": "遅れる", "parent": "f", "branch": "0.1"},
+          {"id": "fo", "label": "間に合う", "parent": "f", "branch": "0.9"}
+        ],
+        "path": ["s", "r", "rl"],
+        "pathNote": "0.3 × 0.4 = 0.12"
+      }</script>
+    </m-tree>
+  </div>
+  <div class="concl"><span>→ 道に沿って枝の確率をかける：雨で遅れる確率は 0.12</span></div>
 </section>
 
 <section class="slide">

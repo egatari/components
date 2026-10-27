@@ -8,7 +8,8 @@ import path from 'node:path';
 import { execFileSync } from 'node:child_process';
 import { ROOT } from './studio.mjs';
 
-const cmp = (a, b) => { const x = a.split('.').map(Number), y = b.split('.').map(Number); for (let i = 0; i < 3; i++) if (x[i] !== y[i]) return x[i] - y[i]; return 0; };
+// X.Y.Z or X.Y.Z-pre (a pre-release sorts before its X.Y.Z)
+const cmp = (a, b) => { const [ac, ap] = a.split('-'), [bc, bp] = b.split('-'); const x = ac.split('.').map(Number), y = bc.split('.').map(Number); for (let i = 0; i < 3; i++) if (x[i] !== y[i]) return x[i] - y[i]; return ap === bp ? 0 : ap === undefined ? 1 : bp === undefined ? -1 : (ap < bp ? -1 : 1); };
 export function git(...a) {
   try { return execFileSync('git', a, { cwd: ROOT, encoding: 'utf8', stdio: ['ignore', 'pipe', 'ignore'] }); } catch { return ''; }
 }

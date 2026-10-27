@@ -42,7 +42,7 @@ const idSha = (p, b) => sha(identityBytes(p, b));
 // yanked.json: releases a registry withdraws (spec §6). Their tags and assets stay as they are; the newest manifest says so.
 export function readYanked(version) {
   const y = JSON.parse(fs.readFileSync(path.join(ROOT, 'yanked.json'), 'utf8'));
-  const cmp = (a, b) => { const x = a.split('.').map(Number), z = b.split('.').map(Number); for (let i = 0; i < 3; i++) if (x[i] !== z[i]) return x[i] - z[i]; return 0; };
+  const cmp = (a, b) => { const [ac, ap] = a.split('-'), [bc, bp] = b.split('-'); const x = ac.split('.').map(Number), z = bc.split('.').map(Number); for (let i = 0; i < 3; i++) if (x[i] !== z[i]) return x[i] - z[i]; return ap === bp ? 0 : ap === undefined ? 1 : bp === undefined ? -1 : (ap < bp ? -1 : 1); };
   for (const [v, e] of Object.entries(y)) {
     if (!/^\d+\.\d+\.\d+$/.test(v)) throw new Error(`yanked.json: ${v} is not X.Y.Z`);
     if (!e || typeof e !== 'object' || Object.keys(e).sort().join() !== 'date,reason,replacement') throw new Error(`yanked.json: ${v} needs exactly replacement, reason, date`);
@@ -56,7 +56,7 @@ export function readYanked(version) {
 }
 
 export function release(version) {
-  if (!/^\d+\.\d+\.\d+$/.test(version)) throw new Error(`version ${version} is not X.Y.Z`);
+  if (!/^\d+\.\d+\.\d+(-rc\.\d+)?$/.test(version)) throw new Error(`version ${version} is not X.Y.Z or X.Y.Z-rc.N`);
   const errs = lint(ROOT);
   if (errs.length) throw new Error('lint:\n  ' + errs.join('\n  '));
   const entries = [['LICENSE', fs.readFileSync(path.join(ROOT, 'LICENSE'))]];
