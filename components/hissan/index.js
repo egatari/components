@@ -23,9 +23,9 @@ var CALC = (function(){
   // 数：書かれたとおりの数字と位（p：一の位が 0、小数第一位が −1）、小数点の右の桁数 scale、整数として読んだ値 int
   function num(s, what){
     var m = /^(\d+)(?:\.(\d+))?$/.exec(s);
-    if (!m) throw new Error('m-hissan: ' + what + ' "' + s + '" is not a number (write digits, optionally with one decimal point)');
+    if (!m) throw new Error('' + what + ' "' + s + '" is not a number (write digits, optionally with one decimal point)');
     var ip = m[1].replace(/^0+(?=\d)/, ""), fp = m[2] || "";
-    if ((ip + fp).replace(/^0+/, "").length > 12) throw new Error("m-hissan: " + what + " has more than 12 digits");
+    if ((ip + fp).replace(/^0+/, "").length > 12) throw new Error("" + what + " has more than 12 digits");
     var ds = [];
     for (var i = 0; i < ip.length; i++) ds.push({p: ip.length - 1 - i, d: +ip[i]});
     for (var j = 0; j < fp.length; j++) ds.push({p: -(j + 1), d: +fp[j]});
@@ -37,7 +37,7 @@ var CALC = (function(){
       .replace(/．/g, ".").replace(/[\s　]/g, "").replace(/[=＝]$/, "")
       .replace(/[＋]/g, "+").replace(/[-－−ー]/g, "−").replace(/[*＊xX✕]/g, "×").replace(/[/／]/g, "÷").replace(/^\./, "0.").replace(/([+−×÷])\./, "$10.");
     var m = /^([\d.]+)([+−×÷])([\d.]+)$/.exec(s);
-    if (!m) throw new Error('m-hissan: expr="' + expr + '" is not one calculation like "487+356", "1003-457", "3.6×2.4" or "7.56÷1.8"');
+    if (!m) throw new Error('expr="' + expr + '" is not one calculation like "487+356", "1003-457", "3.6×2.4" or "7.56÷1.8"');
     var A = num(m[1], "the first number"), B = num(m[3], "the second number");
     return {op: OPS[m[2]], A: A, B: B};
   }
@@ -68,7 +68,7 @@ var CALC = (function(){
     var M = new Model(op), s = Math.max(A.scale, B.scale), plus = op === "+";
     if (!plus) M.cw = CWSUB;
     var Ai = A.int * pow10(s - A.scale), Bi = B.int * pow10(s - B.scale);
-    if (!plus && Ai < Bi) throw new Error("m-hissan: " + A.text + "−" + B.text + " is negative (the first number must not be smaller)");
+    if (!plus && Ai < Bi) throw new Error("" + A.text + "−" + B.text + " is negative (the first number must not be smaller)");
     // 小さな字の行：ひき算と carry="top" は上の数の上、たし算の既定は 2 つめの数と線の間（くり上がりは答えの線のすぐ上）
     var top1 = !plus || (o && o.carry === "top");
     var rS = top1 ? M.row("S") : null, rA = M.row("L"), rB = M.row("L");
@@ -121,7 +121,7 @@ var CALC = (function(){
         if (cur[q] < b2){
           var gb = M.ph(grp, "borrow");
           var L = q + 1; while (L <= topA && !(cur[L] > 0)) L++;
-          if (L > topA) throw new Error("m-hissan: internal: nothing to borrow from");
+          if (L > topA) throw new Error("internal: nothing to borrow from");
           for (var x = L; x > q; x--){
             M.add({t: "slash", r: rA, p: x, g: gb, l: 0.4, o: (L - x) * 0.1});
             var nv = x === L ? cur[x] - 1 : 9;
@@ -258,7 +258,7 @@ var CALC = (function(){
   // o.digits：商を小数第何位まで（null なら、整数どうしは あまり を出し、小数があればわり切れるまで o.cap 位まで）
   function div(A, B, o){
     var M = new Model("÷");
-    if (B.int === 0) throw new Error("m-hissan: division by zero");
+    if (B.int === 0) throw new Error("division by zero");
     var m = B.scale, d = B.int, dI = digitsOf(d);
     // 列（c）：小数点をうつしたあとの、わられる数の位。書いた位 p の列は p + m
     var col = function(p){ return p + m; };
