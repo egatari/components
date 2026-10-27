@@ -117,7 +117,7 @@ var Part = class extends base.MotionElement {
     this.plan();
     this._notes.forEach(function(m){ ctx.report("data", m); });
     // arrange は字の大きさごとに何度も呼ばれるので、同じ知らせは 1 回だけ
-    this.rep = function(code, msg){ if (seen[code + msg]) return; seen[code + msg] = true; ctx.report(code, msg); };
+    this.rep = function(code, msg){ if (seen[code + msg]) return; seen[code + msg] = true; if (code === "attr") ctx.report("attr", msg); else if (code === "range") ctx.report("range", msg); else ctx.report("data", msg); };
     this.texSink = MR.sink(this, ctx);
     this.style.display = "block"; this.style.position = "relative";
     var W = this.W = this.clientWidth, H = this.H = this.clientHeight;
