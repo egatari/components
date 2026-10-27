@@ -177,7 +177,7 @@ const PROBE = `egatariParts.define({name: "c2probe", version: "0.0.1", requires:
   return class extends base.MotionElement {
     static props = {label: {type: "string", default: "既定"}};
     get steps(){ return 2; }
-    mount(ctx){ this._log = [["mount", Object.keys(ctx).sort().join()]]; this._svg = base.el("svg", {viewBox: "0 0 100 40"}, this); }
+    mount(ctx){ this._log = [["mount", Object.keys(ctx).sort().join()]]; this._svg = base.el("svg", {viewBox: "0 0 100 40"}, this); ctx.report("probe-mount", "reported during mount"); }
     layout(ctx){ this._log.push(["layout", ctx.slide]); }
     render(k, t, ctx){
       this._log.push(["render", k, t === Infinity ? "inf" : +t.toFixed(3), ctx.slide, ctx.mode, ctx.preview, ctx.entered, ctx.lang, "deck" in ctx, ctx.slides.length]);
@@ -274,7 +274,10 @@ try {
   ok(renders[0][6] === true && renders.slice(1).every((x) => x[6] === false), 'entered is true on the first render after entering the slide, false after');
   ok(renders.some((x) => x[1] === 1 && x[2] === 0.2) && renders.some((x) => x[1] === 2 && x[2] === 'inf'), 'DECK\'s seek loop drives render(k, t)');
   ok(r.text === 'hello k=2', 'the part draws with base.el / base.mtext and reads props');
-  ok(r.reports.filter((x) => x.tag === 'm-c2probe').length === 1 && r.reports.find((x) => x.tag === 'm-c2probe').code === 'probe' && r.errs.some((x) => x.tag === 'm-c2probe' && x.kind === 'report' && x.code === 'probe'), 'ctx.report reaches DECK.componentErrors');
+  ok(r.reports.filter((x) => x.tag === 'm-c2probe' && x.code === 'probe').length === 1 && r.errs.some((x) => x.tag === 'm-c2probe' && x.kind === 'report' && x.code === 'probe'), 'ctx.report reaches DECK.componentErrors');
+  const probeReps = r.reports.filter((x) => x.tag === 'm-c2probe').map((x) => [x.code, x.slide, x.key]);
+  ok(JSON.stringify(probeReps) === JSON.stringify([['probe-mount', r.i, 's-probe'], ['probe', r.i, 's-probe']]),
+    `a report's record has the slide's index and key, also when reported during mount (before DECK.slides is set) (${JSON.stringify(probeReps)})`);
   ok(r.log2.length >= 2 && r.log2[0][0] === 'layout' && r.log2[0][1] === 's-probe' && r.log2[1][0] === 'render' && r.log2[1][1] === 2, 'a size change calls layout(ctx) and then render at the last (k, t)');
   ok(r.went === true && r.pos.slide === 1, 'ctx.go(slideKey) moves the deck');
   ok(JSON.stringify(r.vis) === '[true,false,false,true]', `ctx.visited(slideKey) is DECK.visited as a boolean: shown slide true, not yet shown false, unknown false, true after going there (${JSON.stringify(r.vis)})`);

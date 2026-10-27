@@ -158,7 +158,9 @@ function ctxOf(c, d, first){
     visited: function(sk){ return typeof D.visited === "function" ? !!D.visited(String(sk)) : false; },
     go: function(sk, stk){ var i = (D.slides || []).findIndex(function(s){ return s._key === sk; }); if (i < 0) return false; var s = D.slides[i]; var k = stk === undefined ? 0 : stk === "concl" ? s._cstep : +stk; D.go(i, k); return true; },
     report: function(code, message){
-      var rec = {slide: (D.slides || []).findIndex(function(s){ return s._key === key; }), key: key, tag: c.tagName.toLowerCase(), phase: "report", kind: "report", code: String(code), msg: String(message)};
+      // DECK.slides is set only after every part has mounted: during mount, find the slide among the stage's slides
+      var all = D.slides || [].slice.call(document.querySelectorAll("#stage > .slide"));
+      var rec = {slide: all.findIndex(function(s){ return slideKey(s) === key; }), key: key, tag: c.tagName.toLowerCase(), phase: "report", kind: "report", code: String(code), msg: String(message)};
       reports.push(rec);
       if (Array.isArray(D.componentErrors)) D.componentErrors.push(rec);
       console.warn("[egatariParts] " + rec.tag + " (" + key + "): " + rec.code + ": " + rec.msg);
