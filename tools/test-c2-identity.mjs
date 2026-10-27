@@ -1,6 +1,7 @@
 // Identity of migrated parts (components 2.0, alpha.2): a part moved to egatariParts.define draws exactly what its 1.x
 // version drew. For each migrated element part (tools/parts.mjs migratedNames: derived from the parts, never listed):
 //   1.x   a deck built with the pinned Studio (tools/studio.json) and the part's v1.13.0 index.js (DECK.define), the 1.x way
+//         (a part never released in 1.x, m-score: its own last pre-2.0 commit instead, tools/parts.mjs C2_BASELINE_OF)
 //   2.0   the same deck built with the same Studio and, as the part's index.js, the registry shim, the parts it requires in
 //         dependency order and the part (tools/parts.mjs c2Bundle; the shim's bridge lets DECK drive it with the 2.0 ctx)
 // The decks: the part's demo.html of v1.13.0, and tools/fixtures/c2-identity/<name>.html when the part has one (cases the
@@ -18,7 +19,7 @@ import os from 'node:os';
 import path from 'node:path';
 import { execFileSync } from 'node:child_process';
 import { ROOT, studio, pinLabel } from './studio.mjs';
-import { migratedNames, partMetas, c2Bundle, requiresClosure, C2_BASELINE } from './parts.mjs';
+import { migratedNames, partMetas, c2Bundle, requiresClosure, C2_BASELINE, c2Baseline } from './parts.mjs';
 
 export const BASELINE = C2_BASELINE;
 // The only allowed deviations: ids a part writes into its DOM, renamed with the part's name and version (spec §6.1
@@ -80,15 +81,16 @@ try {
     const m = metas[name], key = `${name}@${m.version}`;
     const rules = requiresClosure(name, metas).flatMap((n) => ID_REWRITES[n] || []);
     const r1 = rewriter(rules, 'v1'), r2 = rewriter(rules, 'v2');
-    const decks = [['demo', git(`${BASELINE}:components/${name}/demo.html`)]];
+    const B = c2Baseline(name), BL = B === BASELINE ? B : `pre-2.0 ${B.slice(0, 7)}`;
+    const decks = [['demo', git(`${B}:components/${name}/demo.html`)]];
     const fx = path.join(ROOT, 'tools', 'fixtures', 'c2-identity', `${name}.html`);
     if (fs.existsSync(fx)) decks.push([path.relative(ROOT, fx), fs.readFileSync(fx, 'utf8')]);
     let status = null, reports = null;
     for (const [deck, src] of decks) {
-      const label = deck === 'demo' ? `${BASELINE} demo` : deck;
+      const label = deck === 'demo' ? `${BL} demo` : deck;
       let v1, v2;
       try {
-        v1 = build(name, deck === 'demo' ? 'demo' : 'fixture', 'v1', src, git(`${BASELINE}:components/${name}/index.js`));
+        v1 = build(name, deck === 'demo' ? 'demo' : 'fixture', 'v1', src, git(`${B}:components/${name}/index.js`));
         v2 = build(name, deck === 'demo' ? 'demo' : 'fixture', 'v2', src, c2Bundle(ROOT, name));
       } catch (e) { ok(false, `m-${name} (${label}): build: ${String(e.stderr || e.message).slice(0, 400)}`); continue; }
       const errors = { v1: [], v2: [] };
@@ -148,7 +150,7 @@ try {
         }
         await a.close(); await b.close();
       }
-      ok(bad.length === 0, `m-${name} (${label}): DOM byte-identical to ${BASELINE} at every frame: ${frames} frames (${comps} component DOMs; ${MODES.join(', ')} × steps × 35 %, 70 %, end; and after a tour of every slide${tourMarks ? `, ${tourMarks} visited marks` : ''}${rewritten ? `; ${rewritten} ids rewritten as allowed` : ''})`
+      ok(bad.length === 0, `m-${name} (${label}): DOM byte-identical to ${BL} at every frame: ${frames} frames (${comps} component DOMs; ${MODES.join(', ')} × steps × 35 %, 70 %, end; and after a tour of every slide${tourMarks ? `, ${tourMarks} visited marks` : ''}${rewritten ? `; ${rewritten} ids rewritten as allowed` : ''})`
         + (bad.length ? `\n     ${bad.length} differ; first: ${bad[0]}` : ''));
       ok(errors.v1.length === 0 && errors.v2.length === 0, `m-${name} (${label}): no console error (1.x ${errors.v1.length}, 2.0 ${errors.v2.length})` + (errors.v2.length ? ': ' + errors.v2[0] : errors.v1.length ? ': ' + errors.v1[0] : ''));
     }

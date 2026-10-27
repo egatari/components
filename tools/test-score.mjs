@@ -16,13 +16,11 @@
 //   node tools/test-score.mjs
 import fs from 'node:fs';
 import path from 'node:path';
-import vm from 'node:vm';
 import { ROOT } from './studio.mjs';
+import { partClass } from './parts.mjs';
 
-const classes = {};
-const DECK = { define: (tag, C) => { classes[tag] = C; }, MotionElement: class {} };
-vm.runInNewContext(fs.readFileSync(path.join(ROOT, 'components', 'score', 'index.js'), 'utf8'), { DECK, console, Math, String, JSON, Number, Array, Object, Error, parseInt, isFinite });
-const SC = classes['m-score'].sc;
+// the part's class read without a browser (tools/parts.mjs partClass: a stub registry; the score data needs no DOM)
+const SC = partClass(fs.readFileSync(path.join(ROOT, 'components', 'score', 'index.js'), 'utf8'), 'score/index.js').sc;
 const FX = {};
 const demo = fs.readFileSync(path.join(ROOT, 'components', 'score', 'demo.html'), 'utf8');
 const demoHas = (name) => demo.includes(JSON.stringify(JSON.parse(fs.readFileSync(path.join(ROOT, 'components', 'score', 'fixtures', name + '.json'), 'utf8')).abcMap.notes).replace(/</g, '\\u003c'));

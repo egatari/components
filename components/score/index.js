@@ -13,26 +13,13 @@
 // 和音は同じ t。duration(k) は段階の音符の長さ（by="measure" は小節の終わりまで）
 // 名前：names="solfa|abc|iroha|none" で符頭の下（五線の下の帯）に 26 px で書く。位置は abcMap の符頭の箱（box）から。
 // 名前が重なる小節は、その小節の名前を全部ジグザグ（奇数番目は上の段、偶数番目は下の段）に
-// 今の段階の音符は --emph、前の段階は --fg。授業の表示（ctx.preview、古い再生器は ctx.mode === "lecture"）では先の音符を --preview-opacity で薄く
+// 今の段階の音符は --emph、前の段階は --fg。授業の表示（ctx.preview）では先の音符を --preview-opacity で薄く
 // 読める層：音の名前を文字で（「ド レ ミ ファ｜ソ …」）。描いた図は aria-hidden
-(function(){
-// ---- BEGIN egatari-variant (source: tools/variant.js; copy with `node tools/variant-sync.mjs`; do not edit inside a component) ----
-// Choosing a presentation variant (Egatari spec §8.4, docs/conventions.md §1). A component lists its variant names in
-// `static variants` (the first is the default) and calls VARIANT.of(this) once, in mount. The variant is the component's
-// `variant` attribute when it names one of them, otherwise the first name. There is no seed: lessons do not carry one
-// (spec §8.4 since egatari-spec 28d8801), and `seed` / `data-egatari-seed` are not read.
-// The choice is a pure function of the attribute: the picture still depends on (i, k, t) only.
-var VARIANT = (function(){
-  "use strict";
-  function of(el){
-    var tag = el.tagName.toLowerCase(), C = customElements.get(tag), names = (C && C.variants) || [], v = el.getAttribute("variant");
-    if (v !== null && names.indexOf(v) >= 0) return v;
-    if (v !== null) console.warn(tag + ' variant="' + v + '" is not one of ' + names.join(", ") + " (the first, " + (names[0] || "none") + ", is used)");
-    return names[0] || null;
-  }
-  return {of: of};
-})();
-// ---- END egatari-variant ----
+// 2.0（Egatari spec §6.1 の部品）：base の MotionElement・el・prog・variant・previewOpacity を使い、プレイヤーのグローバルは使わない。
+// 楽譜の描画は組み立てのとき（spec §6.2 build.fields の abcjs）。レッスンのデータや要素の大きさの問題は ctx.report で知らせる（console.warn の代わり）
+egatariParts.define({name: "score", version: "2.0.0", requires: {base: "1.0.0"}, element: "m-score"}, function(deps){
+"use strict";
+var base = deps.base;
 // ---- 楽譜のデータ（DOM を使わない。tools/test-score.mjs が試す） ----
 var SC = (function(){
   var SOLFA = {C: "ド", D: "レ", E: "ミ", F: "ファ", G: "ソ", A: "ラ", B: "シ"};
@@ -280,7 +267,8 @@ var SC = (function(){
 
 var FS = 26, ROW = 30;   // 名前の字（24 px 以上）と行の高さ
 var est = function(s, size){ return [...String(s)].reduce(function(a, c){ return a + (c === " " ? 0.3 : /[\u0000-ɏ]/.test(c) ? 0.62 : 1); }, 0) * size; };
-DECK.define("m-score", class extends DECK.MotionElement {
+return class extends base.MotionElement {
+  static partName = "score";   // the registry name (define meta name), for report prefixes
   static variants = ["light"];
   static sc = SC;
   static build = {fields: {abc: "abcjs"}};
@@ -311,20 +299,24 @@ DECK.define("m-score", class extends DECK.MotionElement {
     var d = this.data || {};
     if (typeof d.abcSvg !== "string" || !d.abcMap) throw new Error("m-score: no abcSvg / abcMap: the build renders abc with abcjs and adds them (a lesson built without that step cannot show the score)");
     var names = this.props.names;
-    if (["solfa", "abc", "iroha", "none"].indexOf(names) < 0){ console.warn('m-score: names="' + names + '" is not solfa, abc, iroha or none (none is used)'); names = "none"; }
+    var notes = [];
+    if (["solfa", "abc", "iroha", "none"].indexOf(names) < 0){ notes.push('[score] names="' + names + '" is not solfa, abc, iroha or none (none is used)'); names = "none"; }
     var pl = SC.plan(d.abcMap, this.props.by);
     pl.names = names;
+    pl.attrNotes = notes;   // attribute problems, reported in mount (steps reads plan before there is a ctx)
     return (this._plan = pl);
   }
   duration(k){ var s = k >= 1 && this.plan().steps[k - 1]; return s ? s.len : 0; }
   events(k){ return SC.events(this.plan(), k); }
-  mount(){
-    var self = this, D = DECK, pl = this.plan();
-    this.variant = VARIANT.of(this);
+  mount(ctx){
+    var self = this, D = base, pl = this.plan();
+    this.variant = base.variant(this);
+    this.ja = /^ja\b/i.test(ctx.lang);
+    pl.attrNotes.forEach(function(n){ ctx.report("attr", n); });
     this.style.display = "block";
     var W = this.clientWidth, H = this.clientHeight;
     var tree = SC.parseSvg(this.data.abcSvg), as = SC.assign(tree, pl);
-    as.mismatch.forEach(function(x){ console.warn("m-score: abcSvg and abcMap do not match: " + x + " (an element without a known tag is shown from step 0)"); });
+    as.mismatch.forEach(function(x){ ctx.report("data", "[score] abcSvg and abcMap do not match: " + x + " (an element without a known tag is shown from step 0)"); });
     var svg = D.el("svg", {viewBox: "0 0 " + W + " " + H, width: W, height: H, "aria-hidden": "true", style: "display:block;overflow:visible"}, this);
     // 楽譜の木を組み直す（許した属性だけ。色は currentColor → color: var(--fg)）
     var mk = function(node, parent){
@@ -367,7 +359,7 @@ DECK.define("m-score", class extends DECK.MotionElement {
       if (same) break;
     }
     L.forEach(function(ln){ ln.band = ln.rows ? 10 + ln.rows * ROW : 0; });
-    if (s < 0.9) console.warn("m-score: the element (" + W + "×" + H + " px) draws the staff at " + s.toFixed(2) + "× (the staff lines are " + (7.75 * s).toFixed(1) + " px apart); make it larger or show fewer measures");
+    if (s < 0.9) ctx.report("size", "[score] the element (" + W + "×" + H + " px) draws the staff at " + s.toFixed(2) + "× (the staff lines are " + (7.75 * s).toFixed(1) + " px apart); make it larger or show fewer measures");
     var used = sumH * s + L.reduce(function(a, ln){ return a + ln.band; }, 0) + GAP * (L.length - 1), y = Math.max(0, (H - used) / 2);
     this.geo = {s: s, ox: ox, lines: []};
     var gN = D.el("g", {}, svg);
@@ -376,7 +368,7 @@ DECK.define("m-score", class extends DECK.MotionElement {
       ln.g.setAttribute("transform", "translate(" + ox.toFixed(2) + " " + (y - ln.top * s).toFixed(2) + ") scale(" + s.toFixed(4) + ")");
       var bottom = y + ln.h * s;
       self.geo.lines.push({top: y, bottom: bottom});
-      if (ln.pl.overlap) console.warn("m-score: the names under the notes overlap; make the element wider or use names=\"none\"");
+      if (ln.pl.overlap) ctx.report("size", "[score] the names under the notes overlap; make the element wider or use names=\"none\"");
       ln.pl.labels.forEach(function(lb){
         var t = D.el("text", {x: lb.x.toFixed(1), y: (bottom + 8 + FS + lb.row * ROW).toFixed(1), "font-size": FS, "text-anchor": "middle", fill: "var(--fg)", opacity: 0}, gN);
         t.textContent = lb.s;
@@ -384,12 +376,12 @@ DECK.define("m-score", class extends DECK.MotionElement {
       });
       y = bottom + ln.band + GAP;
     });
-    if (used > H + 1) console.warn("m-score: the score needs " + Math.ceil(used) + " px but the element is " + H + " px high");
+    if (used > H + 1) ctx.report("size", "[score] the score needs " + Math.ceil(used) + " px but the element is " + H + " px high");
     // 出す単位（音符・休符・小節線・連桁・タイ）。段階 0 から見えるものは触らない
     this.U = as.parts.filter(function(p){ return p.i !== null; }).map(function(p){ return {i: p.i, el: p.node.el, note: !!p.note}; });
     this.N = labels;
     // 読める層（画面にも印刷にも出ない）
-    var ja = DECK.ja, mode = pl.names !== "none" ? pl.names : (ja ? "solfa" : "abc");
+    var ja = this.ja, mode = pl.names !== "none" ? pl.names : (ja ? "solfa" : "abc");
     var sr = document.createElement("p");
     sr.className = "sr-only";
     sr.setAttribute("style", "position:absolute;width:1px;height:1px;margin:-1px;padding:0;overflow:hidden;clip-path:inset(50%);white-space:nowrap;border:0");
@@ -399,16 +391,16 @@ DECK.define("m-score", class extends DECK.MotionElement {
     if (!this.getAttribute("aria-label")) this.setAttribute("aria-label", ja ? "楽譜（" + nm + " 小節）" : "Score (" + nm + " measures)");
   }
   render(k, t, ctx){
-    var pl = this.plan(), preview = !!(ctx && (ctx.preview || ctx.mode === "lecture"));
+    var pl = this.plan(), preview = !!ctx.preview;
     // 薄さはテーマの --preview-opacity（仕様 §8.4「Answers under preview」）。書いていないテーマだけ 0.45
     var FAINT = 0;
-    if (preview){ FAINT = parseFloat(getComputedStyle(this).getPropertyValue("--preview-opacity")); if (!(FAINT >= 0 && FAINT <= 1)) FAINT = 0.45; }
+    if (preview) FAINT = base.previewOpacity(this);
     var state = function(i){
       var s = pl.stepOf[i];
       if (s < k) return {o: 1, cur: false};
       if (s > k) return {o: FAINT, cur: false};
       var len = Math.min(0.25, pl.notes[i].dur * pl.spb);
-      return {o: t === Infinity ? 1 : DECK.prog(t, pl.at[i], len), cur: true};
+      return {o: t === Infinity ? 1 : base.prog(t, pl.at[i], len), cur: true};
     };
     this.U.forEach(function(u){
       var st = state(u.i);
@@ -422,5 +414,5 @@ DECK.define("m-score", class extends DECK.MotionElement {
       n.el.setAttribute("font-weight", st.cur ? 700 : 400);
     });
   }
+};
 });
-})();

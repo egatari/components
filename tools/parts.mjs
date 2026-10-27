@@ -11,6 +11,10 @@ import vm from 'node:vm';
 // The release the 2.0 migration starts from: a migrated part draws what it drew there (tools/test-c2-identity.mjs), and its
 // move to egatariParts.define is not a change for the gallery's marks (tools/gallery.mjs)
 export const C2_BASELINE = 'v1.13.0';
+// A part that was never released in 1.x has no C2_BASELINE version: it draws what its own last pre-2.0 commit drew (a commit
+// kept in this history by the merge that brought the part in). The only such part is m-score (origin/m-score, merged 745654d)
+export const C2_BASELINE_OF = { score: 'cc0e60ab42e1dcddbe109c4ce97272ce77bd35a7' };
+export const c2Baseline = (name) => C2_BASELINE_OF[name] || C2_BASELINE;
 export const EXACT = /^\d+\.\d+\.\d+(-[0-9A-Za-z.-]+)?$/;
 const CALL = 'egatariParts.define(';
 
