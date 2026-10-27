@@ -17,13 +17,11 @@
 //   node tools/test-hissan.mjs
 import fs from 'node:fs';
 import path from 'node:path';
-import vm from 'node:vm';
 import { ROOT } from './studio.mjs';
+import { partClass } from './parts.mjs';
 
-const classes = {};
-const DECK = { define: (tag, C) => { classes[tag] = C; }, MotionElement: class {} };
-vm.runInNewContext(fs.readFileSync(path.join(ROOT, 'components', 'hissan', 'index.js'), 'utf8'), { DECK, console, Math, String, JSON, Number, Array, Object, Error });
-const C = classes['m-hissan'].calc;
+// the part's class read without a browser (tools/parts.mjs partClass: a stub registry; the calculation needs no DOM)
+const C = partClass(fs.readFileSync(path.join(ROOT, 'components', 'hissan', 'index.js'), 'utf8'), 'hissan/index.js').calc;
 
 let fail = 0, n = 0;
 const ok = (cond, msg) => { n++; if (!cond) { fail++; console.log('FAIL ' + msg); } };

@@ -18,90 +18,19 @@
 //   窓では木をたどる道を背骨にして並べ直し（道から分かれた枝は反対の側に三角で畳む）、窓を横にも動かして道を真ん中に置く。
 //   親が窓の上にある枝は描かない（入ってくる道だけを上の縁から描く）。窓の上に「黒の木：ここまで 0000 0110」。window="auto"（既定）は段の間が 44 px より狭くなるときだけ流す。まとめの段階はいちばん深い道の窓
 // JSON の labels で文言を変える：white black start read makeup term eol invalid incomplete dangling done scan crumb（{c} は色、{n} は桁）
-// 復号の規則は DECK.codetree（試験は tools/test-codetree.mjs）
-(function(){
-var D = window.DECK;
+// 復号の規則は codetree-core（試験は tools/test-codetree.mjs）
+// 2.0（Egatari spec §6.1 の部品）：base の MotionElement・el・prog・lerp・previewOpacity と、表・木・復号の codetree-core を使い、
+// プレイヤーのグローバルは使わない
+egatariParts.define({name: "codetree", version: "2.0.0", requires: {base: "1.0.0", "codetree-core": "1.0.0"}, element: "m-codetree"}, function(deps){
+"use strict";
+var base = deps.base;
+var D = base;
 
-// ---------------------------------------------------------------- 表・木・復号（ブラウザによらない）
-var COLORS = ["white", "black"];
-function runOf(v, where){
-  if (typeof v === "number" && v >= 0 && Math.floor(v) === v) return v;
-  var s = String(v).trim();
-  if (/^\d+$/.test(s)) return +s;
-  if (/^eol$/i.test(s)) return "EOL";
-  throw new Error("m-codetree: " + where + " のランの長さ " + JSON.stringify(v) + " は 0 以上の整数か \"EOL\"");
-}
-function kindOf(run){ return run === "EOL" ? "eol" : run >= 64 ? "makeup" : "term"; }
-// 表を {white: [{code, run}], black: […]} にする
-function normalize(tab){
-  var out = {white: [], black: []};
-  if (Array.isArray(tab)) tab.forEach(function(r, i){
-    COLORS.forEach(function(c){
-      if (r[c] === undefined || r[c] === null || r[c] === "") return;
-      out[c].push({code: String(r[c]).replace(/\s+/g, ""), run: runOf(r.run, "table[" + i + "]")});
-    });
-  });
-  else if (tab && typeof tab === "object") COLORS.forEach(function(c){
-    var o = tab[c] || {};
-    Object.keys(o).forEach(function(code){ out[c].push({code: code.replace(/\s+/g, ""), run: runOf(o[code], c + "." + code)}); });
-  });
-  else throw new Error("m-codetree: table は配列か {white, black}");
-  return out;
-}
-// 符号の木（2 分木）。節は {code, kids: [0 の子, 1 の子], leaf: {run, kind} | null}。頭が重なる符号は誤り
-function buildTree(list, color){
-  var root = {code: "", kids: [null, null], leaf: null};
-  list.forEach(function(e){
-    if (!/^[01]+$/.test(e.code)) throw new Error("m-codetree: " + color + " の符号 " + JSON.stringify(e.code) + " は 0 と 1 だけで書く");
-    var n = root;
-    for (var i = 0; i < e.code.length; i++){
-      if (n.leaf) throw new Error("m-codetree: " + color + " の符号 " + e.code + " の頭が " + n.code + "（ラン " + n.leaf.run + "）と同じ（語頭符号でない）");
-      var b = +e.code[i];
-      n = n.kids[b] || (n.kids[b] = {code: e.code.slice(0, i + 1), kids: [null, null], leaf: null});
-    }
-    if (n.leaf || n.kids[0] || n.kids[1]) throw new Error("m-codetree: " + color + " の符号 " + e.code + " がほかの符号と重なる");
-    n.leaf = {run: e.run, kind: kindOf(e.run)};
-  });
-  return root;
-}
-function build(tab){
-  var n = normalize(tab);
-  return {white: buildTree(n.white, "white"), black: buildTree(n.black, "black")};
-}
-// MH の復号：白から始め、木を根からたどって葉に着いたら 1 語。終端符号のあとは反対の色、メイクアップ符号のあとは同じ色、EOL のあとは白。
-// error：invalid（表にない枝。pos はその桁）、incomplete（系列が符号の途中で終わる）、dangling（メイクアップ符号の後に終端符号がない）
-function decode(trees, bits){
-  bits = String(bits || "").replace(/\s+/g, "");
-  if (!/^[01]*$/.test(bits)) throw new Error("m-codetree: bits は 0 と 1 だけで書く");
-  var color = "white", pos = 0, tokens = [], error = null;
-  while (pos < bits.length){
-    var n = trees[color], start = pos;
-    while (!n.leaf){
-      if (pos >= bits.length){ error = {kind: "incomplete", start: start, pos: pos, color: color, code: bits.slice(start)}; break; }
-      var nx = n.kids[+bits[pos]];
-      if (!nx){ error = {kind: "invalid", start: start, pos: pos, color: color, code: bits.slice(start, pos + 1), at: n.code}; break; }
-      n = nx; pos++;
-    }
-    if (error) break;
-    tokens.push({code: n.code, start: start, end: pos, color: color, run: n.leaf.run, kind: n.leaf.kind});
-    if (n.leaf.kind === "term") color = color === "white" ? "black" : "white";
-    else if (n.leaf.kind === "eol") color = "white";
-  }
-  if (!error && tokens.length && tokens[tokens.length - 1].kind === "makeup") error = {kind: "dangling", start: pos, pos: pos, color: color, code: ""};
-  return {bits: bits, tokens: tokens, error: error, next: color};
-}
-// 画素のラン：続く同じ色の符号語（メイクアップ＋終端）を 1 つのランにまとめる。EOL は区切り
-function runs(tokens){
-  var out = [], cur = null, cell = 0;
-  tokens.forEach(function(t, i){
-    if (t.kind === "eol"){ cur = null; return; }
-    if (!cur || cur.color !== t.color){ cur = {color: t.color, toks: [], start: cell, len: 0}; out.push(cur); }
-    cur.toks.push(i); cur.len += t.run; cell += t.run;
-  });
-  return out;
-}
-D.codetree = {normalize: normalize, build: build, decode: decode, runs: runs};
-if (!D.MotionElement) return;   // 試験（Node）では復号の規則だけ
+// ---------------------------------------------------------------- 表・木・復号（codetree-core）
+var CORE = deps["codetree-core"];
+var build = CORE.build, decode = CORE.decode, runs = CORE.runs;
+var COLORS = ["white", "black"];   // 色の木の順（codetree-core と同じ）
+
 
 // ---------------------------------------------------------------- 部品
 var NAMES = {white: "白", black: "黒", start: "最初は白の木から読む", read: "{c}の木をたどる", makeup: "メイクアップ符号：次も{c}",
@@ -119,7 +48,8 @@ function labelAt(a, b, f, off){
 function fmt0(s, c){ return String(s).replace("{c}", c); }
 function textW(s, fs){ return [...String(s)].reduce(function(a, ch){ return a + (/[\u0000-ɏ]/.test(ch) ? 0.6 : 1); }, 0) * fs; }
 
-D.define("m-codetree", class extends D.MotionElement {
+return class extends base.MotionElement {
+  static partName = "codetree";   // the registry name (define meta name), for report prefixes
   static shape = {
     schema: {type: "object", additionalProperties: false, required: ["table"], properties: {
       table: {type: ["array", "object"], items: {type: "object", required: ["run"], properties: {run: {type: ["integer", "string"]}, white: {type: "string"}, black: {type: "string"}}},
@@ -414,13 +344,12 @@ D.define("m-codetree", class extends D.MotionElement {
       return {g: g, br: br, sw: sw, tx: tx, r: r};
     });
   }
-  // 色は style 属性に DECK.el と同じ書き方（"fill:var(--x);"）で書く。style.fill に代入すると "fill: var(--x);" になり、
+  // 色は style 属性に base.el と同じ書き方（"fill:var(--x);"）で書く。style.fill に代入すると "fill: var(--x);" になり、
   // 作った直後と描き直した後で属性の字が変わる（docs/contract.md §3、tools/test-dom-order.mjs）
   // 段階 k の今の道の進み（0〜1 の各辺）と、葉の後の進み
   render(k, t, ctx){
     var D2 = D, P = this.props, m = this.model(), dec = m.dec, self = this, Lb = m.L;
-    var preview = !!(ctx && (ctx.preview || ctx.mode === "lecture")), PV = 0;
-    if (preview){ PV = parseFloat(getComputedStyle(this).getPropertyValue("--preview-opacity")); if (!(PV >= 0 && PV <= 1)) PV = 0.45; }
+    var preview = !!ctx.preview, PV = preview ? base.previewOpacity(this) : 0;
     var p = k ? m.plan[k - 1] : null, T = k ? this.times(k) : null;
     var A = k ? this.lay[k - 1] : this.lay[0], B = this.lay[k];
     var mv = k ? D2.prog(t, 0, P.move) : 1;
@@ -431,9 +360,9 @@ D.define("m-codetree", class extends D.MotionElement {
     // 窓の上下（木が入るときは広く）。外へ出る節は 26 px で薄れる
     var bnd = function(L){ return L.follow ? [L.y0 - 8, L.y0 + L.win * L.gap + 8] : [G.treeTop - 40, G.treeBottom + 40]; };
     var bA = bnd(A), bB = bnd(B), wTop = D2.lerp(bA[0], bB[0], mv), wBot = D2.lerp(bA[1], bB[1], mv);
-    var wf = function(y){ return D2.clamp01((y - (wTop - 26)) / 26) * D2.clamp01((wBot + 26 - y) / 26); };
+    var wf = function(y){ return D2.clamp((y - (wTop - 26)) / 26) * D2.clamp((wBot + 26 - y) / 26); };
     // 横の縁でも薄れる（窓で追うときだけ、部品の左右の外へ出る節）
-    var wfx = function(x){ return D2.clamp01((x + 20) / 30) * D2.clamp01((Wd + 20 - x) / 30); };
+    var wfx = function(x){ return D2.clamp((x + 20) / 30) * D2.clamp((Wd + 20 - x) / 30); };
     var lim = wTop - 10;
     // 線の始め（親）が窓の上にあれば、窓の上の縁で切る（線は上から流れ込む）
     var clip = function(a, b){ if (a.y >= lim || b.y <= lim) return a; var f = (lim - a.y) / (b.y - a.y); return {x: D2.lerp(a.x, b.x, f), y: lim}; };
@@ -453,7 +382,7 @@ D.define("m-codetree", class extends D.MotionElement {
     if (kp){ keep[LETTER[kp.color]] = 1; for (var j0 = 1; j0 <= kp.code.length; j0++) keep[LETTER[kp.color] + kp.code.slice(0, j0)] = 1; }
     Object.keys(pos).forEach(function(id){
       var par = self.els[id].parent;
-      if (par && !keep[id]) pos[id].op *= D2.clamp01((pos[par].y - (lim - 30)) / 30);
+      if (par && !keep[id]) pos[id].op *= D2.clamp((pos[par].y - (lim - 30)) / 30);
     });
     // ---- 今の道・前の道
     var segP = function(i){ return T ? D2.prog(t, T.s(i), 0.7 * P.bit) : 0; };
@@ -611,7 +540,7 @@ D.define("m-codetree", class extends D.MotionElement {
       cw = {color: cw.color, code: (cw.bad || cw.code).slice(0, nread)};
     } else if (p && p.type === "sum") cw = B.deep;
     if ((!cw || !cw.code) && k > 1 && this.lay[k - 1].cur) cw = this.lay[k - 1].cur;
-    var camNow = D2.lerp(camA, camB, mv), co = cw && cw.code ? D2.clamp01((camNow - 0.3) / 0.4) * (B.follow ? 1 : Math.max(0, 1 - 2 * mv)) : 0;
+    var camNow = D2.lerp(camA, camB, mv), co = cw && cw.code ? D2.clamp((camNow - 0.3) / 0.4) * (B.follow ? 1 : Math.max(0, 1 - 2 * mv)) : 0;
     if (cw){
       this.crumbHead.textContent = fmt0(Lb.crumb, cw.color ? Lb[cw.color] : "") + " ";
       this.crumbBits.textContent = (cw.code.match(/.{1,4}/g) || []).join(" ");
@@ -639,5 +568,5 @@ D.define("m-codetree", class extends D.MotionElement {
     this.note[0].setAttribute("opacity", Math.max(0, 1 - 2 * sw).toFixed(3)); this.note[1].setAttribute("opacity", Math.max(0, 2 * sw - 1).toFixed(3));
     this.note[1].setAttribute("style", "fill:" + (p && (p.type === "err" || p.type === "sum") ? "var(--emph)" : "var(--fg)") + ";");
   }
+};
 });
-})();

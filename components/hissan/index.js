@@ -7,24 +7,12 @@
 //       わる数が小数なら、はじめに小数点をうつす段。kari="on" は大きすぎる仮の商を 1 回見せて直す
 // build="whole" は 1 段階で全部。数は部品が計算する（tools/test-hissan.mjs が普通の計算と照らし合わせる。customElements.get("m-hissan").calc）
 // 見せ方（docs/conventions.md §1）：fade（既定。字も線もフェード）・draw（線・斜線・矢印を引く）
-(function(){
-// ---- BEGIN egatari-variant (source: tools/variant.js; copy with `node tools/variant-sync.mjs`; do not edit inside a component) ----
-// Choosing a presentation variant (Egatari spec §8.4, docs/conventions.md §1). A component lists its variant names in
-// `static variants` (the first is the default) and calls VARIANT.of(this) once, in mount. The variant is the component's
-// `variant` attribute when it names one of them, otherwise the first name. There is no seed: lessons do not carry one
-// (spec §8.4 since egatari-spec 28d8801), and `seed` / `data-egatari-seed` are not read.
-// The choice is a pure function of the attribute: the picture still depends on (i, k, t) only.
-var VARIANT = (function(){
-  "use strict";
-  function of(el){
-    var tag = el.tagName.toLowerCase(), C = customElements.get(tag), names = (C && C.variants) || [], v = el.getAttribute("variant");
-    if (v !== null && names.indexOf(v) >= 0) return v;
-    if (v !== null) console.warn(tag + ' variant="' + v + '" is not one of ' + names.join(", ") + " (the first, " + (names[0] || "none") + ", is used)");
-    return names[0] || null;
-  }
-  return {of: of};
-})();
-// ---- END egatari-variant ----
+// 2.0（Egatari spec §6.1 の部品）：base の MotionElement・el・prog・variant を使い、プレイヤーのグローバルは使わない。属性の誤りは
+// ctx.report("attr" | "range", "[hissan] …")、要素に入らないときは ctx.report("size", "[hissan] …") で知らせる（1.x の console.warn の代わり。
+// 段階の数を決める plan() は ctx を読まないので、知らせることを貯めておき、mount で知らせる）
+egatariParts.define({name: "hissan", version: "2.0.0", requires: {base: "1.0.0"}, element: "m-hissan"}, function(deps){
+"use strict";
+var base = deps.base;
 // ---- 計算と配置（DOM を使わない。tools/test-hissan.mjs が vm で読む） ----
 var CALC = (function(){
   "use strict";
@@ -493,7 +481,8 @@ var CALC = (function(){
 })();
 
 var ON = function(v){ return /^(on|true|yes)$/i.test(String(v || "").trim()); };
-DECK.define("m-hissan", class extends DECK.MotionElement {
+return class extends base.MotionElement {
+  static partName = "hissan";   // the registry name (define meta name), for report prefixes
   static variants = ["fade", "draw"];
   static preview = "none";   // 数字は計算そのものなので、授業の表示でも先の段階を見せない（仕様 §8.4、docs/conventions.md §1.2）
   static calc = CALC;
@@ -520,11 +509,11 @@ DECK.define("m-hissan", class extends DECK.MotionElement {
   plan(){
     if (this._plan) return this._plan;
     var P = this.props, notes = [], build = P.build, per = P.per;
-    if (["steps", "whole"].indexOf(build) < 0){ notes.push('m-hissan: build="' + build + '" is not steps or whole (steps is used)'); build = "steps"; }
-    if (["round", "phase"].indexOf(per) < 0){ notes.push('m-hissan: per="' + per + '" is not round or phase (round is used)'); per = "round"; }
+    if (["steps", "whole"].indexOf(build) < 0){ notes.push(["attr", 'build="' + build + '" is not steps or whole (steps is used)']); build = "steps"; }
+    if (["round", "phase"].indexOf(per) < 0){ notes.push(["attr", 'per="' + per + '" is not round or phase (round is used)']); per = "round"; }
     var e = CALC.parse(P.expr), o = {fine: ON(P.fine), kari: ON(P.kari), rem: ON(P.rem), digits: P.digits, carry: P.carry};
-    if (["line", "top"].indexOf(P.carry) < 0){ notes.push('m-hissan: carry="' + P.carry + '" is not line or top (line is used)'); o.carry = "line"; }
-    if (o.digits != null && (!isFinite(o.digits) || o.digits < 0 || o.digits > 8)){ notes.push("m-hissan: digits=" + o.digits + " is not 0–8 (ignored)"); o.digits = null; }
+    if (["line", "top"].indexOf(P.carry) < 0){ notes.push(["attr", 'carry="' + P.carry + '" is not line or top (line is used)']); o.carry = "line"; }
+    if (o.digits != null && (!isFinite(o.digits) || o.digits < 0 || o.digits > 8)){ notes.push(["range", "digits=" + o.digits + " is not 0–8 (ignored)"]); o.digits = null; }
     var M;
     if (e.op === "÷" && o.digits == null && !o.rem && !(e.A.scale === 0 && e.B.scale === 0)){
       // 小数のわり算で digits がない：わり切れるまで。ただし、スライドの本文に入る高さ（CALC.FIT px）まで。
@@ -537,11 +526,11 @@ DECK.define("m-hissan", class extends DECK.MotionElement {
         if (Mc.info.exact) break;
       }
       M = best;
-      if (!M.info.exact) notes.push("m-hissan: " + P.expr + " does not end within " + M.info.frac + " decimal place(s) that fit the element; write digits=\"…\" or rem=\"on\"");
+      if (!M.info.exact) notes.push(["size", P.expr + " does not end within " + M.info.frac + " decimal place(s) that fit the element; write digits=\"…\" or rem=\"on\""]);
     } else M = CALC.build(P.expr, o);
-    if (e.op !== "÷" && (ON(P.kari) || ON(P.rem) || P.digits != null)) notes.push("m-hissan: kari, rem and digits are for division (ignored)");
-    if (e.op !== "×" && ON(P.fine)) notes.push('m-hissan: fine="on" is for multiplication (ignored)');
-    if (o.kari && e.op === "÷" && !M.info.rounds.some(function(r){ return r.kari !== undefined; })) notes.push('m-hissan: kari="on", but no provisional quotient is too big in ' + P.expr + " (nothing to correct)");
+    if (e.op !== "÷" && (ON(P.kari) || ON(P.rem) || P.digits != null)) notes.push(["attr", "kari, rem and digits are for division (ignored)"]);
+    if (e.op !== "×" && ON(P.fine)) notes.push(["attr", 'fine="on" is for multiplication (ignored)']);
+    if (o.kari && e.op === "÷" && !M.info.rounds.some(function(r){ return r.kari !== undefined; })) notes.push(["attr", 'kari="on", but no provisional quotient is too big in ' + P.expr + " (nothing to correct)"]);
     // 手順（phase）→ 段階（step）と段階の中の順（ph）
     var map = [], steps = 0, nph = [0], prev = null;
     M.phases.forEach(function(ph, i){
@@ -557,15 +546,15 @@ DECK.define("m-hissan", class extends DECK.MotionElement {
     else if (M.op === "÷" && per === "phase"){ nph = [0]; for (var s = 1; s <= steps; s++) nph.push(1); }
     return (this._plan = {M: M, map: map, steps: Math.max(1, steps), nph: nph, build: build, per: per, notes: notes});
   }
-  mount(){
-    var self = this, P = this.props, D = DECK, pl = this.plan(), M = pl.M, C = CALC;
-    this.variant = VARIANT.of(this);
-    pl.notes.forEach(function(n){ console.warn(n); });
+  mount(ctx){
+    var self = this, P = this.props, D = base, pl = this.plan(), M = pl.M, C = CALC;
+    this.variant = base.variant(this);
+    pl.notes.forEach(function(n){ ctx.report(n[0], "[hissan] " + n[1]); });
     this.style.display = "block";
     var W = this.clientWidth, H = this.clientHeight, whole = pl.build === "whole", words = !whole && ON(P.words), FS = C.FS, SS = C.SS, CAPS = C.CAP;
     var Lo = C.layout(M, W, H, !words), CW = Lo.cw, G = Lo.G, X = Lo.X, Yb = Lo.Yb, Yt = Lo.Yt, Ybot = Lo.Ybot, capX = Lo.capX, labW = Lo.labW, divItem = Lo.divItem, opCol = Lo.opCol;
-    if (Lo.totW > W - 8) console.warn("m-hissan: " + P.expr + " needs " + Math.round(Lo.totW) + " px of width, but the element is " + W + " px (it overflows); give it more width");
-    if (G.h > H) console.warn("m-hissan: " + P.expr + " needs " + Math.round(G.h) + " px of height, but the element is " + H + " px (it overflows); give it more height" + (M.op === "÷" ? " or fewer digits" : ""));
+    if (Lo.totW > W - 8) ctx.report("size", "[hissan] " + P.expr + " needs " + Math.round(Lo.totW) + " px of width, but the element is " + W + " px (it overflows); give it more width");
+    if (G.h > H) ctx.report("size", "[hissan] " + P.expr + " needs " + Math.round(G.h) + " px of height, but the element is " + H + " px (it overflows); give it more height" + (M.op === "÷" ? " or fewer digits" : ""));
     this.geo = {X: X, Yb: Yb, capX: capX};
     var svg = D.el("svg", {viewBox: "0 0 " + W + " " + H, width: W, height: H, style: "display:block;overflow:visible"}, this);
     var gF = D.el("g", {}, svg), gL = D.el("g", {}, svg), gT = D.el("g", {}, svg);
@@ -707,7 +696,7 @@ DECK.define("m-hissan", class extends DECK.MotionElement {
   }
   render(k, t, ctx){
     // 先の段階は授業の表示（ctx.preview）でも見せない：筆算の数字は計算そのもので、先に見えると答えになる（static preview = "none"）
-    var D = DECK, P = this.props.dur, draw = this.variant === "draw", whole = this.plan().build === "whole";
+    var D = base, P = this.props.dur, draw = this.variant === "draw", whole = this.plan().build === "whole";
     this.items.forEach(function(o){
       var it = o.it, e, op;
       var o0 = (it.o || 0) * P, len = (it.l !== undefined ? it.l : 0.6) * P;
@@ -737,5 +726,5 @@ DECK.define("m-hissan", class extends DECK.MotionElement {
       o.el.setAttribute("opacity", (op * (1 - gone)).toFixed(3));
     });
   }
+};
 });
-})();

@@ -7,10 +7,14 @@
 // 1 行が 1 文（1 段階）。語は / で切り、語の後ろの [ ] に品詞と詳しいこと（・で区切る）を書く。[ ] の後ろの字（、。）は語に付けて出す。
 // 「= …」の行は直前の文の現代語訳（最後の段階で、本文の下（縦書きでは左）に並べる）。{漢字|かな} は振り仮名。
 // 助動詞は [助動・基本形・意味・活用形]：押す（タップする）と、その助動詞の活用表と意味を出す（部品の中の表から。読み込みはしない）。
-// 押して出した札は発表の操作で、画面の決まり（DECK.seek(i, k, t)）の外：段階を動かす・もう一度押す・札を押す・同じ段階に入り直す（ctx.reset）と消え、動画と印刷には出ない
-(function(){
+// 押して出した札は発表の操作で、画面の決まり (i, k, t) の外：段階を動かす・もう一度押す・札を押す・同じ段階に入り直す（ctx.reset）と消え、動画と印刷には出ない
+// 2.0（Egatari spec §6.1 の部品）：base の MotionElement・prog・previewOpacity を使い、プレイヤーのグローバルは使わない。
+// 書き方の誤りは ctx.report("data", "[kobun] …") で知らせる（1.x の console.warn("m-kobun: …") の代わり）。動画かどうかは mount の ctx.mode。
+// 読み取り（parse）と助動詞の表は試験のために static testing に出す（ほかのパーツは読まない）
+egatariParts.define({name: "kobun", version: "2.0.0", requires: {base: "1.0.0"}, element: "m-kobun"}, function(deps){
 "use strict";
-var D = window.DECK;
+var base = deps.base;
+var D = base;
 
 // ---------------------------------------------------------------- 品詞
 // 品詞の頭の字 → [種類, 名前]。色は種類ごと（テーマの変数だけ）
@@ -98,8 +102,7 @@ function parse(src){
   });
   return {lines: lines, warnings: warnings};
 }
-D.kobun = {parse: parse, AUX: AUX, FORMS: FORMS, auxOf: auxOf, posOf: posOf};
-if (!D.MotionElement) return;   // 試験（Node）では読み取りだけ
+function plainText(w){ return w.text.map(function(s){ return s.t; }).join("") + w.tail; }
 
 // ---------------------------------------------------------------- 部品
 var CSS = [
@@ -125,7 +128,10 @@ var CSS = [
   "m-kobun .kb-pop td.on{background:var(--emph-tint);color:var(--emph);font-weight:700}",
   "@media print{m-kobun .kb-pop{display:none!important}}",
 ].join("\n");
-D.define("m-kobun", class extends D.MotionElement {
+var CSS_ID = "kobun-2-0-0-css";   // the style element this part writes, named with its name and version (spec §6.1 Identifiers)
+return class extends base.MotionElement {
+  static partName = "kobun";   // the registry name (define meta name), for report prefixes
+  static testing = {parse: parse, AUX: AUX, FORMS: FORMS, auxOf: auxOf, posOf: posOf};   // for tools/test-kokugo.mjs only (no part reads it)
   static interactive = true;   // 操作できるパーツ（助動詞を押すと札。docs/conventions.md §6）
   // データの形（kit/shape.js）：JSON ではなく、要素の中に 1 行 1 文の字（語を / で切り [品詞]）
   static shape = {text: true, example: "春[名]/は[係助]/あけぼの[名]。\n= 春は明け方（がよい）。"};
@@ -139,15 +145,16 @@ D.define("m-kobun", class extends D.MotionElement {
   get model(){ if (!this._m) this._m = parse(this._src !== undefined ? this._src : this.textContent); return this._m; }
   get hasYaku(){ return this.props.yaku && this.model.lines.some(function(l){ return l.yaku; }); }
   get steps(){ return this.getAttribute("steps") !== null ? +this.getAttribute("steps") : this.model.lines.length + (this.hasYaku ? 1 : 0); }
-  mount(){
+  mount(ctx){
     var self = this, P = this.props;
     this._src = this.textContent;
     var m = this.model;
-    m.warnings.forEach(function(w){ console.warn("m-kobun: " + w); });
+    m.warnings.forEach(function(w){ ctx.report("data", "[kobun] " + w); });
+    this.mode = ctx.mode;
     this.textContent = "";
     this.classList.add("plot");
     if (P.tate) this.classList.add("tate");
-    if (!document.getElementById("m-kobun-css")){ var st = document.createElement("style"); st.id = "m-kobun-css"; st.textContent = CSS; document.head.appendChild(st); }
+    if (!document.getElementById(CSS_ID)){ var st = document.createElement("style"); st.id = CSS_ID; st.textContent = CSS; document.head.appendChild(st); }
     var mk = function(tag, cls, parent, text){ var e = document.createElement(tag); if (cls) e.className = cls; if (text !== undefined) e.textContent = text; parent.appendChild(e); return e; };
     var box = mk("div", "kb-text", this);
     box.style.fontSize = P.size + "px";
@@ -187,7 +194,7 @@ D.define("m-kobun", class extends D.MotionElement {
   }
   // 押した助動詞の札：開いている札と同じなら閉じる。今の段階で開いた札だけを出す
   toggle(li, wi){
-    if (DECK.mode === "video") return;
+    if (this.mode === "video") return;
     var o = this._open;
     this._open = o && o.li === li && o.wi === wi ? null : {li: li, wi: wi, k: this._k};
     this.redraw();
@@ -203,12 +210,12 @@ D.define("m-kobun", class extends D.MotionElement {
     var self = this, P = this.props, n = this.model.lines.length, tate = P.tate;
     var lag = n > 1 ? Math.min(0.12, 0.15 / (n - 1)) : 0;
     // 段階が動いたら札を閉じる。同じ段階にもう一度入るとき（ctx.reset：触れた部品を、宣言した姿に戻す）も閉じる
-    if (this._open && (this._open.k !== k || (ctx && ctx.reset))) this._open = null;
-    this._k = k; this._t = t; this._ctx = ctx ? {mode: ctx.mode, preview: ctx.preview} : undefined;
+    if (this._open && (this._open.k !== k || ctx.reset)) this._open = null;
+    // 札を押したときに描き直す ctx：この描画のもの（reset と entered は除く）
+    this._k = k; this._t = t; this._ctx = Object.assign({}, ctx, {reset: false, entered: false});
     // 先の段階を薄く見せる表示（授業の表示）：後の文の区切りと品詞の札、現代語訳を --preview-opacity の濃さで出す。
     // 本文の字は初めから見えているので濃さも色も変えない（品詞の色は札で見せる）。薄い語の活用表は開かない
-    var preview = !!(ctx && (ctx.preview || ctx.mode === "lecture")), PV = 0.45;
-    if (preview){ PV = parseFloat(getComputedStyle(this).getPropertyValue("--preview-opacity")); if (!(PV >= 0 && PV <= 1)) PV = 0.45; }
+    var preview = !!ctx.preview, PV = preview ? base.previewOpacity(this) : 0.45;
     this.lines.forEach(function(L, li){
       // 文 li の品詞分解は段階 li + 1 に出る
       var s = li + 1, e = k > s ? 1 : k < s ? 0 : D.prog(t, 0, P.fade), faint = preview && k < s;
@@ -255,6 +262,5 @@ D.define("m-kobun", class extends D.MotionElement {
     x = Math.max(0, Math.min(this.offsetWidth - pw, x)); y = Math.max(0, Math.min(Math.max(0, this.offsetHeight - ph), y));
     this.pop.style.left = x.toFixed(1) + "px"; this.pop.style.top = y.toFixed(1) + "px";
   }
+};
 });
-function plainText(w){ return w.text.map(function(s){ return s.t; }).join("") + w.tail; }
-})();

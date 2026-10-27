@@ -1,20 +1,30 @@
 // 国語の部品の試験（ブラウザなし）：m-kanbun の読み取り・訓読の順・書き下し文を、よく知られた詩文で確かめる
 //   node tools/test-kokugo.mjs
-// 部品の index.js を Node の vm で読み（DECK.MotionElement がないので部品は定義せず、DECK.kanbun だけを出す）、順と書き下し文を比べる。
-// 描画・決定性は tools/test-components.mjs（demo.html）
+// 読み取りと訓読の順はライブラリのパーツ kanbun-core（components 2.0）：試験だけの登録の代わり（tools/registry-shim.js）を Node の vm で
+// 読み、EGATARI_PARTS_SHIM.get で取り出す。m-kobun・m-gendai の読み取りは部品の static testing（tools/parts.mjs の partClass で、
+// ブラウザなしにクラスを読む）。描画・決定性は tools/test-components.mjs（demo.html）
 import fs from 'node:fs';
 import path from 'node:path';
 import vm from 'node:vm';
 import assert from 'node:assert/strict';
 import { fileURLToPath } from 'node:url';
+import { partClass } from './parts.mjs';
 
 const ROOT = path.dirname(path.dirname(fileURLToPath(import.meta.url)));
-const load = (name) => {
-  const ctx = { window: { DECK: {} }, console };
-  vm.runInNewContext(fs.readFileSync(path.join(ROOT, 'components', name, 'index.js'), 'utf8'), ctx, { filename: name + '/index.js' });
-  return ctx.window.DECK;
+const read = (rel) => fs.readFileSync(path.join(ROOT, rel), 'utf8');
+// a library part through the test-only registry
+const lib = (name, version) => {
+  const ctx = vm.createContext({ console });
+  ctx.globalThis = ctx;
+  vm.runInContext(read('tools/registry-shim.js'), ctx, { filename: 'tools/registry-shim.js' });
+  vm.runInContext(read(`components/${name}/index.js`), ctx, { filename: `${name}/index.js` });
+  const v = ctx.EGATARI_PARTS_SHIM.get(name, version);
+  assert.ok(v, `${name}@${version} is defined through the registry`);
+  return v;
 };
-const K = load('kanbun').kanbun;
+// an element part's static testing (its own tests only)
+const testing = (name) => partClass(read(`components/${name}/index.js`), `${name}/index.js`).testing;
+const K = lib('kanbun-core', '1.0.0');
 let n = 0, fail = 0;
 const t = (name, fn) => {
   n++;
@@ -114,7 +124,7 @@ t('見本の漢文：知らせなし', () => {
 });
 
 // ---------------------------------------------------------------- m-kobun（品詞分解の読み取りと助動詞の表）
-const B = load('kobun').kobun;
+const B = testing('kobun');
 t('古文：語・品詞・語に付く句読点・現代語訳', () => {
   const m = B.parse('春[名]/は[係助]/あけぼの[名]。\n= 春は明け方（がよい）。');
   assert.equal(m.lines.length, 1);
@@ -142,7 +152,7 @@ t('古文：助動詞の表はどれも 6 つの活用形', () => {
 });
 
 // ---------------------------------------------------------------- m-gendai（段落・しるしの読み取り）
-const G = load('gendai').gendai;
+const G = testing('gendai');
 t('現代文：段落の役割・名前・つなぎ', () => {
   const m = G.parse('@具体例#p1>p2\nあ\n\n@主張#p2\nい\n\n@対比#p3~p1\nう');
   assert.equal(m.paras.map((p) => [p.role, p.id, p.rel, p.to].join(',')).join(' '), '具体例,p1,>,p2 主張,p2,, 対比,p3,~,p1');

@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="ja" data-theme="default">
+<head>
+<meta charset="utf-8">
+<title>m-hissan: options the demo does not reach (tools/test-c2-identity.mjs)</title>
+<!-- Decimals, fine, per="phase", rem, digits, carry="top", words="off", focus="off", build="whole" and the draw variant:
+     each drawn by 1.13.0 and by 2.0.0 and compared at every step. -->
+</head>
+<body>
+<div id="stage">
+
+<section class="slide noconcl">
+  <h2>たし算（上にくり上がり・draw）</h2>
+  <div class="body">
+    <m-hissan expr="487+356" carry="top" variant="draw" style="height:400px"></m-hissan>
+  </div>
+</section>
+
+<section class="slide noconcl">
+  <h2>小数のたし算</h2>
+  <div class="body">
+    <m-hissan expr="3.75+12.6" style="height:400px"></m-hissan>
+  </div>
+</section>
+
+<section class="slide noconcl">
+  <h2>小数のひき算（手順の言葉なし）</h2>
+  <div class="body">
+    <m-hissan expr="10.2-3.47" words="off" style="height:400px"></m-hissan>
+  </div>
+</section>
+
+<section class="slide noconcl">
+  <h2>かけ算（1 けたずつ）</h2>
+  <div class="body">
+    <m-hissan expr="36×24" fine="on" style="height:420px"></m-hissan>
+  </div>
+</section>
+
+<section class="slide noconcl">
+  <h2>小数のかけ算（draw）</h2>
+  <div class="body">
+    <m-hissan expr="3.6×2.4" variant="draw" style="height:440px"></m-hissan>
+  </div>
+</section>
+
+<section class="slide noconcl">
+  <h2>わり算（手順ごと・薄い色なし）</h2>
+  <div class="body">
+    <m-hissan expr="851÷23" per="phase" focus="off" style="height:440px"></m-hissan>
+  </div>
+</section>
+
+<section class="slide noconcl">
+  <h2>わり算（あまり）</h2>
+  <div class="body">
+    <m-hissan expr="100÷7" rem="on" style="height:420px"></m-hissan>
+  </div>
+</section>
+
+<section class="slide noconcl">
+  <h2>小数のわり算（digits）</h2>
+  <div class="body">
+    <m-hissan expr="7.56÷1.8" digits="2" variant="draw" style="height:470px"></m-hissan>
+  </div>
+</section>
+
+<section class="slide noconcl">
+  <h2>わり算（1 段階で全部）</h2>
+  <div class="body">
+    <m-hissan expr="912÷38" build="whole" style="height:440px"></m-hissan>
+  </div>
+</section>
+
+</div>
+</body>
+</html>
