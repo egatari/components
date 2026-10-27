@@ -202,7 +202,9 @@ return class extends base.MotionElement {
     var P = this.props, D = base, self = this, pl = this.plan(), S = STATS;
     this.variant = base.variant(this);
     // 書き方とデータの知らせ（plan が集めた [code, message]）
-    pl.notes.forEach(function(n){ ctx.report(n[0], n[1]); });
+    // ctx.report with each code as a literal (lint checks them): plan's notes (attr, data) and the flag placer's (layout)
+    var report = function(code, msg){ if (code === "attr") ctx.report("attr", msg); else if (code === "layout") ctx.report("layout", msg); else ctx.report("data", msg); };
+    pl.notes.forEach(function(n){ report(n[0], n[1]); });
     this.classList.add("plot"); this.style.display = "block";
     var ja = this.ja = /^ja\b/i.test(ctx.lang);
     var est = function(s, size){ return [...String(s).replace(/[*_^]/g, "")].reduce(function(a, c){ return a + (/[\u0000-ɏ]/.test(c) ? 0.56 : 1); }, 0) * size; };
@@ -259,7 +261,7 @@ return class extends base.MotionElement {
           dash: {mean: null, median: "12 7", mode: "3 6"}[mk.type]});
       });
     });
-    var rows = FLAGS(flags, W, function(code, msg){ ctx.report(code, msg); });
+    var rows = FLAGS(flags, W, report);
     m.t = legendH + (rows ? rows * 34 + 14 : 16);
     // 数を棒の上に書く余白（系列が 1 つの柱状グラフ）
     var p = this.p = plot.Plot(this, {xr: xr, yr: yr, xt: xt, yt: dots ? [] : yt, xf: xf, yf: yf, xl: P.xl, yl: yl, noY: dots, m: m});

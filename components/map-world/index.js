@@ -658,7 +658,8 @@ return class extends base.MotionElement {
         });
       });
     });
-    warns.forEach(function(w){ ctx.report(w[0], "[map-world] " + w[1]); });
+    // ctx.report with each code as a literal (lint checks them): the warnings collected while drawing are attr, size, theme or data
+    warns.forEach(function(w){ var code = w[0], msg = "[map-world] " + w[1]; if (code === "attr") ctx.report("attr", msg); else if (code === "size") ctx.report("size", msg); else if (code === "theme") ctx.report("theme", msg); else ctx.report("data", msg); });
     // 読める層（最後の状態の字の等価物。画面にも印刷にも出ない）
     var lines = [];
     cats.forEach(function(k){ lines.push(k.x.o.label + "（" + withOf(k.cs).map(keyName).join("・") + "）"); });
