@@ -1,6 +1,12 @@
 // m-score's score data (its `static sc`), without a browser, on the abcjs fixtures (components/score/fixtures/*.json):
-//   1. the frozen SVG is read into a tree of allowed elements and attributes only (no script, style, title, foreign
-//      content, event handlers, links or colours other than currentColor / none), entities decoded
+//   0. the part's reader list (static sc.MARKUP) is the svg part of the spec's rendered-markup list (egatari-spec
+//      schema/rendered-markup-1.json at the commit pinned in tools/spec-schema.mjs): elements, attributes, values, style
+//   1. the frozen SVG is read into a tree of admitted elements, attributes and values only (no script, foreign content,
+//      event handlers, links, colours other than currentColor / none, style other than the listed declarations), entities
+//      decoded, everything dropped listed once
+//   1b. the abcjs corpus (every fixture, and fixtures/extras.json: dynamics, articulations, a fermata, a trill, chord
+//      symbols, lyrics, a title, a tempo mark) read through the reader: nothing dropped, but for the gaps reported for a
+//      spec change (KNOWN_GAPS: exactly those, so that a new gap or a spec fix fails here); renderers recorded once on top
 //   2. abcMap parsing and errors (pitch names, tempo, dur, measure, beams, arcs, by); held pitches from tie arcs; the fixtures have the §4.1 fields
 //   3. step grouping: one note, chord or rest per step (by="note"), one measure per step (by="measure")
 //   4. sound events: pitch, dur in seconds from beats and tempo, chords at one t, notes of a measure at their beat,
@@ -18,6 +24,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { ROOT } from './studio.mjs';
 import { partClass } from './parts.mjs';
+import { specJson, SPEC } from './spec-schema.mjs';
 
 // the part's class read without a browser (tools/parts.mjs partClass: a stub registry; the score data needs no DOM)
 const SC = partClass(fs.readFileSync(path.join(ROOT, 'components', 'score', 'index.js'), 'utf8'), 'score/index.js').sc;
@@ -25,6 +32,7 @@ const FX = {};
 const demo = fs.readFileSync(path.join(ROOT, 'components', 'score', 'demo.html'), 'utf8');
 const demoHas = (name) => demo.includes(JSON.stringify(JSON.parse(fs.readFileSync(path.join(ROOT, 'components', 'score', 'fixtures', name + '.json'), 'utf8')).abcMap.notes).replace(/</g, '\\u003c'));
 const TIES = JSON.parse(fs.readFileSync(path.join(ROOT, 'components', 'score', 'fixtures', 'ties.json'), 'utf8'));   // test only, not in the demo
+const EXTRAS = JSON.parse(fs.readFileSync(path.join(ROOT, 'components', 'score', 'fixtures', 'extras.json'), 'utf8'));   // test only
 for (const n of ['doremi', 'rhythm', 'kaeru', 'chords']) FX[n] = JSON.parse(fs.readFileSync(path.join(ROOT, 'components', 'score', 'fixtures', n + '.json'), 'utf8'));
 
 let fail = 0, n = 0;
@@ -38,19 +46,42 @@ const ok = (cond, msg) => { n++; if (!cond) { fail++; console.log('FAIL ' + msg)
 const throws = (f, re, msg) => { n++; try { f(); fail++; console.log(`FAIL ${msg}: no error`); } catch (e) { if (!re.test(e.message)) { fail++; console.log(`FAIL ${msg}: ${e.message}`); } } };
 const walk = (node, f) => { f(node); node.kids.forEach((k) => walk(k, f)); };
 
+// ---- 0. the reader list is the spec's ----
+const RM = specJson('schema/rendered-markup-1.json');
+eq(SC.MARKUP.elements, RM.elements.svg, `elements and their attributes = schema/rendered-markup-1.json elements.svg (egatari-spec ${SPEC.commit.slice(0, 7)})`);
+eq(SC.MARKUP.global, RM.global.svg, 'global attributes = global.svg');
+eq(SC.MARKUP.values, RM.values, 'values (id, data-*, fill, stroke, length) = values');
+eq(SC.MARKUP.style, { lengths: RM.style.lengths, keywords: RM.style.keywords }, 'style declarations = style (lengths, keywords)');
+
 // ---- 1. the frozen SVG ----
 const evil = SC.parseSvg('<?xml version="1.0"?><!-- c --><svg width="100" height="50" onload="x()" style="a"><style>g{}</style><title>t</title>'
   + '<script>alert(1)</script><foreignObject><div>x</div></foreignObject><a href="javascript:x"><path d="M0 0"/></a>'
-  + '<g class="abcjs-note abcjs-n0" fill="#ff0000" stroke="currentColor" onclick="x()"><path d="M 1 2 L 3 4z" fill="url(#p)" class="abcjs-notehead"/></g>'
-  + '<text x="1" y="2" font-size="20">A &amp; B &#x266F;<tspan>&quot;</tspan></text><image href="x.png"/><path d="M0 0" transform="translate(1 2) scale(2)"/></svg>');
+  + '<g class="abcjs-note abcjs-n0" fill="#ff0000" stroke="currentColor" onclick="x()" data-note="0" data-x="&lt;b&gt;"><path d="M 1 2 L 3 4z" fill="url(#p)" stroke="none" class="abcjs-notehead"/></g>'
+  + '<text x="1" y="2" font-size="20" style="font-size: 3em; color: red; display: none; width: url(x)">A &amp; B &#x266F;<tspan>&quot;</tspan></text><image href="x.png"/><path d="M0 0" transform="translate(1 2) scale(2)" id="1x"/><use href="#a"/></svg>');
 const tags = [], attrs = new Set();
 walk(evil, (x) => { tags.push(x.tag); Object.keys(x.a).forEach((a) => attrs.add(a)); });
-eq(tags, ['svg', 'g', 'path', 'text', 'tspan', 'path'], 'only allowed elements, unknown ones dropped with their content');
-ok(!attrs.has('onload') && !attrs.has('onclick') && !attrs.has('style') && !attrs.has('href'), 'no event handler, style or link attribute');
-eq(Object.entries(evil.kids[0].a).sort(), [['class', 'abcjs-note abcjs-n0'], ['stroke', 'currentColor']], 'colours other than currentColor / none are dropped');
-eq(evil.kids[0].kids[0].a.fill, undefined, 'fill="url(…)" is dropped');
-eq(evil.kids[1].text + evil.kids[1].kids[0].text, 'A & B ♯"', 'entities are decoded in text');
-eq(evil.kids[2].a.transform, 'translate(1 2) scale(2)', 'transform kept');
+eq(tags, ['svg', 'title', 'g', 'path', 'text', 'tspan', 'path'], 'only listed elements, others dropped with their content');
+ok(!attrs.has('onload') && !attrs.has('onclick') && !attrs.has('style') && !attrs.has('href'), 'no event handler, style attribute or link');
+eq(Object.entries(evil.kids[1].a).sort(), [['class', 'abcjs-note abcjs-n0'], ['data-note', '0']], 'g: fill and stroke are not listed on g; a data-* value with < or > is dropped');
+eq(evil.kids[1].kids[0].a.fill, undefined, 'fill="url(…)" is dropped');
+eq(evil.kids[1].kids[0].a.stroke, 'none', 'stroke="none" kept on a path');
+eq(evil.kids[2].st, [['font-size', '3em'], ['display', 'none']], 'style: only listed declarations (no color, no url), to be set one by one');
+eq(evil.kids[2].text + evil.kids[2].kids[0].text, 'A & B ♯"', 'entities are decoded in text');
+eq(evil.kids[3].a.transform, 'translate(1 2) scale(2)', 'transform kept');
+eq(evil.kids[3].a.id, undefined, 'an id that does not match values.id is dropped');
+eq(evil.dropped, ['svg@onload', 'svg style a', '<style>', '<script>', '<foreignObject>', '<a>', 'g@fill', 'g@stroke', 'g@onclick', 'g@data-x', 'path@fill',
+  'text style color', 'text style width', '<image>', 'path@id', '<use>'], 'everything dropped is listed once, in order');
+
+// ---- 1b. the abcjs corpus through the reader ----
+// Gaps found by this corpus, reported to standards for a spec change (not admitted by the reader): abcjs writes
+// stroke="none", font-family and text-decoration on the text of chord symbols, lyrics, the title and the tempo
+const KNOWN_GAPS = { extras: ['text@stroke', 'text@font-family', 'text@text-decoration'] };
+for (const [name, fx] of Object.entries({ ...FX, ties: TIES, extras: EXTRAS })) {
+  eq(SC.parseSvg(fx.abcSvg).dropped, KNOWN_GAPS[name] || [], `${name}: the reader drops nothing` + (KNOWN_GAPS[name] ? ' but the reported gaps' : ''));
+  const o = fx.renderers && fx.renderers.abcjs && fx.renderers.abcjs.options;
+  ok(fx.renderers && Object.keys(fx.renderers).join() === 'abcjs' && fx.renderers.abcjs.version === '6.7.2' && !('renderer' in fx)
+    && o && o.add_classes === true && o.foregroundColor === 'currentColor' && o.staffwidth > 0, `${name}: renderers.abcjs {version, options} once at the top (foregroundColor currentColor)`);
+}
 throws(() => SC.parseSvg('<g></g>'), /no <svg>/, 'no svg element');
 for (const [name, fx] of Object.entries(FX)) {
   const t = SC.parseSvg(fx.abcSvg); let paths = 0;

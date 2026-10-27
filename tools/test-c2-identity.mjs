@@ -1,7 +1,8 @@
 // Identity of migrated parts (components 2.0, alpha.2): a part moved to egatariParts.define draws exactly what its 1.x
 // version drew. For each migrated element part (tools/parts.mjs migratedNames: derived from the parts, never listed):
 //   1.x   a deck built with the pinned Studio (tools/studio.json) and the part's v1.13.0 index.js (DECK.define), the 1.x way
-//         (a part never released in 1.x, m-score: its own last pre-2.0 commit instead, tools/parts.mjs C2_BASELINE_OF)
+//         (a part never released in 1.x, m-score: its own last pre-2.0 commit instead, tools/parts.mjs C2_BASELINE_OF; the 2.0
+//         side then plays the part's current demo, and the frames are compared by pixels: see C2_BASELINE_OF for why)
 //   2.0   the same deck built with the same Studio and, as the part's index.js, the registry shim, the parts it requires in
 //         dependency order and the part (tools/parts.mjs c2Bundle; the shim's bridge lets DECK drive it with the 2.0 ctx)
 // The decks: the part's demo.html of v1.13.0, and tools/fixtures/c2-identity/<name>.html when the part has one (cases the
@@ -19,6 +20,7 @@ import os from 'node:os';
 import path from 'node:path';
 import { execFileSync } from 'node:child_process';
 import { ROOT, studio, pinLabel } from './studio.mjs';
+import { LAUNCH, TOLERANCE, hideChrome, settle, pixelDiff } from './shot-helpers.mjs';
 import { migratedNames, partMetas, c2Bundle, requiresClosure, C2_BASELINE, c2Baseline } from './parts.mjs';
 
 export const BASELINE = C2_BASELINE;
@@ -75,13 +77,14 @@ function rewriter(rules, side) {
   };
 }
 
-const browser = await S.browser.launch();
+const browser = await S.browser.launch(LAUNCH);
 try {
   for (const name of names) {
     const m = metas[name], key = `${name}@${m.version}`;
     const rules = requiresClosure(name, metas).flatMap((n) => ID_REWRITES[n] || []);
     const r1 = rewriter(rules, 'v1'), r2 = rewriter(rules, 'v2');
-    const B = c2Baseline(name), BL = B === BASELINE ? B : `pre-2.0 ${B.slice(0, 7)}`;
+    const CB = c2Baseline(name), B = CB.rev, BL = B === BASELINE ? B : `pre-2.0 ${B.slice(0, 7)}`, PIX = CB.compare === 'pixels';
+    const demo2 = CB.demo === 'current' ? fs.readFileSync(path.join(ROOT, 'components', name, 'demo.html'), 'utf8') : null;
     const decks = [['demo', git(`${B}:components/${name}/demo.html`)]];
     const fx = path.join(ROOT, 'tools', 'fixtures', 'c2-identity', `${name}.html`);
     if (fs.existsSync(fx)) decks.push([path.relative(ROOT, fx), fs.readFileSync(fx, 'utf8')]);
@@ -91,7 +94,7 @@ try {
       let v1, v2;
       try {
         v1 = build(name, deck === 'demo' ? 'demo' : 'fixture', 'v1', src, git(`${B}:components/${name}/index.js`));
-        v2 = build(name, deck === 'demo' ? 'demo' : 'fixture', 'v2', src, c2Bundle(ROOT, name));
+        v2 = build(name, deck === 'demo' ? 'demo' : 'fixture', 'v2', deck === 'demo' && demo2 !== null ? demo2 : src, c2Bundle(ROOT, name));
       } catch (e) { ok(false, `m-${name} (${label}): build: ${String(e.stderr || e.message).slice(0, 400)}`); continue; }
       const errors = { v1: [], v2: [] };
       const open = async (which, url, mode) => {
@@ -101,12 +104,24 @@ try {
         await p.goto(S.browser.fileUrl(url));
         await p.waitForFunction(() => window.DECK && DECK.ready, null, { timeout: 15000 });
         await p.evaluate(() => document.fonts.ready);
+        if (PIX) await hideChrome(p);
         if (mode !== 'talk') await p.evaluate((md) => { DECK.mode = md; document.documentElement.setAttribute('data-mode', md); }, mode);
         return p;
       };
       let tourMarks = 0, frames = 0, comps = 0, rewritten = 0;
+      const pending = [];   // compare 'pixels': the frames to compare once both pages are done
+      let maxDiff = 0, exact = 0;
+      // compare 'pixels': a screenshot of each component of the slide (base64, joined)
+      const shots = async (p, i) => {
+        await settle(p);
+        const boxes = await p.evaluate((i) => DECK.slides[i]._comps.map((c) => { const r = c.getBoundingClientRect(); return { x: r.x, y: r.y, width: r.width, height: r.height }; }), i);
+        const out = [];
+        for (const clip of boxes) out.push(clip.width > 0 && clip.height > 0 ? await p.screenshot({ clip }) : null);
+        return out;
+      };
       const bad = [];
       const compare = (where, x, y) => {
+        if (PIX) { frames++; pending.push({ where, x, y }); return; }
         const a = r1(x), b = r2(y);
         rewritten += b.n;
         frames++;
@@ -127,7 +142,10 @@ try {
           const d = await a.evaluate(([i, k]) => Math.max(0, ...DECK.slides[i]._comps.map((c) => { const kc = Math.max(0, Math.min(c.steps, k - c.from + 1)); return kc >= 1 && kc <= c.steps ? +c.duration(kc) || 0 : 0; })), [s.i, k]);
           const ts = d > 0 ? [...FRACTIONS.map((f) => +(f * d).toFixed(4)), null] : [null];
           for (const t of ts) {
-            const grab = (p) => p.evaluate(([i, k, t]) => { DECK.seek(i, k, t === null ? Infinity : t); return DECK.slides[i]._comps.map((c) => c.outerHTML).join('\n'); }, [s.i, k, t]);
+            const grab = async (p) => {
+              const html = await p.evaluate(([i, k, t]) => { DECK.seek(i, k, t === null ? Infinity : t); return DECK.slides[i]._comps.map((c) => c.outerHTML).join('\n'); }, [s.i, k, t]);
+              return PIX ? shots(p, s.i) : html;
+            };
             compare(`${mode} slide ${s.i} step ${k} t=${t === null ? '∞' : t}`, await grab(a), await grab(b));
             comps += s.comps;
           }
@@ -137,7 +155,10 @@ try {
           const tour = async (p) => {
             const out = [];
             await p.evaluate(async () => { for (let j = 0; j < DECK.slides.length; j++) { DECK.go(j, 0, false); await new Promise((r) => setTimeout(r, 20)); } });
-            for (const s of plan) out.push(await p.evaluate(async ([i, k]) => { DECK.go(i, k, false); await new Promise((r) => setTimeout(r, 20)); DECK.seek(i, k, Infinity); return DECK.slides[i]._comps.map((c) => c.outerHTML).join('\n'); }, [s.i, s.max]));
+            for (const s of plan) {
+              const html = await p.evaluate(async ([i, k]) => { DECK.go(i, k, false); await new Promise((r) => setTimeout(r, 20)); DECK.seek(i, k, Infinity); return DECK.slides[i]._comps.map((c) => c.outerHTML).join('\n'); }, [s.i, s.max]);
+              out.push(PIX ? await shots(p, s.i) : html);
+            }
             return out;
           };
           const x = await tour(a), y = await tour(b);
@@ -150,7 +171,20 @@ try {
         }
         await a.close(); await b.close();
       }
-      ok(bad.length === 0, `m-${name} (${label}): DOM byte-identical to ${BL} at every frame: ${frames} frames (${comps} component DOMs; ${MODES.join(', ')} × steps × 35 %, 70 %, end; and after a tour of every slide${tourMarks ? `, ${tourMarks} visited marks` : ''}${rewritten ? `; ${rewritten} ids rewritten as allowed` : ''})`
+      // pixels: as tools/test-default-variant.mjs compares screenshots (shot-helpers.mjs: at most TOLERANCE clearly different pixels)
+      if (pending.length) {
+        const cmp = await browser.newPage();
+        for (const { where, x, y } of pending) {
+          if (x.length !== y.length) { bad.push(`${where}: ${x.length} components on the 1.x side, ${y.length} on the 2.0 side`); continue; }
+          for (let j = 0; j < x.length; j++) {
+            const d = !x[j] || !y[j] ? (x[j] || y[j] ? Infinity : 0) : await pixelDiff(cmp, x[j], y[j]);
+            if (d > TOLERANCE) bad.push(`${where}: component ${j}: ${d} pixels differ`);
+            maxDiff = Math.max(maxDiff, d); if (d === 0) exact++;
+          }
+        }
+        await cmp.close();
+      }
+      ok(bad.length === 0, `m-${name} (${label}${demo2 !== null && deck === 'demo' ? ' and, on the 2.0 side, the current demo' : ''}): ${PIX ? `pixel-identical (≤ ${TOLERANCE} anti-aliased pixels, tools/shot-helpers.mjs)` : 'DOM byte-identical'} to ${BL} at every frame: ${frames} frames (${comps} component DOMs; ${MODES.join(', ')} × steps × 35 %, 70 %, end; and after a tour of every slide${tourMarks ? `, ${tourMarks} visited marks` : ''}${rewritten ? `; ${rewritten} ids rewritten as allowed` : ''}${PIX ? `; ${exact} of them exactly, at most ${maxDiff} pixels differ` : ''})`
         + (bad.length ? `\n     ${bad.length} differ; first: ${bad[0]}` : ''));
       ok(errors.v1.length === 0 && errors.v2.length === 0, `m-${name} (${label}): no console error (1.x ${errors.v1.length}, 2.0 ${errors.v2.length})` + (errors.v2.length ? ': ' + errors.v2[0] : errors.v1.length ? ': ' + errors.v1[0] : ''));
     }

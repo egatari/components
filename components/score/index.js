@@ -1,7 +1,7 @@
 // m-score：楽譜（五線譜）を 1 音（和音）ずつ、または 1 小節ずつ出し、その音を再生器に鳴らしてもらう
 // <m-score names="solfa" style="height:300px"><script type="application/json">
 //   {"abc": "X:1\nM:4/4\nL:1/4\nQ:1/4=96\nK:C\nC D E F |]", "abcSvg": "<svg …>…</svg>", "abcMap": {"tempo": 96, "notes": [ … ]},
-//    "renderer": {"name": "abcjs", "version": "6.7.2"}}
+//    "renderers": {"abcjs": {"version": "6.7.2", "options": {…}}}}
 // （JSON の終わり）</m-score>
 // 楽譜を描くのは組み立て（作り手。部品庫 2.0 の「組み立てのときの描画」）：作者の書いた abc を abcjs（add_classes）で描き、
 // abcSvg（abcjs の SVG）と abcMap（音符ごとの小節 measure・音の高さ・拍・長さ（四分音符 = 1）・符頭の箱、連桁 beams、タイとスラーの弧 arcs）を足して渡す。
@@ -25,16 +25,70 @@ var SC = (function(){
   var SOLFA = {C: "ド", D: "レ", E: "ミ", F: "ファ", G: "ソ", A: "ラ", B: "シ"};
   var IROHA = {C: "ハ", D: "ニ", E: "ホ", F: "ヘ", G: "ト", A: "イ", B: "ロ"};
   var PC = {C: 0, D: 2, E: 4, F: 5, G: 7, A: 9, B: 11};
-  // ---- 描いた SVG を読む：許した要素と属性だけの木にする（innerHTML も DOMParser も使わない。データは信用しない） ----
-  var ELS = {svg: 1, g: 1, path: 1, rect: 1, line: 1, polyline: 1, polygon: 1, circle: 1, ellipse: 1, text: 1, tspan: 1};
-  var NUM = /^-?[\d.]+(e-?\d+)?$/i;
-  var ATTR = {
-    d: /^[\d\s.,eE+\-MmLlHhVvCcSsQqTtAaZz]*$/, points: /^[\d\s.,eE+\-]*$/, transform: /^(\s*(translate|scale|rotate|matrix)\s*\([\d\s.,eE+\-]*\)\s*)*$/,
-    x: NUM, y: NUM, x1: NUM, y1: NUM, x2: NUM, y2: NUM, cx: NUM, cy: NUM, r: NUM, rx: NUM, ry: NUM, width: NUM, height: NUM,
-    "stroke-width": NUM, "font-size": NUM, "font-style": /^(normal|italic)$/, "font-weight": /^(normal|bold|\d{3})$/,
-    "font-family": /^[\w\s,'"-]{0,80}$/, "text-anchor": /^(start|middle|end)$/, fill: /^(none|currentColor)$/, stroke: /^(none|currentColor)$/,
-    "class": /^[\w\s-]*$/, "data-arc": /^\d{1,6}$/, "data-note": /^\d{1,6}$/, "data-beam": /^\d{1,6}$/, "data-measure": /^\d{1,6}$/, viewBox: /^[\d\s.,eE+\-]*$/
+  // ---- 描いた SVG を読む（spec §6.2「Rendered output is data」、egatari-spec 8a410b0 の schema/rendered-markup-1.json の svg の欄） ----
+  // 許した要素・属性・値だけの木にする（innerHTML も DOMParser も使わない。データは信用しない）。MARKUP は schema の svg の欄と
+  // 同じもの（tools/test-score.mjs が spec のファイルと比べる。足すのは spec の側で、ここでは足さない）。
+  // それ以外の要素は中身ごと、属性・style の宣言は 1 つずつ捨て、捨てたものを root.dropped に書く（mount が 1 回だけ ctx.report("data")）
+  var MARKUP = {
+    global: ["class", "aria-hidden", "id", "data-*", "style", "transform"],
+    elements: {
+      svg: ["width", "height", "viewBox", "preserveAspectRatio", "role", "aria-label"],
+      g: [],
+      path: ["d", "fill", "stroke", "stroke-width", "stroke-linecap", "stroke-linejoin", "stroke-dasharray"],
+      line: ["x1", "y1", "x2", "y2", "stroke", "stroke-width", "stroke-dasharray"],
+      rect: ["x", "y", "width", "height", "rx", "ry", "fill", "stroke", "stroke-width"],
+      circle: ["cx", "cy", "r", "fill", "stroke", "stroke-width"],
+      ellipse: ["cx", "cy", "rx", "ry", "fill", "stroke", "stroke-width"],
+      polygon: ["points", "fill", "stroke", "stroke-width"],
+      polyline: ["points", "fill", "stroke", "stroke-width"],
+      text: ["x", "y", "dx", "dy", "text-anchor", "dominant-baseline", "font-size", "font-style", "font-weight", "fill"],
+      tspan: ["x", "y", "dx", "dy", "font-size", "font-style", "font-weight", "baseline-shift", "fill"],
+      title: []
+    },
+    values: {
+      id: "^[A-Za-z][A-Za-z0-9_.:-]{0,127}$",
+      "data-*": {name: "^data-[a-z][a-z0-9-]{0,63}$", value: "^[^<>]{0,256}$"},
+      fill: ["none", "currentColor"],
+      stroke: ["none", "currentColor"],
+      length: "^-?(\\d+\\.?\\d*|\\.\\d+)(em|ex|px|%|pt|mu)?$"
+    },
+    style: {
+      lengths: ["height", "width", "min-width", "max-width", "vertical-align", "top", "bottom", "left", "right", "margin-left", "margin-right", "margin-top", "margin-bottom", "padding-left", "padding-right", "padding-top", "padding-bottom", "border-bottom-width", "border-top-width", "border-right-width", "border-left-width", "font-size", "line-height"],
+      keywords: {
+        position: ["relative", "absolute"],
+        display: ["inline-block", "inline", "block", "none"],
+        "border-bottom-style": ["solid", "dashed"],
+        "border-top-style": ["solid", "dashed"],
+        "border-right-style": ["solid", "dashed"],
+        "border-left-style": ["solid", "dashed"],
+        "vertical-align": ["top", "middle", "bottom", "baseline"],
+        "white-space": ["nowrap"],
+        overflow: ["hidden", "visible"]
+      }
+    }
   };
+  var RE = {id: new RegExp(MARKUP.values.id), dataName: new RegExp(MARKUP.values["data-*"].name), dataValue: new RegExp(MARKUP.values["data-*"].value), length: new RegExp(MARKUP.values.length)};
+  // 属性 name="v" を element tag に置いてよいか
+  function admits(tag, name, v){
+    var listed = MARKUP.global.indexOf(name) >= 0 || MARKUP.elements[tag].indexOf(name) >= 0;
+    if (/^data-/.test(name)) return MARKUP.global.indexOf("data-*") >= 0 && RE.dataName.test(name) && RE.dataValue.test(v);
+    if (!listed) return false;
+    if (name === "id") return RE.id.test(v);
+    if (MARKUP.values[name] && Array.isArray(MARKUP.values[name])) return MARKUP.values[name].indexOf(v) >= 0;
+    return true;
+  }
+  // style="p: v; …" → 許した宣言 [[p, v]]（長さか決まった語。color はない）と、捨てた宣言
+  function styleDecls(v, drop, where){
+    var out = [];
+    v.split(";").forEach(function(d){
+      if (!d.trim()) return;
+      var c = d.indexOf(":"), p = c < 0 ? d.trim() : d.slice(0, c).trim().toLowerCase(), x = c < 0 ? "" : d.slice(c + 1).trim();
+      var kw = MARKUP.style.keywords[p];
+      if ((MARKUP.style.lengths.indexOf(p) >= 0 && RE.length.test(x)) || (kw && kw.indexOf(x) >= 0)) out.push([p, x]);
+      else drop(where + " style " + p);
+    });
+    return out;
+  }
   var ENT = {amp: "&", lt: "<", gt: ">", quot: "\"", apos: "'"};
   function decode(s){
     return s.replace(/&(#x[0-9a-f]+|#\d+|\w+);/gi, function(all, e){
@@ -42,15 +96,16 @@ var SC = (function(){
       return ENT[e] !== undefined ? ENT[e] : "";
     });
   }
-  // "<svg …>…</svg>" → {tag: "svg", a: {…}, kids: [{tag, a, kids, text}]}。知らない要素は中身ごと捨て、知らない属性・色・参照も捨てる
+  // "<svg …>…</svg>" → {tag: "svg", a: {…}, st: [[p, v]], kids: [{tag, a, st, kids, text}], dropped: ["<style>", "g@fill", …]}
   function parseSvg(src){
     var re = /<!--[\s\S]*?-->|<!\[CDATA\[[\s\S]*?\]\]>|<[?!][^>]*>|<(\/?)([A-Za-z][\w:.-]*)((?:\s+[\w:.-]+(?:\s*=\s*(?:"[^"]*"|'[^']*'))?)*)\s*(\/?)>|([^<]+)/g;
-    var root = null, stack = [], skip = 0, m;
+    var root = null, stack = [], skip = 0, m, dropped = [];
+    var drop = function(what){ if (dropped.indexOf(what) < 0) dropped.push(what); };
     src = String(src || "");
     while ((m = re.exec(src))){
       if (m[5] !== undefined){   // 文字
         var top = stack[stack.length - 1];
-        if (!skip && top && (top.tag === "text" || top.tag === "tspan")) top.text = (top.text || "") + decode(m[5]);
+        if (!skip && top && (top.tag === "text" || top.tag === "tspan" || top.tag === "title")) top.text = (top.text || "") + decode(m[5]);
         continue;
       }
       if (m[2] === undefined) continue;   // 注釈・宣言
@@ -60,17 +115,20 @@ var SC = (function(){
         if (stack.length && stack[stack.length - 1].tag === tag) stack.pop();
         continue;
       }
-      if (skip || !ELS[tag] || (tag === "svg" && root) || (!root && tag !== "svg")){ if (!self) skip++; continue; }
-      var a = {}, ar = /([\w:.-]+)(?:\s*=\s*(?:"([^"]*)"|'([^']*)'))?/g, x;
+      if (skip || !MARKUP.elements.hasOwnProperty(tag) || (tag === "svg" && root) || (!root && tag !== "svg")){ if (!skip) drop("<" + tag + ">"); if (!self) skip++; continue; }
+      var a = {}, st = [], ar = /([\w:.-]+)(?:\s*=\s*(?:"([^"]*)"|'([^']*)'))?/g, x;
       while ((x = ar.exec(m[3]))){
         var name = x[1], v = decode(x[2] !== undefined ? x[2] : x[3] !== undefined ? x[3] : "").trim();
-        if (ATTR[name] && ATTR[name].test(v)) a[name] = v;
+        if (name === "style" && MARKUP.global.indexOf("style") >= 0) st = styleDecls(v, drop, tag);
+        else if (admits(tag, name, v)) a[name] = v;
+        else drop(tag + "@" + name);
       }
-      var node = {tag: tag, a: a, kids: []};
+      var node = {tag: tag, a: a, st: st, kids: []};
       if (!root) root = node; else stack[stack.length - 1].kids.push(node);
       if (!self) stack.push(node);
     }
     if (!root) throw new Error("m-score: abcSvg has no <svg> element");
+    root.dropped = dropped;
     return root;
   }
   // 音の名前 "C4" "F#4" "Bb3" → {letter, acc: "" | "#" | "b" | "##" | "bb", oct, midi}。読めなければ null
@@ -227,7 +285,7 @@ var SC = (function(){
     var TAGS = ["data-note", "data-beam", "data-measure", "data-arc"];
     var tagged = function(k){ return TAGS.some(function(t){ return k.a[t] !== undefined; }) || k.kids.some(tagged); };
     pl.notes.forEach(function(n){ lastOf[n.m] = n.i; });
-    var tag = function(k, name){ var v = k.a[name]; return v === undefined ? null : +v; };
+    var tag = function(k, name){ var v = k.a[name]; return v === undefined ? null : /^\d{1,6}$/.test(v) ? +v : NaN; };
     tree.kids.forEach(function(top, ti){
       (function walk(k){
         var i = tag(k, "data-note"), b = tag(k, "data-beam"), m = tag(k, "data-measure"), a = tag(k, "data-arc");
@@ -262,7 +320,7 @@ var SC = (function(){
     if (noArc.length) mismatch.push("no element has data-arc for abcMap.arcs n " + noArc.join(", "));
     return {parts: out, missing: missing, mismatch: mismatch};
   }
-  return {place: place, parseSvg: parseSvg, parsePitch: parsePitch, label: label, plan: plan, events: events, names: names, readable: readable, assign: assign};
+  return {MARKUP: MARKUP, place: place, parseSvg: parseSvg, parsePitch: parsePitch, label: label, plan: plan, events: events, names: names, readable: readable, assign: assign};
 })();
 
 var FS = 26, ROW = 30;   // 名前の字（24 px 以上）と行の高さ
@@ -273,8 +331,9 @@ return class extends base.MotionElement {
   static sc = SC;
   static build = {fields: {abc: "abcjs"}};
   static shape = {
-    schema: {type: "object", additionalProperties: false, required: ["abcSvg", "abcMap"], properties: {
-      abc: {type: "string"}, abcSvg: {type: "string"}, renderer: {type: "object"},
+    schema: {type: "object", additionalProperties: false, required: ["abc"], properties: {
+      abc: {type: "string"}, abcSvg: {type: "string"},
+      renderers: {type: "object", properties: {abcjs: {type: "object", required: ["version"], properties: {version: {type: "string"}, options: {type: "object"}}}}},
       abcMap: {type: "object", required: ["tempo", "notes"], properties: {
         tempo: {type: "number"},
         notes: {type: "array", minItems: 1, items: {type: "object", required: ["measure", "pitch", "beat", "dur"], properties: {
@@ -284,7 +343,7 @@ return class extends base.MotionElement {
         arcs: {type: "array", items: {type: "object", required: ["kind", "from", "to", "n"], properties: {
           kind: {type: "string", enum: ["tie", "slur"]}, from: {type: "integer"}, to: {type: "integer"}, pitch: {type: "string"}, n: {type: "integer"}}}}}}}},
     example: {abc: "X:1\nM:4/4\nL:1/4\nQ:1/4=96\nK:C\nC D E F |]"},
-    note: {en: "write abc only; the build adds abcSvg and abcMap", ja: "abc だけを書く（abcSvg・abcMap は組み立てが足す）"},
+    note: {en: "write abc only; the build adds abcSvg, abcMap and renderers", ja: "abc だけを書く（abcSvg・abcMap・renderers は組み立てが足す）"},
   };
   static props = {
     by: {type: "string", default: "note", doc: "note（1 音・和音ずつ）| measure（1 小節ずつ）"},
@@ -297,7 +356,9 @@ return class extends base.MotionElement {
   plan(){
     if (this._plan) return this._plan;
     var d = this.data || {};
-    if (typeof d.abcSvg !== "string" || !d.abcMap) throw new Error("m-score: no abcSvg / abcMap: the build renders abc with abcjs and adds them (a lesson built without that step cannot show the score)");
+    // 組み立てで描いていない（spec §6.2「Missing output」）：abc をそのまま字で見せ、mount で 1 回だけ知らせる。段階はない
+    if (typeof d.abcSvg !== "string" && d.abcMap === undefined) return (this._plan = {missing: true, steps: [], attrNotes: []});
+    if (typeof d.abcSvg !== "string" || !d.abcMap) throw new Error("m-score: abcSvg and abcMap come together (the build adds both when it renders abc with abcjs)");
     var names = this.props.names;
     var notes = [];
     if (["solfa", "abc", "iroha", "none"].indexOf(names) < 0){ notes.push('[score] names="' + names + '" is not solfa, abc, iroha or none (none is used)'); names = "none"; }
@@ -307,21 +368,24 @@ return class extends base.MotionElement {
     return (this._plan = pl);
   }
   duration(k){ var s = k >= 1 && this.plan().steps[k - 1]; return s ? s.len : 0; }
-  events(k){ return SC.events(this.plan(), k); }
+  events(k){ var pl = this.plan(); return pl.missing ? [] : SC.events(pl, k); }
   mount(ctx){
     var self = this, D = base, pl = this.plan();
     this.variant = base.variant(this);
     this.ja = /^ja\b/i.test(ctx.lang);
+    if (pl.missing) return this.showSource(ctx);
     pl.attrNotes.forEach(function(n){ ctx.report("attr", n); });
     this.style.display = "block";
     var W = this.clientWidth, H = this.clientHeight;
     var tree = SC.parseSvg(this.data.abcSvg), as = SC.assign(tree, pl);
+    if (tree.dropped.length) ctx.report("data", "[score] abcSvg: dropped what the rendered-markup list does not admit: " + tree.dropped.join(", "));
     as.mismatch.forEach(function(x){ ctx.report("data", "[score] abcSvg and abcMap do not match: " + x + " (an element without a known tag is shown from step 0)"); });
     var svg = D.el("svg", {viewBox: "0 0 " + W + " " + H, width: W, height: H, "aria-hidden": "true", style: "display:block;overflow:visible"}, this);
     // 楽譜の木を組み直す（許した属性だけ。色は currentColor → color: var(--fg)）
     var mk = function(node, parent){
       var e = document.createElementNS("http://www.w3.org/2000/svg", node.tag);
       for (var k in node.a) e.setAttribute(k, node.a[k]);
+      node.st.forEach(function(d){ e.style.setProperty(d[0], d[1]); });
       if (node.text) e.textContent = node.text;
       parent.appendChild(e);
       node.kids.forEach(function(c){ mk(c, e); });
@@ -390,8 +454,20 @@ return class extends base.MotionElement {
     var nm = pl.steps.length && this.props.by === "measure" ? pl.steps.length : pl.notes.reduce(function(a, n){ return a.indexOf(n.m) < 0 ? a.concat([n.m]) : a; }, []).length;
     if (!this.getAttribute("aria-label")) this.setAttribute("aria-label", ja ? "楽譜（" + nm + " 小節）" : "Score (" + nm + " measures)");
   }
+  // abc not rendered at build time: its source as plain text (spec §6.2 Missing output), reported once
+  showSource(ctx){
+    ctx.report("data", "[score] abc not rendered at build time (the build renders it with abcjs and adds abcSvg and abcMap); its source is shown as text");
+    this.style.display = "block";
+    var pre = document.createElement("pre");
+    pre.className = "m-score-source";
+    pre.setAttribute("style", "margin:0;font-size:24px;line-height:1.3;white-space:pre-wrap;color:var(--fg)");
+    pre.textContent = String(this.data.abc || "");
+    this.appendChild(pre);
+    if (!this.getAttribute("aria-label")) this.setAttribute("aria-label", this.ja ? "楽譜（ABC 記譜法）" : "Score (ABC notation)");
+  }
   render(k, t, ctx){
     var pl = this.plan(), preview = !!ctx.preview;
+    if (pl.missing) return;
     // 薄さはテーマの --preview-opacity（仕様 §8.4「Answers under preview」）。書いていないテーマだけ 0.45
     var FAINT = 0;
     if (preview) FAINT = base.previewOpacity(this);

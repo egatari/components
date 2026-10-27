@@ -1,5 +1,5 @@
 // m-score's fixtures and demo: renders ABC with abcjs in headless Chrome, as Studio's build will (components 2.0 design §4.1),
-// and writes components/score/fixtures/<name>.json = {abc, abcSvg, abcMap, renderer} and components/score/demo.html.
+// and writes components/score/fixtures/<name>.json = {abc, abcSvg, abcMap, renderers} and components/score/demo.html.
 // It is the stand-in for the build hook and the reference for whoever writes it: everything abcjs-specific (classes, the
 // order abcjs draws arcs in, its quirks) lives here and in components/score/fixtures/ABCJS-ADAPTER.md, never in the part.
 //   npm install abcjs@6.7.2 in a scratch folder outside this repository (abcjs is not a dependency of this repository), then
@@ -23,7 +23,12 @@ const TUNES = [
   // slur across a line break, a tie on one note of a chord ([C-EG] [CEG])
   { name: 'ties', staffwidth: 640, test: true, abc: 'X:1\nM:4/4\nL:1/4\n' + H + 'Q:1/4=96\nK:C\n[CE]2- [CE]2 | G2- G- G | (A- A B c) | e2 ([Gc]2- |\n[Gc]2 B) c- | c4 | [C-EG]2 [CEG]2 |]' },
   { name: 'chords', staffwidth: 520, abc: 'X:1\nM:4/4\nL:1/2\n' + H + 'Q:1/4=80\nK:C\n[CEG] [FAc] | [GBd] [CEG] |]' },
+  // test fixture only (not in demo.html): what the build does not usually let abcjs draw, read through the same rendered-markup
+  // list: dynamics, articulations, a fermata, a trill, chord symbols, lyrics, a title, a tempo mark, a triplet and a key with sharps
+  { name: 'extras', staffwidth: 760, test: true, abc: 'X:1\nT:Extras\nM:3/4\nL:1/4\nQ:1/4=100\nK:D\n"D"!p!.D .F !accent!A | "G"!f!(3B/c/d/ !fermata!e2 | "A7"!trill!c !mf!e A | "D"d3 |]\nw: ド ファ ラ シ ド レ ミ ド ミ ラ レ' },
 ];
+// what abcjs is asked to draw with (recorded in the data as renderers.abcjs.options; spec §6.2)
+const OPTIONS = (T) => ({ add_classes: true, staffwidth: T.staffwidth, foregroundColor: 'currentColor' });
 const DEMO = [
   ['doremi', 'ドレミの音階', 'names="solfa"', 'ドから上のドまで上がって、また下がる音階の楽譜', 220, '→ ドレミファソラシド：線と間を 1 つずつ上がる'],
   ['rhythm', 'リズムのれんしゅう（2/4 拍子）', '', '四分音符・八分音符・四分休符・タイのリズムの楽譜', 240, '→ 八分音符 2 つで四分音符 1 つ分。タイでつないだ音は切らずにのばす'],
@@ -32,10 +37,10 @@ const DEMO = [
 ];
 
 // In the page: render one tune and read abcjs's own data (see ABCJS-ADAPTER.md for each rule)
-function adapt({ abc, staffwidth }) {
+function adapt({ abc, options }) {
   const LET = 'CDEFGAB', NAT = [0, 2, 4, 5, 7, 9, 11];
   const d = document.getElementById('d'); d.textContent = '';
-  const tune = ABCJS.renderAbc('d', abc, { add_classes: true, staffwidth })[0];
+  const tune = ABCJS.renderAbc('d', abc, options)[0];
   tune.setUpAudio();   // fills midiPitches (the sounding pitch, after the key signature and accidentals)
   const tq = tune.metaText.tempo, tempo = tq ? tq.bpm * tq.duration.reduce((a, x) => a + x, 0) * 4 : 120;
   const r3 = (x) => Math.round(x * 1e3) / 1e3;
@@ -137,7 +142,39 @@ function adapt({ abc, staffwidth }) {
   // lowest pitch's tie path): it cannot be seen, and the part must not have to know about it
   const seen = new Set(); let dropped = 0;
   pieces.forEach((p) => { const k = p.el.getAttribute('d'); if (seen.has(k)) { p.el.remove(); dropped++; } else seen.add(k); });
-  return { svg: d.querySelector('svg').outerHTML, map: { tempo, notes: notes.map((n) => n.out), beams, arcs }, problems, dropped, pieces: pieces.length };
+  // Write only what the rendered-markup list (egatari-spec 8a410b0, schema/rendered-markup-1.json) admits, drawing the same:
+  //   - abcjs's <style> (its drag-and-drop CSS) and <title> ("Sheet Music"; the part's drawing is aria-hidden) are left out;
+  //   - the attributes that are abcjs's own and that the list does not admit (xmlns:xlink, selectable) are left out, and so
+  //     are abcjs's data-name / data-index (admitted as data-*, but they are abcjs's, not build tags: parts must not use them);
+  //   - fill / stroke, which the list admits on drawing elements but not on svg or g, move from svg and g down to every drawing
+  //     element below that does not set its own (so each draws as before). currentColor is not moved: the part's own root
+  //     sets currentColor for both (components/score/index.js), so an element that inherits it still gets it.
+  //     A text or tspan admits fill only: a stroke they would inherit is counted (norm.textStroke) and must be "none" or
+  //     the part's currentColor for the drawing to stay the same.
+  const svg = d.querySelector('svg'), norm = { removed: {}, pushed: 0, textStroke: 0 };
+  const count = (k) => { norm.removed[k] = (norm.removed[k] || 0) + 1; };
+  svg.querySelectorAll('style, title').forEach((x) => { count('<' + x.localName + '>'); x.remove(); });
+  const DRAW = { path: ['fill', 'stroke'], line: ['stroke'], rect: ['fill', 'stroke'], circle: ['fill', 'stroke'], ellipse: ['fill', 'stroke'], polygon: ['fill', 'stroke'], polyline: ['fill', 'stroke'], text: ['fill'], tspan: ['fill'] };
+  const inherited = (el, prop) => { for (let x = el.parentElement; x; x = x.parentElement) { if (x.hasAttribute(prop)) return x.getAttribute(prop); if (x === svg) break; } return null; };
+  svg.querySelectorAll('*').forEach((el) => {
+    const ok = DRAW[el.localName];
+    if (!ok) return;
+    for (const prop of ['fill', 'stroke']) {
+      if (el.hasAttribute(prop)) continue;
+      const v = inherited(el, prop);
+      if (v === null || v === 'currentColor') continue;   // currentColor is what the part's own root sets for both
+      if (ok.includes(prop)) { el.setAttribute(prop, v); norm.pushed++; }
+      else if (v !== 'currentColor') norm.textStroke++;
+    }
+  });
+  [svg, ...svg.querySelectorAll('*')].forEach((el) => {
+    for (const a of [...el.attributes]) {
+      const own = a.name === 'xmlns:xlink' || a.name === 'selectable' || a.name === 'data-name' || a.name === 'data-index'
+        || ((a.name === 'fill' || a.name === 'stroke') && (el.localName === 'g' || el.localName === 'svg'));
+      if (own) { count(el.localName + '@' + a.name); el.removeAttribute(a.name); }
+    }
+  });
+  return { norm, svg: svg.outerHTML, map: { tempo, notes: notes.map((n) => n.out), beams, arcs }, problems, dropped, pieces: pieces.length };
 }
 
 const S = await studio();
@@ -148,11 +185,12 @@ try {
   await p.setContent('<!doctype html><div id="d"></div>');
   await p.addScriptTag({ path: path.join(ABCJS, 'dist', 'abcjs-basic.js') });
   for (const T of TUNES) {
-    const r = await p.evaluate(adapt, T);
+    const r = await p.evaluate(adapt, { abc: T.abc, options: OPTIONS(T) });
     if (r.problems.length) throw new Error(`${T.name}: ${r.problems.join('; ')}`);
-    out[T.name] = { abc: T.abc, abcSvg: r.svg, abcMap: r.map, renderer: { name: 'abcjs', version: VERSION, options: { add_classes: true, staffwidth: T.staffwidth } } };
+    // spec §6.2: each renderer recorded once, at the top level of the part's data
+    out[T.name] = { abc: T.abc, abcSvg: r.svg, abcMap: r.map, renderers: { abcjs: { version: VERSION, options: OPTIONS(T) } } };
     fs.writeFileSync(path.join(DIR, 'fixtures', T.name + '.json'), JSON.stringify(out[T.name], null, 1) + '\n');
-    console.log(`${T.name}: ${r.map.notes.length} notes, ${r.map.arcs.length} arcs, ${r.pieces} arc pieces (${r.dropped} hidden duplicate dropped), ${r.svg.length} bytes of SVG`);
+    console.log(`${T.name}: ${r.map.notes.length} notes, ${r.map.arcs.length} arcs, ${r.pieces} arc pieces (${r.dropped} hidden duplicate dropped), ${r.svg.length} bytes of SVG; left out ${JSON.stringify(r.norm.removed)}, fill/stroke moved down ${r.norm.pushed}×` + (r.norm.textStroke ? `, ${r.norm.textStroke} text strokes not representable` : ''));
   }
 } finally { await b.close(); }
 

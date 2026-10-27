@@ -21,4 +21,16 @@ The first version of m-score: it was never released in 1.x (branch `m-score`, la
   `console.warn("m-score: …")`. abcMap errors still throw (base contains them).
 - The preview view is `ctx.preview` alone (pre-2.0 also accepted `ctx.mode === "lecture"`).
 - `static sc` (the score data, read by tools/test-score.mjs through `partClass`) is unchanged.
+- Rendered output (egatari-spec 8a410b0, §6.2): `abcSvg` is read through the spec's rendered-markup list
+  (`schema/rendered-markup-1.json`, svg; the part's `MARKUP` equals it, tools/test-score.mjs compares them with the
+  spec file at a pinned commit): `style` only as listed declarations set with `setProperty`, `fill` / `stroke` only
+  `none` / `currentColor` and only on drawing elements, no URL-valued attribute; anything else is dropped (an element
+  with its subtree) and reported once, `ctx.report("data", "[score] abcSvg: dropped …")`. The data carries
+  `renderers: {abcjs: {version, options}}` at its top (was `renderer: {name, version, options}`); the fixtures and demo
+  are rendered again with `foregroundColor: "currentColor"` and hold only admitted markup (fill / stroke moved from `g`
+  down to the drawing elements). The 2.0 part on the new demo is pixel-identical to cc0e60a on its own demo at every
+  frame of the identity test.
+- Missing output (spec §6.2): data with `abc` only (not rendered at build time) shows the ABC source as plain text, has
+  no steps and no sound, and is reported once, `ctx.report("data", "[score] abc not rendered at build time …")` (was:
+  the data-shape placeholder). The shape requires `abc`; `abcSvg` and `abcMap` come together.
 - Ids: none written.

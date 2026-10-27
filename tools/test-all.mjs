@@ -1,4 +1,5 @@
-// Every test, in order (npm test). No network except the first fetch of the pinned Egatari Studio (tools/studio.mjs).
+// Every test, in order (npm test). No network except the first fetch of the pinned Egatari Studio (tools/studio.mjs) and of
+// the pinned spec files the tests compare with (tools/spec-schema.mjs: egatari-spec's schema/rendered-markup-1.json).
 //   1. lint             layout and README frontmatter of each component (tools/lint.mjs)
 //   2. catalog          CATALOG.md is up to date (tools/catalog.mjs --check); gallery.html likewise (tools/gallery.mjs --check)
 //   3. scan-code        no eval-like code path in component code (tools/scan-code.mjs; Egatari spec §6)

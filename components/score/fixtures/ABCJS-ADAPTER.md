@@ -6,7 +6,7 @@ producer needs to write those tags. `tools/score-fixtures.mjs` follows them. It 
 hook and writes `fixtures/*.json` and `demo.html`. They were checked on the fixtures here (`ties.json` is test-only) and in
 abcjs's source (`src/write/creation/abstract-engraver.js`, `src/write/draw/tie.js`, `src/write/draw/beam.js`).
 
-## Tags the build writes (all digits; the part's SVG reader keeps only these data- attributes)
+## Tags the build writes (all digits; the part reads no other data- attribute)
 
 | Tag | On | Value | The part shows it with |
 |---|---|---|---|
@@ -75,6 +75,23 @@ group are in `elems[].abcelem`.
   - A piece with one anchor can match both a tie and a slur at the same note. Then the order above decides: on the start
     line the tie comes first, and on the next line the slur comes first.
   - Every piece gets `data-arc="<n>"`. If a piece matches no arc, or more than one, the script fails.
+
+## Writing only what the rendered-markup list admits (egatari-spec 8a410b0)
+
+The part reads `abcSvg` through the spec's list (`schema/rendered-markup-1.json`, svg) and reports anything it drops.
+abcjs 6.7.2 (`foregroundColor: "currentColor"`, also its default) writes, besides the drawing:
+
+| abcjs writes | Admitted? | The build |
+|---|---|---|
+| `<style>` (its drag-and-drop CSS) | no | leaves it out |
+| `<title>Sheet Music</title>` | yes | leaves it out (the part's drawing is aria-hidden; the slide gives the label) |
+| `xmlns:xlink` on `<svg>`, `selectable` on each note's `<g>` | no | leaves them out |
+| `data-name`, `data-index` | yes (data-*) | leaves them out: they are abcjs's, not build tags |
+| `fill`, `stroke` on `<svg>` and `<g>` (`stroke="none"` on notes, clef, key, time) | no (drawing elements only) | moves them down to each drawing element below that does not set its own; `currentColor` is not moved (the part's root sets it) |
+| on text (chord symbols, lyrics, title, tempo): `stroke="none"`, `font-family`, `text-decoration` | no | keeps them: they are gaps of the list (reported for a spec change); the demo has no text, `extras.json` (test only) does |
+
+The data records the renderer once at its top: `renderers: {abcjs: {version: "6.7.2", options: {add_classes, staffwidth,
+foregroundColor}}}` (spec §6.2).
 
 ## What m-score does with it
 

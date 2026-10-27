@@ -1,6 +1,8 @@
 // m-score reads no abcjs class: the demo built as is and the demo with every abcjs-* class stripped from abcSvg behave the
 // same in a browser (pinned Egatari Studio): the same steps, events and note names, and the same DOM at every step (mid-step
 // and final, talk and lecture preview), apart from the class attributes themselves; no console warning or error in either.
+// Also spec §6.2 Missing output: a score whose abc was not rendered at build time (abc only) shows its source as plain text,
+// has no steps, and is reported once with ctx.report("data", "[score] … not rendered at build time …").
 //   node tools/test-score-noclass.mjs [work dir]
 import fs from 'node:fs';
 import os from 'node:os';
@@ -19,6 +21,11 @@ const bare = html.replace(/(<script type="application\/json">)([\s\S]*?)(<\/scri
   return a + JSON.stringify(d).replace(/</g, '\\u003c') + b;
 });
 fs.writeFileSync(path.join(work, 'bare.html'), bare);
+const ABC = 'X:1\nM:4/4\nL:1/4\nK:C\nC D E F |]';
+let srcOnly = 0;
+const unrendered = html.replace(/(<script type="application\/json">)([\s\S]*?)(<\/script>)/g, (all, a, j, b) => (srcOnly++ ? all : a + JSON.stringify({ abc: ABC }) + b));
+fs.writeFileSync(path.join(work, 'unrendered.html'), unrendered);
+S.build(path.join(work, 'unrendered.html'), path.join(work, 'out-unrendered.html'));
 S.build(src, path.join(work, 'out-full.html'));
 S.build(path.join(work, 'bare.html'), path.join(work, 'out-bare.html'));
 
@@ -58,6 +65,17 @@ try {
     const diff = f.dom.findIndex((d, q) => d !== n.dom[q]);
     ok(diff < 0, `score ${j + 1}: same DOM at every step, mid-step, final and under preview, apart from classes` + (diff >= 0 ? ` (first difference at render ${diff})` : ''));
   });
+  {
+    const p = await b.newPage({ viewport: { width: 1280, height: 720 } });
+    await p.goto(S.browser.fileUrl(path.join(work, 'out-unrendered.html')));
+    await p.waitForFunction(() => window.DECK && DECK.ready, null, { timeout: 15000 });
+    const u = await p.evaluate(() => { const el = document.querySelector('m-score'); for (let k = 0; k <= 2; k++) DECK.seek(0, k, Infinity);
+      return { steps: el.steps, pre: (el.querySelector('pre') || {}).textContent, svg: !!el.querySelector('svg'), err: !!el.querySelector('.m-error'), events: JSON.stringify(el.events(1)),
+        reports: (window.EGATARI_PARTS_SHIM ? EGATARI_PARTS_SHIM.reports() : []).map((r) => r.code + ': ' + r.msg) }; });
+    await p.close();
+    ok(u.pre === ABC && !u.svg && !u.err && u.steps === 0 && u.events === '[]', `abc not rendered at build time: its source as plain text, no drawing, no placeholder, 0 steps, no sound (${u.steps} steps)`);
+    ok(u.reports.length === 1 && /^data: \[score\] abc not rendered at build time/.test(u.reports[0]), 'reported once as data' + (u.reports.length ? ': ' + u.reports.join(' | ') : ''));
+  }
   ok(full.log.length === 0 && noc.log.length === 0, 'no console warning or error' + (full.log.concat(noc.log).length ? ': ' + full.log.concat(noc.log)[0] : ''));
 } finally { await b.close(); }
 console.log(fails ? `\nFAIL: ${fails}` : '\nOK');
