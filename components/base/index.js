@@ -13,8 +13,9 @@
 // possible so that a part moved from DECK to base draws the same DOM (tools/test-base.mjs compares them with the pinned
 // Studio's DECK). variant is tools/variant.js's VARIANT.of, taking the names instead of looking the tag up again;
 // previewOpacity is the --preview-opacity read the parts used to write themselves. The data check (compText, compProblem,
-// compSummary, compPlaceholder) is deck.js's, with DECK.shape → the shape part and DECK.ja → ctx.lang. Difference: a data
-// problem is reported with a spec §8.4 code (reportCode) and the part's "[<name>] " prefix.
+// compSummary, compPlaceholder) is deck.js's, with DECK.shape → the shape part and DECK.ja → ctx.lang. Differences: base's
+// own warnings start "[base] " (deck.js: "deck.js: ", "[deck] "), and a data problem is reported with a spec §8.4 code
+// (reportCode) and the part's "[<name>] " prefix.
 egatariParts.define({name: "base", version: "1.0.0", requires: {shape: "1.0.0"}}, function(deps){
 "use strict";
 var NS = "http://www.w3.org/2000/svg";
@@ -30,7 +31,7 @@ function lerp(a, b, e){ return a + (b - a) * e; }
 function stepInt(v, what, min){
   if (v === null || v === undefined) return null;
   var n = typeof v === "number" ? v : String(v).trim() === "" ? NaN : +v;
-  if (!isFinite(n) || n !== Math.floor(n) || n < (min || 0)){ console.warn("deck.js: " + what + "=" + JSON.stringify(v) + " は 0 以上の整数でないので無視 / ignored (not a non-negative integer)"); return null; }
+  if (!isFinite(n) || n !== Math.floor(n) || n < (min || 0)){ console.warn("[base] " + what + "=" + JSON.stringify(v) + " は 0 以上の整数でないので無視 / ignored (not a non-negative integer)"); return null; }
   return n;
 }
 
@@ -250,7 +251,7 @@ class MotionElement extends HTMLElement {
   get data(){
     if (this._data !== undefined) return this._data;
     var c = [].filter.call(this.children, function(x){ return x.localName === "script" && String(x.getAttribute("type") || "").trim().toLowerCase() === "application/json"; });
-    if (c.length > 1) console.warn("[deck] " + this.tagName.toLowerCase() + ": more than one <script type=\"application/json\"> child (ignored)");
+    if (c.length > 1) console.warn("[base] " + this.tagName.toLowerCase() + ": more than one <script type=\"application/json\"> child (ignored)");
     return (this._data = c.length === 1 ? JSON.parse(c[0].textContent) : null);
   }
   mount(ctx){}

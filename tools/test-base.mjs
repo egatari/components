@@ -154,7 +154,8 @@ try {
       // DECK reads every component's data when it sets up a slide (compProblem), as base's data check does: read it here first
       try { pl.data; } catch (x) { /* compared through props/data above */ }
       out.push(pl.steps, pl.from, JSON.stringify(pl.props));
-      out.push(warnLog.slice(w0).map(strip));
+      // base's own warnings start "[base] " where deck.js's start "deck.js: " or "[deck] "; the rest is the same
+      out.push(warnLog.slice(w0).map((w) => strip(w).replace(/^(deck\.js: |\[deck\] |\[base\] )/, kind === 'base' ? (/^\[base\] /.test(w) ? '<prefix> ' : '<NOT [base]> ') : '<prefix> ')));
       e.remove(); pl.remove();
       return out;
     });

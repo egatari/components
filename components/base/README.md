@@ -33,7 +33,8 @@ role="note">`, in Japanese when `ctx.lang` is `ja`), and `render`, `duration`, `
 nothing changes. The code is from spec §8.4's vocabulary (`reportCode(kind)`): `attr` for a problem with an attribute
 value (kind `attr`, `attrJson`), `data` for every other kind (`shape`, `missing`, `json`, `notText`, `empty`, `notLinks`,
 `noLinks`). The message keeps the kind and deck.js's English summary, after the part's name as in containment reports,
-e.g. `[bars] data (shape): groups: expected array, got object`.
+e.g. `[bars] data (shape): groups: expected array, got object`. Base's own console warnings (a `steps` or `data-from`
+attribute that is not a non-negative integer, two JSON children) start with `[base]`.
 
 **Containment** (spec §6.1). An exception the part throws while the player calls it (`steps`, `mount`, `render`,
 `layout`, and also `duration` and `cues`) never escapes. The first one is the instance's fault: it is reported once,
@@ -47,5 +48,5 @@ itself (event listeners) are not wrapped.
 Dependencies: base → shape only (shape needs nothing from base, so there is no cycle). `plot` requires base.
 
 `MotionElement`, `el`, `mtext`, `lerp`, `prog`, `clamp` and the data check are copied from Egatari Studio's
-`kit/deck.js` (MIT, the same owner; see NOTICE) and give the same DOM and messages (but for the `[<name>]` prefix and the report codes above): `tools/test-base.mjs` compares each
+`kit/deck.js` (MIT, the same owner; see NOTICE) and give the same DOM and messages (but for the `[base]` and `[<name>]` prefixes and the report codes above): `tools/test-base.mjs` compares each
 with the pinned Studio's `DECK`. Nothing here reads `DECK` or any other global of a player.
