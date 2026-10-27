@@ -58,4 +58,4 @@ Node 22 以上と、Chrome・Edge・Playwright の Chromium のどれか。試�
 
 [MIT](LICENSE)（Egatari Studio と同じ）。見本の文章は作者の書き下ろし、パブリックドメイン（漢文・古文）、または架空（社名と数値）です。
 
-ただし `components/kakijun/index.js` には OFL-1.1 のデータの区切り（strokesvg（Klee One）から派生したかなの画の形。`/* BEGIN OFL-1.1 data … */` と `/* END OFL-1.1 data */` の間）があり、この部品のライセンスは `MIT AND OFL-1.1` です。[components/kakijun/OFL.txt](components/kakijun/OFL.txt) と [NOTICE](NOTICE) を見てください。
+ただし `components/kakijun/index.js` には OFL-1.1 のデータの区切り（strokesvg（Klee One）から派生したかなの画の形。`/*@egatari-block strokes*/` と `/*@egatari-block-end*/` の間）があり、この部品のライセンスは `MIT AND OFL-1.1` です。[components/kakijun/OFL.txt](components/kakijun/OFL.txt) と [NOTICE](NOTICE) を見てください。

@@ -58,4 +58,4 @@ These components were developed inside Egatari Studio (formerly motion-academic-
 
 [MIT](LICENSE), the same as Egatari Studio. The demos' texts are the authors' own, public domain (classical Chinese and Japanese texts) or fictional (company names and numbers).
 
-One exception: `components/kakijun/index.js` contains an OFL-1.1 data block (kana stroke shapes derived from strokesvg (Klee One), between `/* BEGIN OFL-1.1 data … */` and `/* END OFL-1.1 data */`), so that part is `MIT AND OFL-1.1`; see [components/kakijun/OFL.txt](components/kakijun/OFL.txt) and [NOTICE](NOTICE).
+One exception: `components/kakijun/index.js` contains an OFL-1.1 data block (kana stroke shapes derived from strokesvg (Klee One), between `/*@egatari-block strokes*/` and `/*@egatari-block-end*/`), so that part is `MIT AND OFL-1.1`; see [components/kakijun/OFL.txt](components/kakijun/OFL.txt) and [NOTICE](NOTICE).

@@ -1,18 +1,16 @@
-// The stand-in for the producer's subset step (Egatari spec §6.2 Subset), as Studio's build will do it, and the reference for
-// whoever writes that: a part declares `static build = {subset: {data, key}}`; the producer keeps only the entries whose
-// keys occur in the lesson's text and records `subset: {keys, sha256}` in the part's index.components entry (whose sha256
-// stays that of the published part). An editor applies the same subset to its own trusted copy and compares the bytes.
+// The stand-in for the producer's subset step (Egatari spec §6.2 Subset, egatari-spec ce96072), as Studio's build will do it,
+// and the reference for whoever writes that: a part declares `static build = {subset: {data, key}}` (or an array of such
+// entries); the producer keeps only the entries whose keys occur in the lesson's text and records `subset: {keys, sha256}` in
+// the part's index.components entry (whose sha256 stays that of the published part). An editor applies the same subset to
+// its own trusted copy and compares the bytes.
 //
-// `data` names data embedded in the part's code as "<label>:<field>": the JSON between the markers `/* BEGIN <label>` (a
-// comment running to its `*/`) and `/* END <label> */`, and in it the object `<field>`, whose own keys are the subset keys
-// (m-kakijun: "OFL-1.1 data:chars", key "char": one entry per character). Everything else in the part is left as it is: the
-// code, the markers, the notice in the BEGIN comment (spec §6.1 Notices) and every other field of the block, `_license` first.
-//
-// The block is written in one canonical form, so that the same kept keys always give the same bytes: the top-level fields
-// in their order, one per line as `"name": <JSON>`, but `<field>` with one `"key": <JSON>` entry per line, in the order of
-// the full block. The published block is in that form already (tools/kana-embed.mjs), so keeping every key gives the
-// published part byte for byte.
-//   kept keys   the block's keys that occur in the lesson's text, in the block's order, as one string (spec: "the kept keys")
+// `data` is `block:<name>` (<name> ^[a-z][a-z0-9-]{0,63}$): the JSON value in the part's code between the comments
+// /*@egatari-block <name>*/ and /*@egatari-block-end*/, whose members (an object) or items (an array of objects, by the
+// field `key`) are keyed by `key`. (A field of the lesson's data is the other form; this stand-in has no part that uses it.)
+// The block is re-serialised canonically: JSON.stringify of the kept value, members in their original order, no added
+// whitespace; members whose names begin with "_" (the licence notice, m-kakijun's _box …) are kept unchanged and first.
+// Every byte outside the markers stays as it was.
+//   kept keys   the keys kept in any block, in code point order, as one string (spec: "the kept keys")
 //   sha256      the identity hash (tools/identity.mjs: line endings normalized) of the subset index.js as written into the file
 //
 //   node tools/subset-produce.mjs <part folder or index.js> --lesson <deck.html> [--lesson <narration.md> …] [-o <out.js>]
@@ -27,50 +25,61 @@ import { normalizeEol } from './identity.mjs';
 
 export const sha256 = (s) => createHash('sha256').update(normalizeEol(Buffer.from(s, 'utf8'))).digest('hex');
 
-// The part's subset declaration: {data, key, label, field}, or null when it declares none
-export function subsetSpec(js) {
+export const BLOCK_NAME = /^[a-z][a-z0-9-]{0,63}$/;
+export const BLOCK = (name) => `/*@egatari-block ${name}*/`;
+export const BLOCK_END = '/*@egatari-block-end*/';
+
+// The part's subset declarations: [{data, key, block}] (block: the name, for data "block:<name>"), [] when it declares none
+export function subsetSpecs(js) {
   const C = partClass(js);
   const b = C && C.build && C.build.subset;
-  if (!b) return null;
-  const m = /^(.+):([A-Za-z_$][\w$]*)$/.exec(String(b.data || ''));
-  if (!m || typeof b.key !== 'string') throw new Error(`subset: build.subset ${JSON.stringify(b)} is not {data: "<label>:<field>", key}`);
-  return { data: b.data, key: b.key, label: m[1], field: m[2] };
+  if (!b) return [];
+  return (Array.isArray(b) ? b : [b]).map((e) => {
+    if (!e || typeof e.data !== 'string' || typeof e.key !== 'string') throw new Error(`subset: build.subset entry ${JSON.stringify(e)} is not {data, key}`);
+    const m = /^block:(.*)$/.exec(e.data);
+    if (!m) throw new Error(`subset: ${e.data}: a lesson data path (this stand-in subsets only block:<name> data)`);
+    if (!BLOCK_NAME.test(m[1])) throw new Error(`subset: block name ${JSON.stringify(m[1])} does not match ${BLOCK_NAME}`);
+    return { data: e.data, key: e.key, block: m[1] };
+  });
 }
 
-// Where the block is: js.slice(start, end) is its JSON
-export function blockOf(js, label) {
-  const begin = '/* BEGIN ' + label, endMark = '/* END ' + label + ' */';
-  const b = js.indexOf(begin);
-  if (b < 0 || js.indexOf(begin, b + 1) >= 0) throw new Error(`subset: the part needs exactly one "${begin}" marker`);
-  const close = js.indexOf('*/', b);
-  const end = js.indexOf(endMark, close);
-  if (close < 0 || end < 0 || js.indexOf(endMark, end + 1) >= 0) throw new Error(`subset: no single "${endMark}" after "${begin}"`);
-  return { start: close + 2, end, json: js.slice(close + 2, end) };
+// Where block <name> is: js.slice(start, end) is its JSON (exactly one begin marker; the first end marker after it)
+export function blockOf(js, name) {
+  const begin = BLOCK(name), b = js.indexOf(begin);
+  if (b < 0 || js.indexOf(begin, b + 1) >= 0) throw new Error(`subset: the part needs exactly one ${begin}`);
+  const end = js.indexOf(BLOCK_END, b + begin.length);
+  if (end < 0) throw new Error(`subset: no ${BLOCK_END} after ${begin}`);
+  const nested = js.indexOf('/*@egatari-block ', b + begin.length);
+  if (nested >= 0 && nested < end) throw new Error(`subset: ${begin} is not closed before the next block`);
+  return { start: b + begin.length, end, json: js.slice(b + begin.length, end) };
 }
 
-// The canonical form of the block (see the top of this file); the text before and after the JSON (newlines) is kept by blockOf
-export function canonical(obj, field) {
-  return '{' + Object.keys(obj).map((k) => {
-    if (k !== field) return JSON.stringify(k) + ': ' + JSON.stringify(obj[k]);
-    const e = Object.entries(obj[k]).map(([x, v]) => JSON.stringify(x) + ': ' + JSON.stringify(v));
-    return JSON.stringify(k) + ': {' + (e.length ? '\n' + e.join(',\n') + '\n' : '') + '}';
-  }).join(',\n') + '}';
+// The kept value: an object keeps its "_" members (first, unchanged) and the members whose names are kept; an array keeps
+// the items whose `key` field is kept. Returns {value, kept: [keys]}
+export function keep(value, key, want) {
+  if (Array.isArray(value)) {
+    const items = value.filter((x) => x && typeof x === 'object' && want.has(String(x[key])));
+    return { value: items, kept: items.map((x) => String(x[key])) };
+  }
+  if (!value || typeof value !== 'object') throw new Error('subset: a block is an object or an array');
+  const names = Object.keys(value), meta = names.filter((k) => k.startsWith('_')), kept = names.filter((k) => !k.startsWith('_') && want.has(k));
+  return { value: Object.fromEntries([...meta, ...kept].map((k) => [k, value[k]])), kept };
 }
 
-// The part's code with the block's <field> cut down to `keys` (a string or set of characters; keys the block does not have
-// are ignored). Returns {code, keys}: keys = the kept keys in the block's order, as one string.
+// The part's code with every declared block cut down to `keys` (a string or set of characters; keys a block does not have
+// are ignored). Returns {code, keys}: keys = the keys kept in any block, in code point order, as one string.
 export function subsetCode(js, keys) {
-  const spec = subsetSpec(js);
-  if (!spec) throw new Error('subset: the part declares no build.subset');
-  const want = new Set(typeof keys === 'string' ? Array.from(keys) : keys);
-  const { start, end, json } = blockOf(js, spec.label);
-  const lead = json.match(/^\s*/)[0], tail = json.match(/\s*$/)[0];
-  const obj = JSON.parse(json);
-  const map = obj[spec.field];
-  if (!map || typeof map !== 'object' || Array.isArray(map)) throw new Error(`subset: the block has no object "${spec.field}"`);
-  const kept = Object.keys(map).filter((k) => want.has(k));
-  obj[spec.field] = Object.fromEntries(kept.map((k) => [k, map[k]]));
-  return { code: js.slice(0, start) + lead + canonical(obj, spec.field) + tail + js.slice(end), keys: kept.join('') };
+  const specs = subsetSpecs(js);
+  if (!specs.length) throw new Error('subset: the part declares no build.subset');
+  const want = new Set(typeof keys === 'string' ? Array.from(keys) : keys), all = new Set();
+  let code = js;
+  for (const sp of specs) {
+    const { start, end, json } = blockOf(code, sp.block);
+    const r = keep(JSON.parse(json), sp.key, want);
+    r.kept.forEach((k) => all.add(k));
+    code = code.slice(0, start) + JSON.stringify(r.value) + code.slice(end);
+  }
+  return { code, keys: [...all].sort((a, b) => (a.codePointAt(0) - b.codePointAt(0)) || (a < b ? -1 : a > b ? 1 : 0)).join('') };
 }
 
 // The characters of the lesson's text: every file given (deck.html, narration.md), comments and <style> left out. Tags,
