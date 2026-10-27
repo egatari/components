@@ -44,6 +44,7 @@ const WRONG = {
   'm-boxplot': '<script type="application/json">{"groups": [{"label": "1 組", "data": [3, 5, 6, 7]}]}</script>',
   'm-numberline': '<script type="application/json">{"lines": [{"from": 0, "to": 10}], "marks": [{"value": 3}]}</script>',
   'm-keyboard': '<script type="application/json">{"range": "C4-C6", "steps": [{"notes": ["C4", "E4", "G4"]}]}</script>',
+  'm-score': '<script type="application/json">{"abc": "X:1\\nK:C\\nC D E F |]"}</script>',
   'm-tape': '<script type="application/json">{"rows": [{"label": "みかん", "segments": [{"v": 8}]}]}</script>',
   'm-syntax': '<script type="application/json">{"sentences": ["[S We] [V run]."]}</script>',
   'm-heatmap': '<script type="application/json">{"rows": ["ねこ", "いぬ"], "cols": ["ねこ", "いぬ"], "data": [[45, 5], [6, 44]]}</script>',

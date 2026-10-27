@@ -12,7 +12,7 @@ const ROOT = path.dirname(path.dirname(fileURLToPath(import.meta.url)));
 export const BEGIN = '// ---- BEGIN egatari-variant ';
 export const END = '// ---- END egatari-variant ----';
 // Components with presentation variants (docs/conventions.md §1). A new one is added here
-const LISTED = ['kpi', 'compare', 'venn', 'tree', 'fishbone', 'scatter', 'pie', 'timeline', 'cycle', 'map-japan', 'map-world', 'predict', 'hist', 'boxplot', 'numberline', 'tape', 'hissan', 'keyboard', 'kakijun', 'syntax', 'heatmap'];
+const LISTED = ['kpi', 'compare', 'venn', 'tree', 'fishbone', 'scatter', 'pie', 'timeline', 'cycle', 'map-japan', 'map-world', 'predict', 'hist', 'boxplot', 'numberline', 'tape', 'hissan', 'keyboard', 'kakijun', 'syntax', 'heatmap', 'score'];
 // A part migrated to components 2.0 (tools/parts.mjs migratedNames: derived from the part itself) drops its copy and uses the
 // base.variant helper instead, so it leaves USERS without editing this list; a copy left in it is an error (check)
 const MIGRATED = new Set(migratedNames(ROOT));
