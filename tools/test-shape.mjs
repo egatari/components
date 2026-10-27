@@ -110,8 +110,25 @@ try {
     DECK.slides.forEach((s) => s._comps.forEach((c) => seen.push({ tag: c.tagName.toLowerCase(), id: c.id, box: !!c.querySelector('.m-error'), text: (c.querySelector('.m-error') || {}).textContent || '' })));
     const semantic = ['w-cmp-values', 'w-cmp-better', 'w-venn-c'].map((id) => !!document.querySelector('#' + id + ' .m-error'));
     const acc = DECK.slides.findIndex((s) => s.id === 's-accept');
-    return { acc, accMax: DECK.slides[acc]._max, semantic, seen, errs: DECK.componentErrors.map((x) => JSON.parse(JSON.stringify(x))), max: DECK.slides.map((s) => s._max) };
+    return { acc, accMax: DECK.slides[acc]._max, slideKeys: DECK.slides.map((s) => s._key), semantic, seen, errs: DECK.componentErrors.map((x) => JSON.parse(JSON.stringify(x))), max: DECK.slides.map((s) => s._max) };
   });
+  // A thrown exception, as 1.x recorded it (phase, kind "exception") or as a 2.0 part's base contains it (spec §6.1
+  // Containment: one ctx.report("error", "[<name>] <phase>: …"), which the registry shim records with phase "report"). The 2.0
+  // form is accepted only for the cases below that are meant to throw (CONTAINED), never in general.
+  const thrown = (x, tag, phase) => x.tag === tag && ((x.phase === phase && x.kind === 'exception') ||
+    (x.phase === 'report' && x.code === 'error' && x.msg.startsWith('[' + tag.slice(2) + '] ' + phase + ': ')));
+  const strip = (x) => x.phase === 'report' ? x.msg.replace(/^\[[a-z-]+\] [a-z]+: /, '') : x.msg;
+  // the named cases meant to throw: [slide key, tag, phase, how many]
+  const CONTAINED = [['s-hissan', 'm-hissan', 'steps', 2], ['s-semantic', 'm-compare', 'mount', 2], ['s-semantic', 'm-venn', 'mount', 1],
+    ['s-throw', 'm-curves', 'mount', 1], ['s-expr', 'm-sweep', 'mount', 2], ['s-expr', 'm-curves', 'mount', 1]];
+  const keyOf = (x) => x.key || (r.slideKeys[x.slide] ?? '');
+  const reps = r.errs.filter((x) => x.phase === 'report' && x.code === 'error');
+  const stray = reps.filter((x) => !CONTAINED.some(([k, tag, ph]) => keyOf(x) === k && thrown(x, tag, ph)));
+  ok(stray.length === 0, 'contained exceptions (ctx.report "error") only in the cases meant to throw' + (stray.length ? ': ' + stray.map((x) => `${x.tag} (${keyOf(x)}): ${x.msg}`).join(' | ') : ''));
+  for (const [k, tag, ph, n] of CONTAINED) {
+    const got = r.errs.filter((x) => keyOf(x) === k && thrown(x, tag, ph)).length;
+    ok(got === n, `${tag} on ${k}: thrown at ${ph} ${n} time(s) (got ${got})`);
+  }
   ok(errors.length === 0, 'no exception or console error while opening and seeking' + (errors.length ? ': ' + errors[0] : ''));
   ok(r.max.every((m) => Number.isFinite(m)), 'every slide has a finite number of steps');
   for (const t of comps) {
@@ -120,7 +137,7 @@ try {
     ok(e && e.phase === 'data', `${t}: reported in DECK.componentErrors before mount (${e && e.kind}${e && e.why ? ' ' + e.why : ''})`);
   }
   // m-hissan：計算にならない式（途中で終わる、答えが負になるひき算）は、段階を数えるところで札を出し、式を言う
-  const hs = r.seen.filter((x) => x.id === 'w-hissan-expr' || x.id === 'w-hissan-neg'), he = r.errs.filter((x) => x.tag === 'm-hissan' && x.kind === 'exception');
+  const hs = r.seen.filter((x) => x.id === 'w-hissan-expr' || x.id === 'w-hissan-neg'), he = r.errs.filter((x) => keyOf(x) === 's-hissan' && thrown(x, 'm-hissan', 'steps'));
   ok(hs.length === 2 && hs.every((x) => x.box) && he.length === 2 && /expr="12\+"/.test(he[0].msg) && /negative/.test(he[1].msg),
     'm-hissan: an expression that is not one calculation, and a negative difference, show the placeholder (' + he.map((x) => x.phase + ': ' + x.msg).join(' | ') + ')');
   // m-curves の系列の語（共通の決まり §3）：step・tone・labelAt・anchor（right/left/above/below）は形に合い、古い color・at・anchor（start/middle/end）も動く。
@@ -129,21 +146,17 @@ try {
   ok(okc && !okc.box && !r.errs.some((x) => x.slide === r.acc), 'm-curves: series step, tone, labelAt and anchor right/left/above/below are accepted (no placeholder, no error)');
   ok(r.accMax === 4, 'm-curves: steps = the largest series step (got ' + r.accMax + ')');
   // 形（static shape）では書けない中身の決まり：mount で例外を投げ、札を出す（値を黙って落とさない）
-  // A 2.0 part (m-compare 2.0.0) contains the exception itself (spec §6.1 Containment): base reports it once through
-  // ctx.report("error", "[<name>] mount: …"), which the registry shim records with phase "report"; its records carry the slide's
-  // key (their slide index is -1 under the pinned Studio), so the slide is matched by key too
-  const sem = r.errs.filter((x) => x.slide === r.max.length - 3 || x.key === 's-semantic');
-  const semOk = (tag, re) => sem.some((x) => x.tag === tag && re.test(x.msg) && ((x.phase === 'mount' && x.kind === 'exception') ||
-    (x.phase === 'report' && x.code === 'error' && new RegExp('^\\[' + tag.slice(2) + '\\] mount: ').test(x.msg))));
+  const sem = r.errs.filter((x) => keyOf(x) === 's-semantic');
+  const semOk = (tag, re) => sem.some((x) => thrown(x, tag, 'mount') && re.test(x.msg));
   ok(r.semantic.every(Boolean) && sem.length === 3, 'content that fits the shape but not the rule: placeholder for each (' + sem.map((x) => x.msg).join(' | ') + ')');
   ok(semOk('m-compare', /rows\[0\]\.values has 1 value/), 'm-compare: values not one per side is refused at mount');
   ok(semOk('m-compare', /rows\[0\]\.better is 2/), 'm-compare: better outside the sides is refused at mount');
   ok(semOk('m-venn', /regions AC need a third set/), 'm-venn: a region with C in a two-set diagram is refused at mount');
-  const th = r.errs.find((x) => x.phase === 'mount' && x.slide === r.max.length - 2);
-  ok(th && th.tag === 'm-curves' && th.kind === 'exception' && /SyntaxError/.test(th.msg) && r.seen.filter((x) => x.tag === 'm-curves' && !x.id).every((x) => x.box), 'mount exception: placeholder, recorded with the message only');
+  const th = r.errs.find((x) => keyOf(x) === 's-throw');
+  ok(th && thrown(th, 'm-curves', 'mount') && /^SyntaxError/.test(strip(th)) && r.seen.filter((x) => x.tag === 'm-curves' && !x.id).every((x) => x.box), 'mount exception: placeholder, recorded with the message only');
   // 算術の外の式（Egatari spec §6）：コードとして動かさず、札を出し、mount の段の SyntaxError として載る
-  const ex = r.errs.filter((x) => x.slide === r.max.length - 1);
-  ok(ex.length === 3 && ex.every((x) => x.phase === 'mount' && x.kind === 'exception' && /^SyntaxError: f = |^SyntaxError: \[0\]\.f = /.test(x.msg)),
+  const ex = r.errs.filter((x) => keyOf(x) === 's-expr');
+  ok(ex.length === 3 && ex.every((x) => (thrown(x, 'm-sweep', 'mount') || thrown(x, 'm-curves', 'mount')) && /^SyntaxError: (f|\[0\]\.f) = /.test(strip(x))),
     'expressions outside arithmetic: refused at mount with a SyntaxError naming the expression' + (ex.length ? ' (' + ex.map((x) => x.msg).join(' | ') + ')' : ''));
   ok(!(await page.evaluate(() => globalThis.__ran)), 'expressions outside arithmetic: nothing ran');
 } finally { await browser.close(); }
