@@ -84,7 +84,7 @@ export function lintMeta(name, js, meta) {
   if ('element' in meta && meta.element !== `m-${name}`) errs.push(`${at}: define meta element ${JSON.stringify(meta.element)} must be "m-${name}"`);
   const code = strip(js);
   if (/\bDECK\b/.test(code)) errs.push(`${at}: a 2.0 part must not use DECK (spec §6.1: no globals of the player; use ctx and base)`);
-  if (/(^|[^.\w$])(window|globalThis)\b/m.test(code)) errs.push(`${at}: a 2.0 part must not use window or globalThis (spec §6.1: no globals of the player; the DOM through document and the element)`);
+  if (/(^|[^.\w$])(window|globalThis)\b(?!\s*:)/m.test(code)) errs.push(`${at}: a 2.0 part must not use window or globalThis (spec §6.1: no globals of the player; the DOM through document and the element)`);
   if (/\brequire\s*\(/.test(code) || /(^|[^.\w$])import\b/m.test(code)) errs.push(`${at}: a 2.0 part must not import or require (spec §6.1)`);
   // an element part declares its registry name for report prefixes (base reads it): static partName = "<meta.name>"
   if ('element' in meta) {
