@@ -22,7 +22,8 @@ jobs:
   # Browser: Studio's kit/browser.mjs tries CHROME_PATH, then Google Chrome, then Microsoft Edge, then Playwright's Chromium.
   test:
     runs-on: ${{ matrix.os }}
-    timeout-minutes: 50
+    # macOS runs the browser tests slowest: 2.0 adds the identity and registry runs (over 50 minutes there on 2026-10-27)
+    timeout-minutes: 90
     strategy:
       fail-fast: false
       matrix:
