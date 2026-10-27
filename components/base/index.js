@@ -13,7 +13,8 @@
 // possible so that a part moved from DECK to base draws the same DOM (tools/test-base.mjs compares them with the pinned
 // Studio's DECK). variant is tools/variant.js's VARIANT.of, taking the names instead of looking the tag up again;
 // previewOpacity is the --preview-opacity read the parts used to write themselves. The data check (compText, compProblem,
-// compSummary, compPlaceholder) is deck.js's, with DECK.shape → the shape part and DECK.ja → ctx.lang.
+// compSummary, compPlaceholder) is deck.js's, with DECK.shape → the shape part and DECK.ja → ctx.lang. Difference: a data
+// problem is reported with a spec §8.4 code (reportCode) and the part's "[<name>] " prefix.
 egatariParts.define({name: "base", version: "1.0.0", requires: {shape: "1.0.0"}}, function(deps){
 "use strict";
 var NS = "http://www.w3.org/2000/svg";
@@ -127,6 +128,10 @@ function compSummary(r, ja){
     default: return (ja ? "描けない：" : "cannot draw: ") + r.msg;
   }
 }
+// The ctx.report code of a data problem (spec §8.4 vocabulary): an attribute value (attr, attrJson) → attr, anything else
+// about the element's data (shape, missing, json, notText, empty, notLinks, noLinks) → data. The problem's own kind stays in
+// the message: "[<name>] data (<kind>): <summary>"
+function reportCode(kind){ return kind === "attr" || kind === "attrJson" ? "attr" : "data"; }
 function compPlaceholder(c, r, ja){
   [].slice.call(c.childNodes).forEach(function(n){ if (!(n.nodeType === 1 && n.localName === "script")) c.removeChild(n); });
   var box = document.createElement("div");
@@ -187,7 +192,7 @@ function showFault(e, ctx){
 }
 // Installed on every instance (own properties, so they come before the part's own steps, mount, render, duration, cues,
 // layout): with data that fits, they pass to the part inside try/catch (containment, above); otherwise steps is the
-// attribute steps (else 0), mount reports the problem once through ctx.report(kind, message) and shows the placeholder
+// attribute steps (else 0), mount reports the problem once through ctx.report(reportCode(kind), "[<name>] data (<kind>): …") and shows the placeholder
 // (like deck.js), and the rest draws nothing
 function guard(e){
   Object.defineProperty(e, "steps", {configurable: true, get: function(){
@@ -200,7 +205,7 @@ function guard(e){
       if (e._fault) return showFault(e, ctx);
       try { return up(e, "mount").call(e, ctx); } catch (x) { fault(e, "mount", x, ctx); return; }
     }
-    if (!e._shapeReported){ e._shapeReported = true; if (ctx && typeof ctx.report === "function") ctx.report(p.kind, compSummary(p, false)); }
+    if (!e._shapeReported){ e._shapeReported = true; if (ctx && typeof ctx.report === "function") ctx.report(reportCode(p.kind), "[" + partName(e) + "] data (" + p.kind + "): " + compSummary(p, false)); }
     compPlaceholder(e, p, /^ja\b/i.test((ctx && ctx.lang) || "ja"));
   };
   e.render = function(k, t, ctx){

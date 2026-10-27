@@ -11,7 +11,7 @@
 //   the data check      MotionElement's check before mount (spec §6.1 Data shapes; with the shape part) ≡ what DECK did for
 //                       the same classes and data (setupSlide → compProblem / compFail): the same problem record (kind, path,
 //                       why, expected, got, key, near, shape, example, …), the same placeholder text, the same fallback steps,
-//                       the report message ≡ DECK's console summary; and with data that fits, the part's own steps / mount /
+//                       the report code (attr / data) and message ("[<name>] data (<kind>): " + DECK's console summary); and with data that fits, the part's own steps / mount /
 //                       render / duration / cues run unchanged
 //   node tools/test-base.mjs [work dir]
 import fs from 'node:fs';
@@ -232,13 +232,24 @@ try {
     const dp = JSON.stringify(x.deck.problem), bp = JSON.stringify(x.base.problem);
     const bad = x.deck.problem !== null;
     const warn = bad ? pageWarns.find((w) => w.startsWith(`[deck] x-d${i} (s-g): `)) : null;
+    // the report: a spec §8.4 code (attr for attr / attrJson, data for any other kind) and "[<name>] data (<kind>): " before
+    // DECK's console summary
+    const code = bad ? (['attr', 'attrJson'].includes(x.deck.problem.kind) ? 'attr' : 'data') : null;
     const same = dp === bp && x.deck.steps === x.base.steps && norm(x.deck.text, i, 'd') === norm(x.base.text, i, 'b') && x.deck.mounted === x.base.mounted
-      && (bad ? x.base.reports.length === 1 && x.base.reports[0][0] === x.deck.problem.kind && warn === `[deck] x-d${i} (s-g): ${x.base.reports[0][1]}` && x.base.rendered === 0 && x.base.dur === 0 && x.base.cues === 'null'
+      && (bad ? x.base.reports.length === 1 && x.base.reports[0][0] === code && warn === `[deck] x-d${i} (s-g): ${x.base.reports[0][1].replace(`[x-b${i}] data (${x.deck.problem.kind}): `, '')}`
+          && x.base.reports[0][1].startsWith(`[x-b${i}] data (${x.deck.problem.kind}): `) && x.base.rendered === 0 && x.base.dur === 0 && x.base.cues === 'null'
         : x.base.reports.length === 0 && x.base.mountedTimes === 2 && x.base.rendered === 1 && x.base.dur === 1.25 && x.base.cues === '[0.5]');
     if (same) dataOk++;
     else console.log(`     ${x.name}: DECK ${JSON.stringify(x.deck)}\n     ${' '.repeat(x.name.length)}  base ${JSON.stringify(x.base)}\n     warn ${warn}`);
   });
   const nBad = D.filter((x) => x.deck.problem).length;
+  // every kind of data problem gives a vocabulary code and the part's prefix
+  const VOCAB = ['data', 'attr', 'range', 'size', 'layout', 'theme', 'error'];
+  const byKind = {};
+  D.forEach((x, i) => { if (x.deck.problem) for (const [c, m] of x.base.reports) (byKind[x.deck.problem.kind] ||= []).push(VOCAB.includes(c) && m.startsWith(`[x-b${i}] data (${x.deck.problem.kind}): `) ? c : `BAD ${c} ${m}`); });
+  const KINDS9 = ['shape', 'missing', 'json', 'attr', 'attrJson', 'notText', 'empty', 'notLinks', 'noLinks'];
+  ok(KINDS9.every((k) => byKind[k] && byKind[k].length && byKind[k].every((c) => c === (k === 'attr' || k === 'attrJson' ? 'attr' : 'data'))) && Object.keys(byKind).every((k) => KINDS9.includes(k)),
+    `a data problem of each kind reports a spec §8.4 code and "[<name>] data (<kind>): " (${KINDS9.map((k) => k + ' → ' + [...new Set(byKind[k] || ['none'])].join('/')).join(', ')})`);
   ok(dataOk === D.length && nBad >= 14, `the data check ≡ DECK's: ${D.length} cases (${nBad} that do not fit: the same record, placeholder text, fallback steps, report kind and message = DECK's console summary; nothing drawn; ${D.length - nBad} that fit: the part's own steps, mount, render, duration and cues)`);
 } finally { await browser.close(); }
 

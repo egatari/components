@@ -28,10 +28,12 @@ egatariParts.define({name: "bars", version: "2.0.0", requires: {base: "1.0.0"}, 
 **Data shapes** (spec §6.1; players no longer validate component data). Every `MotionElement` checks, once, its `static
 shape` (`{schema, example}`, `{text: true}` or `{links: true}`) and the `shape` of its `json` props with the `shape` part,
 as deck.js did before mount. When the data does not fit, `steps` is the `steps` attribute (else 0), `mount(ctx)` calls
-`ctx.report(kind, message)` once (kind `shape`, `missing`, `json`, `attr`, `attrJson`, `notText`, `empty`, `notLinks`
-or `noLinks`; the message is deck.js's English summary) and shows deck.js's placeholder (`<div class="m-error"
+`ctx.report(code, "[<name>] data (<kind>): <summary>")` once and shows deck.js's placeholder (`<div class="m-error"
 role="note">`, in Japanese when `ctx.lang` is `ja`), and `render`, `duration`, `cues` draw nothing. With data that fits,
-nothing changes.
+nothing changes. The code is from spec §8.4's vocabulary (`reportCode(kind)`): `attr` for a problem with an attribute
+value (kind `attr`, `attrJson`), `data` for every other kind (`shape`, `missing`, `json`, `notText`, `empty`, `notLinks`,
+`noLinks`). The message keeps the kind and deck.js's English summary, after the part's name as in containment reports,
+e.g. `[bars] data (shape): groups: expected array, got object`.
 
 **Containment** (spec §6.1). An exception the part throws while the player calls it (`steps`, `mount`, `render`,
 `layout`, and also `duration` and `cues`) never escapes. The first one is the instance's fault: it is reported once,
@@ -45,5 +47,5 @@ itself (event listeners) are not wrapped.
 Dependencies: base → shape only (shape needs nothing from base, so there is no cycle). `plot` requires base.
 
 `MotionElement`, `el`, `mtext`, `lerp`, `prog`, `clamp` and the data check are copied from Egatari Studio's
-`kit/deck.js` (MIT, the same owner; see NOTICE) and give the same DOM and messages: `tools/test-base.mjs` compares each
+`kit/deck.js` (MIT, the same owner; see NOTICE) and give the same DOM and messages (but for the `[<name>]` prefix and the report codes above): `tools/test-base.mjs` compares each
 with the pinned Studio's `DECK`. Nothing here reads `DECK` or any other global of a player.

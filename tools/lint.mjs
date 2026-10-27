@@ -68,8 +68,11 @@ export function frontmatter(text) {
 const strip = (js) => js.replace(/\/\*[\s\S]*?\*\//g, '').replace(/(^|[^:"'\\])\/\/.*$/gm, '$1');
 // ctx.report's codes (spec §8.4, egatari-spec 71cb10c)
 export const REPORT_CODES = ['data', 'attr', 'range', 'size', 'layout', 'theme', 'error'];
-// Every `.report(` call in (comment-stripped) code, read statically: {code, msg, src}, where code is the first argument when
-// it is a string literal on its own (else null) and msg the string literal the second argument starts with (else null)
+// Functions known to return one of REPORT_CODES (base's data-shape kind → code), accepted as a computed code
+export const REPORT_CODE_HELPERS = ['reportCode'];
+// Every `.report(` call in (comment-stripped) code, read statically: {code, codeSrc, msg, src}, where code is the first argument
+// when it is a string literal on its own (else null), codeSrc the first argument's source, and msg the string literal the second
+// argument starts with (else null)
 export function reportCalls(code) {
   const out = [], re = /\.report\s*\(/g;
   const lit = (i) => {
@@ -85,8 +88,10 @@ export function reportCalls(code) {
   let m;
   while ((m = re.exec(code))) {
     let i = ws(m.index + m[0].length), c = null, msg = null;
+    const start = i;
+    let codeSrc = null;
     const a = lit(i);
-    if (a) { const k = ws(a.end); if (code[k] === ',') { c = a.v; i = k; } }
+    if (a) { const k = ws(a.end); if (code[k] === ',') { c = a.v; i = k; codeSrc = code.slice(start, a.end); } }
     if (c !== null) { const b = lit(ws(i + 1)); if (b) msg = b.v; }
     else {
       // the first argument is an expression: find the comma that ends it at depth 0, then read the second
@@ -96,13 +101,14 @@ export function reportCalls(code) {
         if (ch === '"' || ch === "'" || ch === '`') { const s = lit(j); if (!s) break; j = s.end - 1; continue; }
         if ('([{'.includes(ch)) d++; else if (')]}'.includes(ch)) { if (d === 0) break; d--; } else if (ch === ',' && d === 0) break;
       }
+      codeSrc = code.slice(start, j).trim();
       if (code[j] === ',') { const b = lit(ws(j + 1)); if (b) msg = b.v; }
     }
-    out.push({ code: c, msg, src: code.slice(m.index, Math.min(code.length, m.index + 60)) });
+    out.push({ code: c, codeSrc, msg, src: code.slice(m.index, Math.min(code.length, m.index + 60)) });
   }
   return out;
 }
-export function lintMeta(name, js, meta) {
+export function lintMeta(name, js, meta, warns = []) {
   const errs = [], at = `components/${name}/index.js`;
   const keys = Object.keys(meta);
   for (const k of keys) if (!['name', 'version', 'requires', 'element'].includes(k)) errs.push(`${at}: define meta has ${k} (only name, version, requires, element)`);
@@ -134,6 +140,8 @@ export function lintMeta(name, js, meta) {
   if (/startsWith\(\s*["'`]ja["'`]\s*\)/.test(code)) errs.push(`${at}: test the language with /^ja\\b/i.test(ctx.lang), as 1.x's DECK.ja (docs/c2-migration.md item 7)`);
   for (const e of reportCalls(code)) {
     const line = js.slice(0, js.indexOf(e.src)).split('\n').length;
+    // a computed code cannot be read statically: allowed without a warning only through a known mapping helper
+    if (e.code === null && !REPORT_CODE_HELPERS.some((h) => e.codeSrc.startsWith(h + '('))) warns.push(`${at}: ctx.report(${e.codeSrc.slice(0, 40)}, …): the code is computed; lint cannot check it is one of ${REPORT_CODES.join(', ')} (use a literal, or a known mapping helper: ${REPORT_CODE_HELPERS.join(', ')})${line > 1 ? ` (near line ${line})` : ''}`);
     if (e.code !== null && !REPORT_CODES.includes(e.code)) errs.push(`${at}: ctx.report(${JSON.stringify(e.code)}, …): the code must be one of ${REPORT_CODES.join(', ')} (spec §8.4)${line > 1 ? ` (near line ${line})` : ''}`);
     if ('element' in meta && e.msg !== null && !e.msg.startsWith(`[${meta.name}]`)) errs.push(`${at}: ctx.report(…, ${JSON.stringify(e.msg.slice(0, 40))}…): the message must start with "[${meta.name}]" (spec §8.4)${line > 1 ? ` (near line ${line})` : ''}`);
   }
@@ -164,7 +172,7 @@ export function lintLibrary(name, dir, meta) {
   return errs;
 }
 
-export function lint(root) {
+export function lint(root, warns = []) {
   const errs = [];
   const base = path.join(root, 'components');
   const pj = JSON.parse(fs.readFileSync(path.join(root, 'purposes.json'), 'utf8'));
@@ -199,7 +207,7 @@ export function lint(root) {
     const js = fs.readFileSync(path.join(dir, 'index.js'), 'utf8');
     let meta = null;
     try { meta = partMeta(js); } catch (e) { errs.push(`components/${name}/index.js: ${e.message}`); continue; }
-    if (meta) errs.push(...lintMeta(name, js, meta));
+    if (meta) errs.push(...lintMeta(name, js, meta, warns));
     if (meta && !meta.element) { errs.push(...lintLibrary(name, dir, meta)); continue; }
     if (!new RegExp(`['"]m-${name}['"]`).test(js)) errs.push(`components/${name}/index.js: does not define <m-${name}>`);
     if (!fs.existsSync(path.join(dir, 'demo.html')) && !NO_DEMO.has(name)) errs.push(`components/${name}: no demo.html`);
@@ -263,7 +271,9 @@ export function lint(root) {
 }
 
 if (process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
-  const errs = lint(path.dirname(path.dirname(fileURLToPath(import.meta.url))));
+  const warns = [];
+  const errs = lint(path.dirname(path.dirname(fileURLToPath(import.meta.url))), warns);
+  for (const w of warns) console.log('WARN ' + w);
   for (const e of errs) console.log('FAIL ' + e);
   console.log(errs.length ? `\n${errs.length} problem(s)` : 'lint: ok');
   process.exit(errs.length ? 1 : 0);
