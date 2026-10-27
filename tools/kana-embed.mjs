@@ -4,7 +4,8 @@
 //   node tools/kana-embed.mjs            regenerate both blocks
 //   node tools/kana-embed.mjs --check    both blocks equal what the data files give
 //
-// stroke-meta (MIT, ours; var KANA): data/kana/kana.json made compact, one character per line:
+// stroke-meta (MIT, ours; var KANA): "_keys" (every character, in order; kept by a subset, so the part can tell a character
+// the subset left out from one without data), then data/kana/kana.json made compact, one character per line:
 //   "あ":[count,[[end,len],…]]  or, for small kana, "ぁ":[count,[[end,len],…],{"yoko":[…],"tate":[…]}]  (place)
 //   len = the length of the stroke's inked centreline (0–100 units, rounded), so that the part knows each stroke's
 //   duration before it draws anything. Notes, sources, base and loop stay in kana.json.
@@ -41,8 +42,11 @@ export function compact(c, shapes) {
 }
 export function dataBlock(data, ofl) {
   const lines = Object.entries(data.chars).map(([ch, c]) => JSON.stringify(ch) + ':' + JSON.stringify(compact(c, ofl.chars[ch])));
+  // "_keys": every character of the published data, in order. A producer keeps members named _… unchanged (spec §6.2 Subset),
+  // so a subset copy still knows the full set: a character in _keys without data was left out by the subset
+  const keys = JSON.stringify('_keys') + ':' + JSON.stringify(Object.keys(data.chars).join(''));
   return [DATA_HEAD, `// ${Object.keys(data.chars).length} characters, data version ${data.version} (order, endings, small-kana placement: original, MIT)`,
-    'var KANA = ' + BLOCK('stroke-meta') + '{', lines.join(',\n'), '}' + BLOCK_END + ';'].join('\n');
+    'var KANA = ' + BLOCK('stroke-meta') + '{', [keys, ...lines].join(',\n'), '}' + BLOCK_END + ';'].join('\n');
 }
 // The OFL file as the strokes block's value: "_license" first, the other top-level fields as _<name>, then the characters
 export function strokesValue(ofl) {
@@ -79,7 +83,8 @@ export function readEmbedded(src = fs.readFileSync(JS, 'utf8')) {
   const kana = JSON.parse(blockText(src, 'stroke-meta'));
   const inner = blockText(src, 'strokes');
   return {
-    kana: Object.fromEntries(Object.entries(kana).map(([ch, a]) => [ch, { count: a[0], strokes: a[1].map(([end, len]) => ({ end, len })), ...(a[2] ? { place: a[2] } : {}) }])),
+    keys: kana._keys,
+    kana: Object.fromEntries(Object.entries(kana).filter(([ch]) => !ch.startsWith('_')).map(([ch, a]) => [ch, { count: a[0], strokes: a[1].map(([end, len]) => ({ end, len })), ...(a[2] ? { place: a[2] } : {}) }])),
     strokes: oflOf(JSON.parse(inner)), inner,
   };
 }

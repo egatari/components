@@ -35,7 +35,7 @@ ok(typeof C.glyphs === 'string' && C.glyphs.length > 0 && /\d/.test(C.glyphs) &&
 // 2
 const block = (js, name) => JSON.parse(blockOf(js, name).json);
 const FS = block(full, 'strokes'), FM = block(full, 'stroke-meta');
-const CH = Object.keys(FM);
+const CH = Object.keys(FM).filter((k) => !k.startsWith('_'));
 const outside = (js) => specs.reduce((acc, sp) => { const b = blockOf(acc, sp.block); return acc.slice(0, b.start) + '@' + acc.slice(b.end); }, js);
 const all = subsetCode(full, CH.join(''));
 ok(JSON.stringify(block(all.code, 'strokes')) === JSON.stringify(FS) && JSON.stringify(block(all.code, 'stroke-meta')) === JSON.stringify(FM) && outside(all.code) === outside(full),
@@ -55,8 +55,8 @@ const NARR = '## Strokes {#s1}\n\nKakijun.\n';
 const r = produce(full, [LESSON, NARR]);
 const BS = block(r.code, 'strokes'), BM = block(r.code, 'stroke-meta');
 const metaKeys = Object.keys(FS).filter((k) => k.startsWith('_'));
-ok(r.keys === 'あさ' && Object.keys(BM).join('') === 'あさ' && JSON.stringify(Object.keys(BS)) === JSON.stringify([...metaKeys, 'あ', 'さ']),
-  `a lesson using あさ keeps only あ and さ in both blocks, the strokes block's ${metaKeys.join(', ')} first (kept keys ${JSON.stringify(r.keys)}; comments and <style> do not count)`);
+ok(r.keys === 'あさ' && JSON.stringify(Object.keys(BM)) === JSON.stringify(['_keys', 'あ', 'さ']) && BM._keys === FM._keys && JSON.stringify(Object.keys(BS)) === JSON.stringify([...metaKeys, 'あ', 'さ']),
+  `a lesson using あさ keeps only あ and さ in both blocks, the strokes block's ${metaKeys.join(', ')} first, and the stroke-meta block's _keys (the full set) unchanged (kept keys ${JSON.stringify(r.keys)}; comments and <style> do not count)`);
 ok(JSON.stringify(BS.あ) === JSON.stringify(FS.あ) && JSON.stringify(BS.さ) === JSON.stringify(FS.さ) && JSON.stringify(BM.あ) === JSON.stringify(FM.あ), 'their strokes and stroke data are the published ones');
 ok(specs.every((sp) => blockOf(r.code, sp.block).json === JSON.stringify(block(r.code, sp.block))), 'each block is JSON.stringify of the kept value (no added whitespace)');
 ok(outside(r.code) === outside(full), 'every byte outside the markers is the published code');
@@ -116,8 +116,8 @@ try {
   const f = await play(decks.full), s = await play(decks.subset), m = await play(decks.missing);
   ok(f.doms.length > 2 && JSON.stringify(f.doms) === JSON.stringify(s.doms), `あさ: the subset part draws the same DOM as the full part at every step (${f.steps} steps, ${f.doms.length} frames)`);
   ok(!f.reports.length && !s.reports.length && !f.errors.length && !s.errors.length, 'no report or console error with either');
-  ok(m.plain === 1 && m.reports.length === 1 && /^data: \[kakijun\] no stroke data for "い"/.test(m.reports[0]) && !m.errors.length,
-    'あい with the あさ subset: い is drawn plainly and reported once as data' + (m.reports.length ? ': ' + m.reports.join(' | ') : '') + (m.errors.length ? ' / ' + m.errors[0] : ''));
+  ok(m.plain === 1 && m.reports.length === 1 && /^data: \[kakijun\] no stroke data for "い" \(not in this lesson's subset: /.test(m.reports[0]) && !m.errors.length,
+    'あい with the あさ subset: い is drawn plainly and reported once as data, saying the subset left it out' + (m.reports.length ? ': ' + m.reports.join(' | ') : '') + (m.errors.length ? ' / ' + m.errors[0] : ''));
 } finally { await b.close(); }
 
 console.log(fails ? `\nFAIL: ${fails}` : '\ntest-subset: ok');

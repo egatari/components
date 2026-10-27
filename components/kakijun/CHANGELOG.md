@@ -24,7 +24,10 @@ The part's own versions (Egatari spec §6.1). Releases of the whole library are 
   "block:stroke-meta", key: "char"}]}` and `static glyphs = "0123456789とめはねらい"` (the stroke numbers and ending
   labels it draws). A producer keeps only the characters the lesson uses in both blocks (`"_"` members stay) and records
   `subset: {keys, sha256}` (`tools/subset-produce.mjs` is the stand-in; `tools/test-subset.mjs`). A character a subset
-  left out (e.g. after a tier A edit of `text`) is drawn plainly, like a character without data, and reported as `data`.
+  left out (e.g. after a tier A edit of `text`) is drawn plainly, like a character without data, and reported as `data`
+  with "(not in this lesson's subset: …)" after the character. The stroke-meta block starts with `"_keys"`, every
+  character of the published data; a producer keeps `"_"` members unchanged, so the part tells a character the subset
+  left out (in `_keys`) from one without data (the 1.13.0 message, unchanged).
 - The collected notes are forwarded with a literal code per `ctx.report` call (lint checks each); no change in what is
   reported.
 - The preview view is `ctx.preview` alone (1.13.0 also accepted `ctx.mode === "lecture"`).
