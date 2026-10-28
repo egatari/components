@@ -62,7 +62,7 @@ return class extends base.MotionElement {
     return Array.from({length: n}, function(_, i){ var v = d.counts && d.counts[i]; return Number.isInteger(v) && v > 0 ? v : 0; });
   }
   mount(ctx){
-    var self = this, P = this.props, D = base, d = this.data || {}, ch = d.choices || [], n = ch.length;
+    var self = this, d = this.data || {}, n = (d.choices || []).length;
     if (!(d.answer >= 0 && d.answer < n)) throw new Error("answer " + d.answer + " is not a choice index (0–" + (n - 1) + ")");
     if (d.counts && d.counts.length !== n) throw new Error("counts has " + d.counts.length + " numbers for " + n + " choices");
     if (d.counts && d.counts.some(function(v){ return v < 0; })) throw new Error("counts must be 0 or more");
@@ -70,7 +70,34 @@ return class extends base.MotionElement {
     this.video = ctx.mode === "video";
     this.style.display = "block"; this.style.position = "relative";
     if (!document.getElementById(CSS_ID)){ var st = document.createElement("style"); st.id = CSS_ID; st.textContent = CSS; document.head.appendChild(st); }
+    // 読み上げソフトへの知らせ
+    this.say = document.createElement("div"); this.say.className = "pd-say"; this.say.setAttribute("role", "status"); this.say.setAttribute("aria-live", "polite");
+    this.appendChild(this.say);
+    if (d.question) this.setAttribute("aria-label", d.question);
+    // 印刷は作者の値で描く（画面の数は消さない。afterprint で戻す）。beforeprint・afterprint は文書の窓（document.defaultView）に来る
+    var view = document.defaultView;
+    if (!this.video && view){
+      view.addEventListener("beforeprint", function(){ self._printing = true; self.redraw(); });
+      view.addEventListener("afterprint", function(){ self._printing = false; self.redraw(); });
+    }
+    this.place(ctx);
+  }
+  // 配置が変わった知らせ（仕様 §8.4 layout）：要素の大きさが mount のときと変わったときだけ置き直す（変換で縮めるだけなら呼ばれない。
+  // 横に並んだ文の字が後から読み込まれて、段組みの中の幅が変わるときなど）。大きさ 0（隠れている）なら前の配置のまま
+  layout(ctx){
+    var W = this.clientWidth, H = this.clientHeight;
+    if (!W || !H || (W === this.g.W && H === this.g.H)) return;
+    this.place(ctx);
+    this.redraw();
+  }
+  // 大きさで決まる絵と操作を作る。数と予想（見る人の入力）・読み上げの知らせは残す（作り直した欄やボタンにあったフォーカスは外れる）
+  place(ctx){
+    var self = this, P = this.props, D = base, d = this.data || {}, ch = d.choices || [], n = ch.length;
     var W = this.clientWidth, H = this.clientHeight, inter = !this.video;
+    if (this.svg){
+      this.svg.remove();
+      this.rows.forEach(function(r){ if (r.pick) r.pick.remove(); if (r.ctl) r.ctl.remove(); });
+    }
     var est = function(s, size){ return [...String(s)].reduce(function(a, c){ return a + (/[\u0000-ɏ]/.test(c) ? 0.56 : 1); }, 0) * size; };
     // 縦：問い・行・目盛り・注（と予想の当たり外れ）
     var qh = d.question ? 54 : 0, nh = d.note || inter ? 50 : 0, tb = P.ticks ? 40 : 8;
@@ -84,7 +111,8 @@ return class extends base.MotionElement {
     this.g = {W: W, H: H, qh: qh, nh: nh, rh: rh, mk: mk, lw: lw, cw: cw,
       x0: mk + lw + 8, x1: W - cw - valW - okW - 8, y0: qh, y1: qh + rh * n};
     var G = this.g;
-    var svg = this.svg = D.el("svg", {viewBox: "0 0 " + W + " " + H, width: W, height: H, style: "display:block;overflow:visible"}, this);
+    var svg = this.svg = D.el("svg", {viewBox: "0 0 " + W + " " + H, width: W, height: H, style: "display:block;overflow:visible"});
+    this.insertBefore(svg, this.say);
     var fitText = function(el, s, max, size, what){
       var z = size;
       while (z > 24 && est(s, z) > max) z--;
@@ -125,10 +153,6 @@ return class extends base.MotionElement {
     // live の集計の見出し（集計を出すときだけ）
     this.liveEl = D.el("text", {x: W, y: G.y1 + 30, "font-size": 24, "text-anchor": "end", opacity: 0, "class": "pd-live"}, svg);
     this.liveEl.textContent = "投票の結果";
-    // 読み上げソフトへの知らせ
-    this.say = document.createElement("div"); this.say.className = "pd-say"; this.say.setAttribute("role", "status"); this.say.setAttribute("aria-live", "polite");
-    this.appendChild(this.say);
-    if (d.question) this.setAttribute("aria-label", d.question);
     // 操作：選択肢の名前（自分の予想）、−1・数の欄・＋1。動画では作らない
     if (inter){
       var mkEl = function(tag, cls, attrs){ var e = document.createElement(tag); e.className = cls; for (var a in attrs) e.setAttribute(a, attrs[a]); self.appendChild(e); return e; };
@@ -160,12 +184,6 @@ return class extends base.MotionElement {
         ctl.appendChild(f);
         ctl.appendChild(bt("+1", 1, "1 増やす"));
       });
-      // 印刷は作者の値で描く（画面の数は消さない。afterprint で戻す）。beforeprint・afterprint は文書の窓（document.defaultView）に来る
-      var view = document.defaultView;
-      if (view){
-        view.addEventListener("beforeprint", function(){ self._printing = true; self.redraw(); });
-        view.addEventListener("afterprint", function(){ self._printing = false; self.redraw(); });
-      }
     }
     function tone(t){ return /^(term|emph|muted|accent2|fg|series-[1-4])$/.test(t || "") ? "var(--" + t + ")" : "var(--term)"; }
   }

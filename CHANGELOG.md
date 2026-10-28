@@ -4,6 +4,10 @@ Versions follow [README.md § Releases and versions](README.md#releases-and-vers
 
 ## Unreleased
 
+### Added
+
+- `layout(ctx)` (spec §8.4 Layout, design G1) in `m-timer` and `m-predict`: when the element's laid-out size differs from the last one (a column beside text whose fonts finish after mount; not the stage's transform scaling), the part redraws its picture and controls at the new size and reports size problems again; viewer input (counts, the learner's prediction, the extension) is kept, and focus inside rebuilt controls is lost. Same size or a box of size 0: nothing changes. `m-menu` measures nothing and has none (feedback from Studio's first 2.0 host, v0.6.3-c2host)
+
 ### Fixed
 
 - `m-cycle` (same fix as 1.13.1): render writes an attribute only when its value changes. Writing the same value again still made Chrome repaint, and on macOS re-entering the same step moved two pixels on a box's edge while the DOM stayed byte-identical (Egatari Studio's `tools/test-step-reset.mjs`, demo slide 1 step 5). The DOM at every step is unchanged.
@@ -11,6 +15,8 @@ Versions follow [README.md § Releases and versions](README.md#releases-and-vers
 ### Tests
 
 - `tools/test-cycle-rewrite.mjs` (in `tools/test-all.mjs`): on every step of every m-cycle demo slide, entering the same step again makes no attribute mutation and keeps the DOM
+- `tools/test-layout.mjs` (in `tools/test-all.mjs`): `m-timer` and `m-predict` — layout at the same size makes no mutation; at a new size one svg at that size, children in the mount order, one live region and one set of controls per choice, viewer input kept, reports only `size` with the part's prefix; a box of size 0 keeps the drawing
+- The test-only registry shim (`tools/registry-shim.js`): the render it makes after a part's `layout` redraws the same position, so it no longer counts as entering the slide (it had cleared viewer input when a `deck:pos` came without a render; caught by `tools/test-timer.mjs` and `tools/test-predict.mjs` once the parts had `layout`)
 
 ### Later (candidates, not in this release)
 

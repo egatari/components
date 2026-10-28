@@ -67,16 +67,42 @@ return class extends base.MotionElement {
   }
   mount(ctx){
     this.ja = /^ja\b/i.test(ctx.lang);
-    var self = this, D = base, d = this.data || {}, L = this.L;
+    var self = this, d = this.data || {};
     this.P = d.phases || [];
     if (this.P.some(function(p){ return !(p.sec > 0); })) throw new Error("every phase needs sec > 0 (whole seconds)");
     this.video = ctx.mode === "video";
     this.style.display = "block"; this.style.position = "relative";
     if (!document.getElementById(CSS_ID)){ var st = document.createElement("style"); st.id = CSS_ID; st.textContent = CSS; document.head.appendChild(st); }
+    // 読み上げソフトへの知らせ（区切りの始まりと終わりだけ。毎秒は読まない）
+    this.say = document.createElement("div"); this.say.className = "tm-say"; this.say.setAttribute("role", "status"); this.say.setAttribute("aria-live", "polite");
+    this.appendChild(this.say);
+    this._ext = {};
+    this.total = this.P.reduce(function(a, p){ return a + p.sec; }, 0);
+    // 印刷は作者の秒数で描く（延長は消さない。afterprint で戻す）。beforeprint・afterprint は文書の窓（document.defaultView）に来る
+    var view = document.defaultView;
+    if (!this.video && view){
+      view.addEventListener("beforeprint", function(){ self._printing = true; self.redraw(); });
+      view.addEventListener("afterprint", function(){ self._printing = false; self.redraw(); });
+    }
+    this.place(ctx);
+  }
+  // 配置が変わった知らせ（仕様 §8.4 layout）：要素の大きさが mount のときと変わったときだけ置き直す（変換で縮めるだけなら呼ばれない。
+  // 横に並んだ文の字が後から読み込まれて、段組みの中の幅が変わるときなど）。大きさ 0（隠れている）なら前の配置のまま
+  layout(ctx){
     var W = this.clientWidth, H = this.clientHeight;
+    if (!W || !H || (W === this.W && H === this.H)) return;
+    this.place(ctx);
+    this.redraw();
+  }
+  // 大きさで決まる絵（svg と区切りの一覧、ボタンの位置）を作る。延長・読み上げの知らせは残す
+  place(ctx){
+    var self = this, D = base, d = this.data || {}, L = this.L;
+    var W = this.clientWidth, H = this.clientHeight;
+    if (this.svg) this.svg.remove();
     var f = this.f = Math.max(0.6, Math.min(1.2, H / 432, W / 1180)), F = function(z){ return Math.max(24, Math.round(z * f)); };
     var LW = this.LW = W * 0.525, RX = W * 0.576;
-    var svg = D.el("svg", {viewBox: "0 0 " + W + " " + H, width: W, height: H, style: "display:block;overflow:visible"}, this);
+    var svg = this.svg = D.el("svg", {viewBox: "0 0 " + W + " " + H, width: W, height: H, style: "display:block;overflow:visible"});
+    this.insertBefore(svg, this.say);
     var est = this.est = function(s, z){ return [...String(s)].reduce(function(a, c){ return a + (/[\u0000-ɏ]/.test(c) ? 0.56 : 1); }, 0) * z; };
     // 題（長ければ 24 px まで小さく）と説明（2 行まで。幅で折り返す）
     var fit = function(s, max, z, what){
@@ -120,18 +146,8 @@ return class extends base.MotionElement {
       tx.textContent = s;
       return {box: box, tx: tx};
     });
-    this.total = this.P.reduce(function(a, p){ return a + p.sec; }, 0);
-    // 読み上げソフトへの知らせ（区切りの始まりと終わりだけ。毎秒は読まない）
-    this.say = document.createElement("div"); this.say.className = "tm-say"; this.say.setAttribute("role", "status"); this.say.setAttribute("aria-live", "polite");
-    this.appendChild(this.say);
-    this._ext = {};
-    this.RX = RX; this.W = W;
-    // 印刷は作者の秒数で描く（延長は消さない。afterprint で戻す）。beforeprint・afterprint は文書の窓（document.defaultView）に来る
-    var view = document.defaultView;
-    if (!this.video && view){
-      view.addEventListener("beforeprint", function(){ self._printing = true; self.redraw(); });
-      view.addEventListener("afterprint", function(){ self._printing = false; self.redraw(); });
-    }
+    this.RX = RX; this.W = W; this.H = H;
+    if (this.btns) Object.assign(this.btns.style, {left: RX + "px", top: Math.round(96 * f - 34) + "px"});
   }
   // 秒数の書き方：「3分」「20秒」「1分30秒」（英語は 3 min・20 s）
   span(s){

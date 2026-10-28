@@ -191,7 +191,7 @@ function bridged(cls){
       // whatever mount / render this instance has now (base's data check, or the part's own) gets the 2.0 ctx
       var m = this.mount, r = this.render;
       this.mount = function(d){ var x = m.call(this, ctxOf(this, d, true)); if (typeof this.layout === "function") watchLayout(this); return x; };
-      this.render = function(k, t, d){ this.__last = [k, t, d]; return r.call(this, k, t, ctxOf(this, d, false)); };
+      this.render = function(k, t, d){ this.__last = [k, t, d]; return r.call(this, k, t, ctxOf(this, d, !!this.__still)); };
     }
   };
   return B;
@@ -201,7 +201,10 @@ function relayout(c){
   var d = c.__last, x = ctxOf(c, d[2], true);
   x.entered = false;
   c.layout(x);
-  c.render(d[0], d[1], d[2]);
+  // the render after layout redraws the same position: it is not entering the slide and does not move the viewer's slide
+  // (ctxOf as for mount), so the next render's entered is what it would have been
+  c.__still = true;
+  try { c.render(d[0], d[1], d[2]); } finally { c.__still = false; }
 }
 function watchLayout(c){
   if (typeof ResizeObserver === "function"){ var w = -1, h = -1; new ResizeObserver(function(){ var r = c.getBoundingClientRect(); if (r.width !== w || r.height !== h){ w = r.width; h = r.height; relayout(c); } }).observe(c); }
