@@ -87,10 +87,21 @@ return class extends base.MotionElement {
   layout(ctx){
     var W = this.clientWidth, H = this.clientHeight;
     if (!W || !H || (W === this.g.W && H === this.g.H)) return;
+    // フォーカスが操作の中にあれば、作り直した同じ行・同じ場所の操作に戻す（字の読み込みや画面の切り替えで呼ばれても、キーボードや読み上げソフトで使う人に見えないように）
+    var a = document.activeElement, keep = null;
+    if (a && a !== this && this.contains(a)) this.rows.forEach(function(r, i){
+      if (a === r.pick) keep = {i: i, at: -1};
+      else if (r.ctl && r.ctl.contains(a)) keep = {i: i, at: Array.prototype.indexOf.call(r.ctl.children, a), sel: a === r.field ? [a.selectionStart, a.selectionEnd] : null};
+    });
     this.place(ctx);
     this.redraw();
+    var r = keep && this.rows[keep.i], e = r && (keep.at < 0 ? r.pick : r.ctl && r.ctl.children[keep.at]);
+    if (e){
+      e.focus({preventScroll: true});
+      if (keep.sel && keep.sel[0] != null) try { e.setSelectionRange(keep.sel[0], keep.sel[1]); } catch (x) {}
+    }
   }
-  // 大きさで決まる絵と操作を作る。数と予想（見る人の入力）・読み上げの知らせは残す（作り直した欄やボタンにあったフォーカスは外れる）
+  // 大きさで決まる絵と操作を作る。数と予想（見る人の入力）・読み上げの知らせは残す（フォーカスは layout が戻す）
   place(ctx){
     var self = this, P = this.props, D = base, d = this.data || {}, ch = d.choices || [], n = ch.length;
     var W = this.clientWidth, H = this.clientHeight, inter = !this.video;

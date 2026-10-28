@@ -6,7 +6,7 @@ Versions follow [README.md § Releases and versions](README.md#releases-and-vers
 
 ### Added
 
-- `layout(ctx)` (spec §8.4 Layout, design G1) in `m-timer` and `m-predict`: when the element's laid-out size differs from the last one (a column beside text whose fonts finish after mount; not the stage's transform scaling), the part redraws its picture and controls at the new size and reports size problems again; viewer input (counts, the learner's prediction, the extension) is kept, and focus inside rebuilt controls is lost. Same size or a box of size 0: nothing changes. `m-menu` measures nothing and has none (feedback from Studio's first 2.0 host, v0.6.3-c2host)
+- `layout(ctx)` (spec §8.4 Layout, design G1) in `m-timer` and `m-predict`: when the element's laid-out size differs from the last one (a column beside text whose fonts finish after mount; not the stage's transform scaling), the part redraws its picture and controls at the new size and reports size problems again; viewer input (counts, the learner's prediction, the extension) is kept, and so is focus: m-predict puts it back on the rebuilt control in the same row and place (a field keeps its caret); m-timer's ±1 min buttons are moved, not rebuilt. Same size or a box of size 0: nothing changes. `m-menu` measures nothing and has none (feedback from Studio's first 2.0 host, v0.6.3-c2host)
 
 ### Fixed
 
@@ -15,7 +15,7 @@ Versions follow [README.md § Releases and versions](README.md#releases-and-vers
 ### Tests
 
 - `tools/test-cycle-rewrite.mjs` (in `tools/test-all.mjs`): on every step of every m-cycle demo slide, entering the same step again makes no attribute mutation and keeps the DOM
-- `tools/test-layout.mjs` (in `tools/test-all.mjs`): `m-timer` and `m-predict` — layout at the same size makes no mutation; at a new size one svg at that size, children in the mount order, one live region and one set of controls per choice, viewer input kept, reports only `size` with the part's prefix; a box of size 0 keeps the drawing
+- `tools/test-layout.mjs` (in `tools/test-all.mjs`): `m-timer` and `m-predict` — layout at the same size makes no mutation; at a new size one svg at that size, children in the mount order, one live region and one set of controls per choice, viewer input kept, focus on a control kept (m-predict's counter button, prediction and field with its caret; m-timer's button), reports only `size` with the part's prefix; a box of size 0 keeps the drawing
 - The test-only registry shim (`tools/registry-shim.js`): the render it makes after a part's `layout` redraws the same position, so it no longer counts as entering the slide (it had cleared viewer input when a `deck:pos` came without a render; caught by `tools/test-timer.mjs` and `tools/test-predict.mjs` once the parts had `layout`)
 
 ### Later (candidates, not in this release)

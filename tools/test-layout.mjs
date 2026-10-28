@@ -6,7 +6,8 @@
 //   2. a new width and height: one svg at the new size, the part's children in the same order as after mount, the live region
 //      kept (one); reports only of the size code, with the part's prefix (820 px is narrower than the demos); viewer input kept
 //      (m-predict: counts and the learner's prediction, one set of controls per choice; m-timer: the extension, and the
-//      clock shows it)
+//      clock shows it); m-predict: focus on a control comes back to the rebuilt control in the same row and place (the field with
+//      its caret), m-timer: its ±1 min buttons are moved, not rebuilt, so a focused button keeps focus
 //   3. a box of size 0 (display:none): layout keeps the last drawing
 //   node tools/test-layout.mjs [work folder]
 import fs from 'node:fs';
@@ -58,6 +59,19 @@ try {
       o.size = { W, H, svgW: +svgs[0].getAttribute('width'), svgH: +svgs[0].getAttribute('height'), svgs: svgs.length, order: kids() === order0, kids: kids(), fresh: svgs[0] !== svg0 };
       o.say = c.querySelectorAll(name === 'predict' ? '.pd-say' : '.tm-say').length;
       if (name === 'predict') o.ctl = { ctl: c.querySelectorAll('.pd-ctl').length, pick: c.querySelectorAll('.pd-pick').length, n: c.rows.length };
+      // focus on a control survives a rebuild
+      const where = () => { const a = document.activeElement; if (name === 'timer') return c.btns && c.btns.contains(a) ? 'btn' + [...c.btns.children].indexOf(a) : String(a && a.localName);
+        const i = c.rows.findIndex((r) => r.pick === a || (r.ctl && r.ctl.contains(a))); return i < 0 ? String(a && a.localName) : i + ':' + (a === c.rows[i].pick ? 'pick' : [...c.rows[i].ctl.children].indexOf(a)); };
+      const sizes = [[760, H], [700, H + 20], [660, H + 40]];
+      const targets = name === 'predict' ? [() => c.rows[1].ctl.children[2], () => c.rows[0].pick, () => { const f = c.rows[2].field; f.focus(); f.setSelectionRange(1, 1); return f; }] : [() => c.btns.children[1]];
+      o.focus = [];
+      for (let j = 0; j < targets.length; j++) {
+        const t = targets[j](); t.focus(); const before = where(), caret = t.selectionStart;
+        c.style.width = sizes[j][0] + 'px'; c.style.height = sizes[j][1] + 'px'; c.layout(ctx);
+        const a = document.activeElement;
+        o.focus.push({ before, after: where(), caret: caret == null ? null : [caret, a.selectionStart], value: a.value });
+      }
+      o.state2 = state();
       o.state1 = state();
       o.reports = reports.slice();
       // 3. size 0
@@ -70,7 +84,8 @@ try {
     ok(z.svgs === 1 && z.order && z.fresh && z.svgW === z.W && z.svgH === z.H, `${name}: layout at a new size draws one svg at ${z.W}×${z.H}, the children in the same order (${z.svgs} svg, ${z.svgW}×${z.svgH}; ${z.kids})`);
     ok(r.say === 1, `${name}: one live region after layout (${r.say})`);
     if (r.ctl) ok(r.ctl.ctl === r.ctl.n && r.ctl.pick === r.ctl.n, `${name}: one set of controls per choice after layout (${r.ctl.ctl} counters, ${r.ctl.pick} picks, ${r.ctl.n} choices)`);
-    ok(r.state1 === r.state0, `${name}: viewer input survives layout (${r.state0} → ${r.state1})`);
+    ok(r.state1 === r.state0 && r.state2 === r.state0, `${name}: viewer input survives layout (${r.state0} → ${r.state1} → ${r.state2})`);
+    for (const f of r.focus) ok(f.before === f.after && (!f.caret || f.caret[0] === f.caret[1]), `${name}: focus on ${f.before} comes back after layout (${f.after}${f.caret ? `, caret ${f.caret.join('→')}, value ${f.value}` : ''})`);
     ok(r.reports.every((x) => x.startsWith(`size [${name}] `)), `${name}: layout reports with ctx, size code and prefix only (${r.reports.length}${r.reports.length ? ': ' + r.reports.join(' | ') : ''})`);
     ok(r.hidden, `${name}: layout in a box of size 0 keeps the drawing`);
     ok(!errors.length, `${name}: no page errors${errors.length ? ': ' + errors.join(' | ') : ''}`);
