@@ -207,7 +207,9 @@ function relayout(c){
   try { c.render(d[0], d[1], d[2]); } finally { c.__still = false; }
 }
 function watchLayout(c){
-  if (typeof ResizeObserver === "function"){ var w = -1, h = -1; new ResizeObserver(function(){ var r = c.getBoundingClientRect(); if (r.width !== w || r.height !== h){ w = r.width; h = r.height; relayout(c); } }).observe(c); }
+  // the laid-out size (clientWidth/Height), not the transformed box (spec §8.4: not on transform scaling), starting from the size
+  // at mount, so the observer's first notification (which comes whenever the browser gets to it) calls nothing
+  if (typeof ResizeObserver === "function"){ var w = c.clientWidth, h = c.clientHeight; new ResizeObserver(function(){ if (c.clientWidth !== w || c.clientHeight !== h){ w = c.clientWidth; h = c.clientHeight; relayout(c); } }).observe(c); }
   if (document.fonts && document.fonts.ready) document.fonts.ready.then(function(){ relayout(c); });
   document.addEventListener("deck:pos", function(){ var s = c.closest(".slide"); if (s && s.classList.contains("active") && c.__shownIn !== epoch){ c.__shownIn = epoch; relayout(c); } });
 }

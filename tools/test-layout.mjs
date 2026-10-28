@@ -9,6 +9,8 @@
 //      clock shows it); m-predict: focus on a control comes back to the rebuilt control in the same row and place (the field with
 //      its caret), m-timer: its ±1 min buttons are moved, not rebuilt, so a focused button keeps focus
 //   3. a box of size 0 (display:none): layout keeps the last drawing
+//   4. the test shim (tools/registry-shim.js) calls layout by itself when the laid-out size changes, not when only the stage's
+//      transform changes
 //   node tools/test-layout.mjs [work folder]
 import fs from 'node:fs';
 import os from 'node:os';
@@ -76,6 +78,15 @@ try {
       o.reports = reports.slice();
       // 3. size 0
       const svg1 = c.querySelector('svg'); c.style.display = 'none'; c.layout(ctx); o.hidden = c.querySelector('svg') === svg1; c.style.display = 'block';
+      // 4. the shim's own calls
+      await frame(); await frame();   // the observer's notifications for the size changes above
+      let calls = 0; const lay = c.layout; c.layout = function (x) { calls++; return lay.call(this, x); };
+      const stage = c.closest('.slide').parentElement, tf = stage.style.transform;
+      stage.style.transform = (tf || '') + ' scale(0.9)'; await frame(); await frame();
+      o.scaled = calls; stage.style.transform = tf; await frame();
+      c.style.width = '780px'; await frame(); await frame();
+      o.resized = { calls: calls - o.scaled, svgW: +c.querySelector('svg').getAttribute('width'), W: c.clientWidth };
+      c.layout = lay;
       return o;
     }, name);
     ok(r.has, `${name}: has layout(ctx)`);
@@ -88,6 +99,8 @@ try {
     for (const f of r.focus) ok(f.before === f.after && (!f.caret || f.caret[0] === f.caret[1]), `${name}: focus on ${f.before} comes back after layout (${f.after}${f.caret ? `, caret ${f.caret.join('→')}, value ${f.value}` : ''})`);
     ok(r.reports.every((x) => x.startsWith(`size [${name}] `)), `${name}: layout reports with ctx, size code and prefix only (${r.reports.length}${r.reports.length ? ': ' + r.reports.join(' | ') : ''})`);
     ok(r.hidden, `${name}: layout in a box of size 0 keeps the drawing`);
+    ok(r.scaled === 0, `${name}: the shim does not call layout when only the stage is scaled (${r.scaled} call(s))`);
+    ok(r.resized.calls >= 1 && r.resized.svgW === r.resized.W, `${name}: the shim calls layout when the laid-out size changes (${r.resized.calls} call(s), svg ${r.resized.svgW} for ${r.resized.W})`);
     ok(!errors.length, `${name}: no page errors${errors.length ? ': ' + errors.join(' | ') : ''}`);
     await page.close();
   }
