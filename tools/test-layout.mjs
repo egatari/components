@@ -2,7 +2,10 @@
 // layout on laid-out size changes, font loading and when the slide shows, then renders again. Studio scales the stage only
 // with a transform, so a part's box changes only when the page lays it out anew (a column next to text whose fonts finish
 // decoding after mount). The pinned Studio does not call layout yet, so the test calls it with a hand-made ctx:
-//   1. the same size: layout changes nothing (no mutation in the part)
+//   1. the same size (spec 0bb840d: a player MAY call layout on every resize or each time the slide becomes current; a call at
+//      an unchanged size MUST be harmless): five calls with instant true and entered false, with focus on a control (m-predict:
+//      the count field with its caret; m-timer: the +1 min button), change nothing (no mutation in the part), keep viewer input,
+//      focus and caret, and report nothing
 //   2. a new width and height: one svg at the new size, the part's children in the same order as after mount, the live region
 //      kept (one); reports only of the size code, with the part's prefix (820 px is narrower than the demos); viewer input kept
 //      (m-predict: counts and the learner's prediction, one set of controls per choice; m-timer: the extension, and the
@@ -47,10 +50,14 @@ try {
       else { let tot = 0; own(c, 'render').call(c, 1, 10, { mode: 'talk', extend: (d) => (tot += d) }); c.extend(60); }
       const state = () => (name === 'predict' ? c.counts().join() + '/' + c._pick : String(c._ext[1]) + '/' + c.clock.textContent);
       o.state0 = state();
-      // 1. the same size
+      // 1. the same size, called again and again
+      const f0 = name === 'predict' ? c.rows[1].field : c.btns.children[1];
+      f0.focus(); if (name === 'predict') f0.setSelectionRange(1, 1);
       const seen = [], ob = new MutationObserver((ms) => seen.push(...ms)); ob.observe(c, { attributes: true, childList: true, subtree: true, characterData: true });
-      c.layout(ctx); seen.push(...ob.takeRecords()); ob.disconnect();
-      o.sameWrites = seen.length;
+      for (let j = 0; j < 5; j++) c.layout(ctx);
+      seen.push(...ob.takeRecords()); ob.disconnect();
+      o.same = { writes: seen.length, state: state(), focus: document.activeElement === f0, caret: name === 'predict' ? f0.selectionStart + ',' + f0.selectionEnd : '-', reports: reports.length };
+      f0.blur();
       // 2. a new size
       const kids = () => [...c.children].map((e) => e.localName + (e.className && typeof e.className === 'string' ? '.' + e.className : '')).join(' ');
       const order0 = kids(), svg0 = c.querySelector('svg');
@@ -90,7 +97,9 @@ try {
       return o;
     }, name);
     ok(r.has, `${name}: has layout(ctx)`);
-    ok(r.sameWrites === 0, `${name}: layout at the same size changes nothing (${r.sameWrites} mutation(s))`);
+    const q = r.same;
+    ok(q.writes === 0 && q.state === r.state0 && q.focus && (name !== 'predict' || q.caret === '1,1') && q.reports === 0,
+      `${name}: five layout calls at the same size (instant, not entered) change nothing (${q.writes} mutation(s)), keep viewer input (${q.state}), focus (${q.focus}) and caret (${q.caret}), and report nothing (${q.reports})`);
     const z = r.size;
     ok(z.svgs === 1 && z.order && z.fresh && z.svgW === z.W && z.svgH === z.H, `${name}: layout at a new size draws one svg at ${z.W}×${z.H}, the children in the same order (${z.svgs} svg, ${z.svgW}×${z.svgH}; ${z.kids})`);
     ok(r.say === 1, `${name}: one live region after layout (${r.say})`);
