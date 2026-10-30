@@ -12,11 +12,12 @@
 //                                               drawn at play time), series, purposes, variants, interactive?, viewerInput?, clock? (true when index.js declares
 //                                               static interactive / viewerInput / clock = true; left out otherwise), preview? ("none" when index.js
 //                                               declares static preview = "none": the part shows nothing ahead under preview), license (an SPDX expression,
-//                                               only for a part whose README frontmatter has license: other than the repository's MIT), sha256 (of index.js), files: {<path>: sha256}}
+//                                               on every entry: README frontmatter license:, else "MIT"; spec §6 Registry manifest), withdrawn? ({<part version>:
+//                                               {replacement, reason, date}}, from yanked.json parts.<name>; left out when none), sha256 (of index.js), files: {<path>: sha256}}
 //                                               and, for a 2.0 library part (egatariParts.define without element: base, expr),
-//                                               {kind: "library", version, requires: {<name>: <exact version>}, license?, sha256, files}},
+//                                               {kind: "library", version, requires: {<name>: <exact version>}, license, withdrawn?, sha256, files}},
 //                                             (version is the part's; the manifest's own version is the catalogue version, package.json)
-//                                             yanked: {<version>: {replacement, reason, date}}  (from yanked.json; Egatari spec §6: a withdrawn release stays available),
+//                                             yanked: {<version>: {replacement, reason, date}}  (from yanked.json releases; Egatari spec §6: a withdrawn release stays available),
 //                                             files: {<path in the tarball>: sha256}}
 // Per-file and component sha256 values are identity hashes (line endings normalized for text files, Egatari spec §6); the tarball's is byte-exact.
 // The tarball is deterministic (tools/tar.mjs): the same files give the same bytes.
@@ -39,18 +40,45 @@ const sha = (b) => createHash('sha256').update(b).digest('hex');
 // Every per-file sha256 in manifest.json and each component's sha256 (of index.js) are identity hashes; the tarball's sha256 is byte-exact.
 const idSha = (p, b) => sha(identityBytes(p, b));
 
-// yanked.json: releases a registry withdraws (spec §6). Their tags and assets stay as they are; the newest manifest says so.
-export function readYanked(version) {
-  const y = JSON.parse(fs.readFileSync(path.join(ROOT, 'yanked.json'), 'utf8'));
-  const cmp = (a, b) => { const [ac, ap] = a.split('-'), [bc, bp] = b.split('-'); const x = ac.split('.').map(Number), z = bc.split('.').map(Number); for (let i = 0; i < 3; i++) if (x[i] !== z[i]) return x[i] - z[i]; return ap === bp ? 0 : ap === undefined ? 1 : bp === undefined ? -1 : (ap < bp ? -1 : 1); };
+// yanked.json: {releases: {<release version>: …}, parts: {<name>: {<part version>: …}}}, each {replacement, reason, date}: releases
+// and part versions a registry withdraws (spec §6). Their tags and assets stay as they are; the newest manifest says so: the
+// releases as `yanked`, a part's versions as `components.<name>.withdrawn`.
+const readYankedFile = () => JSON.parse(fs.readFileSync(path.join(ROOT, 'yanked.json'), 'utf8'));
+const cmp = (a, b) => { const [ac, ap] = a.split('-'), [bc, bp] = b.split('-'); const x = ac.split('.').map(Number), z = bc.split('.').map(Number); for (let i = 0; i < 3; i++) if (x[i] !== z[i]) return x[i] - z[i]; return ap === bp ? 0 : ap === undefined ? 1 : bp === undefined ? -1 : (ap < bp ? -1 : 1); };
+const yankEntry = (w, e) => {
+  if (!e || typeof e !== 'object' || Object.keys(e).sort().join() !== 'date,reason,replacement') throw new Error(`${w} needs exactly replacement, reason, date`);
+  if (typeof e.reason !== 'string' || !e.reason || !/^\d{4}-\d{2}-\d{2}$/.test(e.date)) throw new Error(`${w}: reason or date missing`);
+};
+export function readYanked(version, file = readYankedFile()) {
+  if (!file || typeof file !== 'object' || Object.keys(file).sort().join() !== 'parts,releases') throw new Error('yanked.json: needs exactly releases, parts');
+  const y = file.releases;
   for (const [v, e] of Object.entries(y)) {
     if (!/^\d+\.\d+\.\d+$/.test(v)) throw new Error(`yanked.json: ${v} is not X.Y.Z`);
-    if (!e || typeof e !== 'object' || Object.keys(e).sort().join() !== 'date,reason,replacement') throw new Error(`yanked.json: ${v} needs exactly replacement, reason, date`);
+    yankEntry(`yanked.json: releases.${v}`, e);
     if (!/^\d+\.\d+\.\d+$/.test(e.replacement) || cmp(e.replacement, v) <= 0) throw new Error(`yanked.json: ${v}: replacement ${e.replacement} must be a later version`);
     if (y[e.replacement]) throw new Error(`yanked.json: ${v}: replacement ${e.replacement} is itself yanked`);
     if (cmp(e.replacement, version) > 0) throw new Error(`yanked.json: ${v}: replacement ${e.replacement} is newer than ${version}`);
-    if (typeof e.reason !== 'string' || !e.reason || !/^\d{4}-\d{2}-\d{2}$/.test(e.date)) throw new Error(`yanked.json: ${v}: reason or date missing`);
     if (v === version) throw new Error(`yanked.json: ${v} is the release being made`);
+  }
+  return Object.fromEntries(Object.keys(y).sort(cmp).map((v) => [v, y[v]]));
+}
+
+// A part's withdrawn versions (yanked.json parts.<name>) for its manifest entry: {<version>: {replacement, reason, date}}, in
+// version order; {} when it has none. A replacement is a later version of the same part, not itself withdrawn and not newer than
+// the part's current version, which is never withdrawn.
+export function readWithdrawn(name, current, file = readYankedFile()) {
+  const parts = file.parts;
+  if (!parts || typeof parts !== 'object' || Array.isArray(parts)) throw new Error('yanked.json: parts is not an object');
+  for (const n of Object.keys(parts)) if (!partNames().includes(n)) throw new Error(`yanked.json: parts.${n} is not a part`);
+  const y = parts[name] || {};
+  for (const [v, e] of Object.entries(y)) {
+    const w = `yanked.json: parts.${name}.${v}`;
+    if (!/^\d+\.\d+\.\d+$/.test(v)) throw new Error(`${w} is not X.Y.Z`);
+    yankEntry(w, e);
+    if (!/^\d+\.\d+\.\d+$/.test(e.replacement) || cmp(e.replacement, v) <= 0) throw new Error(`${w}: replacement ${e.replacement} must be a later version`);
+    if (y[e.replacement]) throw new Error(`${w}: replacement ${e.replacement} is itself withdrawn`);
+    if (cmp(e.replacement, current) > 0) throw new Error(`${w}: replacement ${e.replacement} is newer than the part's ${current}`);
+    if (v === current) throw new Error(`${w} is the part's current version`);
   }
   return Object.fromEntries(Object.keys(y).sort(cmp).map((v) => [v, y[v]]));
 }
@@ -72,15 +100,16 @@ export function release(version) {
     const fl = flags(js), meta = partMeta(js);
     const fm = frontmatter(fs.readFileSync(path.join(ROOT, 'components', name, 'README.md'), 'utf8'));
     const list = (s) => (s ? s.split(',').map((x) => x.trim()).filter(Boolean) : []);
+    const w = readWithdrawn(name, fm.version), withdrawn = Object.keys(w).length ? { withdrawn: w } : {};
     const code = sha(normalizeEol(fs.readFileSync(path.join(ROOT, 'components', name, 'index.js'))));
     if (meta && !meta.element) {
       // a 2.0 library part (base, expr): no tag, series or purposes; what it requires, with exact versions
-      components[name] = { kind: 'library', version: fm.version, requires: { ...(meta.requires || {}) }, ...(fm.license ? { license: fm.license } : {}), sha256: code, files };
+      components[name] = { kind: 'library', version: fm.version, requires: { ...(meta.requires || {}) }, license: fm.license || 'MIT', ...withdrawn, sha256: code, files };
       continue;
     }
     const C = partClass(js, `${name}/index.js`) || {};
     components[name] = { kind: 'element', tag: `m-${name}`, version: fm.version, tier: fm.tier, ...(fm.set ? { set: fm.set } : {}), ...(fm.display ? { display: fm.display } : {}),
-      ...(C.build ? { build: JSON.parse(JSON.stringify(C.build)) } : {}), ...(typeof C.glyphs === 'string' ? { glyphs: C.glyphs } : {}), ...(meta ? { requires: { ...(meta.requires || {}) } } : {}), series: fm.series, ...(fm.license ? { license: fm.license } : {}), purposes: list(fm.purposes), variants: list(fm.variants), ...(fl.interactive ? { interactive: true } : {}), ...(fl.viewerInput ? { viewerInput: true } : {}), ...(fl.clock ? { clock: true } : {}), ...(fl.group ? { group: fl.group } : {}), ...(fl.preview ? { preview: fl.preview } : {}), ...(fl.tile ? { tile: fl.tile } : {}), sha256: code, files };
+      ...(C.build ? { build: JSON.parse(JSON.stringify(C.build)) } : {}), ...(typeof C.glyphs === 'string' ? { glyphs: C.glyphs } : {}), ...(meta ? { requires: { ...(meta.requires || {}) } } : {}), series: fm.series, license: fm.license || 'MIT', ...withdrawn, purposes: list(fm.purposes), variants: list(fm.variants), ...(fl.interactive ? { interactive: true } : {}), ...(fl.viewerInput ? { viewerInput: true } : {}), ...(fl.clock ? { clock: true } : {}), ...(fl.group ? { group: fl.group } : {}), ...(fl.preview ? { preview: fl.preview } : {}), ...(fl.tile ? { tile: fl.tile } : {}), sha256: code, files };
   }
   entries.sort((a, b) => (a[0] < b[0] ? -1 : a[0] > b[0] ? 1 : 0));
   const gz = writeTarGz(entries);

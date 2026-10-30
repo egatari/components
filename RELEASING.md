@@ -1,6 +1,6 @@
 # Releasing
 
-Only the maintainer releases. To withdraw a release, add it to `yanked.json` (with a later replacement) and make a new version: published assets and tags are not touched. **A tag is never moved, deleted and recreated, or reused.** If a release is wrong, make the next version.
+Only the maintainer releases. To withdraw a release, add it to `yanked.json` under `releases`, or a part's version under `parts.<name>` (with a later replacement) and make a new version: published assets and tags are not touched. **A tag is never moved, deleted and recreated, or reused.** If a release is wrong, make the next version.
 
 1. On `main`, with CI green: set `version` in `package.json` to `X.Y.Z`, move `## Unreleased` in `CHANGELOG.md` to `## X.Y.Z - <date>`, commit and push. Wait for CI to be green on all three systems.
 2. Make the assets from a clean checkout of that commit:

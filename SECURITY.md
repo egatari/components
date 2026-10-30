@@ -40,7 +40,9 @@ For every expression that the demos, Studio's examples, templates and documentat
 "yanked": { "1.0.0": { "replacement": "1.0.2", "reason": "…", "date": "2026-10-20" }, "1.0.1": { … } }
 ```
 
-The source is `yanked.json`; a version may be yanked only with a later, not yanked replacement that exists in the release that lists it. Per spec §6, an editor that finds a yanked version in a lesson should tell the user and offer a rebuild with the replacement, never replace it silently (the identity hash and the picture may change), and may play the old version only isolated from its own origin (a sandboxed frame, with no relaxed policy for the editor itself). Read the `yanked` field of the newest release's manifest. A yanked version's own `manifest.json` cannot say it is yanked, because published assets are not changed.
+From 2.0, a single part's version may be withdrawn too: the part's entry in the newest manifest lists it as `"withdrawn": {"<part version>": {"replacement", "reason", "date"}}`, where the replacement is a later version of the same part, not newer than the part's current version (spec §6). Editors treat it like a yanked release.
+
+The source is `yanked.json` (`releases` for releases, `parts.<name>` for a part's versions); a version may be yanked only with a later, not yanked replacement that exists in the release that lists it. Per spec §6, an editor that finds a yanked version in a lesson should tell the user and offer a rebuild with the replacement, never replace it silently (the identity hash and the picture may change), and may play the old version only isolated from its own origin (a sandboxed frame, with no relaxed policy for the editor itself). Read the `yanked` field of the newest release's manifest. A yanked version's own `manifest.json` cannot say it is yanked, because published assets are not changed.
 
 ## Code scan
 
