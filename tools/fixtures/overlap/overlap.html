@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="ja" data-theme="default">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>重なりの試し（m-flow・m-quad）</title>
+<!-- tools/test-overlap.mjs が組んで調べる。データの形は AI が作った教材で字が重なった例（2026-10-30、規格化 #140）に合わせた。名前と位置はすべて架空 -->
+<style>
+</style>
+</head>
+<body>
+<div id="stage">
+
+<section class="slide">
+  <h2>行きと帰りに shift がない（架空）</h2>
+  <div class="body">
+    <m-flow style="height:310px">
+      <script type="application/json">{
+        "nodes": [
+          {"id": "uni", "label": "大学・研究室\n（技術ライセンス）", "x": 20, "y": 40, "w": 280, "h": 100, "step": 1},
+          {"id": "st", "label": "大学発ベンチャー\n（自社）", "x": 452, "y": 140, "w": 280, "h": 110, "step": 1, "tone": "emph"},
+          {"id": "cli", "label": "顧客企業・一般ユーザー\n（課題の解決）", "x": 884, "y": 40, "w": 280, "h": 100, "step": 2, "tone": "term"}
+        ],
+        "edges": [
+          {"from": "uni", "to": "st", "step": 1, "label": "技術許諾", "kind": "service"},
+          {"from": "st", "to": "cli", "step": 2, "label": "製品・サービス", "kind": "service", "shift": -10},
+          {"from": "cli", "to": "st", "step": 2, "label": "対価・売上", "kind": "money", "amount": "事業収益", "shift": -10},
+          {"from": "st", "to": "uni", "step": 3, "label": "特許実施料", "kind": "money", "amount": "ロイヤリティ"}
+        ]
+      }</script>
+    </m-flow>
+  </div>
+</section>
+
+<section class="slide">
+  <h2>横に並んだ行きと帰り、両方に金額（架空）</h2>
+  <div class="body">
+    <m-flow style="height:300px">
+      <script type="application/json">{
+        "nodes": [
+          {"id": "a", "label": "メーカー", "x": 40, "y": 100, "w": 260, "h": 100},
+          {"id": "b", "label": "小売店", "x": 880, "y": 100, "w": 260, "h": 100}
+        ],
+        "edges": [
+          {"from": "a", "to": "b", "label": "商品", "kind": "service", "amount": "毎週 200 箱"},
+          {"from": "b", "to": "a", "label": "代金", "kind": "money", "amount": "月 300 万円"}
+        ]
+      }</script>
+    </m-flow>
+  </div>
+</section>
+
+<section class="slide">
+  <h2>象限の名前の上に点（架空）</h2>
+  <div class="body">
+    <m-quad style="height:320px">
+      <script type="application/json">{
+        "x": {"lo": "課題が限定的", "hi": "課題が切実"},
+        "y": {"lo": "既存技術で十分", "hi": "新技術が不可欠"},
+        "quads": {"tr": "目指すべき市場", "fill": "tr"},
+        "items": [
+          {"label": "既存競合", "x": 0.8, "y": 0.2, "step": 1},
+          {"label": "趣味研究", "x": 0.2, "y": 0.8, "step": 2},
+          {"label": "目指す顧客", "x": 0.85, "y": 0.85, "step": 3, "self": true}
+        ]
+      }</script>
+    </m-quad>
+  </div>
+</section>
+
+<section class="slide">
+  <h2>四つの象限の隅に点（架空）</h2>
+  <div class="body">
+    <m-quad style="height:400px">
+      <script type="application/json">{
+        "x": {"lo": "少ない", "hi": "多い"},
+        "y": {"lo": "低い", "hi": "高い"},
+        "quads": {"tr": "伸ばす", "tl": "見直す", "bl": "やめる", "br": "守る"},
+        "items": [
+          {"label": "製品 A", "x": 0.9, "y": 0.9},
+          {"label": "製品 B", "x": 0.08, "y": 0.92},
+          {"label": "製品 C", "x": 0.06, "y": 0.08},
+          {"label": "製品 D", "x": 0.88, "y": 0.1}
+        ]
+      }</script>
+    </m-quad>
+  </div>
+</section>
+
+</div>
+</body>
+</html>

@@ -48,6 +48,7 @@
 //      keyboard-preview m-keyboard's lecture preview: later keys faint at the theme's --preview-opacity, no dot (tools/test-keyboard-preview.mjs)
 //      score-noclass  m-score reads no abcjs class: the demo with every abcjs-* class stripped has the same steps, events, names and DOM (tools/test-score-noclass.mjs)
 //      timer          m-timer: duration = sec, the clock, ja/en strings and labels, ctx.extend buttons (fake), video, print (tools/test-timer.mjs)
+//      overlap        m-flow / m-quad keep their own text apart: edge text off other lines and texts, opposite edges apart, quadrant names off points (tools/test-overlap.mjs)
 //      layout         m-timer / m-predict layout(ctx): nothing at the same size; a new size redraws in place and keeps viewer input (tools/test-layout.mjs)
 //  11. codetree-dom    m-codetree's DOM and pixels do not depend on the order of render calls (tools/test-codetree-dom.mjs)
 //      dom-order      every part's DOM at (k, end) is byte-identical straight and after seeking k+1, 0, k, in the talk and lecture views (tools/test-dom-order.mjs)
@@ -120,6 +121,7 @@ const TESTS = [
   ['test-predict', ['tools/test-predict.mjs', path.join(tmp, 'predict')]],
   ['test-timer', ['tools/test-timer.mjs', path.join(tmp, 'timer')]],
   ['test-layout', ['tools/test-layout.mjs', path.join(tmp, 'layout')]],
+  ['test-overlap', ['tools/test-overlap.mjs', path.join(tmp, 'overlap')]],
   ['test-score-noclass', ['tools/test-score-noclass.mjs', path.join(tmp, 'score-noclass')]],
   ['test-keyboard-preview', ['tools/test-keyboard-preview.mjs', path.join(tmp, 'keyboard-preview')]],
   ['test-codetree-dom', ['tools/test-codetree-dom.mjs', path.join(tmp, 'codetree-dom')]],

@@ -99,15 +99,32 @@ return class extends base.MotionElement {
       var pts = hz ? [q0, [ch, q0[1]], [ch, q1[1]], q1] : [q0, [q0[0], ch], [q1[0], ch], q1];
       return {pts: pts, poly: self.poly(pts), hz: hz, sg: sg, ch: ch};
     }
-    this.edges = (data.edges || []).map(function(e){
+    // 線の形を先に全部決める（辺の字は、ほかの辺の線と先に置いた字を避けて置くので）
+    var es = data.edges || [];
+    // 同じ 2 つの箱の行きと帰りで、どちらも shift も loop も書いていなければ、それぞれ 10 px ずらす（2 本の間は 20 px）
+    var autoShift = function(e){
+      return !e.shift && !e.loop && es.some(function(f){ return f !== e && f.from === e.to && f.to === e.from && !f.shift && !f.loop; });
+    };
+    var geo = es.map(function(e){
       var a = byId[e.from], b = byId[e.to];
-      if (!a || !b){ ctx.report("data", "[flow] an edge refers to an unknown node: " + JSON.stringify(e.from) + " → " + JSON.stringify(e.to) + " (not drawn)"); return null; }
+      if (!a || !b) return null;
       var dx = b.cx - a.cx, dy = b.cy - a.cy, L = Math.hypot(dx, dy) || 1;
       var p0 = edgePt(a.n, dx / L, dy / L, 6), p1 = edgePt(b.n, -dx / L, -dy / L, 6), route = null;
       if (e.loop) route = loopRoute(e.loop, a.n, b.n);
       if (route){ p0 = route.pts[0]; p1 = route.pts[3]; }
       // shift：線に垂直に（進む向きの右へ）ずらす。行きと帰りの 2 本を並べるときに使う
-      if (e.shift){ var sx = -dy / L * e.shift, sy = dx / L * e.shift; p0 = [p0[0] + sx, p0[1] + sy]; p1 = [p1[0] + sx, p1[1] + sy]; }
+      var sh = e.shift || (autoShift(e) ? 10 : 0);
+      if (sh){ var sx = -dy / L * sh, sy = dx / L * sh; p0 = [p0[0] + sx, p0[1] + sy]; p1 = [p1[0] + sx, p1[1] + sy]; }
+      return {a: a, b: b, dx: dx, dy: dy, L: L, p0: p0, p1: p1, route: route, shift: sh};
+    });
+    // 線分（戻る辺は折れ線の 3 本）と、置いた字の箱 [x0, y0, x1, y1]
+    var segs = geo.map(function(q){ return !q ? [] : q.route ? [0, 1, 2].map(function(i){ return [q.route.pts[i], q.route.pts[i + 1]]; }) : [[q.p0, q.p1]]; });
+    var boxes = [];
+    this.edges = es.map(function(e, ei){
+      var q = geo[ei];
+      if (!q){ ctx.report("data", "[flow] an edge refers to an unknown node: " + JSON.stringify(e.from) + " → " + JSON.stringify(e.to) + " (not drawn)"); return null; }
+      var a = q.a, b = q.b, dx = q.dx, dy = q.dy, L = q.L, p0 = q.p0, p1 = q.p1, route = q.route;
+      var others = [].concat.apply([], segs.filter(function(_, j){ return j !== ei; }));
       // kind：money（--emph の太線）、service（--term）、data（--muted の破線）。tone と dash を書けばそちらが勝つ
       var kind = {money: ["emph", false, 3.5], service: ["term", false, 2.5], data: ["muted", true, 2.5]}[e.kind] || [null, false, 2.5];
       var tn = e.tone || kind[0], dash = e.dash !== undefined ? e.dash : kind[1];
@@ -120,11 +137,14 @@ return class extends base.MotionElement {
       // 線の中点から、線に垂直な向き（上か右）へずらして置く。amount は反対の側（label がなければ同じ側）に太字で
       var nx = -dy / L, ny = dx / L;
       if (ny > 0 || (ny === 0 && nx < 0)){ nx = -nx; ny = -ny; }
-      // 字の箱が箱（node）に label-gap px より近いか図の外に出るなら、線から離していく（6 px ずつ、60 px まで）。
-      // それでも離れなければ線の反対の側で同じように試す（label と amount が両側にあるときは自分の側だけ）。
+      // 字の箱が箱（node）に label-gap px より近いか、図の外に出るか、ほかの辺の線（4 px の間をとる）か先に置いた字に
+      // かかるか、自分の線とのあいだにほかの辺の線が入るなら、線から離していく（6 px ずつ、60 px まで）。
+      // それでも置けなければ線の反対の側で同じように試す（label は amount があるときは自分の側だけ。amount は両側）。
+      // どこにも置けなければ最初の位置に置いて知らせる（layout）。
       // 幅は字数から見積もる（和文 1 字 = 1 字幅、ほかは 0.6 字幅）ので、字の読み込みによらず同じ位置になる
+      var mid = [(p0[0] + p1[0]) / 2, (p0[1] + p1[1]) / 2];
       var side = function(sg, text, attrs, both){
-        var fs = attrs["font-size"] || 24, base = e.offset !== undefined ? e.offset : 18, pos = null, anc0 = null;
+        var fs = attrs["font-size"] || 24, base = e.offset !== undefined ? e.offset : 18, pos = null, anc0 = null, box0 = null, free = false;
         var w = [...text].reduce(function(a, ch){ return a + (/[\u0000-\u024f]/.test(ch) ? 0.6 : 1); }, 0) * fs;
         var sides = both ? [sg, -sg] : [sg];
         search: for (var si = 0; si < sides.length; si++){
@@ -133,16 +153,21 @@ return class extends base.MotionElement {
             var off = (base + extra) * sgn, mx = (p0[0] + p1[0]) / 2 + nx * off, my = (p0[1] + p1[1]) / 2 + ny * off;
             var y = my + (ny * sgn < -0.3 ? 0 : ny * sgn > 0.3 ? 20 : 8);
             var x0 = anc === "start" ? mx : anc === "end" ? mx - w : mx - w / 2, gp = P["label-gap"];
+            var bx = [x0, y - fs * 0.88, x0 + w, y + fs * 0.22], c = [(bx[0] + bx[2]) / 2, (bx[1] + bx[3]) / 2];
             var hit = x0 < 0 || x0 + w > W || y - fs * 0.88 < 0 || y + fs * 0.22 > H || self.nodes.some(function(o){ var n = o.n;
-              return x0 < n.x + n.w + gp && x0 + w > n.x - gp && y - fs * 0.88 < n.y + n.h + gp && y + fs * 0.22 > n.y - gp; });
-            if (!pos){ pos = [mx, y]; anc0 = anc; }
-            if (!hit){ pos = [mx, y]; anc0 = anc; break search; }
+              return x0 < n.x + n.w + gp && x0 + w > n.x - gp && y - fs * 0.88 < n.y + n.h + gp && y + fs * 0.22 > n.y - gp; }) ||
+              boxes.some(function(r){ return bx[0] < r[2] + 4 && bx[2] > r[0] - 4 && bx[1] < r[3] + 4 && bx[3] > r[1] - 4; }) ||
+              others.some(function(sgm){ return segHitsBox(sgm, [bx[0] - 4, bx[1] - 4, bx[2] + 4, bx[3] + 4]) || segsCross(sgm, [mid, c]); });
+            if (!pos){ pos = [mx, y]; anc0 = anc; box0 = bx; }
+            if (!hit){ pos = [mx, y]; anc0 = anc; box0 = bx; free = true; break search; }
           }
         }
+        if (!free) ctx.report("layout", "[flow] no free place for the edge text " + JSON.stringify(text) + " (" + JSON.stringify(e.from) + " → " + JSON.stringify(e.to) + "): it touches a box, a line or another text; move the boxes apart or set offset");
+        boxes.push(box0);
         return D.mtext(g, pos[0], pos[1], text, Object.assign({"text-anchor": anc0, "font-size": 24, opacity: 0}, attrs));
       };
       // shift でずらした辺は、ずらした側に書く（行きと帰りの字が同じ側に重ならない）
-      var sg = e.shift && (-dy * nx + dx * ny) * e.shift < 0 ? -1 : 1;
+      var sg = q.shift && (-dy * nx + dx * ny) * q.shift < 0 ? -1 : 1;
       var hasAmt = e.amount !== undefined && e.amount !== "";
       // 戻る辺の名前は回り道の長い線の外側に、金額は内側に。外側が図の外に出るなら名前も内側に
       var rside = function(out, text, attrs){
@@ -150,6 +175,8 @@ return class extends base.MotionElement {
         var tw = [...text].reduce(function(a, ch){ return a + (/[\u0000-\u024f]/.test(ch) ? 0.6 : 1); }, 0) * 26;
         if (out && (r.hz ? (o2 > 0 ? r.ch + 10 + tw > W : r.ch - 10 - tw < 0) : (o2 > 0 ? r.ch + 30 > H : r.ch - 34 < 0))) o2 = -o2;
         var at2 = r.hz ? {x: r.ch + o2 * 10, y: m + 8, a: o2 > 0 ? "start" : "end"} : {x: m, y: r.ch + (o2 > 0 ? 30 : -10), a: "middle"};
+        var bx0 = at2.a === "start" ? at2.x : at2.a === "end" ? at2.x - tw : at2.x - tw / 2;
+        boxes.push([bx0, at2.y - 26 * 0.88, bx0 + tw, at2.y + 26 * 0.22]);
         return D.mtext(g, +at2.x.toFixed(2), +at2.y.toFixed(2), text, Object.assign({"text-anchor": at2.a, "font-size": 24, opacity: 0}, attrs));
       };
       if (route){
@@ -157,7 +184,7 @@ return class extends base.MotionElement {
         if (hasAmt) amt = rside(!e.label, String(e.amount), {fill: col, "font-weight": 700, "font-size": 26});
       } else {
       if (e.label) lab = side(sg, e.label, {fill: tn ? col : "var(--fg)"}, !hasAmt);
-      if (hasAmt) amt = side(e.label ? -sg : sg, String(e.amount), {fill: col, "font-weight": 700, "font-size": 26}, !e.label);
+      if (hasAmt) amt = side(e.label ? -sg : sg, String(e.amount), {fill: col, "font-weight": 700, "font-size": 26}, true);
       }
       var step = e.step || Math.max(a.step, b.step);
       // 同じ段階で出る箱があれば、その箱が出てから引く
@@ -172,6 +199,24 @@ return class extends base.MotionElement {
       return o;
     }).filter(Boolean);
     sk.flush();   // what the formulas have to report, once per kind (spec §6.2)
+    // 線分 s = [[x, y], [x, y]] が箱 r = [x0, y0, x1, y1] にかかるか（Liang–Barsky）
+    function segHitsBox(sg, r){
+      var x = sg[0][0], y = sg[0][1], ddx = sg[1][0] - x, ddy = sg[1][1] - y, t0 = 0, t1 = 1;
+      var pp = [-ddx, ddx, -ddy, ddy], qq = [x - r[0], r[2] - x, y - r[1], r[3] - y];
+      for (var i = 0; i < 4; i++){
+        if (pp[i] === 0){ if (qq[i] < 0) return false; continue; }
+        var u = qq[i] / pp[i];
+        if (pp[i] < 0){ if (u > t1) return false; if (u > t0) t0 = u; }
+        else { if (u < t0) return false; if (u < t1) t1 = u; }
+      }
+      return true;
+    }
+    // 2 つの線分が交わるか（端を除く）
+    function segsCross(s1, s2){
+      var o = function(a, b, c){ return (b[0] - a[0]) * (c[1] - a[1]) - (b[1] - a[1]) * (c[0] - a[0]); };
+      var d1 = o(s2[0], s2[1], s1[0]), d2 = o(s2[0], s2[1], s1[1]), d3 = o(s1[0], s1[1], s2[0]), d4 = o(s1[0], s1[1], s2[1]);
+      return d1 * d2 < 0 && d3 * d4 < 0;
+    }
   }
   // 折れ線：点と累積の長さ（戻る辺）
   poly(pts){

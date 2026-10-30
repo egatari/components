@@ -32,6 +32,7 @@
 提案が受け入れられ名前が決まったら、`components/<名前>/` を足すプルリクエストを開きます。見せ方の種類（最初が既定。シード値はない）、箱と線の図、伝えたいことの宣言は[共通の決まり](docs/conventions.ja.md)（下書き）に従います。
 
 - [ ] `index.js` が `<m-<名前>>` を定義し、[部品の約束事](https://github.com/egatari/egatari-studio/blob/main/docs/contract.ja.md)に従う：`render(k, t)` は段階と時刻だけで画面を決める（`setTimeout`・`requestAnimationFrame`・`Date`・シードのない乱数を使わない。`t = Infinity` が最終状態）、色はテーマの変数だけ（`var(--term)` `var(--emph)` `var(--muted)` `var(--accent2)` `var(--line)` `var(--fg)` `var(--series-1..4)`）、データの形を `static shape` で宣言、デッキ固有の文言・数値を持たない
+- [ ] 部品の中の字は、どんなデータでも互いに重ならず、線にもかからない（Studio の点検は svg の字どうしの重なりを警告する）。わざと重ねるところは、その `<text>` か上の `<g>` に `data-overlap="ok"` を付ける（わざと切る字の `data-clip` と同じ考え）
 - [ ] コードを実行する書き方がない（`npm test` の `tools/scan-code.mjs`）：`eval`・`Function`・`constructor`・文字列のタイマー・`import`・`innerHTML` などを使わない。作者が書く式は JavaScript として実行せず `tools/expr.js` で計算する（`node tools/expr-sync.mjs` で写し、その `USERS` に部品を足す。[SECURITY.md](SECURITY.md)）
 - [ ] `README.md`：frontmatter の `name`・`version`（そのパーツ自身の版 X.Y.Z。1.x のパーツは最後に出た部品庫の版）・`series`（`common`＝標準パーツ・`academic`・`business`・`kokugo`・`info`・`social`・`music`・`english`）・`tier`（段：`standard` 標準・`specialized` 専門・`extra` 特殊。専門は `set`（束）も：`stats` 統計・`math` 数学・`maps` 地図・`kokugo` 国語・`english` 英語・`music` 音楽・`business` ビジネス・`tools` 道具）・あれば `display`（タグと別の名前、`<日本語> / <英語>`）・`summary`・`steps`・`props` と、いつ使うかの本文
 - [ ] `demo.html`：1〜3 枚の見本のデッキ（見せ方の種類があれば、それを並べた 1 枚を足す）。文章とデータは自作・パブリックドメイン・架空のもの
