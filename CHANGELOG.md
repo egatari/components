@@ -29,6 +29,18 @@ Versions follow [README.md § Releases and versions](README.md#releases-and-vers
 
 - `m-compare` `by="row"`; an "outside every set" region for `m-venn`; planned-vs-actual bars for `m-timeline`
 
+## 1.13.1 - 2026-10-28
+
+A bug fix only (1.x takes fixes only until Egatari Studio v0.6.3).
+
+### Fixed
+
+- `m-cycle`: render writes an attribute only when its value changes. Writing the same value again still made Chrome repaint, and on macOS re-entering the same step moved two pixels on a box's edge by up to 54/255 while the DOM stayed byte-identical (Egatari Studio's `tools/test-step-reset.mjs`, demo slide 1 step 5; about 1 run in 3). The DOM at every step is unchanged.
+
+### Tests
+
+- `tools/test-cycle-rewrite.mjs` (in `tools/test-all.mjs`): on every step of every m-cycle demo slide, entering the same step again makes no attribute mutation and keeps the DOM (19 steps; v1.13.0 fails all 19). Checked with a MutationObserver, so on every platform
+
 ## 2.0.0-rc.1 - 2026-10-27 (pre-release)
 
 Pre-release for building Egatari Studio's 2.0 host (v0.6.3). Not for lessons: Studio up to v0.6.2 stays on 1.13.x. The final 2.0.0 ships with Studio v0.6.3.
