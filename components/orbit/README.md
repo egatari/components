@@ -6,7 +6,7 @@ tier: specialized
 set: science
 summary: 月の満ち欠け（金星の満ち欠け）。北極の上から見た図と地球から見た形を並べ、月を位置から位置へ動かす。形は位置から計算する
 steps: 動く先の数（既定は 8 つの位置を新月から 1 周 = 8 段階。visit で決める）
-purposes: cycle
+purposes: model, cycle
 props: mode, hemisphere, sun, earth, moon, observer, size, dur
 ---
 

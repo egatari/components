@@ -224,6 +224,7 @@ The purposes a component can serve (shown to people as 「伝えたいこと」 
 | `contents` | Contents | Whole at once |
 | `parameter` | Varying a parameter | One value at a time |
 | `music` | Music (pitch, chords, rhythm) | One note or chord at a time |
+| `model` | How it works (a model; science models, `tile: "none"`, reached through the science set) | The whole, then the motion one stage at a time |
 
 | `deviation` | Deviation, increase and decrease (diverging bars, waterfall) | (reserved; no component yet) |
 | `concept-links` | Concept links (concept map) | (reserved; no component yet) |

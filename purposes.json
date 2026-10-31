@@ -23,6 +23,7 @@
     {"id": "timebox", "ja": "時間を区切る", "en": "Time-boxing", "steps": {"ja": "区切りを 1 つずつ（残り時間）", "en": "One phase at a time (time remaining)"}, "tile": "none", "icon": "timer"},
     {"id": "spatial", "ja": "場所・地図", "en": "Place / map", "steps": {"ja": "地図、それから地域・点・矢印を 1 つずつ", "en": "The map, then regions, points and arrows one at a time"}, "tile": "own", "icon": "map", "label": {"ja": "場所・地図", "en": "Place / map"}, "examples": {"ja": "日本地図・塗り分け・地点と矢印", "en": "map of Japan, choropleth, points and arrows"}},
     {"id": "music", "ja": "音楽（音の高さ・和音・リズム）", "en": "Music (pitch, chords, rhythm)", "steps": {"ja": "音・和音を 1 つずつ", "en": "One note or chord at a time"}, "tile": "none", "icon": "music"},
+    {"id": "model", "ja": "仕組みをモデルで見る", "en": "How it works (a model)", "steps": {"ja": "全体、それから動きを 1 段階ずつ", "en": "The whole, then the motion one stage at a time"}, "tile": "none", "icon": "cycle"},
     {"id": "deviation", "ja": "差・増減", "en": "Deviation, increase and decrease", "steps": {"ja": "基準、それから差", "en": "The baseline, then the differences"}, "reserved": true},
     {"id": "concept-links", "ja": "概念のつながり", "en": "Concept links", "steps": {"ja": "中心から外へ", "en": "From the centre outwards"}, "reserved": true}
   ]
