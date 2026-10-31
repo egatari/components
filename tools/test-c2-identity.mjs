@@ -86,8 +86,12 @@ const S = await studio();
 const work = path.resolve(args[0] || fs.mkdtempSync(path.join(os.tmpdir(), 'test-c2-identity-')));
 fs.mkdirSync(work, { recursive: true });
 const metas = partMetas(ROOT);
-const names = migratedNames(ROOT).filter((n) => !only || only.has(n));
+// Parts first written for 2.x (no folder in the baseline, e.g. m-orbit) have nothing to be identical to: listed, not compared
+const inBaseline = (n) => { try { execFileSync('git', ['cat-file', '-e', `${BASELINE}:components/${n}/index.js`], { cwd: ROOT, stdio: 'ignore' }); return true; } catch { return false; } };
+const all = migratedNames(ROOT).filter((n) => !only || only.has(n));
+const names = all.filter(inBaseline), fresh = all.filter((n) => !inBaseline(n));
 ok(names.length > 0, `migrated element parts: ${names.join(', ') || 'none'} (baseline ${BASELINE}, Studio ${pinLabel()})`);
+if (fresh.length) console.log(`--   new in 2.x, not in ${BASELINE} (nothing to compare): ${fresh.join(', ')}`);
 
 // A deck whose folder has components/<name>/index.js (Studio reads a component from the deck's folder before its vendor copy)
 function build(name, deck, which, src, code, opts) {

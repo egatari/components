@@ -1,7 +1,7 @@
 // The layout of each component (no browser):
 //   components/<name>/index.js     defines <m-<name>> (DECK.define('m-<name>', …))
 //   components/<name>/README.md    frontmatter: name (m-<name>), version (the part's own version X.Y.Z, spec §6.1; 1.x parts: 1.13.0),
-//                                  series, tier (standard | specialized | extra), set (only for specialized: stats, math, maps,
+//                                  series, tier (standard | specialized | extra), set (only for specialized: stats, math, science, maps,
 //                                  kokugo, english, music, business, tools), display (optional: "<ja> / <en>", a name other than the tag),
 //                                  summary, steps, purposes (ids in purposes.json), props,
 //                                  license (optional: an SPDX expression MIT AND <id>, for a part carrying data under another licence),
@@ -34,8 +34,8 @@ export const SERIES = ['common', 'academic', 'business', 'kokugo', 'info', 'soci
 // have no tier. The ids never change; TIER_LABEL and SET_LABEL are how CATALOG.md names them.
 export const TIERS = ['standard', 'specialized', 'extra'];
 export const TIER_LABEL = { standard: '標準', specialized: '専門', extra: '特殊' };
-export const SETS = ['stats', 'math', 'maps', 'kokugo', 'english', 'music', 'business', 'tools'];
-export const SET_LABEL = { stats: '統計', math: '数学', maps: '地図', kokugo: '国語', english: '英語', music: '音楽', business: 'ビジネス', tools: '道具' };
+export const SETS = ['stats', 'math', 'science', 'maps', 'kokugo', 'english', 'music', 'business', 'tools'];
+export const SET_LABEL = { stats: '統計', math: '数学', science: '理科', maps: '地図', kokugo: '国語', english: '英語', music: '音楽', business: 'ビジネス', tools: '道具' };
 export const DISPLAY_RE = /^[^/]+ \/ [^/]+$/;
 export const SERIES_LABEL = { common: '標準パーツ', academic: '数理・統計', business: 'ビジネス', kokugo: '国語', info: '情報', social: '地図（社会）', music: '音楽', english: '英語' };
 // Components released before demo.html was required (do not add to this list)

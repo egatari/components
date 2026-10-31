@@ -4,6 +4,14 @@ Versions follow [README.md § Releases and versions](README.md#releases-and-vers
 
 ## Unreleased
 
+### Added
+
+- `m-orbit` 2.0.0, in a new specialized set `science` (理科). It shows the phases of the Moon (`mode="moon"`) and of Venus (`mode="venus"`): a top view seen from above the North Pole beside the view from Earth, both driven by one position. Shapes come from the geometry (phase angle and lit side), not from drawn pictures. Phase labels follow the lesson language and can be set per position. It includes an observer on Earth with a line of sight, eclipse alignments (`eclipse`) and a southern-hemisphere option. Not to scale; the size ratios are attributes. It declares `preview = "none"`.
+
+### Tests
+
+- `test-c2-identity` lists parts that are new in 2.x (not in the v1.13.0 baseline) and does not compare them.
+
 ### Later (candidates, not in this release)
 
 - `m-compare` `by="row"`; an "outside every set" region for `m-venn`; planned-vs-actual bars for `m-timeline`

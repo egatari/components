@@ -58,11 +58,53 @@ document.addEventListener("DOMContentLoaded", function(){
 <div id="stage">
 
 <section class="slide">
-  <h2>部品の一覧（36 個、131 枚）</h2>
+  <h2>部品の一覧（37 個、135 枚）</h2>
   <div class="body">
     <p>部品ごとに、説明の 1 枚と見本のスライドが続きます。→ で段階を進めます。</p>
-    <p>m-score（新しい）　m-collect（変わった）　m-cycle（変わった）　m-bars　m-boxplot　m-codetree　m-compare　m-curves　m-fishbone　m-flow　m-gendai　m-heatmap　m-hissan　m-hist　m-kakijun　m-kanbun　m-keyboard　m-kobun　m-kpi　m-map-japan　m-map-world　m-market　m-menu　m-numberline　m-pie　m-predict　m-quad　m-scatter　m-seq　m-sweep　m-syntax　m-tape　m-timeline　m-timer　m-tree　m-venn</p>
+    <p>m-orbit（新しい）　m-score（新しい）　m-collect（変わった）　m-cycle（変わった）　m-bars　m-boxplot　m-codetree　m-compare　m-curves　m-fishbone　m-flow　m-gendai　m-heatmap　m-hissan　m-hist　m-kakijun　m-kanbun　m-keyboard　m-kobun　m-kpi　m-map-japan　m-map-world　m-market　m-menu　m-numberline　m-pie　m-predict　m-quad　m-scatter　m-seq　m-sweep　m-syntax　m-tape　m-timeline　m-timer　m-tree　m-venn</p>
   </div>
+</section>
+
+<section class="slide">
+  <h2>m-orbit（新しい、v2.0.0）</h2>
+  <div class="body">
+    <p>月の満ち欠け（金星の満ち欠け）。北極の上から見た図と地球から見た形を並べ、月を位置から位置へ動かす。形は位置から計算する</p>
+    <ul>
+      <li>伝えたいこと：循環</li>
+      <li>見せ方：1 種類</li>
+      <li>系列：数理・統計　見本のスライド：3 枚</li>
+    </ul>
+  </div>
+</section>
+
+<section class="slide">
+  <h2>月の満ち欠け</h2>
+  <div class="body">
+    <m-orbit style="height:440px">
+      <script type="application/json">{}</script>
+    </m-orbit>
+  </div>
+  <div class="concl"><span>→ 月の光っている半分はいつも太陽の側。地球から見える部分が変わる</span></div>
+</section>
+
+<section class="slide">
+  <h2>日食と月食</h2>
+  <div class="body">
+    <m-orbit style="height:440px">
+      <script type="application/json">{"visit": [4, 0], "eclipse": true}</script>
+    </m-orbit>
+  </div>
+  <div class="concl"><span>→ 太陽・月・地球が一直線に並ぶと、影ができる</span></div>
+</section>
+
+<section class="slide">
+  <h2>金星の満ち欠け</h2>
+  <div class="body">
+    <m-orbit mode="venus" style="height:440px">
+      <script type="application/json">{"start": 2, "visit": [3, 5, 6]}</script>
+    </m-orbit>
+  </div>
+  <div class="concl"><span>→ 地球に近いほど大きく見え、細く欠ける</span></div>
 </section>
 
 <section class="slide">
