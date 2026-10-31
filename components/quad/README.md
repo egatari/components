@@ -1,6 +1,6 @@
 ---
 name: m-quad
-version: 2.0.0
+version: 2.0.1
 series: common
 tier: standard
 summary: 2 軸の位置づけ（ポジショニングマップ・SWOT 風の 4 象限）に、点を段階ごとに 1 つずつ置く

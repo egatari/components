@@ -15,7 +15,7 @@
 // 2.0（Egatari spec §6.1 の部品）：base の MotionElement・el・mtext・prog・variant を使い、プレイヤーのグローバルは使わない。
 //   見る人の入力を戻すのは ctx.entered だけ（1.x の deck:pos の代わりはない）。動画かどうかは mount の ctx.mode。
 //   要素の大きさの問題は ctx.report("size", …)。印刷の前後は document.defaultView の beforeprint・afterprint
-egatariParts.define({name: "predict", version: "2.0.0", requires: {base: "1.0.0"}, element: "m-predict"}, function(deps){
+egatariParts.define({name: "predict", version: "2.0.1", requires: {base: "1.0.0"}, element: "m-predict"}, function(deps){
 "use strict";
 var base = deps.base;
 var CSS_ID = "predict-2-0-0-css";   // the style element this part writes, named with its name and version (spec §6.1 Identifiers)

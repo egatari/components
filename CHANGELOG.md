@@ -4,6 +4,19 @@ Versions follow [README.md § Releases and versions](README.md#releases-and-vers
 
 ## Unreleased
 
+### Later (candidates, not in this release)
+
+- `m-compare` `by="row"`; an "outside every set" region for `m-venn`; planned-vs-actual bars for `m-timeline`
+
+## 2.0.0 - 2026-10-31
+
+Components 2.0, for Egatari Studio v0.6.3 (its 2.0 host). Lessons built with Studio up to v0.6.2 keep 1.13.x. Everything in 2.0.0-rc.1 below, plus this section.
+
+- **Parts are named, versioned files** (spec §6.1): every part is `egatariParts.define({name, version, requires, element?})` and reaches the player only through the context of §8.4 (`ctx.report`, `ctx.lang`, `ctx.entered`, `ctx.reset`, `layout(ctx)`, `ctx.extend` …), not DECK globals. 36 element parts and 10 library parts. Formulas and music are rendered at build time (KaTeX, abcjs); m-kakijun's stroke data is subset per lesson.
+- **Part versions**: every part keeps its 2.0.0-rc.1 version and hash, except the five changed since: `m-timer`, `m-predict`, `m-flow`, `m-quad` and `m-cycle` are **2.0.1**. A published `name@version` never gets a second hash (`published.json`, RELEASING.md). The catalogue version is 2.0.0.
+- **The manifest** follows spec §6 Registry manifest (egatari-spec 0fcc556): `license` on every part, `withdrawn` per part version, `kind`, `tier` and `set` as in rc.1.
+- **Viewer input** (#110): m-predict `input(choice, count)` and m-timer's ±1 min through `ctx.extend` (shown when the host passes it, Studio v0.6.3); `egatari-input` events for the presenter's view. Unchanged since rc.1.
+
 ### Added
 
 - `layout(ctx)` (spec §8.4 Layout, design G1) in `m-timer` and `m-predict`: when the element's laid-out size differs from the last one (a column beside text whose fonts finish after mount; not the stage's transform scaling), the part redraws its picture and controls at the new size and reports size problems again; viewer input (counts, the learner's prediction, the extension) is kept, and so is focus: m-predict puts it back on the rebuilt control in the same row and place (a field keeps its caret); m-timer's ±1 min buttons are moved, not rebuilt. Same size or a box of size 0: nothing changes. `m-menu` measures nothing and has none (feedback from Studio's first 2.0 host, v0.6.3-c2host)
@@ -13,6 +26,8 @@ Versions follow [README.md § Releases and versions](README.md#releases-and-vers
   - `m-quad`: a quadrant name goes to the first of its quadrant's four corners (the outer one first, as before) that no point, point name or axis-end word touches; when none is free it stays in the outer corner and the point names that touch it move to another side (`ctx.report("layout", …)` when one cannot)
 
 - manifest.json (spec §6 Registry manifest, egatari-spec 0fcc556): every part's entry carries `license` (the README frontmatter `license:`, else `"MIT"`; before, only parts other than MIT had it), and a part's withdrawn versions as `withdrawn: {"<part version>": {replacement, reason, date}}` (from `yanked.json` `parts.<name>`; none yet, so no entry has it). `yanked.json` is now `{releases, parts}`; the catalogue-level `yanked` (from `releases`) is unchanged. `tier` and `set` are unchanged
+
+- `published.json` and `tools/published.mjs` (in `tools/test-all.mjs`; `tools/release.mjs` refuses otherwise): every published part version with its identity hash, seeded from 2.0.0-rc.1 (equal to its release manifest); a recorded version whose code changed fails. RELEASING.md states the rule and records new versions before tagging
 
 ### Fixed
 
@@ -24,10 +39,6 @@ Versions follow [README.md § Releases and versions](README.md#releases-and-vers
 - `tools/test-overlap.mjs` (in `tools/test-all.mjs`), with `tools/fixtures/overlap/overlap.html` (#140's data, and the cases the demos never reach): in m-flow and m-quad no two texts overlap, no edge text touches another edge's line, opposite edges without shift are drawn apart, no quadrant name touches a point or its name, and nothing is reported. All of these fail with the parts before this change
 - `tools/test-layout.mjs` (in `tools/test-all.mjs`): `m-timer` and `m-predict` — five layout calls at the same size (`instant: true, entered: false`; spec 0bb840d: a player may call it on every resize) make no mutation, keep viewer input, focus and caret, and report nothing; at a new size one svg at that size, children in the mount order, one live region and one set of controls per choice, viewer input kept, focus on a control kept (m-predict's counter button, prediction and field with its caret; m-timer's button), reports only `size` with the part's prefix; a box of size 0 keeps the drawing
 - The test-only registry shim (`tools/registry-shim.js`): the render it makes after a part's `layout` redraws the same position, so it no longer counts as entering the slide (it had cleared viewer input when a `deck:pos` came without a render; caught by `tools/test-timer.mjs` and `tools/test-predict.mjs` once the parts had `layout`), and it calls `layout` on a change of the laid-out size (clientWidth/Height) from the size at mount, not on the transformed box or on the observer's first notification (on macOS CI that late call re-rendered m-timer after a test's hand-made render and hid its buttons). `tools/test-layout.mjs` checks the shim's own calls
-
-### Later (candidates, not in this release)
-
-- `m-compare` `by="row"`; an "outside every set" region for `m-venn`; planned-vs-actual bars for `m-timeline`
 
 ## 1.13.1 - 2026-10-28
 

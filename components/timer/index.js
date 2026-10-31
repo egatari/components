@@ -12,7 +12,7 @@
 // 2.0（Egatari spec §6.1 の部品）：base の MotionElement・el・prog を使い、プレイヤーのグローバルは使わない。
 //   延長を戻すのは ctx.entered だけ（1.x の deck:pos の代わりはない）。日本語かどうかは mount の ctx.lang、動画かどうかは ctx.mode。
 //   要素の大きさの問題は ctx.report("size", …)。印刷の前後は document.defaultView の beforeprint・afterprint
-egatariParts.define({name: "timer", version: "2.0.0", requires: {base: "1.0.0"}, element: "m-timer"}, function(deps){
+egatariParts.define({name: "timer", version: "2.0.1", requires: {base: "1.0.0"}, element: "m-timer"}, function(deps){
 "use strict";
 var base = deps.base;
 var CSS_ID = "timer-2-0-0-css";   // the style element this part writes, named with its name and version (spec §6.1 Identifiers)

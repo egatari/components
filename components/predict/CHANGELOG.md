@@ -2,7 +2,11 @@
 
 The part's own versions (Egatari spec §6.1). Releases of the whole library are in the repository's CHANGELOG.md.
 
-## 2.0.0 (components 2.0, alpha; not for lessons yet)
+## 2.0.1 (components 2.0.0)
+
+- `layout(ctx)` (spec §8.4 Layout): at a new laid-out size the part redraws its picture and controls at that size, keeping the viewer's counts and prediction, and puts focus back on the rebuilt control in the same row and place (a field keeps its caret). Same size or a box of size 0: nothing changes (tools/test-layout.mjs).
+
+## 2.0.0 (components 2.0.0-rc.1)
 
 - Moved to `egatariParts.define({name: "predict", version: "2.0.0", requires: {base: "1.0.0"}, element: "m-predict"})`,
   extending `base.MotionElement` with `base.el` / `mtext` / `prog` / `variant`; `static partName = "predict"`.

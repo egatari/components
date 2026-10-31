@@ -2,7 +2,11 @@
 
 The part's own versions (Egatari spec §6.1). Releases of the whole library are in the repository's CHANGELOG.md.
 
-## 2.0.0 (components 2.0, alpha; not for lessons yet)
+## 2.0.1 (components 2.0.0)
+
+- Text kept clear (#140): a quadrant name goes to the first of its quadrant's four corners (the outer one first, as before) that no point, point name or axis-end word touches; when none is free it stays in the outer corner and point names that touch it move (`ctx.report("layout", …)` when one cannot). The demos draw as in 2.0.0 (tools/test-c2-identity.mjs, tools/test-overlap.mjs).
+
+## 2.0.0 (components 2.0.0-rc.1)
 
 - Moved to `egatariParts.define({name: "quad", version: "2.0.0", requires: {base: "1.0.0"}, element: "m-quad"})`,
   extending `base.MotionElement` with `base.el` / `prog` / `lerp` / `clamp` / `previewOpacity`; `static partName = "quad"`.

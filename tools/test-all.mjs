@@ -92,6 +92,7 @@ const TESTS = [
   ['map-data', ['tools/map/build-japan.mjs', '--check']],
   ['map-data-world', ['tools/map/build-world.mjs', '--check']],
   ['release', ['tools/release.mjs', '--check']],
+  ['published', ['tools/published.mjs']],
   ['test-expr', ['tools/test-expr.mjs']],
   ['test-yanked', ['tools/test-yanked.mjs']],
   ['test-variant', ['tools/test-variant.mjs']],

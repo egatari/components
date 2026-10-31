@@ -2,7 +2,7 @@
 
 The part's own versions (Egatari spec §6.1). Releases of the whole library are in the repository's CHANGELOG.md.
 
-## 2.0.0 (components 2.0, alpha; not for lessons yet)
+## 2.0.0 (components 2.0.0-rc.1 and 2.0.0)
 
 - Moved to `egatariParts.define({name: "sweep", version: "2.0.0", requires: {base: "1.0.0", expr: "1.0.0", plot: "1.0.0"},
   element: "m-sweep"})`, extending `base.MotionElement` with `base.el` / `mtext` / `prog` / `lerp` / `previewOpacity` and

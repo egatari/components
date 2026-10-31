@@ -2,7 +2,11 @@
 
 The part's own versions (Egatari spec §6.1). Releases of the whole library are in the repository's CHANGELOG.md.
 
-## 2.0.0 (components 2.0, alpha; not for lessons yet)
+## 2.0.1 (components 2.0.0)
+
+- Text kept clear (#140): two edges between the same two boxes in opposite directions, neither with `shift` or `loop`, are drawn 10 px each to their right. An edge's label and amount keep clear of the other edges' lines, of texts placed before them and of places where another line runs between the text and its own line; the amount may go to the label's side. When no place is free, `ctx.report("layout", …)`. The demos draw as in 2.0.0 (tools/test-c2-identity.mjs, tools/test-overlap.mjs).
+
+## 2.0.0 (components 2.0.0-rc.1)
 
 - Moved to `egatariParts.define({name: "flow", version: "2.0.0", requires: {base: "1.0.0", "markup-reader": "1.0.0"}, element: "m-flow"})`,
   extending `base.MotionElement` with `base.el` / `mtext` / `prog` / `lerp` / `previewOpacity`; `static partName = "flow"`.

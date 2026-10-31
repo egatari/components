@@ -32,6 +32,7 @@ import { partMeta, partClass } from './parts.mjs';
 import { writeTarGz, readTarGz } from './tar.mjs';
 import { identityBytes, normalizeEol } from './identity.mjs';
 import { frontmatter, lint, flags } from './lint.mjs';
+import { problems as publishedProblems } from './published.mjs';
 
 export const NAME = 'egatari-components';
 export const REPOSITORY = 'https://github.com/egatari/components';
@@ -85,6 +86,8 @@ export function readWithdrawn(name, current, file = readYankedFile()) {
 
 export function release(version) {
   if (!/^\d+\.\d+\.\d+(-rc\.\d+)?$/.test(version)) throw new Error(`version ${version} is not X.Y.Z or X.Y.Z-rc.N`);
+  const pe = publishedProblems();
+  if (pe.length) throw new Error('published.json:\n  ' + pe.join('\n  '));
   const errs = lint(ROOT);
   if (errs.length) throw new Error('lint:\n  ' + errs.join('\n  '));
   const entries = [['LICENSE', fs.readFileSync(path.join(ROOT, 'LICENSE'))]];

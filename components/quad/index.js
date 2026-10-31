@@ -8,7 +8,7 @@
 // 点は既定で 1 つ = 1 段階（step で直接、at で段階の中の開始秒）。self の点は強調の色で大きく、着いたときに輪が広がる
 // to は移動先：to.step（既定は点の次の段階）に、点が破線の跡を引きながら滑る
 // 2.0（Egatari spec §6.1 の部品）：base の MotionElement・el・prog・lerp・clamp・previewOpacity を使い、プレイヤーのグローバルは使わない
-egatariParts.define({name: "quad", version: "2.0.0", requires: {base: "1.0.0"}, element: "m-quad"}, function(deps){
+egatariParts.define({name: "quad", version: "2.0.1", requires: {base: "1.0.0"}, element: "m-quad"}, function(deps){
 "use strict";
 var base = deps.base;
 return class extends base.MotionElement {

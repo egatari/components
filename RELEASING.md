@@ -2,7 +2,9 @@
 
 Only the maintainer releases. To withdraw a release, add it to `yanked.json` under `releases`, or a part's version under `parts.<name>` (with a later replacement) and make a new version: published assets and tags are not touched. **A tag is never moved, deleted and recreated, or reused.** If a release is wrong, make the next version.
 
-1. On `main`, with CI green: set `version` in `package.json` to `X.Y.Z`, move `## Unreleased` in `CHANGELOG.md` to `## X.Y.Z - <date>`, commit and push. Wait for CI to be green on all three systems.
+**A published part version never gets a second hash.** Once a release, a pre-release included, has published `name@version`, that part's code (`index.js`) never changes under that version: any change to it bumps the part's version (README `version:`, the `egatariParts.define` meta, a section in the part's `CHANGELOG.md`), even when the catalogue version does not change (part versions differ from the catalogue's by design, spec §6.1). `published.json` records every published `name@version` with its identity hash, from 2.0.0-rc.1 on; `node tools/published.mjs` (in `npm test`, and `tools/release.mjs` refuses to run otherwise) fails when a recorded version's code has changed.
+
+1. On `main`, with CI green: set `version` in `package.json` to `X.Y.Z`, move `## Unreleased` in `CHANGELOG.md` to `## X.Y.Z - <date>`, run `node tools/published.mjs --record` (adds the new part versions to `published.json`), commit and push. Wait for CI to be green on all three systems.
 2. Make the assets from a clean checkout of that commit:
    ```bash
    git status --short            # nothing

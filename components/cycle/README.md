@@ -1,6 +1,6 @@
 ---
 name: m-cycle
-version: 2.0.0
+version: 2.0.1
 series: common
 tier: standard
 summary: 循環の図。段階の箱を円の上に 12 時から時計回りに並べ、円に沿った矢印でつなぐ（最後から最初へ戻る矢印も）

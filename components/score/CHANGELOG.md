@@ -2,7 +2,7 @@
 
 The part's own versions (Egatari spec §6.1). Releases of the whole library are in the repository's CHANGELOG.md.
 
-## 2.0.0 (components 2.0, alpha; not for lessons yet)
+## 2.0.0 (components 2.0.0-rc.1 and 2.0.0)
 
 The first version of m-score: it was never released in 1.x (branch `m-score`, last 1.x-form commit cc0e60a).
 

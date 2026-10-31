@@ -15,7 +15,7 @@
 // この部品は markup-reader で決まった要素と属性だけを読んで置く（再生のときに KaTeX は動かない）。描いた結果がなければ tex を字のまま出して知らせる。
 // データの問題（ない箱を指す辺）と、入らないときは ctx.report で知らせる（1.x の console.warn の代わり）。
 // 配置を決める内部の関数は arrange(size)（1.x の layout(size)。2.0 の layout(ctx) は再生器が呼ぶので名前を分けた）
-egatariParts.define({name: "cycle", version: "2.0.0", requires: {base: "1.0.0", "markup-reader": "1.0.0"}, element: "m-cycle"}, function(deps){
+egatariParts.define({name: "cycle", version: "2.0.1", requires: {base: "1.0.0", "markup-reader": "1.0.0"}, element: "m-cycle"}, function(deps){
 "use strict";
 var base = deps.base, MR = deps["markup-reader"];
 var Part = class extends base.MotionElement {

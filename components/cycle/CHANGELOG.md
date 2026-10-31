@@ -2,7 +2,11 @@
 
 The part's own versions (Egatari spec §6.1). Releases of the whole library are in the repository's CHANGELOG.md.
 
-## 2.0.0 (components 2.0, alpha; not for lessons yet)
+## 2.0.1 (components 2.0.0)
+
+- Render writes an attribute only when its value changes (the 1.13.1 fix): writing the same value again made Chrome repaint, and on macOS re-entering a step moved two pixels. The DOM at every step is unchanged (tools/test-cycle-rewrite.mjs).
+
+## 2.0.0 (components 2.0.0-rc.1)
 
 - Moved to `egatariParts.define({name: "cycle", version: "2.0.0", requires: {base: "1.0.0", "markup-reader": "1.0.0"}, element: "m-cycle"})`,
   extending `base.MotionElement` with `base.el` / `mtext` / `prog` / `lerp` / `variant` / `previewOpacity`; `static partName = "cycle"`. The embedded variant block is gone (`base.variant`).
