@@ -5,6 +5,7 @@
 //     caller's class (term, emph, muted) and nothing is hard-coded. An unknown name draws an empty dashed box of the same
 //     size and calls missing("unknown icon 'x' (did you mean …)") once per call, if given
 //   has(name), names() (the names this copy carries), near(name) (up to 3 carried names by edit distance)
+// Its build (subset by name) is a member of the value the factory returns (spec §6.2, egatari-spec 3d4ead0).
 // The data block is written by tools/icons-import.mjs (do not edit it by hand). The producer keeps only the icons a lesson
 // names (spec §6.2, match: "name"), so in a lesson `names()` lists only those; the full list is names.txt next to this file.
 egatariParts.define({name: "icons", version: "1.0.0", requires: {}}, function(){

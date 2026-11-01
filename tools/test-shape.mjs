@@ -22,6 +22,7 @@ const WRONG = {
   'm-curves': '<script type="application/json">{"xr": [0, 10], "series": [{"label": "需要", "fn": "10 - u"}]}</script>',
   'm-fishbone': '<script type="application/json">{"nodes": [{"id": "p", "label": "人"}]}</script>',
   'm-flow': '<script type="application/json">{"nodes": [{"id": "a", "label": "観測"}]}</script>',
+  'm-cards': '<script type="application/json">{"cards": [{"title": "one"}]}</script>',
   'm-kpi': '<script type="application/json">{"cards": [{"label": "時間", "value": "62"}]}</script>',
   'm-market': '<script type="application/json">[{"key": "TAM", "value": 3000}]</script>',
   'm-quad': '<script type="application/json">{"items": [{"label": "A 社", "x": "0.2", "y": 0.3}]}</script>',

@@ -26,6 +26,6 @@ I.names();            // the names this copy carries (in a lesson, only the ones
 作る人向けの注
 
 - **データ**：`/*@egatari-block icons*/` と `/*@egatari-block-end*/` の間は `node tools/icons-import.mjs` が書く（手で直さない）。npm の `@tabler/icons` の tarball を版（`PIN`）と sha256 で固定して取り込み、`tabler-nodes-outline.json` の各 path の `d` だけを残す。`fill="currentColor"` の path は先頭に `+`、`fill="currentColor" stroke="none"` は `*`。`brand-*`（商標。MIT が許すのは絵で、印ではない）と塗りの版（filled）は入れない。Tabler を上げるのは `PIN` を書き換える明示の更新だけ。`--check` は区切りの中・`names.txt`・知らせが合っていることを確かめる（ネットワークなし）
-- **絞り込み**（仕様 §6.2 subset by name、`match: "name"`）：ファクトリの返す値の `build` で宣言する（ライブラリ部品の宣言の置き場。standards 決定 2026-11-01）。組み立てはレッスンの字句（a–z・0–9・`-` 以外で区切った語）と完全に一致する名前だけを残す。`chart-bar-popular` は `chart-bar` を残さない。`keep` はない（`m-cards` は名前をすべてレッスンのデータから取る）
+- **絞り込み**（仕様 §6.2 subset by name、`match: "name"`）：ファクトリの返す値の `build` で宣言する（ライブラリ部品の宣言の置き場。仕様 3d4ead0）。組み立てはレッスンの字句（a–z・0–9・`-` 以外で区切った語）と完全に一致する名前だけを残す。`chart-bar-popular` は `chart-bar` を残さない。`keep` はない（`m-cards` は名前をすべてレッスンのデータから取る）
 - **ライセンス**：MIT（Tabler Icons、Copyright (c) 2020-2026 Paweł Kuna）。`LICENSE-tabler.txt` とリポジトリの `NOTICE`、区切りの中の `_notice` が対になる（絞り込んでも `_notice` は残る）
 <!-- llm: end -->
