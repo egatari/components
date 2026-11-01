@@ -11,6 +11,7 @@ Versions follow [README.md § Releases and versions](README.md#releases-and-vers
 ### Tests
 
 - `test-c2-identity` lists parts that are new in 2.x (not in the v1.13.0 baseline) and does not compare them.
+- Subset by name (spec §6.2, egatari-spec 87175aa): `tools/subset-produce.mjs` accepts `match: "name"` entries with `keep`, and records `subset.names` beside `keys`. `test-subset` checks it on a stand-in part, including that `chart-bar-popular` does not keep `chart-bar`.
 
 ### Later (candidates, not in this release)
 

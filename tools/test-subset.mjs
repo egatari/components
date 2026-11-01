@@ -13,13 +13,17 @@
 //      subset part as with the full part, at every step; a character the subset left out (い) is drawn plainly and reported
 //      once as data, no exception
 //   7. the subset size for あさ and for the part's demo
+//   8. subset by name (spec 87175aa, match: "name"), on a small stand-in part: a key is kept only when it equals a token of the
+//      lesson's text split at every character outside a-z, 0-9 and "-" (chart-bar-popular does not keep chart-bar; Chart-Bar
+//      does not either), `keep` names are always kept, the record is {keys: char keys, names: [code point order]}, an
+//      editor applying the record gets the same bytes, and bad declarations are refused
 //   node tools/test-subset.mjs [work dir]
 import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
 import { ROOT, studio } from './studio.mjs';
 import { partClass, c2Bundle } from './parts.mjs';
-import { subsetSpecs, subsetCode, blockOf, produce, sha256, BLOCK } from './subset-produce.mjs';
+import { subsetSpecs, subsetCode, blockOf, produce, sha256, BLOCK, lessonTokens } from './subset-produce.mjs';
 
 let fails = 0;
 const ok = (cond, msg) => { console.log((cond ? 'ok   ' : 'FAIL ') + msg); if (!cond) fails++; };
@@ -80,6 +84,33 @@ const demo = produce(full, [fs.readFileSync(path.join(ROOT, 'components', 'kakij
 const kb = (n) => (n / 1024).toFixed(1) + ' KB';
 console.log(`     subset sizes: あさ ${kb(Buffer.byteLength(r.code))}; demo.html (${Array.from(demo.keys).length} characters: ${demo.keys}) ${kb(Buffer.byteLength(demo.code))}; full ${kb(Buffer.byteLength(full))}`);
 ok(Buffer.byteLength(r.code) < Buffer.byteLength(full) / 4 && Buffer.byteLength(demo.code) < Buffer.byteLength(full), 'the subsets are smaller than the full part');
+
+// 8
+const namePart = (subset, icons = { _notice: 'MIT (stand-in)', 'arrow-right': ['M5 12h14'], 'chart-bar': ['M3 13h4v8H3z'], 'chart-bar-popular': ['M3 13h4'], home: ['M5 12l7-7 7 7'], user: ['M8 7a4 4 0 1 0 8 0'], x: ['M18 6 6 18'] }) =>
+  `// stand-in\negatariParts.define({name: "m-names", version: "1.0.0", element: true}, () => class extends DECK.MotionElement {\n  static build = ${JSON.stringify({ subset })};\n` +
+  `  static icons = /*@egatari-block icons*/${JSON.stringify(icons, null, 1)}/*@egatari-block-end*/;\n  static marks = /*@egatari-block marks*/{"_n":1,"あ":1,"い":1}/*@egatari-block-end*/;\n});\n`;
+const NJS = namePart([{ data: 'block:icons', key: 'name', match: 'name', keep: ['x'] }, { data: 'block:marks', key: 'char' }]);
+const NLESSON = `<section class="slide"><h2>あ</h2><m-cards><script type="application/json">{"cards":[{"icon":"chart-bar-popular","title":"Home"},{"icon":"user"}]}</script></m-cards>
+<p>Chart-Bar, chart_bar, chart-bar2, CHART-BAR</p><!-- home --></section>`;
+const nr = produce(NJS, [NLESSON]);
+const NB = block(nr.code, 'icons');
+ok(JSON.stringify(subsetSpecs(NJS).map((x) => [x.match, x.keep])) === JSON.stringify([['name', ['x']], ['char', []]]), 'match defaults to "char"; a name entry carries its keep');
+ok(!lessonTokens([NLESSON]).has('chart-bar') && lessonTokens([NLESSON]).has('chart-bar-popular') && lessonTokens([NLESSON]).has('chart') && !lessonTokens([NLESSON]).has('home'),
+  'tokens: chart-bar-popular stays whole, "_" and case split or differ, comments do not count');
+ok(JSON.stringify(Object.keys(NB)) === JSON.stringify(['_notice', 'chart-bar-popular', 'user', 'x']) && !('chart-bar' in NB) && !('home' in NB) && !('arrow-right' in NB),
+  `chart-bar-popular does not keep chart-bar; Chart-Bar, chart_bar, chart-bar2 and a commented home do not keep anything; keep: ["x"] is kept (${JSON.stringify(Object.keys(NB))})`);
+ok(nr.keys === 'あ' && JSON.stringify(nr.names) === JSON.stringify(['chart-bar-popular', 'user', 'x']) && JSON.stringify(Object.keys(block(nr.code, 'marks'))) === JSON.stringify(['_n', 'あ']),
+  `record: keys ${JSON.stringify(nr.keys)} (char entries only), names ${JSON.stringify(nr.names)} in code point order`);
+const ne = subsetCode(NJS, nr.keys, [...nr.names].reverse());
+ok(ne.code === nr.code && sha256(ne.code) === nr.sha256 && JSON.stringify(ne.names) === JSON.stringify(nr.names), 'an editor applying the recorded keys and names (in any order) gets the same bytes and hash');
+ok(produce(full, [LESSON]).names === undefined, 'a part with char entries only records no names');
+const NJS2 = namePart([{ data: 'block:icons', key: 'name', match: 'name' }]);
+const n2 = produce(NJS2, ['<p>nothing here</p>']);
+ok(n2.keys === '' && JSON.stringify(n2.names) === '[]' && JSON.stringify(Object.keys(block(n2.code, 'icons'))) === JSON.stringify(['_notice']), 'no name used: keys "", names [], only the "_" members stay');
+const throws = (f) => { try { f(); return false; } catch { return true; } };
+ok(throws(() => subsetSpecs(namePart([{ data: 'block:icons', key: 'name', match: 'word' }]))) && throws(() => subsetSpecs(namePart([{ data: 'block:icons', key: 'name', match: 'name', keep: ['Bad'] }])))
+  && throws(() => subsetSpecs(namePart([{ data: 'block:marks', key: 'char', keep: ['x'] }]))) && throws(() => produce(namePart([{ data: 'block:icons', key: 'name', match: 'name' }], { Home: [] }), ['Home'])),
+  'refused: an unknown match, a keep name outside ^[a-z0-9]+(-[a-z0-9]+)*$, keep on a char entry, a name block key that is not a name');
 
 // 6
 const S = await studio();
