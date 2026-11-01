@@ -4,6 +4,14 @@ Versions follow [README.md § Releases and versions](README.md#releases-and-vers
 
 ## Unreleased
 
+### Later (candidates, not in this release)
+
+- `m-compare` `by="row"`; an "outside every set" region for `m-venn`; planned-vs-actual bars for `m-timeline`
+
+## 2.1.0 - 2026-11-01
+
+For Egatari Studio v0.6.4. New parts only: no part released in 2.0.0 changes, except `m-keyboard` 2.0.1 (a clearer error). Studio needs subset by name (spec §6.2) before lessons use `m-cards`; without it, a lesson carries the whole `icons` block.
+
 ### Added
 
 - `m-orbit` 2.0.0, in a new specialized set `science` (理科), with the new purpose `model` (仕組みをモデルで見る; `tile: "none"`, reached through the science set). It shows the phases of the Moon (`mode="moon"`) and of Venus (`mode="venus"`): a top view seen from above the North Pole beside the view from Earth, both driven by one position. Shapes come from the geometry (phase angle and lit side), not from drawn pictures. Phase labels follow the lesson language and can be set per position. It includes an observer on Earth with a line of sight, eclipse alignments (`eclipse`) and a southern-hemisphere option. Not to scale; the size ratios are attributes. It declares `preview = "none"`.
@@ -22,10 +30,6 @@ Versions follow [README.md § Releases and versions](README.md#releases-and-vers
 - `test-cards`: m-cards' list roles and labels, fitting and its report, unknown icon and bad `hilite` reports, grid and arrows.
 - `test-icons`: the import agrees with the pin, subset by name on the real data, and `svg()` in a browser. `lint` no longer reads a data block's strings as code.
 - Subset by name (spec §6.2, egatari-spec 87175aa): `tools/subset-produce.mjs` accepts `match: "name"` entries with `keep`, and records `subset.names` beside `keys`. `test-subset` checks it on a stand-in part, including that `chart-bar-popular` does not keep `chart-bar`.
-
-### Later (candidates, not in this release)
-
-- `m-compare` `by="row"`; an "outside every set" region for `m-venn`; planned-vs-actual bars for `m-timeline`
 
 ## 2.0.0 - 2026-10-31
 

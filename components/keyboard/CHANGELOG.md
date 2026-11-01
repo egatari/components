@@ -2,7 +2,7 @@
 
 The part's own versions (Egatari spec §6.1). Releases of the whole library are in the repository's CHANGELOG.md.
 
-## 2.0.1 (unreleased)
+## 2.0.1 (components 2.1.0)
 
 - Keys outside `range`: the error lists every such key and names a range that covers all keys in `steps`, with white
   keys at both ends and 12–36 semitones (e.g. `use C4-D5`). When the keys span more than 3 octaves, it says to split
