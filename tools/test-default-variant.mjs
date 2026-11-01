@@ -1,6 +1,7 @@
 // The default variant does not change by a single pixel (docs/conventions.md §1.6). The default is the first name in
 // `static variants` (tools/variant.js; there is no lesson seed since egatari-spec 28d8801, and releases up to v1.10.0 drew
-// the same variant for a lesson without one). For every component with variants that existed in the baseline release, build
+// the same variant for a lesson without one). A 2.x baseline part goes through the same registry shim bundle as the current one.
+// For every component with variants that existed in the baseline release, build
 // the baseline's demo.html twice, once with the baseline's index.js and once with the current one, and compare screenshots at
 // each step (35 %, 70 % and the final state). Demo slides that name a variant are compared too: a named variant must not change
 // either (the runtime's interface hidden, and the anti-aliasing tolerance of tools/shot-helpers.mjs).
@@ -20,6 +21,7 @@ import { execFileSync } from 'node:child_process';
 import { ROOT, studio } from './studio.mjs';
 import { VARIANT_PARTS as USERS } from './variant-sync.mjs';
 import { baseline } from './baseline.mjs';
+import { partMeta } from './parts.mjs';
 import { LAUNCH, TOLERANCE, hideChrome, settle, pixelDiff } from './shot-helpers.mjs';
 
 const git = (...a) => execFileSync('git', a, { cwd: ROOT, encoding: 'utf8' });
@@ -38,6 +40,10 @@ for (const name of USERS) {
   try { oldJs = git('show', `${base}:components/${name}/index.js`); demo = git('show', `${base}:components/${name}/demo.html`); }
   catch { console.log(`-- ${name}: not in ${base} (new component, nothing to compare)`); continue; }
   const cd = S.compDir(name), cur = fs.readFileSync(path.join(cd, 'index.js'), 'utf8');
+  // a 2.x baseline part is served like the current one (tools/parts.mjs c2Bundle: the registry shim and the parts it requires),
+  // with the baseline's own code in place of the current part's; a 1.x baseline part stands alone
+  const curPart = fs.readFileSync(path.join(ROOT, 'components', name, 'index.js'), 'utf8');
+  if (partMeta(oldJs) && cur.split(curPart).length === 2) oldJs = cur.split(curPart).join(oldJs);
   const shots = {};
   const mask = MASKED_IN[name] && older(base.slice(1), MASKED_IN[name].since) ? MASKED_IN[name] : null;
   if (mask) console.log(`-- ${name}: controls hidden against ${base} (text size changed on purpose in v${mask.since})`);

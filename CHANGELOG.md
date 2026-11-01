@@ -25,6 +25,7 @@ For Egatari Studio v0.6.4. New parts only: no part released in 2.0.0 changes, ex
 
 ### Tests
 
+- `test-default-variant` serves a 2.x baseline part through the same registry shim bundle as the current part (against v2.0.0, the bare baseline code defined nothing).
 - `test-c2-identity` lists parts that are new in 2.x (not in the v1.13.0 baseline) and does not compare them.
 - Lesson text for subsetting (spec §6.2, egatari-spec 6f2670b): `tools/subset-produce.mjs` counts text nodes and attribute values (references decoded), the data passed to parts as parsed JSON (names, strings, numbers; invalid JSON as written), the narration as written and the part's `glyphs` (character references decoded as an HTML parser does, with the full WHATWG table in `tools/html-entities.json`), and no longer counts tag and attribute names, comments, `<style>` or other `<script>`. Keys must be strings. A lesson producer warns about a bad declaration and keeps the part whole; `lint` rejects such a part. With the glyphs counted, `m-kakijun` lessons now also keep the strokes of と め は ね ら い (about 7 KB). `test-subset` covers these rules.
 - `test-cards`: m-cards' list roles and labels, fitting and its report, unknown icon and bad `hilite` reports, grid and arrows.
