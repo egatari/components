@@ -1,4 +1,4 @@
-// The stand-in for the producer's subset step (Egatari spec §6.2 Subset, egatari-spec ce96072; subset by name 87175aa; library parts 3d4ead0; lesson text, string keys and bad declarations 6f2670b), as Studio's build will do it,
+// The stand-in for the producer's subset step (Egatari spec §6.2 Subset, egatari-spec ce96072; subset by name 87175aa; library parts 3d4ead0; lesson text, string keys and bad declarations 6f2670b; parsed with parse5 c6024bf), as Studio's build will do it,
 // and the reference for whoever writes that: a part declares `static build = {subset: {data, key}}` (or an array of such
 // entries); the producer keeps only the entries whose keys occur in the lesson's text and records `subset: {keys, sha256}` in
 // the part's index.components entry (whose sha256 stays that of the published part). An editor applies the same subset to
@@ -26,6 +26,7 @@ import path from 'node:path';
 import { createHash } from 'node:crypto';
 import { fileURLToPath } from 'node:url';
 import { partDeclarations, partMeta } from './parts.mjs';
+import * as parse5 from 'parse5';   // devDependency, pinned 8.0.1 (Studio's)
 import { normalizeEol } from './identity.mjs';
 
 export const sha256 = (s) => createHash('sha256').update(normalizeEol(Buffer.from(s, 'utf8'))).digest('hex');
@@ -102,45 +103,12 @@ export function subsetCode(js, keys, names = []) {
   return { code, keys: [...kc].sort(cpOrder).join(''), names: specs.some((sp) => sp.match === 'name') ? [...kn].sort(cpOrder) : null };
 }
 
-// The lesson's text (spec §6.2, egatari-spec 6f2670b), piece by piece, the pieces joined by a line feed:
-//   counted      text nodes and attribute values of the slide source (character references decoded); the narration as
-//                written; the data passed to parts (<script type="application/json"> children) as parsed JSON: member names,
-//                string values and numbers (String(n)), in document order (invalid JSON: one piece, as written); the
-//                part's glyphs
-//   not counted  comments, tag and attribute names, other <script> and <style> contents
+// The lesson's text (spec §6.2, egatari-spec 6f2670b and c6024bf), piece by piece, the pieces joined by a line feed:
+//   counted      the slide source's pieces as an HTML parser yields them (htmlPieces); the narration as written; the data
+//                passed to parts (<script type="application/json"> children) as parsed JSON: member names, string values
+//                and numbers (String(n)), in tree order (invalid JSON: one piece, as written); the part's glyphs
+//   not counted  the doctype, comments, tag and attribute names, <style> and other <script> contents
 // A lesson is a list of sources: {html: "…"} (deck.html), {narration: "…"} (narration.md), or a string (= html).
-// Character references as an HTML parser yields them (WHATWG HTML §13.2.5.72–80): the full named table
-// (tools/html-entities.json; the longest name that matches, legacy names also without ";", but in an attribute value not
-// when the name lacks ";" and the next character is "=" or alphanumeric), numeric references with or without ";" (0,
-// surrogates and values past U+10FFFF become U+FFFD, 0x80–0x9F the windows-1252 characters). Unknown references stay.
-const ENT = JSON.parse(fs.readFileSync(new URL('./html-entities.json', import.meta.url), 'utf8'));
-const ENT_MAX = Math.max(...Object.keys(ENT).map((k) => k.length));
-const W1252 = { 0x80: 0x20ac, 0x82: 0x201a, 0x83: 0x192, 0x84: 0x201e, 0x85: 0x2026, 0x86: 0x2020, 0x87: 0x2021, 0x88: 0x2c6, 0x89: 0x2030, 0x8a: 0x160, 0x8b: 0x2039,
-  0x8c: 0x152, 0x8e: 0x17d, 0x91: 0x2018, 0x92: 0x2019, 0x93: 0x201c, 0x94: 0x201d, 0x95: 0x2022, 0x96: 0x2013, 0x97: 0x2014, 0x98: 0x2dc, 0x99: 0x2122, 0x9a: 0x161,
-  0x9b: 0x203a, 0x9c: 0x153, 0x9e: 0x17e, 0x9f: 0x178 };
-export function decodeRefs(s, attr = false) {
-  let out = '', i = 0;
-  while (i < s.length) {
-    const a = s.indexOf('&', i);
-    if (a < 0) { out += s.slice(i); break; }
-    out += s.slice(i, a);
-    i = a + 1;
-    const num = /^#(?:[xX]([0-9a-fA-F]+)|([0-9]+));?/.exec(s.slice(i, i + 40));
-    if (num) {
-      let n = num[1] !== undefined ? parseInt(num[1], 16) : parseInt(num[2], 10);
-      if (n === 0 || n > 0x10ffff || (n >= 0xd800 && n <= 0xdfff) || !Number.isFinite(n)) n = 0xfffd;
-      else if (W1252[n]) n = W1252[n];
-      out += String.fromCodePoint(n);
-      i += num[0].length;
-      continue;
-    }
-    let hit = null;
-    for (let len = Math.min(ENT_MAX, s.length - i); len > 0; len--) { const k = s.slice(i, i + len); if (Object.prototype.hasOwnProperty.call(ENT, k) && k !== '_source') { hit = k; break; } }
-    if (hit && !(attr && !hit.endsWith(';') && /[=A-Za-z0-9]/.test(s[i + hit.length] || ''))) { out += ENT[hit]; i += hit.length; }
-    else out += '&';
-  }
-  return out;
-}
 export function jsonPieces(v, out = []) {
   if (typeof v === 'string') out.push(v);
   else if (typeof v === 'number') out.push(String(v));
@@ -148,33 +116,32 @@ export function jsonPieces(v, out = []) {
   else if (v && typeof v === 'object') for (const k of Object.keys(v)) { out.push(k); jsonPieces(v[k], out); }
   return out;
 }
+// The slide source's pieces, as an HTML parser yields them (spec §6.2, egatari-spec c6024bf): the source parsed as a whole
+// document (parse5.parse, scripting enabled: <noscript> holds one raw text node) and walked in tree order. Counted: text
+// nodes (CDATA in SVG and MathML is text), attribute values as the parser keeps them (the first of any duplicates), template
+// contents, and <script type="application/json"> contents as parsed JSON. Not counted: the doctype, comments, <style> and
+// any other <script>. Character references and line endings are the parser's.
 export function htmlPieces(html) {
-  const out = [], s = String(html).replace(/\r\n?/g, '\n'), re = /<!--[\s\S]*?(?:-->|$)|<(\/?)([a-zA-Z][^\s/>]*)((?:[^>"']|"[^"]*"|'[^']*')*)>/g;
-  let at = 0, m;
-  const text = (t) => { if (t) out.push(decodeRefs(t)); };
-  while ((m = re.exec(s))) {
-    text(s.slice(at, m.index));
-    at = re.lastIndex;
-    if (!m[2]) continue;   // a comment
-    const tag = m[2].toLowerCase(), attrs = {};
-    for (const a of m[3].matchAll(/([^\s=/>"']+)(?:\s*=\s*("([^"]*)"|'([^']*)'|([^\s>"']+)))?/g)) {
-      if (a[2] === undefined) continue;
-      const v = a[3] ?? a[4] ?? a[5];
-      attrs[a[1].toLowerCase()] = v;
-      out.push(decodeRefs(v, true));
-    }
-    if (!m[1] && (tag === 'script' || tag === 'style')) {
-      const close = s.toLowerCase().indexOf('</' + tag, at), body = s.slice(at, close < 0 ? s.length : close);
-      if (tag === 'script' && /^application\/json$/i.test((attrs.type || '').trim())) {
+  const out = [];
+  const walk = (n) => {
+    if (n.nodeName === '#text') { out.push(n.value); return; }
+    if (n.nodeName === '#comment' || n.nodeName === '#documentType') return;
+    if (n.attrs) for (const a of n.attrs) out.push(a.value);
+    const tag = n.tagName;
+    if (tag === 'style') return;   // HTML or SVG
+    if (tag === 'script') {
+      const type = (n.attrs.find((a) => a.name === 'type') || { value: '' }).value.trim();
+      if (/^application\/json$/i.test(type)) {
+        const body = n.childNodes.map((c) => c.value || '').join('');
         let v, okJson = true;
         try { v = JSON.parse(body); } catch { okJson = false; }
         if (okJson) jsonPieces(v, out); else out.push(body);
       }
-      at = close < 0 ? s.length : close;
-      re.lastIndex = at;
+      return;
     }
-  }
-  text(s.slice(at));
+    for (const c of (tag === 'template' && n.content ? n.content.childNodes : n.childNodes || [])) walk(c);
+  };
+  walk(parse5.parse(String(html)));
   return out;
 }
 export function lessonText(sources, glyphs = '') {

@@ -4,6 +4,10 @@ Versions follow [README.md § Releases and versions](README.md#releases-and-vers
 
 ## Unreleased
 
+### Tests
+
+- The subset reference parses the slide source as a document with parse5 8.0.1 (a pinned devDependency, the same as Studio's; egatari-spec c6024bf) and walks it in tree order: text nodes, attribute values as the parser keeps them (the first of duplicates), template contents and JSON data; not the doctype, comments, `<style>` or other `<script>`. Character references and raw-text elements are the parser's. The regex scanner and `tools/html-entities.json` are gone; CI runs `npm ci`. `test-subset` §10 covers doctype, RCDATA/RAWTEXT, `<noscript>`, CDATA and processing instructions, duplicate attributes, templates, SVG CDATA and `<plaintext>`.
+
 ### Later (candidates, not in this release)
 
 - `m-compare` `by="row"`; an "outside every set" region for `m-venn`; planned-vs-actual bars for `m-timeline`

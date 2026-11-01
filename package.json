@@ -21,5 +21,8 @@
     "studio": "node tools/studio.mjs",
     "catalog": "node tools/catalog.mjs",
     "release": "node tools/release.mjs"
+  },
+  "devDependencies": {
+    "parse5": "8.0.1"
   }
 }

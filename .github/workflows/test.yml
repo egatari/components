@@ -36,6 +36,8 @@ jobs:
       - uses: actions/setup-node@v7
         with:
           node-version: 22
+      - name: Install dev dependencies (parse5 for tools/subset-produce.mjs; nothing ships in the release)
+        run: npm ci
       - name: Code scan (no eval-like code in components; Egatari spec §6)
         run: node tools/scan-code.mjs
       - name: Install Playwright Chromium (Linux)
