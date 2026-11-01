@@ -11,7 +11,7 @@
 // 字は部品の中の表から授業の言語（ctx.lang）で選ぶ。データの labels・notes で位置ごとに上書きできる（null は表のまま、"" は字なし）。
 // eclipse（月だけ）：新月と満月の位置で、太陽・月・地球がそろったときの影（日食・月食）を描く。月の軌道の傾きは描かない（README）。
 // 2.0（Egatari spec §6.1 の部品）：base の MotionElement・el・prog・lerp だけを使い、プレイヤーのグローバルは使わない。
-egatariParts.define({name: "orbit", version: "2.0.0", requires: {base: "1.0.0"}, element: "m-orbit"}, function(deps){
+egatariParts.define({name: "orbit", version: "2.0.1", requires: {base: "1.0.0"}, element: "m-orbit"}, function(deps){
 "use strict";
 var base = deps.base;
 var TAU = 2 * Math.PI;
@@ -314,7 +314,8 @@ var Part = class extends base.MotionElement {
     // 地球の上の人と見る線
     if (!pl.venus){
       var w0 = this.observerAngleAt(from), w1 = this.observerAngleAt(to);
-      if (n && w1 <= w0) w1 += 360;
+      // 位置 0（新月）を通る段階だけ一回り足す。同じ向きの位置どうし（夕方に寄せた 1→2 など）は回さない
+      if (n && from + n >= N) w1 += 360;
       var w = n ? D.lerp(w0, w1, e) : w1;
       var wr = (this.sunLeft ? 180 : 0) + w, wrad = wr * Math.PI / 180;
       var ox = (L.er + 22) * Math.cos(wrad), oy = (L.er + 22) * Math.sin(wrad);
