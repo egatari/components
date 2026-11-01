@@ -11,6 +11,10 @@ Versions follow [README.md § Releases and versions](README.md#releases-and-vers
 - `m-cards` 2.0.0 (#142): 2–6 cards with a badge, an icon by name, a title and a text, in a row or in two rows (`layout="grid"`: 2×2, or 3×2 with 5–6 cards), one per step. `arrows` shows the order (Z order in a grid), and `hilite` marks a card with the `--emph` frame and tint. Japanese text wraps at likely phrase boundaries and keeps numbers with their counters; text that does not fit is cut with … and reported. Variants rise, fade and draw. Its README lists about 120 icon names in 12 groups. Purposes `process` and `grouping`.
 - Library part `icons` 1.0.0: line icons by name from Tabler Icons outline 3.49.0 (MIT; 4,808 icons; `brand-*` and filled icons left out), imported by `tools/icons-import.mjs` from the npm tarball pinned by version and sha256. `svg(name, {x, y, size, cls, missing})` draws with `currentColor` strokes; an unknown name draws a dashed placeholder and reports the closest names. Its data is subset by name (spec §6.2 `match: "name"`), declared as `build` in the value its factory returns (spec 3d4ead0); the manifest repeats it. A lesson naming a few icons carries about 5 KB of the 870 KB set.
 
+### Changed
+
+- `m-keyboard` 2.0.1: when keys in `steps` are outside `range`, the error lists them and names a range that covers every key (e.g. `use C4-D5`), or says to split them over two keyboards when they span more than 3 octaves.
+
 ### Tests
 
 - `test-c2-identity` lists parts that are new in 2.x (not in the v1.13.0 baseline) and does not compare them.

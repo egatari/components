@@ -137,5 +137,19 @@ const sc = [step(['C4', 'D4', 'E4'], [0, 0.6, 1.2])];
 eq(lit(KB.state(sc, 1, 0.7, { variant: 'light', prog })), [60, 62], 'scale at t = 0.7: C and D lit, E not yet');
 eq(pre(KB.state(sc, 1, 0.7, { variant: 'light', prog, preview: true })), [], 'preview does not mark keys of the current step that have not lit yet');
 
+// ---- a range that covers keys outside the given one (2.0.1) ----
+const m = (k) => KB.parseKey(k).midi;
+eq(KB.cover(m('C4'), m('D5')), 'C4-D5', 'cover C4..D5');
+eq(KB.cover(m('C#4'), m('F#5')), 'C4-G5', 'black ends widen to white keys');
+eq(KB.cover(m('E4'), m('G4')), 'E4-E5', 'less than an octave: widened up to 12 semitones');
+eq(KB.cover(m('C3'), m('C6')), 'C3-C6', '36 semitones is allowed');
+eq(KB.cover(m('C3'), m('D6')), null, 'more than 3 octaves: no range');
+const C = partClass(fs.readFileSync(path.join(ROOT, 'components', 'keyboard', 'index.js'), 'utf8'));
+const planOf = (data) => C.prototype.plan.call({ data, props: {} });
+throws(() => planOf({ range: 'C4-C5', steps: [{ keys: ['C4', 'E4'] }, { keys: ['D5'] }] }), /^m-keyboard: steps\[1\] key D5 is outside range C4-C5; use C4-D5 \(covers every key in steps\)$/, 'outside: names a covering range');
+throws(() => planOf({ range: 'C4-C5', steps: [{ keys: ['A3', 'D5'] }] }), /steps\[0\] key A3, steps\[0\] key D5 are outside range C4-C5; use A3-D5/, 'every outside key is listed');
+throws(() => planOf({ range: 'C4-C6', steps: [{ keys: ['C2', 'C6'] }] }), /span 48 semitones, more than 3 octaves: split them over two keyboards/, 'more than 3 octaves: split');
+ok(planOf({ range: 'C4-C5', steps: [{ keys: ['C4', 'C5'] }] }).steps.length === 1, 'inside: unchanged');
+
 console.log(fail ? `\nFAIL: ${fail} of ${n}` : `test-keyboard: ${n} checks ok`);
 process.exit(fail ? 1 : 0);

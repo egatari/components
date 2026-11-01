@@ -2,6 +2,12 @@
 
 The part's own versions (Egatari spec §6.1). Releases of the whole library are in the repository's CHANGELOG.md.
 
+## 2.0.1 (unreleased)
+
+- Keys outside `range`: the error lists every such key and names a range that covers all keys in `steps`, with white
+  keys at both ends and 12–36 semitones (e.g. `use C4-D5`). When the keys span more than 3 octaves, it says to split
+  them over two keyboards. Behaviour is otherwise unchanged.
+
 ## 2.0.0 (components 2.0.0-rc.1 and 2.0.0)
 
 - Moved to `egatariParts.define({name: "keyboard", version: "2.0.0", requires: {base: "1.0.0"}, element: "m-keyboard"})`,

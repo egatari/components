@@ -13,7 +13,7 @@
 // 2.0（Egatari spec §6.1 の部品）：base の MotionElement・el・prog・variant・previewOpacity を使い、プレイヤーのグローバルは使わない。
 // 段階の数は ctx にも言語にもよらない（spec §8.4）：既定の鍵盤の名前（日本語ならドレミ、ほかは CDE）は plan() ではなく mount で選ぶ。
 // レッスンのデータや要素の大きさの問題は ctx.report で知らせる（1.x の console.warn("m-keyboard: …") の代わり）
-egatariParts.define({name: "keyboard", version: "2.0.0", requires: {base: "1.0.0"}, element: "m-keyboard"}, function(deps){
+egatariParts.define({name: "keyboard", version: "2.0.1", requires: {base: "1.0.0"}, element: "m-keyboard"}, function(deps){
 "use strict";
 var base = deps.base;
 // ---- 鍵盤の名前と形（DOM を使わない。tools/test-keyboard.mjs が試す） ----
@@ -42,6 +42,15 @@ var KB = (function(){
     var span = hi.midi - lo.midi;
     if (span < 12 || span > 36) throw new Error('m-keyboard: range "' + s + '" covers ' + span + " semitones; it must cover 1–3 octaves (12–36, such as C4-C5 or C3-C6)");
     return {lo: lo, hi: hi};
+  }
+  // 鍵 lo〜hi（midi）を覆う範囲の書き方："C4-D5"（両端は白鍵、半音 12〜36 個。12 に足りなければ上に広げる）。36 を超えれば null
+  function cover(lo, hi){
+    var name = function(mi){ return "C D EF G A B".charAt(((mi % 12) + 12) % 12) + (Math.floor(mi / 12) - 1); };
+    var white = function(mi){ return [0, 2, 4, 5, 7, 9, 11].indexOf(((mi % 12) + 12) % 12) >= 0; };
+    if (!white(lo)) lo--;
+    if (!white(hi)) hi++;
+    if (hi - lo < 12){ hi = lo + 12; if (!white(hi)) hi++; }
+    return hi - lo > 36 ? null : name(lo) + "-" + name(hi);
   }
   // 範囲の鍵盤：白鍵 {midi, white: true, i, x（左の端）, w: 1}、黒鍵 {midi, white: false, x（左の端）, cx（真ん中）, w: BW}。単位は白鍵の幅
   function keys(r){
@@ -100,7 +109,7 @@ var KB = (function(){
     }
     return st;
   }
-  return {state: state, parseKey: parseKey, parseRange: parseRange, keys: keys, label: label, whiteLetter: whiteLetter, notes: notes, length: length, LETTERS: LETTERS, BW: BW, BH: BH};
+  return {state: state, parseKey: parseKey, parseRange: parseRange, cover: cover, keys: keys, label: label, whiteLetter: whiteLetter, notes: notes, length: length, LETTERS: LETTERS, BW: BW, BH: BH};
 })();
 
 var TONES = /^(term|emph|muted|accent2|fg|series-[1-4])$/;
@@ -128,12 +137,12 @@ return class extends base.MotionElement {
   plan(){
     if (this._plan) return this._plan;
     var d = this.data || {}, notes = [];
-    var r = KB.parseRange(d.range), kb = KB.keys(r);
+    var r = KB.parseRange(d.range), kb = KB.keys(r), outside = [];
     var steps = d.steps.map(function(s, j){
       var ks = s.keys.map(function(name){
         var k = KB.parseKey(name);
         if (!k) throw new Error("m-keyboard: steps[" + j + "] key \"" + name + "\" is not a key name (C4, F#3, Bb4, …)");
-        if (k.midi < r.lo.midi || k.midi > r.hi.midi) throw new Error("m-keyboard: steps[" + j + "] key " + name + " is outside range " + d.range);
+        if (k.midi < r.lo.midi || k.midi > r.hi.midi) outside.push("steps[" + j + "] key " + name);
         return k;
       });
       if (s.t && s.t.length !== s.keys.length) throw new Error("m-keyboard: steps[" + j + "] has " + s.keys.length + " keys but " + s.t.length + " times in t (one per key)");
@@ -142,6 +151,14 @@ return class extends base.MotionElement {
       var ev = KB.notes(s, d.dur);
       return {o: s, keys: ks, ev: ev, len: KB.length(s, d.dur), tone: TONES.test(s.tone || "") ? s.tone : "emph"};
     });
+    if (outside.length){
+      // 範囲の外の鍵：すべての鍵を覆う範囲を示す（範囲そのものではなく、段階の鍵だけから）
+      var lo = Infinity, hi = -Infinity;
+      steps.forEach(function(s){ s.keys.forEach(function(k){ lo = Math.min(lo, k.midi); hi = Math.max(hi, k.midi); }); });
+      var c = KB.cover(lo, hi);
+      throw new Error("m-keyboard: " + outside.join(", ") + (outside.length > 1 ? " are" : " is") + " outside range " + d.range + "; " +
+        (c ? "use " + c + " (covers every key in steps)" : "the keys in steps span " + (hi - lo) + " semitones, more than 3 octaves: split them over two keyboards"));
+    }
     return (this._plan = {r: r, kb: kb, steps: steps, cumulative: d.cumulative === true, notes: notes});
   }
   duration(k){ var s = k >= 1 && this.plan().steps[k - 1]; return s ? s.len : 0; }
