@@ -21,6 +21,8 @@
 //   9. the lesson's text (spec 6f2670b): text nodes and attribute values (references decoded), JSON children as parsed values
 //      (names, strings, numbers; invalid JSON as written), narration as written; not tag or attribute names, comments,
 //      <style> or other <script>; keys must be strings
+//  10. parsed as a document by parse5 (spec c6024bf): the doctype, RCDATA and RAWTEXT elements, <noscript>, CDATA and
+//      processing instructions, duplicate attributes, template contents, SVG CDATA and <style>, <plaintext>
 //   node tools/test-subset.mjs [work dir]
 import fs from 'node:fs';
 import os from 'node:os';
@@ -139,6 +141,23 @@ ok(JSON.stringify([...tk].sort()) === '["application","cards","icon","json","use
 const arrPart = (items) => `egatariParts.define({name: "arr", version: "1.0.0", requires: {}}, function(){ return {build: {subset: [{data: "block:a", key: "k"}]}, d: /*@egatari-block a*/${JSON.stringify(items)}/*@egatari-block-end*/}; });\n`;
 ok(throws(() => subsetCode(arrPart([{ k: 'あ' }, { k: 1 }]), 'あ')) && !!produce(arrPart([{ k: 'あ' }, { k: 1 }]), ['あ']).warning && produce(arrPart([{ k: 'あ' }, { k: 'い' }]), ['あ']).keys === 'あ',
   'keys must be strings: a numeric key is a bad declaration (refused on the registry side, kept whole with a warning by a lesson producer); a library part declares build on its value');
+
+// 10
+const P10 = lessonText([{ html: `<!DOCTYPE html><html lang="ja"><head><title>T &amp; <b>in-title</b></title></head><body>
+<p a="first" a="second">p</p><textarea>x <i>in-textarea</i> &lt;</textarea><noscript><span>in-noscript</span></noscript><xmp><u>in-xmp</u> &amp;</xmp>
+<div><![CDATA[<em>html-cdata</em>]]><?pi <em>in-pi</em>?></div>
+<template><span>in-template</span></template>
+<svg><text><![CDATA[svg-cdata <tag>]]></text><style>.svg-style{}</style></svg>
+<plaintext><q>in-plaintext</q> &amp;` }]).split('\n');
+const has = (x) => P10.includes(x);
+ok(!P10.includes('html') && P10.includes('ja'), 'the doctype yields nothing (no token html); the lang attribute value counts');
+ok(has('T & <b>in-title</b>') && has('x <i>in-textarea</i> <'), `<title> and <textarea> are one text node each, references decoded: ${JSON.stringify(P10.filter((x) => /title|textarea/.test(x)))}`);
+ok(has('<span>in-noscript</span>') && has('<u>in-xmp</u> &amp;'), '<noscript> (scripting enabled) and <xmp> are raw text, not tags (and no references decoded in <xmp>)');
+ok(!P10.some((x) => /CDATA|<em>|\?pi/.test(x)) && has('html-cdata]]>') && has('in-pi?>'), 'CDATA and processing instructions in HTML are bogus comments up to the first ">" (not counted); what follows is parsed as usual');
+ok(has('first') && !has('second'), 'duplicate attributes: only the first is kept');
+ok(has('in-template'), 'template contents count');
+ok(has('svg-cdata <tag>') && !P10.some((x) => /svg-style/.test(x)), 'CDATA in SVG is text; <style> in SVG is not counted');
+ok(P10.at(-1) === '<q>in-plaintext</q> &amp;\n' || P10.at(-1) === '<q>in-plaintext</q> &amp;', `<plaintext> takes the rest as raw text: ${JSON.stringify(P10.at(-1))}`);
 
 // 6
 const S = await studio();
