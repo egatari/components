@@ -25,6 +25,9 @@ components/icons/index.js, the JSON between /*@egatari-block icons*/ and /*@egat
   only each path's d is kept. Copyright (c) 2020-2026 Paweł Kuna. MIT License: components/icons/LICENSE-tabler.txt.
   The notice also travels inside the block itself ("_notice").
 
+tools/html-entities.json — the named character references of the WHATWG HTML Standard (https://html.spec.whatwg.org/entities.json),
+  © WHATWG (Apple, Google, Mozilla, Microsoft), CC BY 4.0. Used only by tools/subset-produce.mjs; not in the release tarball.
+
 components/map-japan/index.js, components/map-world/index.js — map data derived from Natural Earth (public domain).
 
 components/score/fixtures/*.json and components/score/demo.html — the abcSvg strings:

@@ -131,6 +131,9 @@ const P9 = T9.split('\n');
 ok(['A & B あ x', 'user-plus', 'chart-line', 'cards', 'icon', 'chart-pie', 'n', '12.5', '{"broken": ', '<b>narr-word</b>', 'G'].every((x) => P9.includes(x)),
   'counted: text (references decoded), attribute values, JSON names, strings (escapes decoded) and numbers, invalid JSON as written, narration as written, glyphs');
 ok(!/section|data-home|class|m-cards|m-x|comment-word|script-word|style-word|true|hidden/.test(T9.replace('<b>narr-word</b>', '')) && P9.includes('slide') && P9.includes('application/json'), 'not counted: tag and attribute names, comments, other <script>, <style>, booleans (attribute values such as slide and application/json are)');
+const R9 = lessonText([{ html: '<p title="&copy2 &amp=x &hellip;">&hellip;&mdash;&copy2 &notit; &#x80;&#0;&#12354 AT&T &unknown;</p>' }]).split('\n');
+ok(R9[0] === '&copy2 &amp=x …' && R9[1] === '…—©2 ¬it; €�あ AT&T &unknown;',
+  `character references as an HTML parser yields them (full WHATWG table, legacy names without ";" but not before = or alphanumerics in attributes, numeric fixes): ${JSON.stringify(R9)}`);
 const tk = lessonTokens([{ html: '<m-cards><script type="application/json">{"cards":[{"icon":"user"}]}</script></m-cards>' }]);
 ok(JSON.stringify([...tk].sort()) === '["application","cards","icon","json","user"]', `tokens of a lesson: ${JSON.stringify([...tk].sort())} (the type attribute's value counts; the tag names m-cards and script do not)`);
 const arrPart = (items) => `egatariParts.define({name: "arr", version: "1.0.0", requires: {}}, function(){ return {build: {subset: [{data: "block:a", key: "k"}]}, d: /*@egatari-block a*/${JSON.stringify(items)}/*@egatari-block-end*/}; });\n`;

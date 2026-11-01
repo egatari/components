@@ -109,11 +109,38 @@ export function subsetCode(js, keys, names = []) {
 //                part's glyphs
 //   not counted  comments, tag and attribute names, other <script> and <style> contents
 // A lesson is a list of sources: {html: "…"} (deck.html), {narration: "…"} (narration.md), or a string (= html).
-const NAMED = { amp: '&', lt: '<', gt: '>', quot: '"', apos: "'", nbsp: ' ' };
-export const decodeRefs = (s) => s.replace(/&(#x[0-9a-f]+|#\d+|[a-z][a-z0-9]*);/gi, (m, r) => {
-  if (r[0] === '#') { const n = r[1] === 'x' || r[1] === 'X' ? parseInt(r.slice(2), 16) : +r.slice(1); return n <= 0x10ffff ? String.fromCodePoint(n) : m; }
-  return Object.prototype.hasOwnProperty.call(NAMED, r) ? NAMED[r] : m;
-});
+// Character references as an HTML parser yields them (WHATWG HTML §13.2.5.72–80): the full named table
+// (tools/html-entities.json; the longest name that matches, legacy names also without ";", but in an attribute value not
+// when the name lacks ";" and the next character is "=" or alphanumeric), numeric references with or without ";" (0,
+// surrogates and values past U+10FFFF become U+FFFD, 0x80–0x9F the windows-1252 characters). Unknown references stay.
+const ENT = JSON.parse(fs.readFileSync(new URL('./html-entities.json', import.meta.url), 'utf8'));
+const ENT_MAX = Math.max(...Object.keys(ENT).map((k) => k.length));
+const W1252 = { 0x80: 0x20ac, 0x82: 0x201a, 0x83: 0x192, 0x84: 0x201e, 0x85: 0x2026, 0x86: 0x2020, 0x87: 0x2021, 0x88: 0x2c6, 0x89: 0x2030, 0x8a: 0x160, 0x8b: 0x2039,
+  0x8c: 0x152, 0x8e: 0x17d, 0x91: 0x2018, 0x92: 0x2019, 0x93: 0x201c, 0x94: 0x201d, 0x95: 0x2022, 0x96: 0x2013, 0x97: 0x2014, 0x98: 0x2dc, 0x99: 0x2122, 0x9a: 0x161,
+  0x9b: 0x203a, 0x9c: 0x153, 0x9e: 0x17e, 0x9f: 0x178 };
+export function decodeRefs(s, attr = false) {
+  let out = '', i = 0;
+  while (i < s.length) {
+    const a = s.indexOf('&', i);
+    if (a < 0) { out += s.slice(i); break; }
+    out += s.slice(i, a);
+    i = a + 1;
+    const num = /^#(?:[xX]([0-9a-fA-F]+)|([0-9]+));?/.exec(s.slice(i, i + 40));
+    if (num) {
+      let n = num[1] !== undefined ? parseInt(num[1], 16) : parseInt(num[2], 10);
+      if (n === 0 || n > 0x10ffff || (n >= 0xd800 && n <= 0xdfff) || !Number.isFinite(n)) n = 0xfffd;
+      else if (W1252[n]) n = W1252[n];
+      out += String.fromCodePoint(n);
+      i += num[0].length;
+      continue;
+    }
+    let hit = null;
+    for (let len = Math.min(ENT_MAX, s.length - i); len > 0; len--) { const k = s.slice(i, i + len); if (Object.prototype.hasOwnProperty.call(ENT, k) && k !== '_source') { hit = k; break; } }
+    if (hit && !(attr && !hit.endsWith(';') && /[=A-Za-z0-9]/.test(s[i + hit.length] || ''))) { out += ENT[hit]; i += hit.length; }
+    else out += '&';
+  }
+  return out;
+}
 export function jsonPieces(v, out = []) {
   if (typeof v === 'string') out.push(v);
   else if (typeof v === 'number') out.push(String(v));
@@ -122,7 +149,7 @@ export function jsonPieces(v, out = []) {
   return out;
 }
 export function htmlPieces(html) {
-  const out = [], s = String(html), re = /<!--[\s\S]*?(?:-->|$)|<(\/?)([a-zA-Z][^\s/>]*)((?:[^>"']|"[^"]*"|'[^']*')*)>/g;
+  const out = [], s = String(html).replace(/\r\n?/g, '\n'), re = /<!--[\s\S]*?(?:-->|$)|<(\/?)([a-zA-Z][^\s/>]*)((?:[^>"']|"[^"]*"|'[^']*')*)>/g;
   let at = 0, m;
   const text = (t) => { if (t) out.push(decodeRefs(t)); };
   while ((m = re.exec(s))) {
@@ -134,7 +161,7 @@ export function htmlPieces(html) {
       if (a[2] === undefined) continue;
       const v = a[3] ?? a[4] ?? a[5];
       attrs[a[1].toLowerCase()] = v;
-      out.push(decodeRefs(v));
+      out.push(decodeRefs(v, true));
     }
     if (!m[1] && (tag === 'script' || tag === 'style')) {
       const close = s.toLowerCase().indexOf('</' + tag, at), body = s.slice(at, close < 0 ? s.length : close);
