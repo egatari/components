@@ -20,6 +20,11 @@ data/kana/strokes.ofl.json) — kana stroke shapes
   The notice also travels inside the block itself ("_license"). The rest of index.js, and the order, endings and
   placement data (data/kana/kana.json), are original work under the MIT License.
 
+components/icons/index.js, the JSON between /*@egatari-block icons*/ and /*@egatari-block-end*/ (and components/icons/names.txt)
+  — line icons from Tabler Icons 3.49.0 (https://tabler.io/icons, npm @tabler/icons), outline style, brand icons left out;
+  only each path's d is kept. Copyright (c) 2020-2026 Paweł Kuna. MIT License: components/icons/LICENSE-tabler.txt.
+  The notice also travels inside the block itself ("_notice").
+
 components/map-japan/index.js, components/map-world/index.js — map data derived from Natural Earth (public domain).
 
 components/score/fixtures/*.json and components/score/demo.html — the abcSvg strings:

@@ -24,7 +24,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { createHash } from 'node:crypto';
 import { fileURLToPath } from 'node:url';
-import { partClass, partMeta } from './parts.mjs';
+import { partDeclarations, partMeta } from './parts.mjs';
 import { normalizeEol } from './identity.mjs';
 
 export const sha256 = (s) => createHash('sha256').update(normalizeEol(Buffer.from(s, 'utf8'))).digest('hex');
@@ -35,11 +35,10 @@ export const BLOCK_END = '/*@egatari-block-end*/';
 export const NAME_KEY = /^[a-z0-9]+(-[a-z0-9]+)*$/;
 const cpOrder = (a, b) => { const x = Array.from(a), y = Array.from(b); for (let i = 0; i < Math.min(x.length, y.length); i++) { const d = x[i].codePointAt(0) - y[i].codePointAt(0); if (d) return d; } return x.length - y.length; };
 
-// The part's subset declarations: [{data, key, block, match, keep}] (block: the name, for data "block:<name>"; match "char"
+// The part's subset declarations (an element class's static build, or a library factory's returned build): [{data, key, block, match, keep}] (block: the name, for data "block:<name>"; match "char"
 // (the default) or "name"; keep: the names a "name" entry always keeps), [] when it declares none
 export function subsetSpecs(js) {
-  const C = partClass(js);
-  const b = C && C.build && C.build.subset;
+  const b = (partDeclarations(js).build || {}).subset;
   if (!b) return [];
   return (Array.isArray(b) ? b : [b]).map((e) => {
     if (!e || typeof e.data !== 'string' || typeof e.key !== 'string') throw new Error(`subset: build.subset entry ${JSON.stringify(e)} is not {data, key}`);

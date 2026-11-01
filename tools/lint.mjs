@@ -75,7 +75,8 @@ export function frontmatter(text) {
 }
 
 // A 2.0 part (one that calls egatariParts.define, spec §6.1): its meta, and no DECK, import or require
-const strip = (js) => js.replace(/\/\*[\s\S]*?\*\//g, '').replace(/(^|[^:"'\\])\/\/.*$/gm, '$1');
+// (a data block's JSON, spec §6.2, is data: its strings, such as the icon name app-window, are not code)
+const strip = (js) => js.replace(/\/\*@egatari-block [a-z][a-z0-9-]*\*\/[\s\S]*?\/\*@egatari-block-end\*\//g, '{}').replace(/\/\*[\s\S]*?\*\//g, '').replace(/(^|[^:"'\\])\/\/.*$/gm, '$1');
 // ctx.report's codes (spec §8.4, egatari-spec 71cb10c)
 export const REPORT_CODES = ['data', 'attr', 'range', 'size', 'layout', 'theme', 'error'];
 // Functions known to return one of REPORT_CODES (base's data-shape kind → code), accepted as a computed code

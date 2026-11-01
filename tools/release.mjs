@@ -28,7 +28,7 @@ import path from 'node:path';
 import { createHash } from 'node:crypto';
 import { fileURLToPath } from 'node:url';
 import { ROOT, partNames, componentFiles } from './studio.mjs';
-import { partMeta, partClass } from './parts.mjs';
+import { partMeta, partClass, partDeclarations } from './parts.mjs';
 import { writeTarGz, readTarGz } from './tar.mjs';
 import { identityBytes, normalizeEol } from './identity.mjs';
 import { frontmatter, lint, flags } from './lint.mjs';
@@ -107,7 +107,9 @@ export function release(version) {
     const code = sha(normalizeEol(fs.readFileSync(path.join(ROOT, 'components', name, 'index.js'))));
     if (meta && !meta.element) {
       // a 2.0 library part (base, expr): no tag, series or purposes; what it requires, with exact versions
-      components[name] = { kind: 'library', version: fm.version, requires: { ...(meta.requires || {}) }, license: fm.license || 'MIT', ...withdrawn, sha256: code, files };
+      // build and glyphs (spec §6.2) are members of the value its factory returns, repeated here as for element parts
+      const D = partDeclarations(js, `${name}/index.js`);
+      components[name] = { kind: 'library', version: fm.version, requires: { ...(meta.requires || {}) }, ...(D.build ? { build: JSON.parse(JSON.stringify(D.build)) } : {}), ...(typeof D.glyphs === 'string' ? { glyphs: D.glyphs } : {}), license: fm.license || 'MIT', ...withdrawn, sha256: code, files };
       continue;
     }
     const C = partClass(js, `${name}/index.js`) || {};

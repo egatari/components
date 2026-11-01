@@ -41,6 +41,8 @@
 //   8. components       each demo.html: builds, no console errors, screenshots per step, determinism, text ≥ 24px, overlap, outside the slide (tools/test-components.mjs)
 //      subset         the producer's subset step (spec §6.2) on m-kakijun: あさ keeps only those strokes, the licence notice survives,
 //                     the recorded {keys, sha256} is reproduced from the trusted full copy, same DOM as the full part (tools/test-subset.mjs)
+//      icons          the library part icons: the import agrees with the pinned Tabler, subset by name, svg() draws the data with
+//                     currentColor strokes, an unknown name a placeholder and one message (tools/test-icons.mjs)
 //   9. kanbun-num      m-kanbun's two-digit reading-order numbers stay inside their box and off the character boxes; one-digit numbers unchanged (tools/test-kanbun-num.mjs)
 //      kanbun-fit     m-kanbun fits its columns to the element's height and width (size down to 42, kana ≥ 24 px, no overlap) and warns when it cannot (tools/test-kanbun-fit.mjs)
 //  10. kobun-reset     m-kobun's open conjugation card closes on ctx.reset (tools/test-kobun-reset.mjs)
@@ -116,6 +118,7 @@ const TESTS = [
   ['test-components', ['tools/test-components.mjs', '--shots', path.join(tmp, 'shots')]],
   ['test-kakijun', ['tools/test-kakijun.mjs', path.join(tmp, 'kakijun')]],
   ['test-subset', ['tools/test-subset.mjs', path.join(tmp, 'subset')]],
+  ['test-icons', ['tools/test-icons.mjs', path.join(tmp, 'icons')]],
   ['test-kanbun-num', ['tools/test-kanbun-num.mjs', path.join(tmp, 'kanbun-num')]],
   ['test-kanbun-fit', ['tools/test-kanbun-fit.mjs', path.join(tmp, 'kanbun-fit')]],
   ['test-kobun-reset', ['tools/test-kobun-reset.mjs', path.join(tmp, 'kobun-reset')]],

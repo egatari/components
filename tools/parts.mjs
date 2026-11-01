@@ -99,6 +99,21 @@ export function requiresClosure(name, metas) {
   walk(name);
   return dependencyOrder(need);
 }
+// What a part declares for the producer (Egatari spec §6.2 "Declarations in the component"): {build?, glyphs?}, an element
+// part's class statics, or the members of the value a library part's factory returns (run here with stub dependencies;
+// meta never carries them). {} when the part declares neither or cannot be read.
+export function partDeclarations(js, filename = 'index.js') {
+  let v = null;
+  try {
+    const m = partMeta(js);
+    if (m && !m.element) {
+      const ctx = vm.createContext({ console: { warn() {} }, egatariParts: { define: (meta, fac) => { if (meta && !meta.element) v = fac(stubDeps); } } });
+      vm.runInContext(js, ctx, { filename });
+    } else v = partClass(js, filename);
+  } catch { v = null; }
+  return v ? { ...(v.build && typeof v.build === 'object' ? { build: v.build } : {}), ...(typeof v.glyphs === 'string' ? { glyphs: v.glyphs } : {}) } : {};
+}
+
 // TEST ONLY. How a migrated element part is served to the pinned Studio (which has no registry) in place of its 1.x
 // index.js, until Studio hosts 2.0: the registry shim (tools/registry-shim.js), then the parts it requires in dependency
 // order, then the part. Studio writes every component's code into one script after deck.js, so each piece is guarded: the
