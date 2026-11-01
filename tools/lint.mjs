@@ -23,7 +23,8 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { partMeta, EXACT, dependencyOrder } from './parts.mjs';
+import { partMeta, EXACT, dependencyOrder, partDeclarations } from './parts.mjs';
+import { subsetCode } from './subset-produce.mjs';
 
 export const NAME_RE = /^[a-z][a-z0-9-]{0,63}$/;
 export const SERIES = ['common', 'academic', 'business', 'kokugo', 'info', 'social', 'music', 'english'];
@@ -221,6 +222,10 @@ export function lint(root, warns = []) {
     let meta = null;
     try { meta = partMeta(js); } catch (e) { errs.push(`components/${name}/index.js: ${e.message}`); continue; }
     if (meta) errs.push(...lintMeta(name, js, meta, warns));
+    // a subset declaration must be good (spec §6.2, 6f2670b: registry-side tools reject a part a lesson producer would keep whole)
+    if (meta && (partDeclarations(js, `${name}/index.js`).build || {}).subset) {
+      try { subsetCode(js, '', []); } catch (e) { errs.push(`components/${name}/index.js: build.subset: ${e.message}`); }
+    }
     if (meta && !meta.element) { errs.push(...lintLibrary(name, dir, meta)); continue; }
     if (!new RegExp(`['"]m-${name}['"]`).test(js)) errs.push(`components/${name}/index.js: does not define <m-${name}>`);
     if (!fs.existsSync(path.join(dir, 'demo.html')) && !NO_DEMO.has(name)) errs.push(`components/${name}: no demo.html`);

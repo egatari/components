@@ -2,7 +2,8 @@
 //   1. the part declares build.subset [{data: "block:strokes", key: "char"}, {data: "block:stroke-meta", key: "char"}] and
 //      glyphs (the characters it draws itself)
 //   2. keeping every key gives blocks equal in value to the published ones, and every byte outside the markers unchanged
-//   3. a lesson using あさ keeps only あ and さ in both blocks (and the strokes block's "_" members); each block is
+//   3. a lesson using あさ keeps only あ and さ and the kana of the part's glyphs (spec: the lesson's text includes glyphs) in
+//      both blocks (and the strokes block's "_" members); each block is
 //      JSON.stringify of the kept value (members in their original order, no added whitespace); the code outside the
 //      markers is byte for byte the published code
 //   4. the licence notice survives: the OFL notice comment directly before the strokes marker (licence name, spec §6.1
@@ -10,20 +11,23 @@
 //   5. the recorded subset: {keys, sha256}: sha256 is the identity hash of the subset code as written; an editor applying
 //      the same keys to its own trusted full copy gets the same bytes and hash; a changed byte or a different key set does not
 //   6. in a browser (pinned Studio, the part through the registry shim): the あさ lesson draws exactly the same DOM with the
-//      subset part as with the full part, at every step; a character the subset left out (い) is drawn plainly and reported
+//      subset part as with the full part, at every step; a character the subset left out (う) is drawn plainly and reported
 //      once as data, no exception
 //   7. the subset size for あさ and for the part's demo
 //   8. subset by name (spec 87175aa, match: "name"), on a small stand-in part: a key is kept only when it equals a token of the
 //      lesson's text split at every character outside a-z, 0-9 and "-" (chart-bar-popular does not keep chart-bar; Chart-Bar
 //      does not either), `keep` names are always kept, the record is {keys: char keys, names: [code point order]}, an
 //      editor applying the record gets the same bytes, and bad declarations are refused
+//   9. the lesson's text (spec 6f2670b): text nodes and attribute values (references decoded), JSON children as parsed values
+//      (names, strings, numbers; invalid JSON as written), narration as written; not tag or attribute names, comments,
+//      <style> or other <script>; keys must be strings
 //   node tools/test-subset.mjs [work dir]
 import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
 import { ROOT, studio } from './studio.mjs';
 import { partClass, c2Bundle } from './parts.mjs';
-import { subsetSpecs, subsetCode, blockOf, produce, sha256, BLOCK, lessonTokens } from './subset-produce.mjs';
+import { subsetSpecs, subsetCode, blockOf, produce, sha256, BLOCK, lessonTokens, lessonText } from './subset-produce.mjs';
 
 let fails = 0;
 const ok = (cond, msg) => { console.log((cond ? 'ok   ' : 'FAIL ') + msg); if (!cond) fails++; };
@@ -56,11 +60,15 @@ const LESSON = `<!DOCTYPE html>
 </div></body></html>
 `;
 const NARR = '## Strokes {#s1}\n\nKakijun.\n';
-const r = produce(full, [LESSON, NARR]);
+const r = produce(full, [{ html: LESSON }, { narration: NARR }]);
+// the glyphs' kana that have stroke data (とめ・はね・はらい) are kept too
+const GK = Array.from(C.glyphs).filter((c) => c in FM && !c.startsWith('_'));
+const WANT = [...new Set(['あ', 'さ', ...GK])].sort((a, b) => a.codePointAt(0) - b.codePointAt(0));
 const BS = block(r.code, 'strokes'), BM = block(r.code, 'stroke-meta');
 const metaKeys = Object.keys(FS).filter((k) => k.startsWith('_'));
-ok(r.keys === 'あさ' && JSON.stringify(Object.keys(BM)) === JSON.stringify(['_keys', 'あ', 'さ']) && BM._keys === FM._keys && JSON.stringify(Object.keys(BS)) === JSON.stringify([...metaKeys, 'あ', 'さ']),
-  `a lesson using あさ keeps only あ and さ in both blocks, the strokes block's ${metaKeys.join(', ')} first, and the stroke-meta block's _keys (the full set) unchanged (kept keys ${JSON.stringify(r.keys)}; comments and <style> do not count)`);
+const order = (ks) => Object.keys(FM).filter((k) => ks.includes(k));
+ok(GK.length > 0 && r.keys === WANT.join('') && JSON.stringify(Object.keys(BM)) === JSON.stringify(['_keys', ...order(WANT)]) && BM._keys === FM._keys && JSON.stringify(Object.keys(BS)) === JSON.stringify([...metaKeys, ...Object.keys(FS).filter((k) => WANT.includes(k))]),
+  `a lesson using あさ keeps only あ, さ and the glyphs' kana ${GK.join('')} in both blocks, the strokes block's ${metaKeys.join(', ')} first, and the stroke-meta block's _keys (the full set) unchanged (kept keys ${JSON.stringify(r.keys)}; comments and <style> do not count)`);
 ok(JSON.stringify(BS.あ) === JSON.stringify(FS.あ) && JSON.stringify(BS.さ) === JSON.stringify(FS.さ) && JSON.stringify(BM.あ) === JSON.stringify(FM.あ), 'their strokes and stroke data are the published ones');
 ok(specs.every((sp) => blockOf(r.code, sp.block).json === JSON.stringify(block(r.code, sp.block))), 'each block is JSON.stringify of the kept value (no added whitespace)');
 ok(outside(r.code) === outside(full), 'every byte outside the markers is the published code');
@@ -75,8 +83,8 @@ ok(Object.keys(BS)[0] === '_license' && JSON.stringify(BS._license) === JSON.str
 const rec = { keys: r.keys, sha256: r.sha256 };
 ok(rec.sha256 === sha256(r.code) && /^[0-9a-f]{64}$/.test(rec.sha256) && r.full === sha256(full), `recorded subset {keys: ${JSON.stringify(rec.keys)}, sha256: ${rec.sha256.slice(0, 12)}…}; the entry keeps the published sha256 ${r.full.slice(0, 12)}…`);
 const editor = subsetCode(full, rec.keys);
-ok(editor.code === r.code && sha256(editor.code) === rec.sha256 && subsetCode(full, 'さあ').code === r.code, 'an editor applying the recorded keys (in any order) to its trusted full copy gets the same bytes and hash');
-ok(sha256(r.code.replace('"あ":[', '"あ": [')) !== rec.sha256 && subsetCode(full, 'あい').code !== r.code, 'a changed byte, or other keys, do not match');
+ok(editor.code === r.code && sha256(editor.code) === rec.sha256 && subsetCode(full, [...rec.keys].reverse().join('')).code === r.code, 'an editor applying the recorded keys (in any order) to its trusted full copy gets the same bytes and hash');
+ok(sha256(r.code.replace('"あ":[', '"あ": [')) !== rec.sha256 && subsetCode(full, 'あう').code !== r.code, 'a changed byte, or other keys, do not match');
 ok(sha256(r.code.replace(/\n/g, '\r\n')) === rec.sha256, 'the hash is the identity hash (CRLF written gives the same)');
 
 // 7
@@ -109,8 +117,25 @@ const n2 = produce(NJS2, ['<p>nothing here</p>']);
 ok(n2.keys === '' && JSON.stringify(n2.names) === '[]' && JSON.stringify(Object.keys(block(n2.code, 'icons'))) === JSON.stringify(['_notice']), 'no name used: keys "", names [], only the "_" members stay');
 const throws = (f) => { try { f(); return false; } catch { return true; } };
 ok(throws(() => subsetSpecs(namePart([{ data: 'block:icons', key: 'name', match: 'word' }]))) && throws(() => subsetSpecs(namePart([{ data: 'block:icons', key: 'name', match: 'name', keep: ['Bad'] }])))
-  && throws(() => subsetSpecs(namePart([{ data: 'block:marks', key: 'char', keep: ['x'] }]))) && throws(() => produce(namePart([{ data: 'block:icons', key: 'name', match: 'name' }], { Home: [] }), ['Home'])),
-  'refused: an unknown match, a keep name outside ^[a-z0-9]+(-[a-z0-9]+)*$, keep on a char entry, a name block key that is not a name');
+  && throws(() => subsetSpecs(namePart([{ data: 'block:marks', key: 'char', keep: ['x'] }]))) && throws(() => subsetCode(namePart([{ data: 'block:icons', key: 'name', match: 'name' }], { Home: [] }), '', ['Home'])),
+  'registry side refuses: an unknown match, a keep name outside ^[a-z0-9]+(-[a-z0-9]+)*$, keep on a char entry, a name block key that is not a name');
+const bad = produce(namePart([{ data: 'block:icons', key: 'name', match: 'name' }], { Home: [] }), ['Home']);
+ok(bad.warning && bad.code === namePart([{ data: 'block:icons', key: 'name', match: 'name' }], { Home: [] }) && bad.keys === undefined && bad.names === undefined, `a lesson producer warns and keeps the part whole: ${bad.warning}`);
+
+// 9
+const T9 = lessonText([{ html: `<section class="slide" data-home="user-plus"><h2>A &amp; B &#x3042;&nbsp;x</h2><!-- comment-word -->
+<m-cards title='chart-line'><script type="application/json">{"cards":[{"icon":"chart-pie","n":12.5,"ok":true}]}</script></m-cards>
+<m-x><script type="application/json">{"broken": </script></m-x><script>var hidden = "script-word";</script><style>.style-word{}</style></section>` },
+  { narration: '<b>narr-word</b>' }], 'G');
+const P9 = T9.split('\n');
+ok(['A & B あ x', 'user-plus', 'chart-line', 'cards', 'icon', 'chart-pie', 'n', '12.5', '{"broken": ', '<b>narr-word</b>', 'G'].every((x) => P9.includes(x)),
+  'counted: text (references decoded), attribute values, JSON names, strings (escapes decoded) and numbers, invalid JSON as written, narration as written, glyphs');
+ok(!/section|data-home|class|m-cards|m-x|comment-word|script-word|style-word|true|hidden/.test(T9.replace('<b>narr-word</b>', '')) && P9.includes('slide') && P9.includes('application/json'), 'not counted: tag and attribute names, comments, other <script>, <style>, booleans (attribute values such as slide and application/json are)');
+const tk = lessonTokens([{ html: '<m-cards><script type="application/json">{"cards":[{"icon":"user"}]}</script></m-cards>' }]);
+ok(JSON.stringify([...tk].sort()) === '["application","cards","icon","json","user"]', `tokens of a lesson: ${JSON.stringify([...tk].sort())} (the type attribute's value counts; the tag names m-cards and script do not)`);
+const arrPart = (items) => `egatariParts.define({name: "arr", version: "1.0.0", requires: {}}, function(){ return {build: {subset: [{data: "block:a", key: "k"}]}, d: /*@egatari-block a*/${JSON.stringify(items)}/*@egatari-block-end*/}; });\n`;
+ok(throws(() => subsetCode(arrPart([{ k: 'あ' }, { k: 1 }]), 'あ')) && !!produce(arrPart([{ k: 'あ' }, { k: 1 }]), ['あ']).warning && produce(arrPart([{ k: 'あ' }, { k: 'い' }]), ['あ']).keys === 'あ',
+  'keys must be strings: a numeric key is a bad declaration (refused on the registry side, kept whole with a warning by a lesson producer); a library part declares build on its value');
 
 // 6
 const S = await studio();
@@ -125,7 +150,7 @@ const build = (which, code, src) => {
   S.build(path.join(dir, 'deck.html'), path.join(dir, 'deck.out.html'));
   return path.join(dir, 'deck.out.html');
 };
-const decks = { full: build('full', full, LESSON), subset: build('subset', r.code, LESSON), missing: build('missing', r.code, LESSON.replace('text="あさ"', 'text="あい"')) };
+const decks = { full: build('full', full, LESSON), subset: build('subset', r.code, LESSON), missing: build('missing', r.code, LESSON.replace('text="あさ"', 'text="あう"')) };
 const b = await S.browser.launch();
 try {
   const play = async (file) => {
@@ -138,7 +163,7 @@ try {
     const out = await p.evaluate(() => {
       const el = document.querySelector('m-kakijun'), doms = [];
       for (let k = 0; k <= el.steps; k++) for (const t of [0.3, Infinity]) { DECK.seek(0, k, t); doms.push(el.outerHTML); }
-      return { doms, steps: el.steps, plain: [...el.querySelectorAll('text')].map((t) => t.textContent).filter((s) => s === 'い').length,
+      return { doms, steps: el.steps, plain: [...el.querySelectorAll('text')].map((t) => t.textContent).filter((s) => s === 'う').length,
         reports: EGATARI_PARTS_SHIM.reports().map((x) => x.code + ': ' + x.msg) };
     });
     await p.close();
@@ -147,8 +172,8 @@ try {
   const f = await play(decks.full), s = await play(decks.subset), m = await play(decks.missing);
   ok(f.doms.length > 2 && JSON.stringify(f.doms) === JSON.stringify(s.doms), `あさ: the subset part draws the same DOM as the full part at every step (${f.steps} steps, ${f.doms.length} frames)`);
   ok(!f.reports.length && !s.reports.length && !f.errors.length && !s.errors.length, 'no report or console error with either');
-  ok(m.plain === 1 && m.reports.length === 1 && /^data: \[kakijun\] no stroke data for "い" \(not in this lesson's subset: /.test(m.reports[0]) && !m.errors.length,
-    'あい with the あさ subset: い is drawn plainly and reported once as data, saying the subset left it out' + (m.reports.length ? ': ' + m.reports.join(' | ') : '') + (m.errors.length ? ' / ' + m.errors[0] : ''));
+  ok(m.plain === 1 && m.reports.length === 1 && /^data: \[kakijun\] no stroke data for "う" \(not in this lesson's subset: /.test(m.reports[0]) && !m.errors.length,
+    'あう with the あさ subset: う is drawn plainly and reported once as data, saying the subset left it out' + (m.reports.length ? ': ' + m.reports.join(' | ') : '') + (m.errors.length ? ' / ' + m.errors[0] : ''));
 } finally { await b.close(); }
 
 console.log(fails ? `\nFAIL: ${fails}` : '\ntest-subset: ok');

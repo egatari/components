@@ -1,4 +1,4 @@
-// The stand-in for the producer's subset step (Egatari spec §6.2 Subset, egatari-spec ce96072; subset by name 87175aa), as Studio's build will do it,
+// The stand-in for the producer's subset step (Egatari spec §6.2 Subset, egatari-spec ce96072; subset by name 87175aa; library parts 3d4ead0; lesson text, string keys and bad declarations 6f2670b), as Studio's build will do it,
 // and the reference for whoever writes that: a part declares `static build = {subset: {data, key}}` (or an array of such
 // entries); the producer keeps only the entries whose keys occur in the lesson's text and records `subset: {keys, sha256}` in
 // the part's index.components entry (whose sha256 stays that of the published part). An editor applies the same subset to
@@ -18,6 +18,7 @@
 //   sha256      the identity hash (tools/identity.mjs: line endings normalized) of the subset index.js as written into the file
 //
 //   node tools/subset-produce.mjs <part folder or index.js> --lesson <deck.html> [--lesson <narration.md> …] [-o <out.js>]
+//     (a .md lesson file is narration, counted as written; any other is the slide source)
 //     prints {name, version, sha256 (the published part), subset: {keys, names?, sha256}, bytes: {full, subset}} and writes the
 //     subset code with -o
 import fs from 'node:fs';
@@ -68,8 +69,10 @@ export function blockOf(js, name) {
 // the items whose `key` field is kept. Returns {value, kept: [keys]}
 export function keep(value, key, want) {
   if (Array.isArray(value)) {
-    const items = value.filter((x) => x && typeof x === 'object' && want.has(String(x[key])));
-    return { value: items, kept: items.map((x) => String(x[key])) };
+    const bad = value.find((x) => !x || typeof x !== 'object' || typeof x[key] !== 'string');
+    if (bad !== undefined) throw new Error(`subset: an item ${JSON.stringify(bad).slice(0, 60)} has no string ${key} (keys are strings)`);
+    const items = value.filter((x) => want.has(x[key]));
+    return { value: items, kept: items.map((x) => x[key]) };
   }
   if (!value || typeof value !== 'object') throw new Error('subset: a block is an object or an array');
   const names = Object.keys(value), meta = names.filter((k) => k.startsWith('_')), kept = names.filter((k) => !k.startsWith('_') && want.has(k));
@@ -89,7 +92,7 @@ export function subsetCode(js, keys, names = []) {
     const { start, end, json } = blockOf(code, sp.block);
     const value = JSON.parse(json);
     if (sp.match === 'name') {
-      const bad = (Array.isArray(value) ? value.map((x) => x && String(x[sp.key])) : Object.keys(value).filter((k) => !k.startsWith('_'))).filter((k) => !NAME_KEY.test(k));
+      const bad = (Array.isArray(value) ? value.map((x) => x && x[sp.key]) : Object.keys(value).filter((k) => !k.startsWith('_'))).filter((k) => typeof k !== 'string' || !NAME_KEY.test(k));
       if (bad.length) throw new Error(`subset: block ${sp.block}: keys ${JSON.stringify(bad.slice(0, 5))} are not names (${NAME_KEY})`);
     }
     const r = keep(value, sp.key, sp.match === 'name' ? new Set([...tokens, ...sp.keep]) : chars);
@@ -99,30 +102,76 @@ export function subsetCode(js, keys, names = []) {
   return { code, keys: [...kc].sort(cpOrder).join(''), names: specs.some((sp) => sp.match === 'name') ? [...kn].sort(cpOrder) : null };
 }
 
-// The characters of the lesson's text: every file given (deck.html, narration.md), comments and <style> left out. Tags,
-// attribute names and entities are ASCII, so the kana and kanji that remain are the slides' text, the parts' own data
-// (attributes such as m-kakijun's text="…", JSON children) and the narration; a few characters too many only keep a few
-// more entries, never fewer.
-const lessonText = (t) => String(t).replace(/<!--[\s\S]*?-->/g, '').replace(/<style\b[\s\S]*?<\/style>/gi, '')
-  .replace(/&#x([0-9a-f]+);/gi, (_, h) => String.fromCodePoint(parseInt(h, 16))).replace(/&#(\d+);/g, (_, d) => String.fromCodePoint(+d));
-export function lessonChars(texts) {
-  const set = new Set();
-  for (const t of texts) for (const c of lessonText(t)) set.add(c);
-  return set;
+// The lesson's text (spec §6.2, egatari-spec 6f2670b), piece by piece, the pieces joined by a line feed:
+//   counted      text nodes and attribute values of the slide source (character references decoded); the narration as
+//                written; the data passed to parts (<script type="application/json"> children) as parsed JSON: member names,
+//                string values and numbers (String(n)), in document order (invalid JSON: one piece, as written); the
+//                part's glyphs
+//   not counted  comments, tag and attribute names, other <script> and <style> contents
+// A lesson is a list of sources: {html: "…"} (deck.html), {narration: "…"} (narration.md), or a string (= html).
+const NAMED = { amp: '&', lt: '<', gt: '>', quot: '"', apos: "'", nbsp: ' ' };
+export const decodeRefs = (s) => s.replace(/&(#x[0-9a-f]+|#\d+|[a-z][a-z0-9]*);/gi, (m, r) => {
+  if (r[0] === '#') { const n = r[1] === 'x' || r[1] === 'X' ? parseInt(r.slice(2), 16) : +r.slice(1); return n <= 0x10ffff ? String.fromCodePoint(n) : m; }
+  return Object.prototype.hasOwnProperty.call(NAMED, r) ? NAMED[r] : m;
+});
+export function jsonPieces(v, out = []) {
+  if (typeof v === 'string') out.push(v);
+  else if (typeof v === 'number') out.push(String(v));
+  else if (Array.isArray(v)) v.forEach((x) => jsonPieces(x, out));
+  else if (v && typeof v === 'object') for (const k of Object.keys(v)) { out.push(k); jsonPieces(v[k], out); }
+  return out;
 }
-
-// The tokens of the lesson's text for name entries: the same text as lessonChars, split at every character outside a-z, 0-9
-// and "-" (case is not folded)
-export function lessonTokens(texts) {
-  const set = new Set();
-  for (const t of texts) for (const w of lessonText(t).split(/[^a-z0-9-]+/)) if (w) set.add(w);
-  return set;
+export function htmlPieces(html) {
+  const out = [], s = String(html), re = /<!--[\s\S]*?(?:-->|$)|<(\/?)([a-zA-Z][^\s/>]*)((?:[^>"']|"[^"]*"|'[^']*')*)>/g;
+  let at = 0, m;
+  const text = (t) => { if (t) out.push(decodeRefs(t)); };
+  while ((m = re.exec(s))) {
+    text(s.slice(at, m.index));
+    at = re.lastIndex;
+    if (!m[2]) continue;   // a comment
+    const tag = m[2].toLowerCase(), attrs = {};
+    for (const a of m[3].matchAll(/([^\s=/>"']+)(?:\s*=\s*("([^"]*)"|'([^']*)'|([^\s>"']+)))?/g)) {
+      if (a[2] === undefined) continue;
+      const v = a[3] ?? a[4] ?? a[5];
+      attrs[a[1].toLowerCase()] = v;
+      out.push(decodeRefs(v));
+    }
+    if (!m[1] && (tag === 'script' || tag === 'style')) {
+      const close = s.toLowerCase().indexOf('</' + tag, at), body = s.slice(at, close < 0 ? s.length : close);
+      if (tag === 'script' && /^application\/json$/i.test((attrs.type || '').trim())) {
+        let v, okJson = true;
+        try { v = JSON.parse(body); } catch { okJson = false; }
+        if (okJson) jsonPieces(v, out); else out.push(body);
+      }
+      at = close < 0 ? s.length : close;
+      re.lastIndex = at;
+    }
+  }
+  text(s.slice(at));
+  return out;
 }
+export function lessonText(sources, glyphs = '') {
+  const pieces = [];
+  for (const src of sources) {
+    if (typeof src === 'string' || src.html !== undefined) pieces.push(...htmlPieces(typeof src === 'string' ? src : src.html));
+    else if (src.narration !== undefined) pieces.push(String(src.narration));
+    else throw new Error('subset: a lesson source is {html} or {narration}');
+  }
+  if (glyphs) pieces.push(glyphs);
+  return pieces.join('\n');
+}
+export const lessonChars = (sources, glyphs) => new Set(lessonText(sources, glyphs));
+// The tokens for name entries: the same text split at every character outside a-z, 0-9 and "-" (case is not folded)
+export const lessonTokens = (sources, glyphs) => new Set(lessonText(sources, glyphs).split(/[^a-z0-9-]+/).filter(Boolean));
 
-// The whole step: the subset code and what the index records (names only for a part with a name entry)
-export function produce(js, texts) {
-  const { code, keys, names } = subsetCode(js, lessonChars(texts), lessonTokens(texts));
-  return { code, keys, ...(names ? { names } : {}), sha256: sha256(code), full: sha256(js) };
+// The whole step, as a lesson producer does it: the subset code and what the index records (names only for a part with a
+// name entry). A bad declaration (spec: the producer warns and keeps the part whole) returns {code: js, warning} and no
+// subset; registry-side tools (icons-import --check, release, tests) call subsetCode, which throws, and reject the part.
+export function produce(js, sources) {
+  let r;
+  try { r = subsetCode(js, lessonChars(sources, partDeclarations(js).glyphs), lessonTokens(sources, partDeclarations(js).glyphs)); }
+  catch (e) { return { code: js, warning: String(e.message), sha256: sha256(js), full: sha256(js) }; }
+  return { code: r.code, keys: r.keys, ...(r.names ? { names: r.names } : {}), sha256: sha256(r.code), full: sha256(js) };
 }
 
 if (process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
@@ -138,8 +187,9 @@ if (process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.me
   const file = fs.statSync(part).isDirectory() ? path.join(part, 'index.js') : part;
   const js = fs.readFileSync(file, 'utf8');
   const meta = partMeta(js) || {};
-  const r = produce(js, lessons.map((f) => fs.readFileSync(f, 'utf8')));
+  const r = produce(js, lessons.map((f) => (/\.md$/i.test(f) ? { narration: fs.readFileSync(f, 'utf8') } : { html: fs.readFileSync(f, 'utf8') })));
+  if (r.warning) console.error(`subset-produce: warning: ${r.warning}; the part is kept whole (no subset)`);
   if (out) fs.writeFileSync(out, r.code);
-  console.log(JSON.stringify({ name: meta.name, version: meta.version, sha256: r.full, subset: { keys: r.keys, ...(r.names ? { names: r.names } : {}), sha256: r.sha256 },
+  console.log(JSON.stringify({ name: meta.name, version: meta.version, sha256: r.full, ...(r.warning ? {} : { subset: { keys: r.keys, ...(r.names ? { names: r.names } : {}), sha256: r.sha256 } }),
     bytes: { full: Buffer.byteLength(js), subset: Buffer.byteLength(r.code) } }, null, 1));
 }
