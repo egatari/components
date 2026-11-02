@@ -3,8 +3,8 @@
 //   2. every element part with a demo has its intro slide, and every demo slide is there (noconcl slides included)
 //   3. demo slides without an id get one, so slide keys do not collide across parts
 //   4. a changed file, an extra file or a tarball that is not the manifest's is refused
-//   5. with --previous: new, changed (another version) and 見本が変わった (same version, other demo.html); no marks without it
-//   6. it runs with no git on PATH
+//   5. with --previous: new, changed (another version) and サンプルが変わった (same version, other demo.html); no marks without it
+//   6. it runs with no git on PATH, and from a copy of tools/ with no node_modules (no parse5)
 //   node tools/test-gallery-pack.mjs [work dir]
 import fs from 'node:fs';
 import os from 'node:os';
@@ -67,7 +67,7 @@ const r6 = run(['--pack', path.join(work, 'bad.tar.gz'), '--manifest', man, '-o'
 ok(r6.status === 1 && /is not the manifest's/.test(r6.stderr), 'a tarball that is not the manifest\'s is refused');
 
 // 5
-ok(!/（(新しい|変わった|見本が変わった)、v/.test(A), 'no marks without --previous');
+ok(!/（(新しい|変わった|サンプルが変わった)、v/.test(A), 'no marks without --previous');
 const prev = JSON.parse(JSON.stringify(manifest));
 delete prev.components.cards;
 prev.components.orbit.version = '1.9.9';
@@ -76,11 +76,15 @@ fs.writeFileSync(path.join(work, 'prev.json'), JSON.stringify(prev));
 const r7 = run(['--pack', tgz, '--manifest', man, '--previous', path.join(work, 'prev.json'), '-o', path.join(work, 'd')]);
 const D = deck(path.join(work, 'd'));
 ok(r7.status === 0 && D.includes(`<h2>m-cards（新しい、v${version}）</h2>`) && D.includes(`<h2>m-orbit（変わった、v${version}）</h2>`)
-  && D.includes(`<h2>m-tape（見本が変わった、v${version}）</h2>`) && D.includes('<h2>m-bars</h2>'), 'marks: new, changed, 見本が変わった; the rest none');
+  && D.includes(`<h2>m-tape（サンプルが変わった、v${version}）</h2>`) && D.includes('<h2>m-bars</h2>'), 'marks: new, changed, サンプルが変わった; the rest none');
 
 // 6
 const r8 = run(['--pack', tgz, '--manifest', man, '-o', path.join(work, 'e')], { ...process.env, PATH: '' });
 ok(r8.status === 0 && deck(path.join(work, 'e')) === A, 'runs with no git on PATH' + (r8.status ? `: ${r8.stderr.trim()}` : ''));
+const bare = path.join(work, 'bare');
+fs.cpSync(path.join(ROOT, 'tools'), path.join(bare, 'tools'), { recursive: true });
+const r9 = spawnSync(process.execPath, [path.join(bare, 'tools', 'gallery.mjs'), '--pack', tgz, '--manifest', man, '-o', path.join(work, 'f')], { encoding: 'utf8', cwd: work });
+ok(r9.status === 0 && deck(path.join(work, 'f')) === A, 'runs from a copy of tools/ with no node_modules' + (r9.status ? `: ${r9.stderr.trim()}` : ''));
 
 if (fails) { console.log(`\n${fails} failure(s)`); process.exit(1); }
 console.log('\nOK');
