@@ -4,6 +4,25 @@ Versions follow [README.md § Releases and versions](README.md#releases-and-vers
 
 ## Unreleased
 
+### Later (candidates, not in this release)
+
+- `m-compare` `by="row"`; an "outside every set" region for `m-venn`; planned-vs-actual bars for `m-timeline`
+
+## 2.1.2 - 2026-11-03
+
+Fixes from an audit of all 38 element parts (wrong answers, drawings broken by ordinary data, information lost in the final state that print and small views show, and text equivalents). Code only: no README text, prop `doc` or `static shape` changed, so Studio's AI instruction pack is the same as with 2.1.1 but for version strings. 37 parts have a new patch version; `m-kakijun` is unchanged. Each part's CHANGELOG.md lists its fixes.
+
+### Fixed
+
+- Wrong answers: `m-hissan` 2.0.1 wrote products past 2^53 with wrong last digits, or NaN (123456789×987654321 ended …260); now exact. `m-boxplot` 2.0.1 rounded quartiles (6.25 shown as 6.3, against its README's table); now exact. `m-hist` 2.0.1 rounded relative frequencies unevenly (0.175 → 0.17); now half up.
+- Drawings broken by ordinary data, now reported and kept inside the element: `m-kobun` 2.0.1 with `tate` (0 wide, its card off the slide) and 接頭/接尾 shown as 接; `m-market` 2.0.1 `scale="area"`; `m-curves`, `m-sweep`, `m-seq` 2.0.1 (one non-finite sample blanked the line; an unknown tone hid it); `m-flow` 2.0.2 (a self-edge); `m-pie` 2.0.1 (a ≥ 99.999 % slice); `m-scatter` 2.0.1 (points outside the axes, bad ranges); `m-venn` 2.0.1 (a negative radius); `m-heatmap` 2.0.1 (a range with lo = hi); `m-map-world` and `m-map-japan` 2.0.1 (one unknown key failed the whole map; class colours on a dark background); `m-predict` 2.0.2 (a narrow element); `m-cards` 2.0.1 (the 3×2 row-change arrow read 2→5); `m-orbit` 2.0.2 (lit and shadow inverted on a dark background); `m-cycle` 2.0.2 and `m-timeline` 2.0.1 (edge labels on their own line); and a non-number or too small `size` in several parts.
+- Final state (print, the script view): `m-collect` 2.0.1 keeps what was collected, `m-sweep` and `m-seq` label their grey curves, `m-kanbun` 2.0.1 keeps the arcs and order numbers, `m-quad` 2.0.2 keeps a moved point's start, `m-codetree` 2.0.1 draws every decoded path in its summary, `m-menu` 2.0.1 prints each card's target slide, `m-keyboard` 2.0.2 keeps earlier steps' labels with `cumulative`.
+- Text equivalents: every part but `m-kakijun` (already complete) now has a role and a name stating its final state; the svg is hidden from assistive technology; an author's `aria-label` is kept.
+
+### Demos
+
+- `m-tape`: rows A and B instead of colour names. `m-score`: the rhythm slide steps by measure, so eighth notes keep their length. `m-collect`: the coin tosses are marked 架空.
+
 ### Tools
 
 - `node tools/gallery.mjs --pack <tarball or folder> --manifest <manifest.json> [--previous <manifest.json>] -o <dir>` (#158): the gallery of one release from its pack alone, with no git and no network, for Studio to build and put at studio.egatari.org/parts/vX.Y.Z/. It writes `deck.html` and `egatari.json` (the catalogue version), checks every file against the manifest's identity sha256 (a tarball byte-exact against `manifest.tarball`), groups the parts by purpose as Studio's new-deck list does (#124), and with `--previous` marks parts new, changed (another version) or サンプルが変わった (same version, another demo or README). The page is public, so its words are Studio's (パーツ, サンプル, ステップ, パーツライブラリ). It needs no npm dependencies: `tools/subset-produce.mjs` loads parse5 only when the lesson text is read.
@@ -13,10 +32,6 @@ Versions follow [README.md § Releases and versions](README.md#releases-and-vers
 ### Fixed
 
 - The gallery dropped demo slides whose class was more than `slide` (`slide noconcl`): `m-timer`, `m-codetree`, `m-gendai`, `m-kobun` and `m-syntax` had no demo slides in it, and `m-menu` lost its menu slide (13 slides in all). Demo slides without an id now get one (`g-<part>-<n>`), since demos of different parts share titles and so slide keys.
-
-### Later (candidates, not in this release)
-
-- `m-compare` `by="row"`; an "outside every set" region for `m-venn`; planned-vs-actual bars for `m-timeline`
 
 ## 2.1.1 - 2026-11-02
 
