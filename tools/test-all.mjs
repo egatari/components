@@ -8,7 +8,9 @@
 //   5. release          the release tarball and manifest can be made and are deterministic (tools/release.mjs --check)
 //   6. unit             the safe expression evaluator (tools/test-expr.mjs), m-codetree, m-kanbun / m-kobun / m-gendai parsing
 //                       (tools/test-codetree.mjs, tools/test-kokugo.mjs; no browser)
-//      (also tools/test-yanked.mjs: yanked.json becomes manifest.json's `yanked`; tools/test-variant.mjs: the variant choice;
+//      (also tools/test-yanked.mjs: yanked.json becomes manifest.json's `yanked`; tools/test-gallery-pack.mjs: the gallery of a
+//       release from its pack and manifest alone (gallery.mjs --pack): every demo slide, unique slide ids, refused if a file
+//       is not the manifest's, marks against --previous, no git; tools/test-variant.mjs: the variant choice;
 //       tools/test-stats.mjs: m-hist / m-boxplot mean, median, mode, classes and quartiles by jp / inc / exc;
 //       tools/test-numberline.mjs: m-numberline tick positions and labels, fractions, two lines aligned at 0, range levels and shared part)
 //       tools/test-hissan.mjs: m-hissan's written calculations reproduce plain arithmetic; places in columns, quotient over the right digits;
@@ -101,6 +103,7 @@ const TESTS = [
   ['published', ['tools/published.mjs']],
   ['test-expr', ['tools/test-expr.mjs']],
   ['test-yanked', ['tools/test-yanked.mjs']],
+  ['test-gallery-pack', ['tools/test-gallery-pack.mjs']],
   ['test-variant', ['tools/test-variant.mjs']],
   ['test-stats', ['tools/test-stats.mjs']],
   ['test-numberline', ['tools/test-numberline.mjs']],

@@ -4,6 +4,14 @@ Versions follow [README.md § Releases and versions](README.md#releases-and-vers
 
 ## Unreleased
 
+### Tools
+
+- `node tools/gallery.mjs --pack <tarball or folder> --manifest <manifest.json> [--previous <manifest.json>] -o <dir>` (#158): the gallery of one release from its pack alone, with no git and no network, for Studio to build and put at studio.egatari.org/parts/vX.Y.Z/. It writes `deck.html` and `egatari.json` (the catalogue version), checks every file against the manifest's identity sha256 (a tarball byte-exact against `manifest.tarball`), groups the parts by purpose as Studio's new-deck list does (#124), and with `--previous` marks parts new, changed (another version) or 見本が変わった (same version, another demo or README).
+
+### Fixed
+
+- The gallery dropped demo slides whose class was more than `slide` (`slide noconcl`): `m-timer`, `m-codetree`, `m-gendai`, `m-kobun` and `m-syntax` had no demo slides in it, and `m-menu` lost its menu slide (13 slides in all). Demo slides without an id now get one (`g-<part>-<n>`), since demos of different parts share titles and so slide keys.
+
 ### Later (candidates, not in this release)
 
 - `m-compare` `by="row"`; an "outside every set" region for `m-venn`; planned-vs-actual bars for `m-timeline`

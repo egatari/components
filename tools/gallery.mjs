@@ -5,14 +5,81 @@
 //   node tools/gallery.mjs --build    also build it with the pinned Egatari Studio and write out/gallery/:
 //                                     gallery.html (the deck: → to step) and sheet.html (every slide's mid-step and final
 //                                     state on one page, from screenshots)
+//   node tools/gallery.mjs --pack <tarball or folder> --manifest <manifest.json> [--previous <manifest.json>] -o <dir>
+//                                     the gallery of one release, from its pack alone (no git, no network), for Studio to build
+//                                     and put at studio.egatari.org/parts/vX.Y.Z/: writes <dir>/deck.html and <dir>/egatari.json
+//                                     (the catalogue version). Every file is checked against the manifest's identity sha256 (spec §6,
+//                                     tools/identity.mjs; a tarball byte-exact against manifest.tarball). The parts are grouped by purpose as in Studio's new-deck list (#124):
+//                                     a part goes under the tile of its first purpose that has one (tile own, or {into}); else under
+//                                     its set, or そのほか. With --previous, parts not in it are marked new, parts with another version changed,
+//                                     and parts with the same version but another demo.html or README.md 見本が変わった
 import fs from 'node:fs';
 import path from 'node:path';
+import { createHash } from 'node:crypto';
 import { ROOT, componentNames } from './studio.mjs';
 import { baseline, git } from './baseline.mjs';
 import { migratedNames, C2_BASELINE } from './parts.mjs';
-import { frontmatter, list, purposeIds, SERIES_LABEL, flags } from './lint.mjs';
+import { readTarGz } from './tar.mjs';
+import { identityBytes } from './identity.mjs';
+import { frontmatter, list, purposeIds, SERIES_LABEL, SET_LABEL, flags } from './lint.mjs';
 
 const esc = (s) => String(s ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+// a demo slide: class "slide" with or without more classes (noconcl), any attribute order
+const SLIDE_RE = /<section\b[^>]*\bclass="slide(?:\s[^"]*)?"[\s\S]*?<\/section>/g;
+// A demo's slides, its <style> and the plain scripts outside its slides (m-collect, m-seq fill their data so), each in its own scope
+function demoParts(demo, name){
+  demo = demo.replace(/\r\n?/g, '\n');
+  const st = demo.match(/<style>([\s\S]*?)<\/style>/);
+  const outside = demo.replace(SLIDE_RE, '');
+  return {
+    style: st && st[1].trim() ? `/* ${name} */\n${st[1].trim()}` : null,
+    scripts: [...outside.matchAll(/<script>([\s\S]*?)<\/script>/g)].map((m) => `<script>/* ${name} */\n(function(){\n${m[1].trim()}\n})();\n</script>`),
+    // a slide without an id gets one, since demos of different parts share titles (見せ方の種類) and so slide keys
+    secs: (demo.match(SLIDE_RE) || []).map((x, i) => (/^<section\b[^>]*\bid=/.test(x) ? x : x.replace(/^<section\b/, `<section id="g-${name.replace(/^m-/, '')}-${i + 1}"`)).trim()),
+  };
+}
+// The slide that introduces a part (interactive parts: a badge and a dashed --accent2 frame; text and dash, not colour alone)
+function introSlide({ name, summary, purposes, variants, group, n, ia, mark, next }){
+  return `<section class="slide">
+  <h2>${esc(name)}${mark ? `（${mark}${next ? `、${next}` : ''}）` : ''}</h2>
+  <div class="body">
+${ia ? '    <p style="margin:0 0 10px;line-height:1.3"><span style="display:inline-block;font-size:27px;font-weight:700;color:var(--fg);border:2px dashed var(--accent2);border-radius:8px;padding:0 12px">操作できる / Interactive</span></p>\n' : ''}    <p${ia ? ' style="border:3px dashed var(--accent2);border-radius:10px;padding:10px 16px"' : ''}>${esc(summary)}${ia ? '（見る人が押して操作できる）' : ''}</p>
+    <ul>
+      <li>伝えたいこと：${esc(purposes)}</li>
+      <li>見せ方：${variants.length ? esc(variants.join('・')) : '1 種類'}</li>
+      <li>${group}　見本のスライド：${n} 枚</li>
+    </ul>
+  </div>
+</section>`;
+}
+function deckHtml({ title, styles, scripts, first, slides }){
+  return `<!DOCTYPE html>
+<html lang="ja" data-theme="default">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>${title}</title>
+<!-- tools/gallery.mjs が各部品の demo.html と README.md から作る。手で直さない。数値・会社はすべて架空か公の事実 -->
+<style>
+${styles.join('\n')}
+</style>
+</head>
+<body>
+${scripts.join('\n')}
+<div id="stage">
+
+${first}
+
+${slides.join('\n\n')}
+
+</div>
+</body>
+</html>
+`;
+}
+const args = process.argv.slice(2);
+const opt = (k) => { const i = args.indexOf(k); return i >= 0 ? args[i + 1] : undefined; };
+if (args.includes('--pack')) { packGallery(); process.exit(0); }
 const ids = purposeIds(ROOT);
 // New and changed components (index.js or demo.html) since the release before this one come first, marked on their first slide
 const { base, label: next } = baseline();
@@ -30,62 +97,24 @@ const styles = [], scripts = [], slides = [], index = [];
 for (const { name, st: mark } of order) {
   const dir = path.join(ROOT, 'components', name);
   const f = frontmatter(fs.readFileSync(path.join(dir, 'README.md'), 'utf8'));
-  const demo = fs.readFileSync(path.join(dir, 'demo.html'), 'utf8').replace(/\r\n?/g, '\n');
-  const st = demo.match(/<style>([\s\S]*?)<\/style>/);
-  if (st && st[1].trim()) styles.push(`/* ${f.name} */\n${st[1].trim()}`);
-  // a demo may fill its data from a plain script outside its slides (m-collect, m-seq): carry it over, in its own scope
-  const outside = demo.replace(/<section class="slide"[\s\S]*?<\/section>/g, '');
-  for (const m of outside.matchAll(/<script>([\s\S]*?)<\/script>/g)) scripts.push(`<script>/* ${f.name} */\n(function(){\n${m[1].trim()}\n})();\n</script>`);
-  const secs = demo.match(/<section class="slide"[\s\S]*?<\/section>/g) || [];
+  const d = demoParts(fs.readFileSync(path.join(dir, 'demo.html'), 'utf8'), f.name);
+  if (d.style) styles.push(d.style);
+  scripts.push(...d.scripts);
   const purposes = list(f.purposes).map((p) => (ids.get(p) || {}).ja || p).join('・');
-  const variants = list(f.variants);
-  // interactive parts: a badge and a dashed --accent2 frame around the intro (text and dash, not colour alone)
   const ia = flags(fs.readFileSync(path.join(dir, 'index.js'), 'utf8')).interactive;
-  index.push({ name: f.name, n: secs.length, mark });
-  slides.push(`<section class="slide">
-  <h2>${esc(f.name)}${mark ? `（${mark}${next ? `、${next}` : ''}）` : ''}</h2>
-  <div class="body">
-${ia ? '    <p style="margin:0 0 10px;line-height:1.3"><span style="display:inline-block;font-size:27px;font-weight:700;color:var(--fg);border:2px dashed var(--accent2);border-radius:8px;padding:0 12px">操作できる / Interactive</span></p>\n' : ''}    <p${ia ? ' style="border:3px dashed var(--accent2);border-radius:10px;padding:10px 16px"' : ''}>${esc(f.summary)}${ia ? '（見る人が押して操作できる）' : ''}</p>
-    <ul>
-      <li>伝えたいこと：${esc(purposes)}</li>
-      <li>見せ方：${variants.length ? esc(variants.join('・')) : '1 種類'}</li>
-      <li>系列：${esc(SERIES_LABEL[f.series] || f.series)}　見本のスライド：${secs.length} 枚</li>
-    </ul>
-  </div>
-</section>`, ...secs.map((s) => s.trim()));
+  index.push({ name: f.name, n: d.secs.length, mark });
+  slides.push(introSlide({ name: f.name, summary: f.summary, purposes, variants: list(f.variants), group: `系列：${esc(SERIES_LABEL[f.series] || f.series)}`,
+    n: d.secs.length, ia, mark, next }), ...d.secs);
 }
 const total = index.reduce((a, x) => a + x.n + 1, 0) + 1;
-const html = `<!DOCTYPE html>
-<html lang="ja" data-theme="default">
-<head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>部品の一覧（見本）</title>
-<!-- tools/gallery.mjs が各部品の demo.html と README.md から作る。手で直さない。数値・会社はすべて架空か公の事実 -->
-<style>
-${styles.join('\n')}
-</style>
-</head>
-<body>
-${scripts.join('\n')}
-<div id="stage">
-
-<section class="slide">
+const html = deckHtml({ title: '部品の一覧（見本）', styles, scripts, slides, first: `<section class="slide">
   <h2>部品の一覧（${index.length} 個、${total} 枚）</h2>
   <div class="body">
-    <p>部品ごとに、説明の 1 枚と見本のスライドが続きます。→ で段階を進めます。</p>
+    <p>部品ごとに、説明の 1 枚と見本のスライドが続く。→ で段階を進める。</p>
     <p>${index.map((x) => esc(x.name) + (x.mark ? `（${x.mark}）` : '')).join('　')}</p>
   </div>
-</section>
-
-${slides.join('\n\n')}
-
-</div>
-</body>
-</html>
-`;
+</section>` });
 const OUT = path.join(ROOT, 'gallery.html');
-const args = process.argv.slice(2);
 if (args.includes('--check')) {
   const same = fs.existsSync(OUT) && fs.readFileSync(OUT, 'utf8').replace(/\r\n/g, '\n') === html;
   console.log(same ? `gallery.html is up to date (${index.length} components)` : 'gallery.html is out of date: run node tools/gallery.mjs');
@@ -149,4 +178,92 @@ ${rows.join('\n')}
 </body></html>
 `);
   console.log(`${path.join(out, 'gallery.html')}\n${path.join(out, 'sheet.html')}${errs.length ? '\nconsole: ' + errs.slice(0, 5).join(' | ') : ''}`);
+}
+
+// --pack: the gallery of one release from its pack and manifest alone (see the top of this file)
+function packGallery(){
+  const usage = 'usage: node tools/gallery.mjs --pack <tarball or folder> --manifest <manifest.json> [--previous <manifest.json>] -o <dir>';
+  const packArg = opt('--pack'), out = opt('-o');
+  if (!packArg || !opt('--manifest') || !out) { console.error(usage); process.exit(2); }
+  const fail = (m) => { console.error('gallery --pack: ' + m); process.exit(1); };
+  const readJson = (p) => { try { return JSON.parse(fs.readFileSync(p, 'utf8')); } catch (e) { fail(`${p}: ${e.message}`); } };
+  const man = readJson(opt('--manifest')), prev = opt('--previous') ? readJson(opt('--previous')) : null;
+  if (!man.version || !man.components || !man.files) fail(`${opt('--manifest')}: not a components manifest (version, components, files)`);
+  const sha = (b) => createHash('sha256').update(b).digest('hex');
+  // the pack's files: a tarball (checked against manifest.tarball) or the folder it was unpacked into
+  let files;
+  if (fs.statSync(packArg).isDirectory()) {
+    files = new Map(Object.keys(man.files).filter((f) => fs.existsSync(path.join(packArg, f))).map((f) => [f, fs.readFileSync(path.join(packArg, f))]));
+  } else {
+    const gz = fs.readFileSync(packArg);
+    if (man.tarball && sha(gz) !== man.tarball.sha256) fail(`${packArg}: sha256 ${sha(gz)} is not the manifest's ${man.tarball.sha256}`);
+    files = readTarGz(gz);
+  }
+  const bad = [];
+  for (const [f, h] of Object.entries(man.files)) {
+    if (!files.has(f)) bad.push(`${f}: missing`);
+    else if (sha(identityBytes(f, files.get(f))) !== h) bad.push(`${f}: sha256 differs from the manifest`);
+  }
+  for (const f of files.keys()) if (!(f in man.files)) bad.push(`${f}: not in the manifest`);
+  if (bad.length) fail('the pack does not match the manifest:\n  ' + bad.slice(0, 20).join('\n  '));
+  const text = (f) => new TextDecoder().decode(files.get(f));
+
+  // purposes as Studio's new-deck list groups them (#124): own tiles in manifest order; {into} goes to its tile
+  const P = new Map((man.purposes || []).map((p) => [p.id, p]));
+  const tileOf = (id) => { const p = P.get(id); if (!p) return null; if (p.tile === 'own') return id; if (p.tile && p.tile.into && P.get(p.tile.into)?.tile === 'own') return p.tile.into; return null; };
+  const label = (id) => { const p = P.get(id); return p ? (p.label?.ja || p.ja || id) : id; };
+  const groups = new Map([...P.values()].filter((p) => p.tile === 'own').map((p) => [p.id, { title: label(p.id), parts: [] }]));
+  const statusOf = (name, c) => {
+    if (!prev) return '';
+    const q = prev.components?.[name];
+    if (!q) return '新しい';
+    if (q.version !== c.version) return '変わった';
+    return ['demo.html', 'README.md'].some((f) => (q.files || {})[f] !== (c.files || {})[f]) ? '見本が変わった' : '';
+  };
+  for (const [name, c] of Object.entries(man.components)) {
+    if (c.kind !== 'element') continue;
+    if (!files.has(`${name}/demo.html`)) continue;
+    const f = frontmatter(text(`${name}/README.md`)) || {};
+    const own = (c.purposes || []).map(tileOf).find(Boolean);
+    const key = own || `set:${c.set || ''}`;
+    if (!groups.has(key)) groups.set(key, { title: own ? label(own) : c.set ? `${SET_LABEL[c.set] || c.set}（束）` : 'そのほか', parts: [] });
+    groups.get(key).parts.push({ name, c, f, mark: statusOf(name, c) });
+  }
+  const rank = { '新しい': 0, '変わった': 1, '見本が変わった': 2, '': 3 };
+  const next = `v${man.version}`, styles = [], scripts = [], slides = [], toc = [];
+  let total = 1;
+  for (const g of groups.values()) {
+    if (!g.parts.length) continue;
+    g.parts.sort((a, b) => rank[a.mark] - rank[b.mark] || a.name.localeCompare(b.name));
+    const tags = g.parts.map((x) => x.c.tag || `m-${x.name}`);
+    slides.push(`<section class="slide noconcl">
+  <h2>${esc(g.title)}</h2>
+  <div class="body">
+    <p>${g.parts.map((x, i) => esc(tags[i]) + (x.mark ? `（${x.mark}）` : '')).join('　')}</p>
+  </div>
+</section>`);
+    toc.push(`${esc(g.title)}（${g.parts.length}）`);
+    total++;
+    g.parts.forEach((x, i) => {
+      const d = demoParts(text(`${x.name}/demo.html`), tags[i]);
+      if (d.style) styles.push(d.style);
+      scripts.push(...d.scripts);
+      const tier = x.c.tier === 'specialized' && x.c.set ? `専門（${SET_LABEL[x.c.set] || x.c.set}）` : x.c.tier === 'extra' ? '特殊' : '標準';
+      slides.push(introSlide({ name: tags[i], summary: x.f.summary, purposes: (x.c.purposes || []).map(label).join('・'), variants: x.c.variants || [],
+        group: `段：${esc(tier)}　版：${esc(x.c.version)}`, n: d.secs.length, ia: flags(text(`${x.name}/index.js`)).interactive,
+        mark: x.mark, next: x.mark ? next : '' }), ...d.secs);
+      total += 1 + d.secs.length;
+    });
+  }
+  const html = deckHtml({ title: `部品の見本（${next}）`, styles, scripts, slides, first: `<section class="slide noconcl">
+  <h2>部品の見本（Egatari Components ${esc(next)}、${total} 枚）</h2>
+  <div class="body">
+    <p>伝えたいことごとに、部品の説明の 1 枚と見本のスライドが続く。→ で段階を進める。</p>
+    <p>${toc.join('　')}</p>
+  </div>
+</section>` });
+  fs.mkdirSync(out, { recursive: true });
+  fs.writeFileSync(path.join(out, 'deck.html'), html);
+  fs.writeFileSync(path.join(out, 'egatari.json'), JSON.stringify({ componentsCatalogue: man.version }) + '\n');
+  console.log(`gallery --pack: ${path.join(out, 'deck.html')} (${next}: ${[...groups.values()].reduce((a, g) => a + g.parts.length, 0)} parts in ${toc.length} groups, ${total} slides)`);
 }

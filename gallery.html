@@ -61,9 +61,9 @@ document.addEventListener("DOMContentLoaded", function(){
 <div id="stage">
 
 <section class="slide">
-  <h2>部品の一覧（38 個、140 枚）</h2>
+  <h2>部品の一覧（38 個、153 枚）</h2>
   <div class="body">
-    <p>部品ごとに、説明の 1 枚と見本のスライドが続きます。→ で段階を進めます。</p>
+    <p>部品ごとに、説明の 1 枚と見本のスライドが続く。→ で段階を進める。</p>
     <p>m-orbit（変わった）　m-tape（変わった）　m-timer（変わった）　m-bars　m-boxplot　m-cards　m-codetree　m-collect　m-compare　m-curves　m-cycle　m-fishbone　m-flow　m-gendai　m-heatmap　m-hissan　m-hist　m-kakijun　m-kanbun　m-keyboard　m-kobun　m-kpi　m-map-japan　m-map-world　m-market　m-menu　m-numberline　m-pie　m-predict　m-quad　m-scatter　m-score　m-seq　m-sweep　m-syntax　m-timeline　m-tree　m-venn</p>
   </div>
 </section>
@@ -80,7 +80,7 @@ document.addEventListener("DOMContentLoaded", function(){
   </div>
 </section>
 
-<section class="slide">
+<section id="g-orbit-1" class="slide">
   <h2>月の満ち欠け</h2>
   <div class="body">
     <m-orbit style="height:440px">
@@ -90,7 +90,7 @@ document.addEventListener("DOMContentLoaded", function(){
   <div class="concl"><span>→ 月の光っている半分はいつも太陽の側。地球から見える部分が変わる</span></div>
 </section>
 
-<section class="slide">
+<section id="g-orbit-2" class="slide">
   <h2>日食と月食</h2>
   <div class="body">
     <m-orbit style="height:440px">
@@ -100,7 +100,7 @@ document.addEventListener("DOMContentLoaded", function(){
   <div class="concl"><span>→ 太陽・月・地球が一直線に並ぶと、影ができる</span></div>
 </section>
 
-<section class="slide">
+<section id="g-orbit-3" class="slide">
   <h2>金星の満ち欠け</h2>
   <div class="body">
     <m-orbit mode="venus" style="height:440px">
@@ -122,7 +122,7 @@ document.addEventListener("DOMContentLoaded", function(){
   </div>
 </section>
 
-<section class="slide">
+<section id="g-tape-1" class="slide">
   <h2>2 つの量をくらべる：青いリボンは何 m？</h2>
   <div class="body">
     <m-tape style="height:440px">
@@ -135,7 +135,7 @@ document.addEventListener("DOMContentLoaded", function(){
   <div class="concl"><span>→ 青は赤より 5 m 長い。□ = 12 + 5 = 17</span></div>
 </section>
 
-<section class="slide">
+<section id="g-tape-2" class="slide">
   <h2>□を使った式：みかんははじめに何こ？</h2>
   <div class="body">
     <m-tape style="height:360px">
@@ -146,7 +146,7 @@ document.addEventListener("DOMContentLoaded", function(){
   <div class="concl"><span>→ □ − 8 = 15 だから、□ = 15 + 8 = 23</span></div>
 </section>
 
-<section class="slide">
+<section id="g-tape-3" class="slide">
   <h2>B のテープは A のテープの何倍？（線分図）</h2>
   <div class="body">
     <m-tape kind="line" style="height:380px">
@@ -160,7 +160,7 @@ document.addEventListener("DOMContentLoaded", function(){
   <div class="concl"><span>→ B は A（12 m）の 3 つ分で 36 m。36 ÷ 12 = 3 で 3 倍</span></div>
 </section>
 
-<section class="slide">
+<section id="g-tape-4" class="slide">
   <h2>見せ方の種類（variant）</h2>
   <div class="body">
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:0 36px">
@@ -187,8 +187,42 @@ document.addEventListener("DOMContentLoaded", function(){
     <ul>
       <li>伝えたいこと：時間を区切る</li>
       <li>見せ方：fade</li>
-      <li>系列：標準パーツ　見本のスライド：0 枚</li>
+      <li>系列：標準パーツ　見本のスライド：2 枚</li>
     </ul>
+  </div>
+</section>
+
+<section id="g-timer-1" class="slide noconcl">
+  <h2>ワーク：困りごとを集める（架空の研修）</h2>
+  <div class="body">
+    <p class="ia-badge" style="margin:0 0 10px;line-height:1.3"><span style="display:inline-block;font-size:27px;font-weight:700;color:var(--fg);border:2px dashed var(--accent2);border-radius:8px;padding:0 12px">操作できる</span></p>
+    <m-timer style="height:420px">
+      <script type="application/json">{
+        "ready": {"title": "準備の確認", "text": "付箋とペン、A3 の用紙がそろっているか。\n終わらなくてよい。書けた所までを持ち帰る。"},
+        "phases": [
+          {"title": "① 付箋に書く", "short": "付箋に書く", "sec": 90, "text": "職場の困りごとを、付箋 1 枚に 1 件。\n個人で、3 枚を目安に。"},
+          {"title": "② 島で読み上げる", "short": "島で読み上げる", "sec": 15, "text": "順に読み上げて貼る。近いものを寄せる。"},
+          {"title": "③ 1 つ選ぶ", "short": "1 つ選ぶ", "sec": 20, "text": "よく起きて、手間の大きいものを 1 つ選ぶ。"}
+        ],
+        "bells": [{"left": 60, "count": 1}, {"left": 10, "count": 2}, {"left": 0, "count": 3}]
+      }</script>
+    </m-timer>
+  </div>
+</section>
+
+<section id="g-timer-2" class="slide noconcl">
+  <h2>字を変える（labels）</h2>
+  <div class="body">
+    <m-timer style="height:470px">
+      <script type="application/json">{
+        "ready": {"title": "合図を待つ", "text": "全員が席に着いたら始める。"},
+        "phases": [
+          {"title": "考える時間", "short": "1 人で考える", "sec": 20, "text": "話さずに、自分の考えをメモに書く。"},
+          {"title": "話す時間", "short": "2 人で話す", "sec": 15, "text": "隣の人と、メモを見せ合う。"}
+        ],
+        "labels": {"total": "全部で", "remaining": "あと", "done": "そこまで", "start": "合図で始める", "next": "そこまで。次へ進む", "end": "そこまで"}
+      }</script>
+    </m-timer>
   </div>
 </section>
 
@@ -204,7 +238,7 @@ document.addEventListener("DOMContentLoaded", function(){
   </div>
 </section>
 
-<section class="slide">
+<section id="g-bars-1" class="slide">
   <h2>年ごとの売上（架空）</h2>
   <div class="body">
     <m-bars unit="億円" digits="1" al="売上" style="height:400px">
@@ -222,7 +256,7 @@ document.addEventListener("DOMContentLoaded", function(){
   <div class="concl"><span>→ 4 年目は前の軸に収まらない伸び</span></div>
 </section>
 
-<section class="slide">
+<section id="g-bars-2" class="slide">
   <h2>聞き取りで多かった不満（架空）</h2>
   <div class="body">
     <m-bars orient="h" unit="人" per-step="0" ticks="false" style="height:400px">
@@ -239,7 +273,7 @@ document.addEventListener("DOMContentLoaded", function(){
   <div class="concl"><span>→ 一番の不満は書く時間</span></div>
 </section>
 
-<section class="slide">
+<section id="g-bars-3" class="slide">
   <h2>2 つの系列を並べる（架空）</h2>
   <div class="body">
     <m-bars unit="%" style="height:400px">
@@ -256,7 +290,7 @@ document.addEventListener("DOMContentLoaded", function(){
   <div class="concl"><span>→ どの部門でも残業の割合が下がった</span></div>
 </section>
 
-<section class="slide">
+<section id="g-bars-4" class="slide">
   <h2>売上の内訳を積み上げる（stack。架空）</h2>
   <div class="body">
     <m-bars stack="true" unit="億円" digits="1" al="売上" style="height:420px">
@@ -274,7 +308,7 @@ document.addEventListener("DOMContentLoaded", function(){
   <div class="concl"><span>→ 伸びたのは通販。店頭はほぼ横ばい</span></div>
 </section>
 
-<section class="slide">
+<section id="g-bars-5" class="slide">
   <h2>前の年からの増減と、答えの割合（架空）</h2>
   <div class="body">
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:40px">
@@ -315,7 +349,7 @@ document.addEventListener("DOMContentLoaded", function(){
   </div>
 </section>
 
-<section class="slide">
+<section id="g-boxplot-1" class="slide">
   <h2>箱ひげ図のかき方：1 か月に読んだ本（架空の 11 人）</h2>
   <div class="body">
     <m-boxplot xl="冊数（冊）" xr="[0,20]" xt="[0,2,4,6,8,10,12,14,16,18,20]" style="height:440px">
@@ -325,7 +359,7 @@ document.addEventListener("DOMContentLoaded", function(){
   <div class="concl"><span>→ 小さい順に並べ、中央値と前半・後半の中央値（四分位数）で箱にする</span></div>
 </section>
 
-<section class="slide">
+<section id="g-boxplot-2" class="slide">
   <h2>3 つの組の数学の得点（架空の各 15 人）</h2>
   <div class="body">
     <m-boxplot orient="v" build="whole" dots="on" outliers="on" yl="得点（点）" yr="[30,100]" yt="[30,40,50,60,70,80,90,100]" style="height:440px">
@@ -338,7 +372,7 @@ document.addEventListener("DOMContentLoaded", function(){
   <div class="concl"><span>→ B 組は箱が高い。99 点は 1.5 × 四分位範囲より外の外れ値</span></div>
 </section>
 
-<section class="slide">
+<section id="g-boxplot-3" class="slide">
   <h2>見せ方の種類（variant）</h2>
   <div class="body">
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:0 36px">
@@ -365,7 +399,7 @@ document.addEventListener("DOMContentLoaded", function(){
   </div>
 </section>
 
-<section class="slide">
+<section id="g-cards-1" class="slide">
   <h2>新しい窓口の進め方（架空の会社）</h2>
   <div class="body">
     <m-cards arrows nums style="height:330px">
@@ -382,7 +416,7 @@ document.addEventListener("DOMContentLoaded", function(){
   <div class="concl"><span>→ 聞いてから答えるまでを 1 週間に</span></div>
 </section>
 
-<section class="slide">
+<section id="g-cards-2" class="slide">
   <h2>4 つの店の工夫（架空）</h2>
   <div class="body">
     <m-cards layout="grid" hilite="4" style="height:420px">
@@ -399,7 +433,7 @@ document.addEventListener("DOMContentLoaded", function(){
   <div class="concl"><span>→ 数えて見せた店で、待ちが短くなったと感じる人がいちばん多い</span></div>
 </section>
 
-<section class="slide">
+<section id="g-cards-3" class="slide">
   <h2>まとめて出す（per-step="0"、見せ方 draw）</h2>
   <div class="body">
     <m-cards per-step="0" variant="draw" hilite="last" style="height:300px">
@@ -421,8 +455,230 @@ document.addEventListener("DOMContentLoaded", function(){
     <ul>
       <li>伝えたいこと：階層・分類・手順・工程</li>
       <li>見せ方：1 種類</li>
-      <li>系列：情報　見本のスライド：0 枚</li>
+      <li>系列：情報　見本のスライド：3 枚</li>
     </ul>
+  </div>
+</section>
+
+<section id="g-codetree-1" class="slide noconcl">
+  <h2>MH 符号を符号の木で復号する</h2>
+  <div class="body">
+    <m-codetree aria-label="MH 符号の木で 11011011111 を復号する図" style="height:530px">
+      <script type="application/json">{
+        "bits": "11011011111",
+        "table": [
+          {"run": 0, "white": "00110101", "black": "0000110111"},
+          {"run": 1, "white": "000111", "black": "010"},
+          {"run": 2, "white": "0111", "black": "11"},
+          {"run": 3, "white": "1000", "black": "10"},
+          {"run": 4, "white": "1011", "black": "011"},
+          {"run": 5, "white": "1100", "black": "0011"},
+          {"run": 6, "white": "1110", "black": "0010"},
+          {"run": 7, "white": "1111", "black": "00011"},
+          {"run": 8, "white": "10011", "black": "000101"},
+          {"run": 9, "white": "10100", "black": "000100"},
+          {"run": 10, "white": "00111", "black": "0000100"},
+          {"run": 11, "white": "01000", "black": "0000101"},
+          {"run": 12, "white": "001000", "black": "0000111"},
+          {"run": 13, "white": "000011", "black": "00000100"},
+          {"run": 14, "white": "110100", "black": "00000111"},
+          {"run": 15, "white": "110101", "black": "000011000"},
+          {"run": 16, "white": "101010", "black": "0000010111"},
+          {"run": 17, "white": "101011", "black": "0000011000"},
+          {"run": 18, "white": "0100111", "black": "0000001000"},
+          {"run": 19, "white": "0001100", "black": "00001100111"},
+          {"run": 20, "white": "0001000", "black": "00001101000"},
+          {"run": 21, "white": "0010111", "black": "00001101100"},
+          {"run": 22, "white": "0000011", "black": "00000110111"},
+          {"run": 23, "white": "0000100", "black": "00000101000"},
+          {"run": 24, "white": "0101000", "black": "00000010111"},
+          {"run": 25, "white": "0101011", "black": "00000011000"},
+          {"run": 26, "white": "0010011", "black": "000011001010"},
+          {"run": 27, "white": "0100100", "black": "000011001011"},
+          {"run": 28, "white": "0011000", "black": "000011001100"},
+          {"run": 29, "white": "00000010", "black": "000011001101"},
+          {"run": 30, "white": "00000011", "black": "000001101000"},
+          {"run": 31, "white": "00011010", "black": "000001101001"},
+          {"run": 32, "white": "00011011", "black": "000001101010"},
+          {"run": 33, "white": "00010010", "black": "000001101011"},
+          {"run": 34, "white": "00010011", "black": "000011010010"},
+          {"run": 35, "white": "00010100", "black": "000011010011"},
+          {"run": 36, "white": "00010101", "black": "000011010100"},
+          {"run": 37, "white": "00010110", "black": "000011010101"},
+          {"run": 38, "white": "00010111", "black": "000011010110"},
+          {"run": 39, "white": "00101000", "black": "000011010111"},
+          {"run": 40, "white": "00101001", "black": "000001101100"},
+          {"run": 41, "white": "00101010", "black": "000001101101"},
+          {"run": 42, "white": "00101011", "black": "000011011010"},
+          {"run": 43, "white": "00101100", "black": "000011011011"},
+          {"run": 44, "white": "00101101", "black": "000001010100"},
+          {"run": 45, "white": "00000100", "black": "000001010101"},
+          {"run": 46, "white": "00000101", "black": "000001010110"},
+          {"run": 47, "white": "00001010", "black": "000001010111"},
+          {"run": 48, "white": "00001011", "black": "000001100100"},
+          {"run": 49, "white": "01010010", "black": "000001100101"},
+          {"run": 50, "white": "01010011", "black": "000001010010"},
+          {"run": 51, "white": "01010100", "black": "000001010011"},
+          {"run": 52, "white": "01010101", "black": "000000100100"},
+          {"run": 53, "white": "00100100", "black": "000000110111"},
+          {"run": 54, "white": "00100101", "black": "000000111000"},
+          {"run": 55, "white": "01011000", "black": "000000100111"},
+          {"run": 56, "white": "01011001", "black": "000000101000"},
+          {"run": 57, "white": "01011010", "black": "000001011000"},
+          {"run": 58, "white": "01011011", "black": "000001011001"},
+          {"run": 59, "white": "01001010", "black": "000000101011"},
+          {"run": 60, "white": "01001011", "black": "000000101100"},
+          {"run": 61, "white": "00110010", "black": "000001011010"},
+          {"run": 62, "white": "00110011", "black": "000001100110"},
+          {"run": 63, "white": "00110100", "black": "000001100111"},
+          {"run": 64, "white": "11011", "black": "0000001111"},
+          {"run": 128, "white": "10010", "black": "000011001000"},
+          {"run": 192, "white": "010111", "black": "000011001001"},
+          {"run": 256, "white": "0110111", "black": "000001011011"},
+          {"run": 320, "white": "00110110", "black": "000000110011"},
+          {"run": 384, "white": "00110111", "black": "000000110100"},
+          {"run": 448, "white": "01100100", "black": "000000110101"},
+          {"run": 512, "white": "01100101", "black": "0000001101100"},
+          {"run": 576, "white": "01101000", "black": "0000001101101"},
+          {"run": 640, "white": "01100111", "black": "0000001001010"},
+          {"run": 704, "white": "011001100", "black": "0000001001011"},
+          {"run": 768, "white": "011001101", "black": "0000001001100"},
+          {"run": 832, "white": "011010010", "black": "0000001001101"},
+          {"run": 896, "white": "011010011", "black": "0000001110010"},
+          {"run": 960, "white": "011010100", "black": "0000001110011"},
+          {"run": 1024, "white": "011010101", "black": "0000001110100"},
+          {"run": 1088, "white": "011010110", "black": "0000001110101"},
+          {"run": 1152, "white": "011010111", "black": "0000001110110"},
+          {"run": 1216, "white": "011011000", "black": "0000001110111"},
+          {"run": 1280, "white": "011011001", "black": "0000001010010"},
+          {"run": 1344, "white": "011011010", "black": "0000001010011"},
+          {"run": 1408, "white": "011011011", "black": "0000001010100"},
+          {"run": 1472, "white": "010011000", "black": "0000001010101"},
+          {"run": 1536, "white": "010011001", "black": "0000001011010"},
+          {"run": 1600, "white": "010011010", "black": "0000001011011"},
+          {"run": 1664, "white": "011000", "black": "0000001100100"},
+          {"run": 1728, "white": "010011011", "black": "0000001100101"},
+          {"run": "EOL", "white": "000000000001", "black": "000000000001"}
+        ]
+      }</script>
+    </m-codetree>
+  </div>
+</section>
+
+<section id="g-codetree-2" class="slide noconcl">
+  <h2>長い黒の符号（12 ビット）を読む</h2>
+  <div class="body">
+    <m-codetree aria-label="MH 符号の木で、白 3・黒 30・白 2 を復号する図（黒 30 は 12 ビット）" style="height:530px">
+      <script type="application/json">{
+        "bits": "1000 000001101000 0111",
+        "table": [
+          {"run": 0, "white": "00110101", "black": "0000110111"},
+          {"run": 1, "white": "000111", "black": "010"},
+          {"run": 2, "white": "0111", "black": "11"},
+          {"run": 3, "white": "1000", "black": "10"},
+          {"run": 4, "white": "1011", "black": "011"},
+          {"run": 5, "white": "1100", "black": "0011"},
+          {"run": 6, "white": "1110", "black": "0010"},
+          {"run": 7, "white": "1111", "black": "00011"},
+          {"run": 8, "white": "10011", "black": "000101"},
+          {"run": 9, "white": "10100", "black": "000100"},
+          {"run": 10, "white": "00111", "black": "0000100"},
+          {"run": 11, "white": "01000", "black": "0000101"},
+          {"run": 12, "white": "001000", "black": "0000111"},
+          {"run": 13, "white": "000011", "black": "00000100"},
+          {"run": 14, "white": "110100", "black": "00000111"},
+          {"run": 15, "white": "110101", "black": "000011000"},
+          {"run": 16, "white": "101010", "black": "0000010111"},
+          {"run": 17, "white": "101011", "black": "0000011000"},
+          {"run": 18, "white": "0100111", "black": "0000001000"},
+          {"run": 19, "white": "0001100", "black": "00001100111"},
+          {"run": 20, "white": "0001000", "black": "00001101000"},
+          {"run": 21, "white": "0010111", "black": "00001101100"},
+          {"run": 22, "white": "0000011", "black": "00000110111"},
+          {"run": 23, "white": "0000100", "black": "00000101000"},
+          {"run": 24, "white": "0101000", "black": "00000010111"},
+          {"run": 25, "white": "0101011", "black": "00000011000"},
+          {"run": 26, "white": "0010011", "black": "000011001010"},
+          {"run": 27, "white": "0100100", "black": "000011001011"},
+          {"run": 28, "white": "0011000", "black": "000011001100"},
+          {"run": 29, "white": "00000010", "black": "000011001101"},
+          {"run": 30, "white": "00000011", "black": "000001101000"},
+          {"run": 31, "white": "00011010", "black": "000001101001"},
+          {"run": 32, "white": "00011011", "black": "000001101010"},
+          {"run": 33, "white": "00010010", "black": "000001101011"},
+          {"run": 34, "white": "00010011", "black": "000011010010"},
+          {"run": 35, "white": "00010100", "black": "000011010011"},
+          {"run": 36, "white": "00010101", "black": "000011010100"},
+          {"run": 37, "white": "00010110", "black": "000011010101"},
+          {"run": 38, "white": "00010111", "black": "000011010110"},
+          {"run": 39, "white": "00101000", "black": "000011010111"},
+          {"run": 40, "white": "00101001", "black": "000001101100"},
+          {"run": 41, "white": "00101010", "black": "000001101101"},
+          {"run": 42, "white": "00101011", "black": "000011011010"},
+          {"run": 43, "white": "00101100", "black": "000011011011"},
+          {"run": 44, "white": "00101101", "black": "000001010100"},
+          {"run": 45, "white": "00000100", "black": "000001010101"},
+          {"run": 46, "white": "00000101", "black": "000001010110"},
+          {"run": 47, "white": "00001010", "black": "000001010111"},
+          {"run": 48, "white": "00001011", "black": "000001100100"},
+          {"run": 49, "white": "01010010", "black": "000001100101"},
+          {"run": 50, "white": "01010011", "black": "000001010010"},
+          {"run": 51, "white": "01010100", "black": "000001010011"},
+          {"run": 52, "white": "01010101", "black": "000000100100"},
+          {"run": 53, "white": "00100100", "black": "000000110111"},
+          {"run": 54, "white": "00100101", "black": "000000111000"},
+          {"run": 55, "white": "01011000", "black": "000000100111"},
+          {"run": 56, "white": "01011001", "black": "000000101000"},
+          {"run": 57, "white": "01011010", "black": "000001011000"},
+          {"run": 58, "white": "01011011", "black": "000001011001"},
+          {"run": 59, "white": "01001010", "black": "000000101011"},
+          {"run": 60, "white": "01001011", "black": "000000101100"},
+          {"run": 61, "white": "00110010", "black": "000001011010"},
+          {"run": 62, "white": "00110011", "black": "000001100110"},
+          {"run": 63, "white": "00110100", "black": "000001100111"},
+          {"run": 64, "white": "11011", "black": "0000001111"},
+          {"run": 128, "white": "10010", "black": "000011001000"},
+          {"run": 192, "white": "010111", "black": "000011001001"},
+          {"run": 256, "white": "0110111", "black": "000001011011"},
+          {"run": 320, "white": "00110110", "black": "000000110011"},
+          {"run": 384, "white": "00110111", "black": "000000110100"},
+          {"run": 448, "white": "01100100", "black": "000000110101"},
+          {"run": 512, "white": "01100101", "black": "0000001101100"},
+          {"run": 576, "white": "01101000", "black": "0000001101101"},
+          {"run": 640, "white": "01100111", "black": "0000001001010"},
+          {"run": 704, "white": "011001100", "black": "0000001001011"},
+          {"run": 768, "white": "011001101", "black": "0000001001100"},
+          {"run": 832, "white": "011010010", "black": "0000001001101"},
+          {"run": 896, "white": "011010011", "black": "0000001110010"},
+          {"run": 960, "white": "011010100", "black": "0000001110011"},
+          {"run": 1024, "white": "011010101", "black": "0000001110100"},
+          {"run": 1088, "white": "011010110", "black": "0000001110101"},
+          {"run": 1152, "white": "011010111", "black": "0000001110110"},
+          {"run": 1216, "white": "011011000", "black": "0000001110111"},
+          {"run": 1280, "white": "011011001", "black": "0000001010010"},
+          {"run": 1344, "white": "011011010", "black": "0000001010011"},
+          {"run": 1408, "white": "011011011", "black": "0000001010100"},
+          {"run": 1472, "white": "010011000", "black": "0000001010101"},
+          {"run": 1536, "white": "010011001", "black": "0000001011010"},
+          {"run": 1600, "white": "010011010", "black": "0000001011011"},
+          {"run": 1664, "white": "011000", "black": "0000001100100"},
+          {"run": 1728, "white": "010011011", "black": "0000001100101"},
+          {"run": "EOL", "white": "000000000001", "black": "000000000001"}
+        ]
+      }</script>
+    </m-codetree>
+  </div>
+</section>
+
+<section id="g-codetree-3" class="slide noconcl">
+  <h2>表にない符号に出会う（練習用の小さな表）</h2>
+  <div class="body">
+    <m-codetree aria-label="小さな符号表で、表にない符号に出会う図" style="height:530px">
+      <script type="application/json">{
+        "bits": "01 1 0001 001 000",
+        "table": {"white": {"1": 1, "01": 2, "001": 3, "0001": 64}, "black": {"1": 1, "01": 2, "001": 3}}
+      }</script>
+    </m-codetree>
   </div>
 </section>
 
@@ -438,7 +694,7 @@ document.addEventListener("DOMContentLoaded", function(){
   </div>
 </section>
 
-<section class="slide">
+<section id="g-collect-1" class="slide">
   <h2>観測の要約</h2>
   <div class="body">
     <p data-step="1">8 回の観測は，事後分布の 2 つのモーメントにまとまる</p>
@@ -467,7 +723,7 @@ document.addEventListener("DOMContentLoaded", function(){
   </div>
 </section>
 
-<section class="slide">
+<section id="g-compare-1" class="slide">
   <h2>紙の申請とオンライン申請（架空）</h2>
   <div class="body">
     <m-compare style="height:420px">
@@ -485,7 +741,7 @@ document.addEventListener("DOMContentLoaded", function(){
   <div class="concl"><span>→ 違うのは時間。費用は変わらない</span></div>
 </section>
 
-<section class="slide">
+<section id="g-compare-2" class="slide">
   <h2>植物の細胞と動物の細胞</h2>
   <div class="body">
     <m-compare style="height:420px">
@@ -503,7 +759,7 @@ document.addEventListener("DOMContentLoaded", function(){
   <div class="concl"><span>→ 細胞壁と葉緑体は植物の細胞だけにある</span></div>
 </section>
 
-<section class="slide">
+<section id="g-compare-3" class="slide">
   <h2>見せ方の種類（variant）</h2>
   <div class="body">
     <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:0 32px">
@@ -539,7 +795,7 @@ document.addEventListener("DOMContentLoaded", function(){
   </div>
 </section>
 
-<section class="slide">
+<section id="g-curves-1" class="slide">
   <h2>予測分布と代表値</h2>
   <div class="body">
     <m-curves xr="[0,4]" yr="[0,0.8]" xt="[0,1,2,3,4]" yt="[0,0.2,0.4,0.6,0.8]" yf="1" xl="需要 *y*" yl="密度" style="height:420px">
@@ -549,7 +805,7 @@ document.addEventListener("DOMContentLoaded", function(){
   <div class="concl"><span>→ 右に裾が長いと，平均は中央値より右に来る</span></div>
 </section>
 
-<section class="slide">
+<section id="g-curves-2" class="slide">
   <h2>損失関数の形</h2>
   <div class="body">
     <m-curves xr="[-2,2]" yr="[0,4]" xt="[-2,-1,0,1,2]" yt="[0,1,2,3,4]" xl="誤差 *u* = *y* − *a*" yl="損失" style="height:420px">
@@ -563,7 +819,7 @@ document.addEventListener("DOMContentLoaded", function(){
   <div class="concl"><span>→ どの損失を使うかで，最適な決定 <i>a</i> が変わる</span></div>
 </section>
 
-<section class="slide">
+<section id="g-curves-3" class="slide">
   <h2>需要が増えると（架空の例）</h2>
   <div class="body">
     <m-curves xr="[0,10]" yr="[0,12]" xt="[0,2,4,6,8,10]" yt="[0,3,6,9,12]" xl="数量 *Q*" yl="価格 *P*" style="height:420px">
@@ -591,7 +847,7 @@ document.addEventListener("DOMContentLoaded", function(){
   </div>
 </section>
 
-<section class="slide">
+<section id="g-cycle-1" class="slide">
   <h2>PDCA サイクル</h2>
   <div class="body">
     <m-cycle style="height:430px">
@@ -609,7 +865,7 @@ document.addEventListener("DOMContentLoaded", function(){
   <div class="concl"><span>→ 1 周ごとに、やり方が少しずつよくなる</span></div>
 </section>
 
-<section class="slide">
+<section id="g-cycle-2" class="slide">
   <h2>水の循環</h2>
   <div class="body">
     <m-cycle style="height:430px">
@@ -628,7 +884,7 @@ document.addEventListener("DOMContentLoaded", function(){
   <div class="concl"><span>→ 水は形を変えながら、地球の上を回り続ける</span></div>
 </section>
 
-<section class="slide">
+<section id="g-cycle-3" class="slide">
   <h2>見せ方の種類（variant）</h2>
   <div class="body">
     <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:0 36px">
@@ -661,7 +917,7 @@ document.addEventListener("DOMContentLoaded", function(){
   </div>
 </section>
 
-<section class="slide">
+<section id="g-fishbone-1" class="slide">
   <h2>配送の遅れの原因（架空）</h2>
   <div class="body">
     <m-fishbone aria-label="配送の遅れの特性要因図" style="height:440px">
@@ -688,7 +944,7 @@ document.addEventListener("DOMContentLoaded", function(){
   <div class="concl"><span>→ 人・機械・方法・材料（4M）に分けて原因を洗い出す</span></div>
 </section>
 
-<section class="slide">
+<section id="g-fishbone-2" class="slide">
   <h2>植物が育たないのはなぜ（order="effect-first"）</h2>
   <div class="body">
     <m-fishbone order="effect-first" aria-label="植物が育たない原因" style="height:440px">
@@ -715,7 +971,7 @@ document.addEventListener("DOMContentLoaded", function(){
   <div class="concl"><span>→ 結果を先に置き、光・水・土・温度の順に原因を足す</span></div>
 </section>
 
-<section class="slide">
+<section id="g-fishbone-3" class="slide">
   <h2>見せ方の種類（variant）</h2>
   <div class="body">
     <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:28px">
@@ -748,7 +1004,7 @@ document.addEventListener("DOMContentLoaded", function(){
   </div>
 </section>
 
-<section class="slide">
+<section id="g-flow-1" class="slide">
   <h2>ベイズ決定の流れ</h2>
   <div class="body">
     <m-flow style="height:420px">
@@ -772,7 +1028,7 @@ document.addEventListener("DOMContentLoaded", function(){
   <div class="concl"><span>→ 予測と損失から期待損失 <i>r</i> を作り，それを最小にする <i>a</i> を選ぶ</span></div>
 </section>
 
-<section class="slide">
+<section id="g-flow-2" class="slide">
   <h2>お金とサービスの流れ（架空）</h2>
   <div class="body">
     <m-flow style="height:420px">
@@ -796,7 +1052,7 @@ document.addEventListener("DOMContentLoaded", function(){
   <div class="concl"><span>→ 会社が払い，社員が使い，記録が戻る</span></div>
 </section>
 
-<section class="slide">
+<section id="g-flow-3" class="slide">
   <h2>1 から <i>n</i> までの和を求める手順（判断とくり返し）</h2>
   <div class="body">
     <m-flow aria-label="1 から n までの和を求める流れ図" style="height:420px">
@@ -828,8 +1084,37 @@ document.addEventListener("DOMContentLoaded", function(){
     <ul>
       <li>伝えたいこと：文章の構造</li>
       <li>見せ方：1 種類</li>
-      <li>系列：国語　見本のスライド：0 枚</li>
+      <li>系列：国語　見本のスライド：2 枚</li>
     </ul>
+  </div>
+</section>
+
+<section id="g-gendai-1" class="slide noconcl">
+  <h2>段落の役割と指示語（縦書き）</h2>
+  <div class="body">
+    <m-gendai tate style="height:540px">
+      @具体例#p1>p3
+      駅までの道を、私は{地図アプリ|#app}に頼って歩く。画面の矢印に従えば迷うことはない。だが、{それ|>app}を閉じると、さっき通った角さえ思い出せない。
+
+      @対比#p2~p1
+      かつての旅人は、{山の形や川の流れを目印にして|#mark}道を覚えた。{そう|>mark}して得た知識は、歩いた体に刻まれていた。
+
+      @主張#p3
+      便利な道具は、私たちから==迷う機会を奪う==。だが、{迷うことこそが、土地を自分のものにする営みなのである|_A}。
+    </m-gendai>
+  </div>
+</section>
+
+<section id="g-gendai-2" class="slide noconcl">
+  <h2>横書きの傍線</h2>
+  <div class="body">
+    <m-gendai style="height:400px">
+      @主張#q1
+      道具は、__使う人の考え方__までも形づくる。{これ|>q}は、{手で書くか打つかで文章が変わる|=,#q}ことからも分かる。
+
+      @具体例#q2>q1
+      手で書くと、書く前に考える。打つと、書きながら考える。
+    </m-gendai>
   </div>
 </section>
 
@@ -845,7 +1130,7 @@ document.addEventListener("DOMContentLoaded", function(){
   </div>
 </section>
 
-<section class="slide">
+<section id="g-heatmap-1" class="slide">
   <h2>動物の写真の分類：混同行列（架空）</h2>
   <div class="body">
     <m-heatmap normalize="row" show="both" diag="on" xl="予測" yl="正解" aria-label="架空の分類器の混同行列（各 50 枚）" style="height:440px">
@@ -855,7 +1140,7 @@ document.addEventListener("DOMContentLoaded", function(){
   <div class="concl"><span>→ 正解の行ごとに、どのクラスと間違えたかを読む</span></div>
 </section>
 
-<section class="slide">
+<section id="g-heatmap-2" class="slide">
   <h2>点数とスマホの時間の相関（架空の 40 人）</h2>
   <div class="body">
     <m-heatmap scale="diverging" range="[-1,1]" digits="2" aria-label="架空の 40 人の、試験の点数とスマホの時間の相関行列" style="height:440px">
@@ -865,7 +1150,7 @@ document.addEventListener("DOMContentLoaded", function(){
   <div class="concl"><span>→ 0 から離れるほど濃く、正と負は色で分かれる</span></div>
 </section>
 
-<section class="slide">
+<section id="g-heatmap-3" class="slide">
   <h2>見せ方の種類（variant）：注意の重み（架空）</h2>
   <div class="body">
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:0 36px">
@@ -892,7 +1177,7 @@ document.addEventListener("DOMContentLoaded", function(){
   </div>
 </section>
 
-<section class="slide">
+<section id="g-hissan-1" class="slide">
   <h2>0 のあるひき算：1003−457</h2>
   <div class="body">
     <m-hissan expr="1003-457" style="height:400px"></m-hissan>
@@ -900,7 +1185,7 @@ document.addEventListener("DOMContentLoaded", function(){
   <div class="concl"><span>→ 十の位も百の位も 0 なので、千の位から順にくり下げる</span></div>
 </section>
 
-<section class="slide">
+<section id="g-hissan-2" class="slide">
   <h2>2 けたをかけるかけ算：38×24</h2>
   <div class="body">
     <m-hissan expr="38×24" style="height:420px"></m-hissan>
@@ -908,7 +1193,7 @@ document.addEventListener("DOMContentLoaded", function(){
   <div class="concl"><span>→ 38×2 の 76 は、十の位から書く</span></div>
 </section>
 
-<section class="slide">
+<section id="g-hissan-3" class="slide">
   <h2>2 けたでわるわり算：851÷23</h2>
   <div class="body">
     <m-hissan expr="851÷23" kari="on" style="height:440px"></m-hissan>
@@ -928,7 +1213,7 @@ document.addEventListener("DOMContentLoaded", function(){
   </div>
 </section>
 
-<section class="slide">
+<section id="g-hist-1" class="slide">
   <h2>ソフトボール投げの記録（架空の 20 人）</h2>
   <div class="body">
     <m-hist kind="dots" marks="mean,median,mode" xl="記録（m）" unit=" m" style="height:430px">
@@ -938,7 +1223,7 @@ document.addEventListener("DOMContentLoaded", function(){
   <div class="concl"><span>→ 平均値・中央値・最頻値は、同じ記録でも違う値になる</span></div>
 </section>
 
-<section class="slide">
+<section id="g-hist-2" class="slide">
   <h2>度数を数える：通学時間（架空の 12 人）</h2>
   <div class="body">
     <m-hist build="values" xl="通学時間（分）" yl="人数（人）" style="height:430px">
@@ -948,7 +1233,7 @@ document.addEventListener("DOMContentLoaded", function(){
   <div class="concl"><span>→ 1 人ずつ、記録の入る階級に積む（5 分以上 10 分未満、…）</span></div>
 </section>
 
-<section class="slide">
+<section id="g-hist-3" class="slide">
   <h2>見せ方の種類（variant）：2 組の 50 m 走</h2>
   <div class="body">
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:0 36px">
@@ -975,7 +1260,7 @@ document.addEventListener("DOMContentLoaded", function(){
   </div>
 </section>
 
-<section class="slide">
+<section id="g-kakijun-1" class="slide">
   <h2>ひらがなの書き順：あさ</h2>
   <div class="body">
     <m-kakijun text="あさ" ends="on" style="height:400px"></m-kakijun>
@@ -983,7 +1268,7 @@ document.addEventListener("DOMContentLoaded", function(){
   <div class="concl"><span>→ 「あ」の 3 画目は、結びを作ってから右へはらう</span></div>
 </section>
 
-<section class="slide">
+<section id="g-kakijun-2" class="slide">
   <h2>濁点のあるカタカナ：ガム</h2>
   <div class="body">
     <m-kakijun text="ガム" style="height:400px"></m-kakijun>
@@ -991,7 +1276,7 @@ document.addEventListener("DOMContentLoaded", function(){
   <div class="concl"><span>→ 濁点は、字を書き終えてから左上から右下へ 2 つ</span></div>
 </section>
 
-<section class="slide">
+<section id="g-kakijun-3" class="slide">
   <h2>縦書きの小さい字：きょう</h2>
   <div class="body">
     <m-kakijun text="きょう" writing="tate" size="140" nums="off" style="height:440px"></m-kakijun>
@@ -1011,7 +1296,7 @@ document.addEventListener("DOMContentLoaded", function(){
   </div>
 </section>
 
-<section class="slide">
+<section id="g-kanbun-1" class="slide">
   <h2>孟浩然「春暁」</h2>
   <div class="body">
     <m-kanbun style="height:430px">
@@ -1024,7 +1309,7 @@ document.addEventListener("DOMContentLoaded", function(){
   <div class="concl"><span>返り点に従って下から上へ戻って読む</span></div>
 </section>
 
-<section class="slide">
+<section id="g-kanbun-2" class="slide">
   <h2>レ点・一二点・一レ点（『史記』）</h2>
   <div class="body">
     <m-kanbun size="56" order-by="all" style="height:430px">
@@ -1035,7 +1320,7 @@ document.addEventListener("DOMContentLoaded", function(){
   <div class="concl"><span>一レ点は、レ点で戻ってから二へ戻る</span></div>
 </section>
 
-<section class="slide">
+<section id="g-kanbun-3" class="slide">
   <h2>再読文字と置き字（『論語』）</h2>
   <div class="body">
     <m-kanbun style="height:430px">
@@ -1059,7 +1344,7 @@ document.addEventListener("DOMContentLoaded", function(){
   </div>
 </section>
 
-<section class="slide">
+<section id="g-keyboard-1" class="slide">
   <h2>ハ長調の音階（ドレミファソラシド）</h2>
   <div class="body">
     <m-keyboard aria-label="ドから上のドまで、白い鍵盤を 1 つずつ順にひく" style="height:400px">
@@ -1070,7 +1355,7 @@ document.addEventListener("DOMContentLoaded", function(){
   <div class="concl"><span>→ 白い鍵盤だけを順にひくと、ハ長調の音階になる</span></div>
 </section>
 
-<section class="slide">
+<section id="g-keyboard-2" class="slide">
   <h2>主要三和音（Ⅰ・Ⅳ・Ⅴ）</h2>
   <div class="body">
     <m-keyboard variant="press" aria-label="ハ長調の主要三和音：ドミソ、ファラド、ソシレ" style="height:400px">
@@ -1083,7 +1368,7 @@ document.addEventListener("DOMContentLoaded", function(){
   <div class="concl"><span>→ どの和音も、鍵盤を 1 つおきに 3 つ重ねる</span></div>
 </section>
 
-<section class="slide">
+<section id="g-keyboard-3" class="slide">
   <h2>オクターブと半音・全音</h2>
   <div class="body">
     <m-keyboard variant="rise" aria-label="ドと上のドがオクターブ。ミとファ、ドとド♯は半音、ドとレは全音" style="height:400px">
@@ -1105,8 +1390,37 @@ document.addEventListener("DOMContentLoaded", function(){
     <ul>
       <li>伝えたいこと：文章の構造</li>
       <li>見せ方：1 種類</li>
-      <li>系列：国語　見本のスライド：0 枚</li>
+      <li>系列：国語　見本のスライド：2 枚</li>
     </ul>
+  </div>
+</section>
+
+<section id="g-kobun-1" class="slide noconcl">
+  <h2>『枕草子』春はあけぼの</h2>
+  <div class="body">
+    <p class="ia-badge" style="margin:0 0 10px;line-height:1.3"><span style="display:inline-block;font-size:27px;font-weight:700;color:var(--fg);border:2px dashed var(--accent2);border-radius:8px;padding:0 12px">操作できる</span></p>
+    <m-kobun style="height:470px">
+      春[名]/は[係助]/あけぼの[名]。
+      = 春は明け方（がよい）。
+      やうやう[副]/白く[形・ク・連用]/なりゆく[動・カ四・連体]/山ぎは[名]、
+      = だんだん白くなっていく山ぎわ（の空）が、
+      少し[副]/明かり[動・ラ四・連用]/て[接助]、
+      = 少し明るくなって、
+      紫だち[動・タ四・連用]/たる[助動・たり・存続・連体]/雲[名]/の[格助]/細く[形・ク・連用]/たなびき[動・カ四・連用]/たる[助動・たり・存続・連体]。
+      = 紫がかった雲が細くたなびいている（のがよい）。
+    </m-kobun>
+  </div>
+</section>
+
+<section id="g-kobun-2" class="slide noconcl">
+  <h2>縦書きの品詞分解</h2>
+  <div class="body">
+    <m-kobun tate style="height:520px">
+      春[名]/は[係助]/あけぼの[名]。
+      = 春は明け方（がよい）。
+      少し[副]/明かり[動・ラ四・連用]/て[接助]、
+      = 少し明るくなって、
+    </m-kobun>
   </div>
 </section>
 
@@ -1122,7 +1436,7 @@ document.addEventListener("DOMContentLoaded", function(){
   </div>
 </section>
 
-<section class="slide">
+<section id="g-kpi-1" class="slide">
   <h2>試験導入の結果（架空）</h2>
   <div class="body">
     <m-kpi style="height:330px">
@@ -1138,7 +1452,7 @@ document.addEventListener("DOMContentLoaded", function(){
   <div class="concl"><span>→ 書く時間が 3 分の 1 になった</span></div>
 </section>
 
-<section class="slide">
+<section id="g-kpi-2" class="slide">
   <h2>まとめて出す（per-step="0"）</h2>
   <div class="body">
     <m-kpi per-step="0" cols="2" style="height:380px">
@@ -1155,7 +1469,7 @@ document.addEventListener("DOMContentLoaded", function(){
   <div class="concl"><span>→ 数字は架空</span></div>
 </section>
 
-<section class="slide">
+<section id="g-kpi-3" class="slide">
   <h2>見せ方の種類（variant）</h2>
   <div class="body">
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:24px 40px">
@@ -1188,7 +1502,7 @@ document.addEventListener("DOMContentLoaded", function(){
   </div>
 </section>
 
-<section class="slide">
+<section id="g-map-japan-1" class="slide">
   <h2>日本の八地方区分</h2>
   <div class="body">
     <m-map-japan aria-label="八地方区分の地図" style="height:440px">
@@ -1209,7 +1523,7 @@ document.addEventListener("DOMContentLoaded", function(){
   <div class="concl"><span>→ 北から順に 8 つの地方に分ける</span></div>
 </section>
 
-<section class="slide">
+<section id="g-map-japan-2" class="slide">
   <h2>都道府県の人口（2020 年、国勢調査速報）</h2>
   <div class="body">
     <m-map-japan aria-label="都道府県別の人口の塗り分け" legend="人口" unit="万人" islands="all" style="height:440px">
@@ -1226,7 +1540,7 @@ document.addEventListener("DOMContentLoaded", function(){
   <div class="concl"><span>→ 500 万人以上の 9 都道府県は大都市のまわり</span></div>
 </section>
 
-<section class="slide">
+<section id="g-map-japan-3" class="slide">
   <h2>北前船の西廻り航路（江戸時代）</h2>
   <div class="body">
     <m-map-japan aria-label="北前船の航路" labels="none" style="height:440px">
@@ -1251,7 +1565,7 @@ document.addEventListener("DOMContentLoaded", function(){
   <div class="concl"><span>→ 大坂から瀬戸内海・日本海を通って北へ</span></div>
 </section>
 
-<section class="slide">
+<section id="g-map-japan-4" class="slide">
   <h2>日本の範囲（本当の位置）</h2>
   <!-- 東西南北の端：国土地理院「日本の東西南北端点の経度緯度」（https://www.gsi.go.jp/KOKUJYOHO/center.htm、2026-10-25 取得）。
        東端 南鳥島 153°59′12″E・24°16′59″N、西端 与那国島 122°55′57″E・24°27′05″N、
@@ -1271,7 +1585,7 @@ document.addEventListener("DOMContentLoaded", function(){
   <div class="concl"><span>→ 東西は経度で約 31°、南北は緯度で約 25° に広がる</span></div>
 </section>
 
-<section class="slide">
+<section id="g-map-japan-5" class="slide">
   <h2>見せ方の種類（variant）</h2>
   <div class="body">
     <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:0 28px;text-align:center;font-size:27px">
@@ -1302,7 +1616,7 @@ document.addEventListener("DOMContentLoaded", function(){
   </div>
 </section>
 
-<section class="slide">
+<section id="g-map-world-1" class="slide">
   <h2>世界の六つの州</h2>
   <div class="body">
     <m-map-world aria-label="六州の地図" style="height:440px">
@@ -1321,7 +1635,7 @@ document.addEventListener("DOMContentLoaded", function(){
   <div class="concl"><span>→ 六つの州に分けて世界を見る</span></div>
 </section>
 
-<section class="slide">
+<section id="g-map-world-2" class="slide">
   <h2>国別の値の塗り分け（架空の値）</h2>
   <div class="body">
     <m-map-world aria-label="架空の値の塗り分け" legend="架空の指標" unit="点" style="height:440px">
@@ -1336,7 +1650,7 @@ document.addEventListener("DOMContentLoaded", function(){
   <div class="concl"><span>→ 値は架空。台湾は台湾自身の値で塗る</span></div>
 </section>
 
-<section class="slide">
+<section id="g-map-world-3" class="slide">
   <h2>東京から世界の都市へ</h2>
   <div class="body">
     <m-map-world aria-label="東京と世界の都市を結ぶ矢印" labels="none" grid="equator" style="height:440px">
@@ -1372,7 +1686,7 @@ document.addEventListener("DOMContentLoaded", function(){
   </div>
 </section>
 
-<section class="slide">
+<section id="g-market-1" class="slide">
   <h2>市場の大きさ（架空）</h2>
   <div class="body">
     <m-market unit="億円" style="height:420px">
@@ -1388,7 +1702,7 @@ document.addEventListener("DOMContentLoaded", function(){
   <div class="concl"><span>→ まず定型の報告書から始める</span></div>
 </section>
 
-<section class="slide">
+<section id="g-market-2" class="slide">
   <h2>面積を値に比例させる</h2>
   <div class="body">
     <m-market unit="万人" scale="area" layout="center" count="true" style="height:420px">
@@ -1412,8 +1726,21 @@ document.addEventListener("DOMContentLoaded", function(){
     <ul>
       <li>伝えたいこと：目次</li>
       <li>見せ方：1 種類</li>
-      <li>系列：標準パーツ　見本のスライド：3 枚</li>
+      <li>系列：標準パーツ　見本のスライド：4 枚</li>
     </ul>
+  </div>
+</section>
+
+<section class="slide noconcl" id="s-menu01">
+  <h2>今日の内容</h2>
+  <div class="body">
+    <p class="ia-badge" style="margin:0 0 10px;line-height:1.3"><span style="display:inline-block;font-size:27px;font-weight:700;color:var(--fg);border:2px dashed var(--accent2);border-radius:8px;padding:0 12px">操作できる</span></p>
+    <m-menu per-step="2" aria-label="今日の内容">
+      <a href="#s-part01" data-icon="1" data-sub="何を確かめたいか">問い</a>
+      <a href="#s-part02" data-icon="2" data-sub="集め方と人数">方法</a>
+      <a href="#s-part03" data-icon="3" data-sub="図と数字">結果</a>
+      <a href="#s-part03:2" data-icon="4" data-sub="結果の 2 段目から">効果の大きさ</a>
+    </m-menu>
   </div>
 </section>
 
@@ -1463,7 +1790,7 @@ document.addEventListener("DOMContentLoaded", function(){
   </div>
 </section>
 
-<section class="slide">
+<section id="g-numberline-1" class="slide">
   <h2>3 + 4 − 2 を数直線で</h2>
   <div class="body">
     <m-numberline style="height:400px">
@@ -1475,7 +1802,7 @@ document.addEventListener("DOMContentLoaded", function(){
   <div class="concl"><span>→ たすときは右へ、ひくときは左へ進む</span></div>
 </section>
 
-<section class="slide">
+<section id="g-numberline-2" class="slide">
   <h2>1 と 2 の間を 10 に分ける</h2>
   <div class="body">
     <m-numberline build="ticks,magnify,marks" style="height:440px">
@@ -1487,7 +1814,7 @@ document.addEventListener("DOMContentLoaded", function(){
   <div class="concl"><span>→ 1 目盛りは 0.1。1.3 は 1 と 0.1 が 3 つ</span></div>
 </section>
 
-<section class="slide">
+<section id="g-numberline-3" class="slide">
   <h2>1200 円の 2/3 はいくら（2 本の数直線）</h2>
   <div class="body">
     <m-numberline build="ticks,links,jumps,marks" style="height:440px">
@@ -1500,7 +1827,7 @@ document.addEventListener("DOMContentLoaded", function(){
   </div>
 </section>
 
-<section class="slide">
+<section id="g-numberline-4" class="slide">
   <h2>連立不等式の解（見せ方の種類）</h2>
   <div class="body">
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:0 36px">
@@ -1529,7 +1856,7 @@ document.addEventListener("DOMContentLoaded", function(){
   </div>
 </section>
 
-<section class="slide">
+<section id="g-pie-1" class="slide">
   <h2>1 か月の支出の内訳（架空）</h2>
   <div class="body">
     <m-pie unit="万円" digits="1" show="both" style="height:440px">
@@ -1548,7 +1875,7 @@ document.addEventListener("DOMContentLoaded", function(){
   <div class="concl"><span>→ 住まいと食費で支出の 6 割を超える</span></div>
 </section>
 
-<section class="slide">
+<section id="g-pie-2" class="slide">
   <h2>通学の手段（ドーナツ、1 切れずつ。架空）</h2>
   <div class="body">
     <m-pie donut="0.56" unit="人" per-step="1" style="height:440px">
@@ -1566,7 +1893,7 @@ document.addEventListener("DOMContentLoaded", function(){
   <div class="concl"><span>→ 7 割が自転車か徒歩で通っている</span></div>
 </section>
 
-<section class="slide">
+<section id="g-pie-3" class="slide">
   <h2>見せ方の種類（variant）</h2>
   <div class="body">
     <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:0 28px;text-align:center;font-size:27px">
@@ -1598,7 +1925,7 @@ document.addEventListener("DOMContentLoaded", function(){
   </div>
 </section>
 
-<section class="slide">
+<section id="g-predict-1" class="slide">
   <h2>予想してみよう：落ちる速さ</h2>
   <div class="body">
     <p class="ia-badge" style="margin:0 0 10px;line-height:1.3"><span style="display:inline-block;font-size:27px;font-weight:700;color:var(--fg);border:2px dashed var(--accent2);border-radius:8px;padding:0 12px">操作できる</span></p>
@@ -1615,7 +1942,7 @@ document.addEventListener("DOMContentLoaded", function(){
   <div class="concl"><span>→ 落ちる速さは重さで決まらない（人数は架空の例）</span></div>
 </section>
 
-<section class="slide">
+<section id="g-predict-2" class="slide">
   <h2>予想してみよう：小数のかけ算</h2>
   <div class="body">
     <m-predict unit="人" poll="p1" style="height:440px">
@@ -1631,7 +1958,7 @@ document.addEventListener("DOMContentLoaded", function(){
   <div class="concl"><span>→ 1 より小さい数をかけると、もとの数より小さくなる（人数は架空の例）</span></div>
 </section>
 
-<section class="slide">
+<section id="g-predict-3" class="slide">
   <h2>見せ方の種類（variant）</h2>
   <div class="body">
     <div style="display:grid;grid-template-columns:190px 1fr;gap:20px 16px;align-items:center;font-size:27px">
@@ -1660,7 +1987,7 @@ document.addEventListener("DOMContentLoaded", function(){
   </div>
 </section>
 
-<section class="slide">
+<section id="g-quad-1" class="slide">
   <h2>報告書づくりの道具の位置づけ（架空）</h2>
   <div class="body">
     <m-quad quads-step="1" style="height:430px">
@@ -1680,7 +2007,7 @@ document.addEventListener("DOMContentLoaded", function(){
   <div class="concl"><span>→ すぐ使えて自動で書く場所が空いている</span></div>
 </section>
 
-<section class="slide">
+<section id="g-quad-2" class="slide">
   <h2>SWOT 風に使う（同じ段階に 2 つ）</h2>
   <div class="body">
     <m-quad style="height:430px">
@@ -1712,7 +2039,7 @@ document.addEventListener("DOMContentLoaded", function(){
   </div>
 </section>
 
-<section class="slide">
+<section id="g-scatter-1" class="slide">
   <h2>最高気温とアイスの売上：平日と休日（架空）</h2>
   <div class="body">
     <m-scatter xr="[20,36]" yr="[0,600]" xt="[20,24,28,32,36]" yt="[0,200,400,600]" xl="最高気温（℃）" yl="売上（個）" style="height:430px">
@@ -1728,7 +2055,7 @@ document.addEventListener("DOMContentLoaded", function(){
   <div class="concl"><span>→ 休日はどの気温でも平日より多く売れる</span></div>
 </section>
 
-<section class="slide">
+<section id="g-scatter-2" class="slide">
   <h2>傾向の強さと外れた日（架空）</h2>
   <div class="body">
     <m-scatter xr="[20,36]" yr="[0,500]" xt="[20,24,28,32,36]" yt="[0,100,200,300,400,500]" xl="最高気温（℃）" yl="売上（個）" style="height:430px">
@@ -1744,7 +2071,7 @@ document.addEventListener("DOMContentLoaded", function(){
   <div class="concl"><span>→ 暑い日ほど売れる。1 ℃ 上がると約 23 個増える</span></div>
 </section>
 
-<section class="slide">
+<section id="g-scatter-3" class="slide">
   <h2>見せ方の種類（variant）</h2>
   <div class="body">
     <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:0 28px">
@@ -1774,7 +2101,7 @@ document.addEventListener("DOMContentLoaded", function(){
   </div>
 </section>
 
-<section class="slide">
+<section id="g-score-1" class="slide">
   <h2>ドレミの音階</h2>
   <div class="body">
     <m-score names="solfa" aria-label="ドから上のドまで上がって、また下がる音階の楽譜" style="height:220px">
@@ -1784,7 +2111,7 @@ document.addEventListener("DOMContentLoaded", function(){
   <div class="concl"><span>→ ドレミファソラシド：線と間を 1 つずつ上がる</span></div>
 </section>
 
-<section class="slide">
+<section id="g-score-2" class="slide">
   <h2>リズムのれんしゅう（2/4 拍子）</h2>
   <div class="body">
     <m-score aria-label="四分音符・八分音符・四分休符・タイのリズムの楽譜" style="height:240px">
@@ -1794,7 +2121,7 @@ document.addEventListener("DOMContentLoaded", function(){
   <div class="concl"><span>→ 八分音符 2 つで四分音符 1 つ分。タイでつないだ音は切らずにのばす</span></div>
 </section>
 
-<section class="slide">
+<section id="g-score-3" class="slide">
   <h2>かえるの合唱（ドイツ民謡）</h2>
   <div class="body">
     <m-score by="measure" names="solfa" aria-label="かえるの合唱の楽譜 8 小節" style="height:420px">
@@ -1804,7 +2131,7 @@ document.addEventListener("DOMContentLoaded", function(){
   <div class="concl"><span>→ 1 小節ずつ：同じ形のくり返しを見つけよう</span></div>
 </section>
 
-<section class="slide">
+<section id="g-score-4" class="slide">
   <h2>主要三和音（Ⅰ・Ⅳ・Ⅴ・Ⅰ）</h2>
   <div class="body">
     <m-score names="solfa" aria-label="ハ長調の和音 ドミソ、ファラド、ソシレ、ドミソ" style="height:400px">
@@ -1826,7 +2153,7 @@ document.addEventListener("DOMContentLoaded", function(){
   </div>
 </section>
 
-<section class="slide">
+<section id="g-seq-1" class="slide">
   <h2>逐次更新</h2>
   <div class="body">
     <m-seq per-step="2" xr="[-3,4]" yr="[0,1.25]" xt="[-2,0,2,4]" yt="[0,0.5,1]" yf="1" xl="平均 *θ*" yl="密度" style="height:420px">
@@ -1848,7 +2175,7 @@ document.addEventListener("DOMContentLoaded", function(){
   </div>
 </section>
 
-<section class="slide">
+<section id="g-sweep-1" class="slide">
   <h2>幅のパラメータで形が変わる</h2>
   <div class="body">
     <m-sweep f="1/(1 + u*u/(c*c))" values="[0.5,1,2]" param="σ" xr="[-4,4]" yr="[0,1.2]" xt="[-4,-2,0,2,4]" yt="[0,0.5,1]"
@@ -1857,7 +2184,7 @@ document.addEventListener("DOMContentLoaded", function(){
   <div class="concl"><span>→ σ が大きいほど、遠くの点まで重みが届く</span></div>
 </section>
 
-<section class="slide">
+<section id="g-sweep-2" class="slide">
   <h2>学習率と誤差の減り方</h2>
   <div class="body">
     <m-sweep f="((1-c)**2)**u" values="[0.1,0.5,1.8,2.1]" param="ηa" xr="[0,10]" yr="[0,1.5]" xt="[0,5,10]" yt="[0,0.5,1,1.5]"
@@ -1873,8 +2200,40 @@ document.addEventListener("DOMContentLoaded", function(){
     <ul>
       <li>伝えたいこと：文章の構造</li>
       <li>見せ方：fade・draw</li>
-      <li>系列：英語　見本のスライド：0 枚</li>
+      <li>系列：英語　見本のスライド：3 枚</li>
     </ul>
+  </div>
+</section>
+
+<section id="g-syntax-1" class="slide noconcl">
+  <h2>SVO と修飾する句</h2>
+  <div class="body">
+    <m-syntax style="height:420px">
+      [S The boy {形^ in the red cap}] [V plays] [O tennis] [M {副^plays after school}].
+      = 赤い帽子の男の子は、放課後にテニスをする。
+    </m-syntax>
+  </div>
+</section>
+
+<section id="g-syntax-2" class="slide noconcl">
+  <h2>SVOC：O と C はイコールの関係</h2>
+  <div class="body">
+    <m-syntax pos="on" style="height:500px">
+      [S We[代]] [V call[動]] [O him[代]] [C Ken[名]].
+      = 私たちは彼をケンと呼ぶ。
+      [S The[冠] news[名]] [V made[動]] [O her[代]] [C happy[形]].
+      = その知らせは彼女を幸せにした。
+    </m-syntax>
+  </div>
+</section>
+
+<section id="g-syntax-3" class="slide noconcl">
+  <h2>関係代名詞の節は前の名詞を説明する</h2>
+  <div class="body">
+    <m-syntax variant="draw" style="height:420px">
+      [S The girl {形^ [S who] [V lives] [M next door]}] [V is] [C my friend].
+      = 隣に住んでいる女の子は、私の友達だ。
+    </m-syntax>
   </div>
 </section>
 
@@ -1890,7 +2249,7 @@ document.addEventListener("DOMContentLoaded", function(){
   </div>
 </section>
 
-<section class="slide">
+<section id="g-timeline-1" class="slide">
   <h2>明治のおもな出来事</h2>
   <div class="body">
     <m-timeline style="height:430px">
@@ -1910,7 +2269,7 @@ document.addEventListener("DOMContentLoaded", function(){
   <div class="concl"><span>→ 約 20 年で憲法をもつ国になった</span></div>
 </section>
 
-<section class="slide">
+<section id="g-timeline-2" class="slide">
   <h2>明治・大正の作家の生涯</h2>
   <div class="body">
     <m-timeline style="height:430px">
@@ -1931,7 +2290,7 @@ document.addEventListener("DOMContentLoaded", function(){
   <div class="concl"><span>→ 重なる生涯は段を分けて積む。漱石と子規は同じ年の生まれ</span></div>
 </section>
 
-<section class="slide">
+<section id="g-timeline-3" class="slide">
   <h2>アプリ開発の工程表（架空）</h2>
   <div class="body">
     <m-timeline unit="week" today="2026-11-02" style="height:400px">
@@ -1949,7 +2308,7 @@ document.addEventListener("DOMContentLoaded", function(){
   <div class="concl"><span>→ 矢印は「前の作業が終わってから」。画面設計の遅れは実装に響く</span></div>
 </section>
 
-<section class="slide">
+<section id="g-timeline-4" class="slide">
   <h2>見せ方の種類（variant）</h2>
   <div class="body">
     <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:0 36px">
@@ -1982,7 +2341,7 @@ document.addEventListener("DOMContentLoaded", function(){
   </div>
 </section>
 
-<section class="slide">
+<section id="g-tree-1" class="slide">
   <h2>会社の組織（架空）</h2>
   <div class="body">
     <m-tree aria-label="架空の会社の組織図" style="height:440px">
@@ -2008,7 +2367,7 @@ document.addEventListener("DOMContentLoaded", function(){
   <div class="concl"><span>→ 上から 1 段ずつ：本部、部、課</span></div>
 </section>
 
-<section class="slide">
+<section id="g-tree-2" class="slide">
   <h2>動物の分け方（orient="right"）</h2>
   <div class="body">
     <m-tree orient="right" aria-label="動物の分類" style="height:440px">
@@ -2034,7 +2393,7 @@ document.addEventListener("DOMContentLoaded", function(){
   <div class="concl"><span>→ 背骨の有無で分け、脊椎動物をさらに 5 つに分ける</span></div>
 </section>
 
-<section class="slide">
+<section id="g-tree-3" class="slide">
   <h2>見せ方の種類（variant）</h2>
   <div class="body">
     <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:28px">
@@ -2055,7 +2414,7 @@ document.addEventListener("DOMContentLoaded", function(){
   <div class="concl"><span>→ 書かなければ最初の見せ方（fade）になる</span></div>
 </section>
 
-<section class="slide">
+<section id="g-tree-4" class="slide">
   <h2>確率の木：雨の日に遅れる確率（branch・path）</h2>
   <div class="body">
     <m-tree orient="right" aria-label="天気と遅刻の確率の木" style="height:440px">
@@ -2089,7 +2448,7 @@ document.addEventListener("DOMContentLoaded", function(){
   </div>
 </section>
 
-<section class="slide">
+<section id="g-venn-1" class="slide">
   <h2>哺乳類と海の生き物</h2>
   <div class="body">
     <m-venn style="height:420px">
@@ -2106,7 +2465,7 @@ document.addEventListener("DOMContentLoaded", function(){
   <div class="concl"><span>→ クジラもイルカも、海にすむ哺乳類</span></div>
 </section>
 
-<section class="slide">
+<section id="g-venn-2" class="slide">
   <h2>3 つのスキルの重なり（架空）</h2>
   <div class="body">
     <m-venn style="height:430px">
@@ -2124,7 +2483,7 @@ document.addEventListener("DOMContentLoaded", function(){
   <div class="concl"><span>→ 3 つが重なるところで、データが仕事に生きる</span></div>
 </section>
 
-<section class="slide">
+<section id="g-venn-3" class="slide">
   <h2>見せ方の種類（variant）</h2>
   <div class="body">
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:0 40px">
