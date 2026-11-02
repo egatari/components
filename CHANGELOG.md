@@ -16,6 +16,8 @@ Fixes only: no new part. One part changes (`m-orbit` 2.0.1); the rest is demos a
 
 - `m-orbit` 2.0.1: the person on Earth no longer spins a full turn on a step between two positions held at the same observer angle (e.g. `start` 1 → `visit` [2] with 8 positions, both at evening). A full turn is added only when the step passes position 0 (new moon), e.g. 7 → 1 or 2 → 1. `tools/test-orbit.mjs` checks it.
 
+- `m-orbit`'s README closes its `<!-- llm: omit -->` block (the notes for authors at the end); Studio already read the unclosed block to the end of the file, so its AI instructions do not change.
+
 ### Demos
 
 - `m-timer`: the first slide's body has a 10px inset, so the clock's 0 no longer sits on the left edge of Studio's part-list picture (taken from the first slide's body). The part is unchanged.
@@ -23,6 +25,7 @@ Fixes only: no new part. One part changes (`m-orbit` 2.0.1); the rest is demos a
 
 ### Tests
 
+- Lint: every `<!-- llm: … -->` block in a README is closed by `<!-- llm: end -->` before the next one and before the end of the file.
 - `tools/test-orbit.mjs`: the observer angle through four steps of `m-orbit` (still between equal angles, one full turn past new moon, forward only otherwise).
 - The subset reference parses the slide source as a document with parse5 8.0.1 (a pinned devDependency, the same as Studio's; egatari-spec c6024bf) and walks it in tree order: text nodes, attribute values as the parser keeps them (the first of duplicates), template contents and JSON data; not the doctype, comments, `<style>` or other `<script>`. Character references and raw-text elements are the parser's. The regex scanner and `tools/html-entities.json` are gone; CI runs `npm ci`. `test-subset` §10 covers doctype, RCDATA/RAWTEXT, `<noscript>`, CDATA and processing instructions, duplicate attributes, templates, SVG CDATA and `<plaintext>`.
 

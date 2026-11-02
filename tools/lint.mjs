@@ -160,6 +160,20 @@ export function lintMeta(name, js, meta, warns = []) {
   if ((code.match(/egatariParts\.define\s*\(/g) || []).length !== 1) errs.push(`${at}: a part calls egatariParts.define exactly once`);
   return errs;
 }
+// <!-- llm: omit --> (or another llm: block) opens a block that <!-- llm: end --> closes, before the next opener and before the end
+// of the file: Studio's AI instructions read up to the closing marker
+function llmBlocks(text, rel){
+  const errs = [];
+  let open = null;
+  for (const m of text.matchAll(/<!--\s*llm:\s*([a-z-]+)\s*-->/g)){
+    const line = text.slice(0, m.index).split('\n').length;
+    if (m[1] === 'end'){ if (!open) errs.push(`${rel}:${line}: <!-- llm: end --> closes no block`); open = null; }
+    else { if (open) errs.push(`${rel}:${open.line}: <!-- llm: ${open.kind} --> is not closed before line ${line}`); open = {kind: m[1], line}; }
+  }
+  if (open) errs.push(`${rel}:${open.line}: <!-- llm: ${open.kind} --> is not closed (add <!-- llm: end -->)`);
+  return errs;
+}
+
 // A library part (2.0, no element): README frontmatter name (= the folder), version (= the meta's), kind: library, summary,
 // requires (only when the meta requires something: "name@version, …" in the same order); no demo.html, series or purposes
 export function lintLibrary(name, dir, meta) {
@@ -167,7 +181,8 @@ export function lintLibrary(name, dir, meta) {
   if (meta.name !== name) errs.push(`components/${name}/index.js: define meta name ${meta.name} differs from the folder`);
   const readme = path.join(dir, 'README.md');
   if (!fs.existsSync(readme)) return [...errs, `components/${name}: no README.md`];
-  const f = frontmatter(fs.readFileSync(readme, 'utf8'));
+  const rtext = fs.readFileSync(readme, 'utf8'), f = frontmatter(rtext);
+  errs.push(...llmBlocks(rtext, `components/${name}/README.md`));
   if (!f) return [...errs, `components/${name}/README.md: no frontmatter`];
   for (const k of ['name', 'version', 'kind', 'summary']) if (!(k in f)) errs.push(`components/${name}/README.md: frontmatter has no ${k}`);
   if (f.name && f.name !== name) errs.push(`components/${name}/README.md: name is ${f.name}, expected ${name} (a library part has no tag)`);
@@ -231,7 +246,8 @@ export function lint(root, warns = []) {
     if (!fs.existsSync(path.join(dir, 'demo.html')) && !NO_DEMO.has(name)) errs.push(`components/${name}: no demo.html`);
     const readme = path.join(dir, 'README.md');
     if (!fs.existsSync(readme)) { errs.push(`components/${name}: no README.md`); continue; }
-    const f = frontmatter(fs.readFileSync(readme, 'utf8'));
+    const rtext = fs.readFileSync(readme, 'utf8'), f = frontmatter(rtext);
+    errs.push(...llmBlocks(rtext, `components/${name}/README.md`));
     if (!f) { errs.push(`components/${name}/README.md: no frontmatter`); continue; }
     for (const k of ['name', 'version', 'series', 'tier', 'summary', 'steps', 'props']) if (!(k in f)) errs.push(`components/${name}/README.md: frontmatter has no ${k}`);
     if ('tier' in f && !TIERS.includes(f.tier)) errs.push(`components/${name}/README.md: tier ${f.tier} is not one of ${TIERS.join(', ')}`);
