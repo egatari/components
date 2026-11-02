@@ -1,7 +1,7 @@
 // m-hissan's written calculations (its `static calc`), without a browser: for a sweep of textbook-style exercises the
 // steps the part computes and writes reproduce plain arithmetic (exact, with BigInt decimals), and the layout keeps
 // its invariants. Cases: 2–4 digit + and −, borrowing across zeros (1003−457), 2–3 digit × 1–2 digit (with fine="on"
-// and trailing zeros such as 340×26), decimals ± and × decimals (the product's point counted from both factors,
+// and trailing zeros such as 340×26), products past 2^53 (12 × 12 digits), decimals ± and × decimals (the product's point counted from both factors,
 // trailing zeros struck), ÷ by 1- and 2-digit divisors with and without remainders, to `digits` places, decimal ÷
 // decimal (both points moved), the remainder's point at the dividend's original point, and a 仮の商 round.
 // Checked for every case:
@@ -150,7 +150,7 @@ function checkMul(e, fine) {
   // the product row read as an integer at its columns is a'×b' followed by the zeros brought down
   // the product row (struck zeros included) at its columns is a'×b', followed by the zeros brought down in cols −1…−Z
   const pr = rowDigits(M, I.answerRow, true);
-  ok(eqD(value(pr), at(I.a1 * I.b1, 0)) && Object.keys(pr).map(Number).filter((c) => c < 0).length === I.Z, `${e}: product digits are a'×b' then ${I.Z} zero(s)`);
+  ok(eqD(value(pr), at(BigInt(I.a1) * BigInt(I.b1), 0)) && Object.keys(pr).map(Number).filter((c) => c < 0).length === I.Z, `${e}: product digits are a'×b' then ${I.Z} zero(s)`);
   // decimal: the count arcs number the decimal places of both factors together
   const counts = M.items.filter((it) => it.t === 'count');
   ok(counts.length === a.s + b.s, `${e}: ${a.s + b.s} decimal place(s) counted (${counts.length})`);
@@ -249,6 +249,12 @@ for (const e of ['2.6+1.4', '3.75+1.25', '0.3+0.7', '12.5+3.48', '5-2.35', '4.2-
 // × : 2–3 digit × 1–2 digit, fine on and off
 for (let i = 0; i < 80; i++) { const e = `${rnd(10, 999)}×${rnd(2, 99)}`; checkMul(e, false); checkMul(e, true); }
 for (const e of ['38×24', '36×4', '340×26', '250×40', '600×5', '123×405', '25×4', '99×99', '47×36']) { checkMul(e, false); checkMul(e, true); }
+// products past Number's 2^53 (12 × 12 digits): exact, no NaN, no exponent in the 「たす」 caption
+for (const e of ['123456789×987654321', '99999999×99999999', '999999999999×999999999999']) {
+  const M = checkMul(e, false);
+  const cap = M.items.filter((it) => it.t === 'cap').map((it) => it.text || it.s || '').join(' ');
+  ok(!/NaN|e\+/.test(cap), `${e}: captions exact (${cap.slice(-60)})`);
+}
 { const M = C.build('340×26'); ok(M.info.Z === 1 && C.read(M, M.info.answerRow) === '8840', '340×26: 34×26 = 884, then 0 brought down: 8840'); }
 // decimals × decimals (and × integers)
 for (const e of ['3.6×2.4', '0.25×0.4', '1.25×0.8', '2.5×1.4', '0.2×0.3', '4.8×0.5', '12.5×0.08', '2.4×3', '2.4×30', '0.6×0.5', '1.5×1.5']) { checkMul(e, false); checkMul(e, true); }

@@ -1,6 +1,6 @@
 ---
 name: m-kpi
-version: 2.0.0
+version: 2.0.1
 series: common
 tier: standard
 summary: 大きな数字の札（KPI）を段階ごとに出す。数字は数え上げ、下に増減の矢印と一言

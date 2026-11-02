@@ -2,6 +2,12 @@
 
 The part's own versions (Egatari spec §6.1). Releases of the whole library are in the repository's CHANGELOG.md.
 
+## 2.0.1 (components 2.1.2)
+
+- Fix: a NaN, ±Infinity or missing value in `dens` put NaN into the path, and the whole curve (and its fill) disappeared. The curve and its fill are now drawn per finite run, and one `data` report lists the steps.
+- Fix: when a readout name was missing from one update, the panel showed "undefined", and the next step an unformatted number. The last value is now kept, formatted with its digits, and one `data` report lists the names and steps.
+- Fix: in the final state the grey curves of earlier steps were unlabelled, so a print could not tell which n each was. The grey curves now carry "n = …" (the readout value of a name written n, such as `*n*`, else the number of updates) in `var(--muted)` at 24 px, on the curve with a background halo, avoiding the other curves, the observation mark and its name; with more than four grey curves only the first and the last are labelled.
+
 ## 2.0.0 (components 2.0.0-rc.1 and 2.0.0)
 
 - Moved to `egatariParts.define({name: "seq", version: "2.0.0", requires: {base: "1.0.0", plot: "1.0.0"}, element: "m-seq"})`,

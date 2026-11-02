@@ -8,7 +8,7 @@
 // 見せ方（docs/conventions.md §1）：count（数え上げ、既定）・rise（最後の値のまま少し小さい大きさから戻る）・flip（右の桁から 1 桁ずつ
 // めくれて止まる）・underline（出たあと数字の下に線を引く）。段階の数・長さ・合図・最後の中身はどれも同じ
 // 2.0（Egatari spec §6.1 の部品）：base の MotionElement・el・mtext・prog・lerp・clamp・variant・previewOpacity を使い、プレイヤーのグローバルは使わない
-egatariParts.define({name: "kpi", version: "2.0.0", requires: {base: "1.0.0"}, element: "m-kpi"}, function(deps){
+egatariParts.define({name: "kpi", version: "2.0.1", requires: {base: "1.0.0"}, element: "m-kpi"}, function(deps){
 "use strict";
 var base = deps.base;
 return class extends base.MotionElement {
@@ -56,7 +56,18 @@ return class extends base.MotionElement {
     }
     this.style.display = "block"; this.style.position = "relative";
     var W = this.clientWidth, H = this.clientHeight;
-    var svg = D.el("svg", {viewBox: "0 0 " + W + " " + H, width: W, height: H, style: "display:block;overflow:visible"}, this);
+    var svg = D.el("svg", {viewBox: "0 0 " + W + " " + H, width: W, height: H, "aria-hidden": "true", style: "display:block;overflow:visible"}, this);
+    // 読み上げ：最後の形（札ごとの名前・最後の値・増減・一言）を 1 文で。作者の aria-label があればそれを使う（上書きしない）
+    if (this._aria === undefined) this._aria = this.getAttribute("aria-label");
+    this.setAttribute("role", "img");
+    if (!this._aria){
+      var ja = /^ja\b/i.test(ctx.lang || "ja");
+      this.setAttribute("aria-label", pl.map(function(o){
+        var c = o.c, dg = c.digits !== undefined ? c.digits : P.digits;
+        var more = [c.delta ? (c.delta.dir === "down" ? "↓ " : "↑ ") + (c.delta.text || "") : "", c.note || ""].filter(function(x){ return x.trim(); });
+        return (c.label ? c.label + " " : "") + (c.prefix || "") + self.fmt(c.value, dg) + (c.unit || "") + (more.length ? (ja ? "（" + more.join("、") + "）" : " (" + more.join(", ") + ")") : "");
+      }).join(ja ? "、" : "; "));
+    }
     var n = pl.length || 1, cols = P.cols || Math.min(4, n), rows = Math.ceil(n / cols), gap = 28;
     var cw = (W - gap * (cols - 1)) / cols, ch = (H - gap * (rows - 1)) / rows;
     var size = P.size || Math.max(48, Math.min(84, ch * 0.3, cw * 0.24));

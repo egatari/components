@@ -2,6 +2,12 @@
 
 The part's own versions (Egatari spec §6.1). Releases of the whole library are in the repository's CHANGELOG.md.
 
+## 2.0.1 (components 2.1.2)
+
+- Fix: with `tate`, the element took Studio's `.tate` layout rule (vertical writing, height 100%) and was 0 wide, so an auxiliary's card opened off the slide. The part now uses its own class `kb-tate`; the `tate` attribute is unchanged.
+- Fix: 接頭 and 接尾 were shown as 接 (接続詞); the longest matching name wins. An unknown part of speech is now reported, as 2.0.0's changelog said.
+- Fix: the element had no role, so its aria-label was ignored; it is now role="figure" (not img, so the auxiliary-verb buttons stay reachable) named by the parsed text and, when shown, the translation; an author aria-label is kept, and the translation is aria-hidden when yaku="false" hides it.
+
 ## 2.0.0 (components 2.0.0-rc.1 and 2.0.0)
 
 - Moved to `egatariParts.define({name: "kobun", version: "2.0.0", requires: {base: "1.0.0"}, element: "m-kobun"})`,

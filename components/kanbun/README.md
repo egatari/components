@@ -1,6 +1,6 @@
 ---
 name: m-kanbun
-version: 2.0.0
+version: 2.0.1
 series: kokugo
 tier: specialized
 set: kokugo

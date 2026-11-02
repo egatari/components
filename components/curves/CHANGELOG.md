@@ -2,6 +2,12 @@
 
 The part's own versions (Egatari spec §6.1). Releases of the whole library are in the repository's CHANGELOG.md.
 
+## 2.0.1 (components 2.1.2)
+
+- Fix: a sample of `f` that is NaN or ±Infinity (for example `log(x)` at 0, `1/(x-2)` at 2) put NaN into the path, and the whole line disappeared. The finite runs are now drawn as separate subpaths, the name sits on the last finite point, and a `data` report names the series once.
+- Fix: an unknown `tone` (for example "emphasis") gave `var(--emphasis)` and an invisible line. The line now falls back to its default colour (series-1..4 in order) with an `attr` report; `var(--…)` and the theme names (term, emph, accent2, muted, fg, line, series-1..4) work as before.
+- Fix: line names were separated using their unclamped height but drawn at `Math.max(26, y)`, so names near the top overlapped. Heights are now clamped first (top 26 px, bottom 6 px above the x axis, so names no longer run into the tick labels), then separated, pushing back upwards from the bottom when needed.
+
 ## 2.0.0 (components 2.0.0-rc.1 and 2.0.0)
 
 - Moved to `egatariParts.define({name: "curves", version: "2.0.0", requires: {base: "1.0.0", expr: "1.0.0", plot: "1.0.0"},

@@ -2,6 +2,11 @@
 
 The part's own versions (Egatari spec §6.1). Releases of the whole library are in the repository's CHANGELOG.md.
 
+## 2.0.2 (components 2.1.2)
+
+- Fix: an edge from a box to itself without `loop` had zero length, gave NaN coordinates and drew a stray arrowhead in the top-left corner. It is now drawn as a small loop on the right of the box (from 1/4 and 3/4 of its side), with a `data` report naming the edge; with `loop` it is the same loop on that side. An edge between two boxes with the same centre is reported and not drawn.
+- Fix: duplicate node ids were silently accepted (edges went to the last one). They are now reported (`data`), and edges still use the last node with that id.
+
 ## 2.0.1 (components 2.0.0)
 
 - Text kept clear (#140): two edges between the same two boxes in opposite directions, neither with `shift` or `loop`, are drawn 10 px each to their right. An edge's label and amount keep clear of the other edges' lines, of texts placed before them and of places where another line runs between the text and its own line; the amount may go to the label's side. When no place is free, `ctx.report("layout", …)`. The demos draw as in 2.0.0 (tools/test-c2-identity.mjs, tools/test-overlap.mjs).

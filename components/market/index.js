@@ -6,7 +6,7 @@
 // 円の大きさ：scale="fixed"（既定。見やすい決まった比）か "area"（面積を値に比例。小さすぎる円は最小の大きさにする）
 // 配置：layout="bottom"（既定。下端をそろえる）か "center"（同心）。円の名前・値・根拠（basis）は右に引き出し線で書く
 // 2.0（Egatari spec §6.1 の部品）：base の MotionElement・el・mtext・prog・lerp・previewOpacity を使い、プレイヤーのグローバルは使わない
-egatariParts.define({name: "market", version: "2.0.0", requires: {base: "1.0.0"}, element: "m-market"}, function(deps){
+egatariParts.define({name: "market", version: "2.0.1", requires: {base: "1.0.0"}, element: "m-market"}, function(deps){
 "use strict";
 var base = deps.base;
 return class extends base.MotionElement {
@@ -34,8 +34,15 @@ return class extends base.MotionElement {
     // 円は左の 4 割ほど、名前と数字は右
     var big = Math.min(H / 2 - 6, W * 0.22), cx = 6 + big, bottom = H / 2 + big;
     var fixed = [1, 0.64, 0.34, 0.16];
+    // area は値がすべて正で、外の円から順に小さくなるときだけ（そうでなければ円が要素の外にはみ出すか、半径が NaN になる）。
+    // そうでなければ知らせて、この図は fixed の比で描く
+    var area = P.scale === "area";
+    if (area && !R.every(function(r, i){ return typeof r.value === "number" && isFinite(r.value) && r.value > 0 && (i === 0 || r.value < R[i - 1].value); })){
+      ctx.report("data", "[market] scale=\"area\" needs values that are positive and get smaller from the outer ring inwards; the fixed spacing is used for this figure");
+      area = false;
+    }
     var radii = R.map(function(r, i){
-      if (P.scale === "area") return Math.max(big * 0.14, big * Math.sqrt(r.value / R[0].value));
+      if (area) return Math.max(big * 0.14, big * Math.sqrt(r.value / R[0].value));
       return big * (fixed[i] !== undefined ? fixed[i] : fixed[fixed.length - 1] * Math.pow(0.5, i - fixed.length + 1));
     });
     var cy = function(i){ return P.layout === "center" ? H / 2 : bottom - radii[i]; };
@@ -59,7 +66,9 @@ return class extends base.MotionElement {
       var kw = [...String(r.key || "")].reduce(function(a, ch){ return a + (/[\u0000-\u024f]/.test(ch) ? 0.7 : 1); }, 0) * 28;
       var val = D.el("text", {x: lx + kw + 20, y: ly, "font-size": 36, "font-weight": 700, fill: "var(--fg)", style: "font-variant-numeric:tabular-nums"}, g);
       var basis = r.basis ? D.mtext(g, lx, ly + 34, r.basis, {"font-size": 24, fill: "var(--muted)"}) : null;
-      return {r: r, c: c, g: g, val: val, basis: basis, rad: radii[i], prev: i ? radii[i - 1] : radii[i] * 1.15, cy: cy(i), pcy: i ? cy(i - 1) : cy(i), i: i};
+      // 最初の円は 1.15 倍から縮む。ただし要素の外にはみ出さない大きさまで
+      var prev = i ? radii[i - 1] : Math.max(radii[0], Math.min(radii[0] * 1.15, cy(0), H - cy(0), cx, W - cx));
+      return {r: r, c: c, g: g, val: val, basis: basis, rad: radii[i], prev: prev, cy: cy(i), pcy: i ? cy(i - 1) : cy(i), i: i};
     });
   }
   fmt(v){

@@ -13,10 +13,10 @@
 // 2.0（Egatari spec §6.1 の部品）：base を使い、プレイヤーのグローバルは使わない。札の行き先（# の後ろ、spec §9.1A）はこのパーツが
 // ctx.slides で読み（slideOf）、「見た」は ctx.visited(スライドの鍵)。印はスライドに入ったときの描画（ctx.entered）で付け直す
 // （1.x は DECK の deck:pos を聞いていた。ほかのスライドを見られるのは、このスライドを離れている間だけ）
-egatariParts.define({name: "menu", version: "2.0.0", requires: {base: "1.0.0"}, element: "m-menu"}, function(deps){
+egatariParts.define({name: "menu", version: "2.0.1", requires: {base: "1.0.0"}, element: "m-menu"}, function(deps){
 "use strict";
 var base = deps.base;
-var CSS_ID = "menu-2-0-0-css";   // the style element this part writes, named with its name and version (spec §6.1 Identifiers)
+var CSS_ID = "menu-2-0-1-css";   // the style element this part writes, named with its name and version (spec §6.1 Identifiers)
 var CSS =
   "m-menu{display:grid;gap:var(--mm-gap,18px);grid-template-columns:repeat(var(--mm-cols,3),minmax(0,1fr));grid-auto-rows:minmax(var(--mm-h,104px),auto);align-content:start}" +
   "m-menu>a{position:relative;display:flex;align-items:center;gap:18px;padding:14px 22px;box-sizing:border-box;" +
@@ -24,15 +24,19 @@ var CSS =
   "m-menu>a:hover{border-color:var(--term);box-shadow:0 3px 14px color-mix(in srgb,var(--term) 18%,transparent)}" +
   "m-menu>a:focus{outline:none}m-menu>a:focus-visible{outline:3px solid var(--term);outline-offset:3px}" +
   "m-menu .mm-icon{flex:none;display:grid;place-items:center;width:1.9em;height:1.9em;border-radius:50%;background:var(--term);color:var(--bg);font-weight:700;line-height:1}" +
-  "m-menu .mm-text{display:flex;flex-direction:column;gap:4px;min-width:0}" +
+  "m-menu .mm-text{display:flex;flex-direction:column;gap:4px;min-width:0;overflow-wrap:anywhere}" +
+  "m-menu>a.mm-r{padding-right:46px}" +
   "m-menu .mm-title{font-weight:700;line-height:1.25}" +
   "m-menu .mm-sub{font-size:max(27px,.8em);line-height:1.3;color:var(--muted)}" +
+  "m-menu .mm-to{display:none;position:absolute;right:12px;top:10px;font-size:27px;line-height:1.2;font-weight:700;white-space:nowrap;color:var(--muted);font-variant-numeric:tabular-nums}" +
   "m-menu .mm-ext{position:absolute;right:12px;bottom:10px;width:20px;height:20px;color:var(--muted)}" +
   "m-menu .mm-seen{position:absolute;right:10px;top:10px;display:none;width:26px;height:26px;border-radius:50%;background:var(--muted);color:var(--bg)}" +
   "m-menu>a.mm-visited{border-color:color-mix(in srgb,var(--muted) 55%,var(--line))}" +
   "m-menu>a.mm-visited .mm-seen{display:block}" +
   "m-menu svg{fill:none;stroke:currentColor;stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round}" +
   ".printing m-menu .mm-seen{display:none!important}@media print{m-menu .mm-seen{display:none!important}}" +
+  ".printing m-menu .mm-to{display:block}.printing m-menu>a.mm-d{padding-right:78px}" +
+  "@media print{m-menu .mm-to{display:block}m-menu>a.mm-d{padding-right:78px}}m-menu .mm-to:empty{display:none!important}" +
   ".mm-sr{position:absolute!important;width:1px;height:1px;margin:-1px;padding:0;border:0;overflow:hidden;clip:rect(0 0 0 0);clip-path:inset(50%);white-space:nowrap}";
 var CHECK = '<svg class="mm-seen" viewBox="0 0 26 26" aria-hidden="true"><path d="M7.5 13.5l3.6 3.6 7.4-8"/></svg>';
 var EXT = '<svg class="mm-ext" viewBox="0 0 20 20" aria-hidden="true"><path d="M8 4H4v12h12v-4M11 3h6v6M17 3l-8 8"/></svg>';
@@ -81,6 +85,7 @@ return class extends base.MotionElement {
     this.style.setProperty("--mm-cols", cols);
     this.style.fontSize = P.size + "px";
     var per = P["per-step"] > 0 ? P["per-step"] : 0;
+    var ja = /^ja\b/i.test(ctx.lang), visitedOn = P.visited && ctx.mode !== "video";
     this.cards = list.map(function(a, j){
       // 書いた中身（文字・<b> など）を題にし、data-icon と data-sub から丸の字と副題を足す（リンクはそのまま）
       var title = document.createElement("span"); title.className = "mm-title";
@@ -92,15 +97,39 @@ return class extends base.MotionElement {
       if (icon){ var ic = document.createElement("span"); ic.className = "mm-icon"; ic.setAttribute("aria-hidden", "true"); ic.textContent = icon; a.appendChild(ic); }
       a.appendChild(text);
       var href = a.getAttribute("href"), inDoc = href.charAt(0) === "#";
+      // 印刷にだけ出す行き先（印刷では押せないので）：右上（画面の「見た」の印の場所）に行き先のスライドの番号「→12」（dests が ctx.slides から書く）。
+      // 札の高さを変えない（札の多い目次がスライドからはみ出さない）。ほかのファイルへの札は右下の印のまま。読み上げはしない（リンクの題がある）
+      var to = document.createElement("span"); to.className = "mm-to"; to.setAttribute("aria-hidden", "true"); a.appendChild(to);
+      // 右上の「見た」の印・右下の「別のファイル」の印の場所を空けておく（長い題が印の下に入らない）
+      if ((visitedOn && inDoc) || !inDoc) a.classList.add("mm-r");
       a.insertAdjacentHTML("beforeend", CHECK + (inDoc ? "" : EXT));
       var sr = document.createElement("span"); sr.className = "mm-sr"; a.appendChild(sr);
       // 作り手が書いた style（render はこの後ろに自分の値を足して書く）
       var css = (a.getAttribute("style") || "").trim().replace(/\s*;$/, ""); if (css) css += ";";
-      return {a: a, sr: sr, css: css, frag: inDoc ? href.slice(1) : null, ext: !inDoc, step: per ? Math.floor(j / per) + 1 : 0, at: per ? (j % per) * P.stagger : 0};
+      return {a: a, sr: sr, to: to, css: css, frag: inDoc ? href.slice(1) : null, ext: !inDoc, step: per ? Math.floor(j / per) + 1 : 0, at: per ? (j % per) * P.stagger : 0};
     });
-    this.ja = /^ja\b/i.test(ctx.lang);
-    this.visitedOn = P.visited && ctx.mode !== "video";
+    this.ja = ja;
+    this.visitedOn = visitedOn;
+    // 読み上げ：札の並びはリンクの集まり（navigation）。名前は札の題を並べた 1 文。作者の aria-label があればそれを使う（上書きしない）
+    if (this._aria === undefined) this._aria = this.getAttribute("aria-label");
+    this.setAttribute("role", "navigation");
+    if (!this._aria) this.setAttribute("aria-label", (ja ? "スライドへのリンク " + n + " 件：" : n + " links: ") +
+      this.cards.map(function(c){ return c.a.querySelector(".mm-title").textContent.trim(); }).join(ja ? "、" : ", "));
     if (this.visitedOn) this.markVisited(ctx);
+    this.dests(ctx);
+  }
+  // 印刷の行き先の字（スライドの番号）。ctx.slides は部品を組むときにはまだ空のことがあるので、読めた最初の描画で 1 回だけ書く
+  dests(ctx){
+    var slides = ctx.slides || [];
+    if (this._dests || !slides.length) return;
+    this._dests = true;
+    this.cards.forEach(function(c){
+      if (c.frag === null) return;
+      var key = slideOf(c.frag, slides), s = "";
+      for (var q = 0; q < slides.length; q++) if (key !== null && slides[q].key === key) s = "→" + (q + 1);
+      c.to.textContent = s;
+      if (s) c.a.classList.add("mm-d");
+    });
   }
   // 「見た」の印（見ている人の側の状態。(i, k, t) の外）
   markVisited(ctx){
@@ -123,6 +152,7 @@ return class extends base.MotionElement {
     if (lecture) FAINT = base.previewOpacity(this);
     // 「見た」の印は、ほかのスライドから入ったときに付け直す
     if (this.visitedOn && ctx.entered) this.markVisited(ctx);
+    this.dests(ctx);
     this.cards.forEach(function(c){
       var p = c.step < k ? 1 : c.step > k ? 0 : base.prog(t, c.at, F);
       if (lecture && p < 1) p = Math.max(p, c.step > k ? FAINT : p);

@@ -13,7 +13,7 @@
 // 負の値（積み上げでない棒）：値の軸に 0 を含め、0 の基線から下（横棒は左）へ伸ばす。値の数字は棒の端の外側（下・左）に書く
 // 2.0（Egatari spec §6.1 の部品）：base の MotionElement・el・mtext・prog・lerp・previewOpacity を使い、プレイヤーのグローバルは使わない。
 // 要素が小さすぎるときは ctx.report で知らせる（1.x の console.warn("m-bars: …") の代わり）
-egatariParts.define({name: "bars", version: "2.0.0", requires: {base: "1.0.0"}, element: "m-bars"}, function(deps){
+egatariParts.define({name: "bars", version: "2.0.1", requires: {base: "1.0.0"}, element: "m-bars"}, function(deps){
 "use strict";
 var base = deps.base;
 return class extends base.MotionElement {
@@ -67,7 +67,7 @@ return class extends base.MotionElement {
     var P = this.props, D = base, self = this, d = this.data || {}, pl = this.plan();
     this.style.display = "block"; this.style.position = "relative";
     var W = this.clientWidth, H = this.clientHeight, hor = P.orient === "h";
-    var svg = D.el("svg", {viewBox: "0 0 " + W + " " + H, width: W, height: H, style: "display:block;overflow:visible"}, this);
+    var svg = D.el("svg", {viewBox: "0 0 " + W + " " + H, width: W, height: H, "aria-hidden": "true", style: "display:block;overflow:visible"}, this);
     var series = d.series && d.series.length ? d.series : [{}];
     var ns = Math.max(series.length, Math.max.apply(null, pl.groups.map(function(g){ return g.vals.length; }).concat([1])));
     // 積み上げ棒では、軸と端の数字は組の合計で決める
@@ -211,12 +211,36 @@ return class extends base.MotionElement {
     });
     this.bw = bw;
     this.hor = hor;
+    // 読み上げ：最後の形（すべての組の値）を 1 文で。作者の aria-label があればそれを使う（上書きしない）
+    if (this._aria === undefined) this._aria = this.getAttribute("aria-label");
+    this.setAttribute("role", "img");
+    if (!this._aria) this.setAttribute("aria-label", this.summary(/^ja\b/i.test(ctx.lang || "ja"), series));
     function nice(v){ var e = Math.pow(10, Math.floor(Math.log10(v))), x = v / e;
       return [1, 1.2, 1.5, 2, 2.5, 3, 4, 5, 6, 8, 10].filter(function(s){ return s >= x - 1e-9; })[0] * e; }
     function tickStep(M){ var r = M / 4.5, e = Math.pow(10, Math.floor(Math.log10(r))), x = r / e;
       return (x <= 1 ? 1 : x <= 2 ? 2 : x <= 2.5 ? 2.5 : x <= 5 ? 5 : 10) * e; }
     function decs(s){ var k = 0; while (Math.abs(s * Math.pow(10, k) - Math.round(s * Math.pow(10, k))) > 1e-6 && k < 6) k++; return k; }
     function tone(t){ return /^(term|emph|muted|accent2|fg|series-[1-4])$/.test(t) ? "var(--" + t + ")" : "var(--term)"; }
+  }
+  // 最後の形を 1 文で（読み上げの名前）：「売上（億円）：1 年目 1.2億円、3 年目 9.8億円」。系列が 2 つ以上なら組ごとに「系列 値」を並べ、
+  // 積み上げ棒は合計も、100 % の積み上げ棒は % を書く。組が 12 より多ければ初めの 12 組と組の数
+  summary(ja, series){
+    var self = this, P = this.props, pl = this.plan(), pct = this.pct, st = P.stack;
+    var names = series.map(function(sr){ return sr.label || ""; }).filter(Boolean);
+    var head = P.al || names.join(ja ? "・" : ", ") || (ja ? "棒グラフ" : "Bar chart");
+    if (P.unit && !pct) head += ja ? "（" + P.unit + "）" : " (" + P.unit + ")";
+    var one = function(o){
+      var raw = o.vals.reduce(function(a, v){ return a + Math.max(0, v); }, 0);
+      var vs = o.vals.map(function(v, j){
+        var x = pct ? self.fmt(raw > 0 ? Math.max(0, v) / raw * 100 : 0, undefined, "%") : self.fmt(st ? Math.max(0, v) : v);
+        return (o.vals.length > 1 && series[j] && series[j].label ? series[j].label + " " : "") + x;
+      });
+      var lab = String(o.g.label || "").replace(/\s*\n\s*/g, " ");
+      return (lab ? lab + " " : "") + vs.join(ja ? "・" : ", ") + (st && !pct && o.vals.length > 1 ? (ja ? "（計 " : " (total ") + self.fmt(raw) + (ja ? "）" : ")") : "");
+    };
+    var gs = pl.groups.slice(0, 12).map(one);
+    if (pl.groups.length > 12) gs.push(ja ? "…（全 " + pl.groups.length + " 組）" : "… (" + pl.groups.length + " groups)");
+    return head + (ja ? "：" : ": ") + gs.join(ja ? "、" : "; ");
   }
   // 数の書き方：3 桁ごとのカンマ、小数桁、単位
   fmt(v, digits, unit){

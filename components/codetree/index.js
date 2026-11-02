@@ -16,12 +16,14 @@
 //   ct-crumb（窓の上の「ここまで」）
 // 深い木（黒の符号は 13 ビットまで）：入らなければ window 段の窓だけを見せ、たどる点を追って木を下から上へ流す（窓の位置も (k, t) だけで決まる）。
 //   窓では木をたどる道を背骨にして並べ直し（道から分かれた枝は反対の側に三角で畳む）、窓を横にも動かして道を真ん中に置く。
-//   親が窓の上にある枝は描かない（入ってくる道だけを上の縁から描く）。窓の上に「黒の木：ここまで 0000 0110」。window="auto"（既定）は段の間が 44 px より狭くなるときだけ流す。まとめの段階はいちばん深い道の窓
+//   親が窓の上にある枝は描かない（入ってくる道だけを上の縁から描く）。窓の上に「黒の木：ここまで 0000 0110」。window="auto"（既定）は段の間が 44 px より狭くなるときだけ流す。
+//   まとめの段階は窓を使わず、復号したすべての道の木を部品の高さに詰めて描く（段の間 SUM_GAP px 以上のとき。印刷・台本の小さい絵は最後の姿だけなので）。
+//   それより狭ければ、いちばん深い道の窓にして layout で知らせる。窓の段の間が 24 px より狭いときも layout で知らせる。最後の姿（t = Infinity）では窓の縁で薄れない
 // JSON の labels で文言を変える：white black start read makeup term eol invalid incomplete dangling done scan crumb（{c} は色、{n} は桁）
 // 復号の規則は codetree-core（試験は tools/test-codetree.mjs）
 // 2.0（Egatari spec §6.1 の部品）：base の MotionElement・el・prog・lerp・previewOpacity と、表・木・復号の codetree-core を使い、
 // プレイヤーのグローバルは使わない
-egatariParts.define({name: "codetree", version: "2.0.0", requires: {base: "1.0.0", "codetree-core": "1.0.0"}, element: "m-codetree"}, function(deps){
+egatariParts.define({name: "codetree", version: "2.0.1", requires: {base: "1.0.0", "codetree-core": "1.0.0"}, element: "m-codetree"}, function(deps){
 "use strict";
 var base = deps.base;
 var D = base;
@@ -46,6 +48,8 @@ function labelAt(a, b, f, off){
   return {x: a.x + dx * f + nx * off, y: a.y + dy * f + ny * off + 8};
 }
 function fmt0(s, c){ return String(s).replace("{c}", c); }
+// まとめの段階で、すべての道の木を窓なしで描く段の間の下限（px）。窓の段の間の下限（読める大きさ）は WIN_GAP
+var SUM_GAP = 20, WIN_GAP = 24;
 function textW(s, fs){ return [...String(s)].reduce(function(a, ch){ return a + (/[\u0000-ɏ]/.test(ch) ? 0.6 : 1); }, 0) * fs; }
 
 return class extends base.MotionElement {
@@ -173,6 +177,9 @@ return class extends base.MotionElement {
     while (d > 1 && W / L.slots.length < 64){ d--; L = make(d); }
     var avail = G.treeBottom - G.treeTop - 44, wp = String(this.props.window || "auto").trim(), nwin = /^\d+$/.test(wp) ? Math.max(2, +wp) : 0;
     var follow = nwin ? L.maxLv > nwin : avail / L.maxLv < 44;
+    // まとめ（both）は、すべての道の木（make の L）が段の間 SUM_GAP 以上で入るなら窓を使わない。入らなければいちばん深い道の窓（mount が知らせる）
+    var sumGap = Math.min(78, avail / L.maxLv), sumLv = L.maxLv;
+    if (both && follow && sumGap >= SUM_GAP) follow = false;
     // 窓で追うときは、木の幅を部品に合わせず、枠の幅を決めて並べ、窓を横にも動かす（render が今の節を真ん中に置く）
     // 窓で追うときは、たどる道を背骨にして並べ直す：道の子は 0 なら左・1 なら右へ a px、道から分かれた枝は反対の側に畳んで置く。
     // 窓を横にも動かし（render が今の節を真ん中に置く）、窓の中を今の道のまわりに使う
@@ -203,7 +210,7 @@ return class extends base.MotionElement {
     var lab = {w: 1, b: 1};
     COLORS.forEach(function(c){ paths[c].forEach(function(q){ for (var i = 0; i < q.length; i++){ var pre = LETTER[c] + q.slice(0, i); lab[pre + "0"] = 1; lab[pre + "1"] = 1; } }); });
     if (cur && cur.bad){ var pre = LETTER[cur.color] + cur.code; lab[pre + "0"] = 1; lab[pre + "1"] = 1; }
-    L.lab = lab; L.sw = sw; L.gap = gap; L.cur = cur; L.paths = paths; L.both = both; L.focus = focus;
+    L.lab = lab; L.sw = sw; L.gap = gap; L.cur = cur; L.paths = paths; L.both = both; L.focus = focus; L.sumGap = sumGap; L.sumLv = sumLv;
     return L;
   }
   // 窓の位置（段の数で。0 は根が窓の上の段）：たどる点の段 λ の 1 段下までが窓に入るように、λ から滑らかに決める
@@ -232,16 +239,34 @@ return class extends base.MotionElement {
     var x = (xAt(lam) + xAt(Math.max(lv, lam - L.win + 1))) / 2;
     return {lv: lv, x: x - this.W / 2};
   }
-  mount(){
+  mount(ctx){
     var D2 = D, P = this.props, self = this, m = this.model(), dec = m.dec, Lb = m.L, MK = P.mark;
     this.style.display = "block"; this.style.position = "relative";
     var W0 = this.clientWidth, H = this.clientHeight;
     this.W = W0 - 8; this.H = H;
     this.G = {treeTop: 112, treeBottom: H - 96, scanY: H - 82};
-    var svg = D2.el("svg", {viewBox: "0 0 " + W0 + " " + H, width: W0, height: H, style: "display:block;overflow:visible"}, this);
+    var svg = D2.el("svg", {viewBox: "0 0 " + W0 + " " + H, width: W0, height: H, "aria-hidden": "true", style: "display:block;overflow:visible"}, this);
+    // 読み上げ：最後の形（復号した符号語の色とラン、終わりの一言）を 1 文で。作者の aria-label があればそれを使う（上書きしない）
+    if (this._aria === undefined) this._aria = this.getAttribute("aria-label");
+    this.setAttribute("role", "img");
+    if (!this._aria){
+      var ja = /^ja\b/i.test((ctx && ctx.lang) || "ja"), er = dec.error;
+      var toks = dec.tokens.map(function(t){ return t.kind === "eol" ? "EOL" : Lb[t.color] + " " + t.run; });
+      var end = !er ? Lb.done : fmt0(Lb[er.kind], "").replace("{n}", er.pos + 1);
+      // 長い系列は初めの 12 語と語の数（1 文に収める）
+      if (toks.length > 12) toks = toks.slice(0, 12).concat([ja ? "…（全 " + toks.length + " 語）" : "… (" + toks.length + " codewords)"]);
+      this.setAttribute("aria-label", !dec.bits ? (ja ? "符号の木" : "Code tree") :
+        (ja ? "符号の木で " + dec.bits + " を復号：" : "Decoding " + dec.bits + " with the code tree: ") + toks.join(ja ? "、" : ", ") + (ja ? "（" + end + "）" : " (" + end + ")"));
+    }
     var root = D2.el("g", {transform: "translate(4 0)"}, svg);
     this.lay = [];
     for (var k = 0; k <= m.plan.length; k++) this.lay.push(this.layoutFor(k));
+    // 段が読めないほど詰まるとき（窓の段の間が WIN_GAP 未満、まとめがすべての道を描けない）は知らせる
+    var report = ctx && typeof ctx.report === "function" ? function(s){ ctx.report("layout", "[codetree] " + s); } : function(){};
+    var tight = this.lay.filter(function(L){ return L.follow && L.gap < WIN_GAP; })[0];
+    if (tight) report("the element is too short: the tree view shows " + tight.win + " levels only " + tight.gap.toFixed(1) + " px apart (at least " + WIN_GAP + " px are needed); make the element taller or show fewer levels at a time");
+    var sumL = this.lay[m.plan.length];
+    if (sumL && sumL.both && sumL.follow) report("the summary cannot show all decoded paths: the whole tree (" + sumL.sumLv + " levels deep) would be " + sumL.sumGap.toFixed(1) + " px per level (at least " + SUM_GAP + " px are needed), so it shows the deepest path only; make the element taller (about " + Math.ceil(sumL.sumLv * SUM_GAP + 252) + " px)");
     // ---- 上：符号の系列と読む位置
     var nb = dec.bits.length, label0 = D2.el("text", {x: 0, y: 34, "font-size": 24, fill: "var(--muted)"}, root);
     label0.textContent = "符号";
@@ -360,9 +385,11 @@ return class extends base.MotionElement {
     // 窓の上下（木が入るときは広く）。外へ出る節は 26 px で薄れる
     var bnd = function(L){ return L.follow ? [L.y0 - 8, L.y0 + L.win * L.gap + 8] : [G.treeTop - 40, G.treeBottom + 40]; };
     var bA = bnd(A), bB = bnd(B), wTop = D2.lerp(bA[0], bB[0], mv), wBot = D2.lerp(bA[1], bB[1], mv);
-    var wf = function(y){ return D2.clamp((y - (wTop - 26)) / 26) * D2.clamp((wBot + 26 - y) / 26); };
+    // 最後の姿（t = Infinity。印刷と台本の小さい絵）は薄れの途中を残さない：半分より濃ければ描き、薄ければ描かない
+    var solid = t === Infinity ? function(v){ return v >= 0.5 ? 1 : 0; } : function(v){ return v; };
+    var wf = function(y){ return solid(D2.clamp((y - (wTop - 26)) / 26) * D2.clamp((wBot + 26 - y) / 26)); };
     // 横の縁でも薄れる（窓で追うときだけ、部品の左右の外へ出る節）
-    var wfx = function(x){ return D2.clamp((x + 20) / 30) * D2.clamp((Wd + 20 - x) / 30); };
+    var wfx = function(x){ return solid(D2.clamp((x + 20) / 30) * D2.clamp((Wd + 20 - x) / 30)); };
     var lim = wTop - 10;
     // 線の始め（親）が窓の上にあれば、窓の上の縁で切る（線は上から流れ込む）
     var clip = function(a, b){ if (a.y >= lim || b.y <= lim) return a; var f = (lim - a.y) / (b.y - a.y); return {x: D2.lerp(a.x, b.x, f), y: lim}; };
@@ -382,7 +409,7 @@ return class extends base.MotionElement {
     if (kp){ keep[LETTER[kp.color]] = 1; for (var j0 = 1; j0 <= kp.code.length; j0++) keep[LETTER[kp.color] + kp.code.slice(0, j0)] = 1; }
     Object.keys(pos).forEach(function(id){
       var par = self.els[id].parent;
-      if (par && !keep[id]) pos[id].op *= D2.clamp((pos[par].y - (lim - 30)) / 30);
+      if (par && !keep[id]) pos[id].op *= solid(D2.clamp((pos[par].y - (lim - 30)) / 30));
     });
     // ---- 今の道・前の道
     var segP = function(i){ return T ? D2.prog(t, T.s(i), 0.7 * P.bit) : 0; };

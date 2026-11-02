@@ -14,7 +14,7 @@
 // 2.0（Egatari spec §6.1 の部品）：base の MotionElement・prog・lerp・previewOpacity と、読み取り・訓読の順の kanbun-core を使い、
 // プレイヤーのグローバルは使わない。書き方の誤りは ctx.report("data", "[kanbun] …")、要素に収まらないときは
 // ctx.report("size", "[kanbun] …") で知らせる（1.x の console.warn("m-kanbun: …") の代わり）
-egatariParts.define({name: "kanbun", version: "2.0.0", requires: {base: "1.0.0", "kanbun-core": "1.0.0"}, element: "m-kanbun"}, function(deps){
+egatariParts.define({name: "kanbun", version: "2.0.1", requires: {base: "1.0.0", "kanbun-core": "1.0.0"}, element: "m-kanbun"}, function(deps){
 "use strict";
 var base = deps.base;
 var D = base;
@@ -34,6 +34,8 @@ var OK_MIN = 0.78, OK_TRACK = 0.12, GAP_OK = 8, OK_DELAY = 0.36;
 var FIT_MIN = 42;
 // 高さは要素を FIT_SLACK px まで超えてよい（最後の仮名の字の枠の下の余白。見本の『史記』は size=56 で 4.4px 超えていて、これまでどおりに描く）
 var FIT_SLACK = 6;
+// 二桁の番号を横に縮めてよい割合の下限（これより狭い箱では字の大きさを下げる）
+var NUM_SQ = 0.75;
 function okSquash(n, F, fit){
   if (!(fit < 0.999) || !n) return "";
   var ls = Math.max(-OK_TRACK * F, (fit - 1) * F), sy = fit * F / (F + ls);
@@ -81,7 +83,9 @@ return class extends base.MotionElement {
     this.classList.add("plot", "kanbun");
     this.style.display = "block"; this.style.position = "relative";
     this.setAttribute("role", "img");
-    this.setAttribute("aria-label", p.chars.map(function(c){ return c.ch; }).join("") + "。書き下し文：" + kaki.map(plain).join(""));
+    // 読み上げの名前：最後の形（白文と、kaki の段階があれば書き下し文）。作者の aria-label があればそれを使う（上書きしない）
+    if (this._aria === undefined) this._aria = this.getAttribute("aria-label");
+    if (!this._aria) this.setAttribute("aria-label", "漢文：" + p.chars.map(function(c){ return c.ch; }).join("") + (this.phaseList.indexOf("kaki") >= 0 ? "。書き下し文：" + kaki.map(plain).join("") : ""));
     // ---- 配置：列は右から左へ。列の中は 左の欄（返り点・再読の左の送り仮名）・漢字・右の欄（振り仮名・送り仮名）
     // lay(S)：字の大きさ S で並べる（字の位置を p.chars に書き、寸法を返す）。B は字の下端（振り仮名・送り仮名・返り点・句読点を含む）
     var S, F, L, R, G, PITCH, cols, H, XR;
@@ -190,6 +194,7 @@ return class extends base.MotionElement {
       var e = document.createElement(tag); e.className = cls; e.style.cssText = css; if (text !== undefined) e.textContent = text; (parent || self).appendChild(e); return e;
     };
     var kb = box("div", "kb", "position:absolute;top:0;left:" + (X0 + KW + GAP) + "px;width:" + WK + "px;height:" + Math.ceil(H) + "px;font-family:var(--font-mincho);color:var(--fg)");
+    kb.setAttribute("aria-hidden", "true");   // 読み上げは要素の aria-label（role="img"）。中の字・番号・弧は読まない
     // 列 c の左端（kb の中の x）
     var colLeft = function(c){ return WK - (c + 1) * PITCH + G; };
     this.cells = p.chars.map(function(c){
@@ -218,9 +223,12 @@ return class extends base.MotionElement {
       var e = self.cells[ev.c], second = ev.kind === "second" && e.c.second !== null;
       // 右上の番号は、字が小さいとき（要素に収めたとき）に送り仮名と重ならないよう、送り仮名の上に上げる
       var nx = second && !e.c.ruby ? e.x + S + 1 : e.x - L, ny = second && e.c.ruby ? e.y - NF : second && e.c.okuri ? Math.min(e.y + 3, e.c.okY - NF - 1) : e.y + 3;
-      // 二桁以上は箱（幅 L）に収まるよう字の大きさだけを下げる（数字 1 つの幅を 0.75em と見て 2 px の余白を残す）。一桁は従来のまま
-      var nd = String(m + 1).length, NS = nd > 1 ? Math.floor(Math.min(NF, (L - 2) / (nd * 0.75)) * 2) / 2 : NF;
-      var nb = box("span", "kb-num", "position:absolute;left:" + nx + "px;top:" + ny + "px;width:" + L + "px;font-family:var(--font-sans);font-size:" + NS + "px;line-height:" + NF + "px;text-align:center;font-weight:700;color:var(--emph);font-variant-numeric:tabular-nums;opacity:0", kb, String(m + 1));
+      // 二桁以上は箱（幅 L）に収める。まず字の大きさ NF のまま横だけを縮める（数字 1 つの幅を 0.7em と見た幅 NW の箱を scaleX で幅 L に。
+      // 縮める割合は NUM_SQ まで。送り仮名を詰めるのと同じ組み方）。それでも入らなければ字の大きさを下げる（数字 1 つを 0.75em と見て 2 px の余白）。一桁は従来のまま
+      var nd = String(m + 1).length, NW = Math.ceil(nd * 0.7 * NF) + 2, sq = nd > 1 && L / NW >= NUM_SQ && L < NW;
+      var NS = nd > 1 && !sq ? Math.floor(Math.min(NF, (L - 2) / (nd * 0.75)) * 2) / 2 : NF;
+      var nb = box("span", "kb-num", "position:absolute;left:" + (sq ? nx - (NW - L) / 2 : nx) + "px;top:" + ny + "px;width:" + (sq ? NW : L) + "px;font-family:var(--font-sans);font-size:" + NS + "px;line-height:" + NF + "px;text-align:center;font-weight:700;color:var(--emph);font-variant-numeric:tabular-nums;opacity:0" +
+        (sq ? ";transform:scaleX(" + (L / NW).toFixed(6) + ");transform-origin:50% 0" : ""), kb, String(m + 1));
       // 字の脇に添える小さい注記の印（Egatari Studio の品質チェックが字の大きさの最小を見ない。docs/contract.md §10）
       nb.setAttribute("data-annot", "");
       e.nums.push(nb); ev.num = nb;
@@ -249,6 +257,7 @@ return class extends base.MotionElement {
     });
     // 書き下し文（縦書き、左に）
     var kk = box("div", "kb-kaki", "position:absolute;top:0;left:" + X0 + "px;width:" + Math.ceil(KW) + "px;height:" + Math.ceil(HA) + "px;writing-mode:vertical-rl;font-family:var(--font-mincho);font-size:" + KS + "px;line-height:1.9;color:var(--fg);line-break:strict");
+    kk.setAttribute("aria-hidden", "true");
     this.kakiLines = kaki.map(function(line){
       var d = box("div", "kb-kaki-line", "opacity:0", kk);
       line.forEach(function(s){
@@ -304,16 +313,16 @@ return class extends base.MotionElement {
     else if (to >= 0) j = a + Math.max(0, Math.min(len - 1, Math.floor(to / slot)));
     // 事柄 m の始まりからの時刻
     var lt = function(m){ return to - (m - a) * slot; };
-    var seen = {}, numFade = 1 - 0.6 * pr(tw, 0, 0.45);   // 書き下し文が出るときに番号を薄くする
+    // 番号と弧は書き下し文が出ても残す（最後の形は印刷にも台本の小さい絵にも出る。読む順はこの部品が教える中身）
+    var seen = {};
     ce.forEach(function(ev, m){
       var e = self.cells[ev.c], v = m < j ? 1 : m === j ? pr(lt(m), 0.12 * slot, 0.3 * slot) : 0;
       if (v > 0) seen[ev.c] = Math.max(seen[ev.c] || 0, v);
       // 後の段階の事柄（読む順の段階の前、または今の段階より後）
       var later = preview && first > 0 && (!started || (!done && m >= a + len));
-      ev.num.style.opacity = self.props.nums ? (later ? PV : v * numFade).toFixed(3) : 0;
+      ev.num.style.opacity = self.props.nums ? (later ? PV : v).toFixed(3) : 0;
     });
     Object.keys(seen).forEach(function(c){ self.cells[c].bg.style.opacity = (seen[c] * 0.9).toFixed(3); });
-    var fade = 1 - pr(tw, 0, 0.45);   // 書き下し文が出るときに弧を薄くする
     this.jumps.forEach(function(J){
       if (preview && first > 0 && (!started || (!done && J.m >= a + len))){
         // 後の段階の弧：引き終えた形を、読み終えた弧の濃さ（0.55）のまま薄く
@@ -323,7 +332,7 @@ return class extends base.MotionElement {
       var d = J.m < j ? 1 : J.m === j ? pr(lt(J.m), 0, 0.35 * slot) : 0;
       J.path.setAttribute("stroke-dashoffset", (1 - d).toFixed(4));
       J.head.setAttribute("opacity", d >= 0.98 ? 1 : 0);
-      J.g.setAttribute("opacity", d <= 0 ? 0 : ((J.m === j && !done ? 1 - 0.45 * tail : 0.55) * fade).toFixed(3));
+      J.g.setAttribute("opacity", d <= 0 ? 0 : (J.m === j && !done ? 1 - 0.45 * tail : 0.55).toFixed(3));
     });
     // 目：前の字から今の字へ 0.35 slot で動く。読み終えたら消える
     if (j >= 0 && j < n && !done && tail < 1){

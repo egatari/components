@@ -3,6 +3,11 @@
 <head>
 <meta charset="utf-8">
 <title>m-codetree: options the demo does not reach (tools/test-c2-identity.mjs)</title>
+<!-- c2-expected-reports: the reports this fixture is written to produce (tools/test-c2-noreports.mjs). Since codetree 2.0.1 (components 2.1.2) the
+     summary draws every decoded path; the low element is too short for the whole 13-level tree, so it keeps the deepest-path window and says so
+[
+  {"tag": "m-codetree", "key": "低い要素（窓で流す）・浅い木", "code": "layout", "msg": "[codetree] the summary cannot show all decoded paths: the whole tree (13 levels deep) would be 12.9 px per level (at least 20 px are needed), so it shows the deepest path only; make the element taller (about 512 px)"}
+] -->
 <!-- window="3", summary="false", a low element (the window scrolls), depth, mark, bits as an attribute and other timings:
      each drawn by 1.13.0 and by 2.0.0 and compared at every step. The tables are the demo's (ITU-T T.4 MH codes). -->
 </head>

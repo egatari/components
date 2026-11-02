@@ -2,6 +2,11 @@
 
 The part's own versions (Egatari spec §6.1). Releases of the whole library are in the repository's CHANGELOG.md.
 
+## 2.0.2 (components 2.1.2)
+
+- Fix: after a `to` move the final state lost where the point started (the dashed trail had no start mark or direction), so a print did not read as a move; the start point now keeps a hollow dot in the point colour and the trail ends in an arrowhead just before the point.
+- Fix: the element had no role, so assistive tech read the axis words and labels in DOM order and ignored an aria-label on the element; it is now role="img" (the svg aria-hidden) with a one-sentence name of the final state (axes, and each point's quadrant, from where to where for a move), and an author aria-label is kept.
+
 ## 2.0.1 (components 2.0.0)
 
 - Text kept clear (#140): a quadrant name goes to the first of its quadrant's four corners (the outer one first, as before) that no point, point name or axis-end word touches; when none is free it stays in the outer corner and point names that touch it move (`ctx.report("layout", …)` when one cannot). The demos draw as in 2.0.0 (tools/test-c2-identity.mjs, tools/test-overlap.mjs).

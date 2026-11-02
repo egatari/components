@@ -89,9 +89,14 @@ const metas = partMetas(ROOT);
 // Parts first written for 2.x (no folder in the baseline, e.g. m-orbit) have nothing to be identical to: listed, not compared
 const inBaseline = (n) => { try { execFileSync('git', ['cat-file', '-e', `${BASELINE}:components/${n}/index.js`], { cwd: ROOT, stdio: 'ignore' }); return true; } catch { return false; } };
 const all = migratedNames(ROOT).filter((n) => !only || only.has(n));
-const names = all.filter(inBaseline), fresh = all.filter((n) => !inBaseline(n));
+// A part fixed after its 2.0.0 (e.g. m-kobun 2.0.1, components 2.1.2) is meant to draw otherwise: its migration was proven while
+// it was 2.0.0 (the v2.0.0 tag ran this test), so it is listed, not compared
+const fixed = (n) => metas[n] && metas[n].version !== '2.0.0';
+const names = all.filter((n) => inBaseline(n) && !fixed(n)), fresh = all.filter((n) => !inBaseline(n));
+const later = all.filter((n) => inBaseline(n) && fixed(n));
 ok(names.length > 0, `migrated element parts: ${names.join(', ') || 'none'} (baseline ${BASELINE}, Studio ${pinLabel()})`);
 if (fresh.length) console.log(`--   new in 2.x, not in ${BASELINE} (nothing to compare): ${fresh.join(', ')}`);
+if (later.length) console.log(`--   fixed after 2.0.0, identity held at v2.0.0 (not compared): ${later.map((n) => `${n}@${metas[n].version}`).join(', ')}`);
 
 // A deck whose folder has components/<name>/index.js (Studio reads a component from the deck's folder before its vendor copy)
 function build(name, deck, which, src, code, opts) {

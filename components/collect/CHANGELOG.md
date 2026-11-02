@@ -2,6 +2,12 @@
 
 The part's own versions (Egatari spec §6.1). Releases of the whole library are in the repository's CHANGELOG.md.
 
+## 2.0.1 (components 2.1.2)
+
+- Fix: in the final state every chip had faded to opacity 0, so a print showed only the summary boxes. Each chip now leaves a dashed copy (`var(--line)` frame, label in `var(--muted)`, 24 px) in its place as it moves, drawn under the boxes, so the final state still shows what was collected.
+- Fix: a `to` that is not a target number (out of range or negative) silently dropped the chip. It is now reported (`data`, once, listing the chips).
+- Fix: the label of a target with `tex` was drawn below the element (at y + box-h/2 + 32). The bottom row of boxes now moves up to make room when such a label exists, and a box placed with `y` gets its label above it when there is no room below.
+
 ## 2.0.0 (components 2.0.0-rc.1 and 2.0.0)
 
 - Moved to `egatariParts.define({name: "collect", version: "2.0.0", requires: {base: "1.0.0", "markup-reader": "1.0.0"}, element: "m-collect"})`,

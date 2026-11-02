@@ -11,7 +11,7 @@
 // 2.0（Egatari spec §6.1 の部品）：base の MotionElement・prog・previewOpacity を使い、プレイヤーのグローバルは使わない。
 // 書き方の誤りは ctx.report("data", "[kobun] …") で知らせる（1.x の console.warn("m-kobun: …") の代わり）。動画かどうかは mount の ctx.mode。
 // 読み取り（parse）と助動詞の表は試験のために static testing に出す（ほかのパーツは読まない）
-egatariParts.define({name: "kobun", version: "2.0.0", requires: {base: "1.0.0"}, element: "m-kobun"}, function(deps){
+egatariParts.define({name: "kobun", version: "2.0.1", requires: {base: "1.0.0"}, element: "m-kobun"}, function(deps){
 "use strict";
 var base = deps.base;
 var D = base;
@@ -24,7 +24,8 @@ var POS = [
   ["動", "verb", "動詞"], ["補動", "verb", "補助動詞"], ["名", "noun", "名詞"], ["代", "noun", "代名詞"], ["副", "etc", "副詞"],
   ["連体", "etc", "連体詞"], ["接", "etc", "接続詞"], ["感", "etc", "感動詞"], ["接頭", "etc", "接頭語"], ["接尾", "etc", "接尾語"]];
 var COLOR = {noun: "var(--fg)", verb: "var(--term)", adj: "var(--accent2)", aux: "var(--emph)", pt: "var(--muted)", etc: "var(--fg)"};
-function posOf(tag){ for (var i = 0; i < POS.length; i++) if (tag.indexOf(POS[i][0]) === 0) return {kind: POS[i][1], name: POS[i][2], short: POS[i][0]}; return {kind: "etc", name: tag, short: tag}; }
+// the longest name that starts the tag (接頭 and 接尾 before 接)
+function posOf(tag){ var b = null; for (var i = 0; i < POS.length; i++) if (tag.indexOf(POS[i][0]) === 0 && (!b || POS[i][0].length > b[0].length)) b = POS[i]; return b ? {kind: b[1], name: b[2], short: b[0]} : {kind: "etc", name: tag, short: tag, unknown: true}; }
 
 // ---------------------------------------------------------------- 文語の助動詞（活用・接続・意味）
 // 活用は 未然・連用・終止・連体・已然・命令（○ は形がない、（ ）はまれな形）
@@ -90,6 +91,7 @@ function parse(src){
       var m = /^(.*?)(?:[[［]([^\]］]*)[\]］])?([^[\]［］]*)$/.exec(w.trim());
       var tag = m[2] ? m[2].trim() : "", parts = tag ? tag.split(/[・･]/) : [], pos = tag ? posOf(parts[0]) : null;
       var word = {text: rubyText(m[1]), tail: m[3] || "", tag: tag, pos: pos, info: parts.slice(1), aux: null};
+      if (pos && pos.unknown) warnings.push("品詞「" + parts[0] + "」は知らない（そのまま出す）：" + POS.map(function(p){ return p[0]; }).join("・") + " のどれか");
       if (pos && pos.kind === "aux"){
         // [助動・基本形・意味・活用形]
         var x = auxOf(parts[1], parts[2]);
@@ -108,15 +110,15 @@ function plainText(w){ return w.text.map(function(s){ return s.t; }).join("") + 
 var CSS = [
   "m-kobun{display:block;position:relative;font-family:var(--font-mincho);color:var(--fg)}",
   "m-kobun .kb-text{position:absolute;inset:0;line-height:1.5}",
-  "m-kobun.tate .kb-text{writing-mode:vertical-rl}",
+  "m-kobun.kb-tate .kb-text{writing-mode:vertical-rl}",
   "m-kobun .kb-line{display:flex;flex-direction:column;margin:0 0 6px}",
-  "m-kobun.tate .kb-line{margin:0 0 0 14px}",
+  "m-kobun.kb-tate .kb-line{margin:0 0 0 14px}",
   "m-kobun .kb-src{display:block}",
   "m-kobun .kb-w{display:inline-flex;flex-direction:column;align-items:center;vertical-align:top}",
   "m-kobun .kb-tag{font-size:24px;line-height:1.1;white-space:nowrap;font-family:var(--font-cap,var(--font-sans))}",
   // スラッシュ：横書きでは斜めの線、縦書きでは横の線（背景で描く）
   "m-kobun .kb-sep{display:inline-block;height:1.3em;vertical-align:top;background:linear-gradient(to bottom right,transparent calc(50% - 1.3px),var(--muted) calc(50% - 1.3px),var(--muted) calc(50% + 1.3px),transparent calc(50% + 1.3px))}",
-  "m-kobun.tate .kb-sep{height:auto;width:1.1em;background:linear-gradient(var(--muted),var(--muted)) center/70% 2.5px no-repeat}",
+  "m-kobun.kb-tate .kb-sep{height:auto;width:1.1em;background:linear-gradient(var(--muted),var(--muted)) center/70% 2.5px no-repeat}",
   "m-kobun .kb-aux{cursor:pointer;border-radius:4px}",
   "m-kobun .kb-aux:focus-visible{outline:2px solid var(--emph);outline-offset:2px}",
   "m-kobun .kb-yaku{display:block;font-size:27px;line-height:1.5;color:var(--term);font-family:var(--font-cap,var(--font-sans))}",
@@ -128,7 +130,7 @@ var CSS = [
   "m-kobun .kb-pop td.on{background:var(--emph-tint);color:var(--emph);font-weight:700}",
   "@media print{m-kobun .kb-pop{display:none!important}}",
 ].join("\n");
-var CSS_ID = "kobun-2-0-0-css";   // the style element this part writes, named with its name and version (spec §6.1 Identifiers)
+var CSS_ID = "kobun-2-0-1-css";   // the style element this part writes, named with its name and version (spec §6.1 Identifiers)
 return class extends base.MotionElement {
   static partName = "kobun";   // the registry name (define meta name), for report prefixes
   static testing = {parse: parse, AUX: AUX, FORMS: FORMS, auxOf: auxOf, posOf: posOf};   // for tools/test-kokugo.mjs only (no part reads it)
@@ -153,7 +155,8 @@ return class extends base.MotionElement {
     this.mode = ctx.mode;
     this.textContent = "";
     this.classList.add("plot");
-    if (P.tate) this.classList.add("tate");
+    // kb-tate, not tate: Studio's layouts give .tate a vertical writing mode and height 100%, which made the element 0 wide
+    if (P.tate) this.classList.add("kb-tate");
     if (!document.getElementById(CSS_ID)){ var st = document.createElement("style"); st.id = CSS_ID; st.textContent = CSS; document.head.appendChild(st); }
     var mk = function(tag, cls, parent, text){ var e = document.createElement(tag); if (cls) e.className = cls; if (text !== undefined) e.textContent = text; parent.appendChild(e); return e; };
     var box = mk("div", "kb-text", this);
@@ -175,6 +178,7 @@ return class extends base.MotionElement {
         });
         if (w.tail) tx.appendChild(document.createTextNode(w.tail));
         var tg = mk("span", "kb-tag", we, w.pos ? (P.detail ? w.tag : w.pos.short) :" ");
+        if (!w.pos) tg.setAttribute("aria-hidden", "true");   // 品詞のない語の空きの札（いつも見えない）
         var W = {el: we, tx: tx, tag: tg, w: w};
         if (w.aux && w.aux.entry){
           we.classList.add("kb-aux"); we.tabIndex = 0; we.setAttribute("role", "button");
@@ -186,11 +190,19 @@ return class extends base.MotionElement {
         L.words.push(W);
       });
       if (line.yaku) L.yaku = mk("span", "kb-yaku", L.el, line.yaku);
+      if (L.yaku && !self.hasYaku) L.yaku.setAttribute("aria-hidden", "true");   // yaku="false"：現代語訳は出さない（読まない）
       return L;
     });
     this.pop = mk("div", "kb-pop", this);
     this.pop.addEventListener("click", function(e){ e.stopPropagation(); self._open = null; self.redraw(); });
-    this.setAttribute("aria-label", m.lines.map(function(l){ return l.words.map(plainText).join(""); }).join(""));
+    // 読み上げ：本文の語・品詞・押せる助動詞は中身として読める（role="figure"。img にすると押せる語が読めなくなる）。名前は最後の形を 1 文で：
+    // 品詞分解した本文と、現代語訳を並べるなら現代語訳。作者の aria-label があればそれを使う（上書きしない）
+    if (this._aria === undefined) this._aria = this.getAttribute("aria-label");
+    this.setAttribute("role", "figure");
+    if (!this._aria){
+      var body = m.lines.map(function(l){ return l.words.map(plainText).join(""); }).join("");
+      this.setAttribute("aria-label", "古文の品詞分解：" + body + (this.hasYaku ? (/[。、．.,，]$/.test(body) ? "" : "。") + "現代語訳：" + m.lines.map(function(l){ return l.yaku || ""; }).join("") : ""));
+    }
   }
   // 押した助動詞の札：開いている札と同じなら閉じる。今の段階で開いた札だけを出す
   toggle(li, wi){

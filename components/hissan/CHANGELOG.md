@@ -2,6 +2,10 @@
 
 The part's own versions (Egatari spec §6.1). Releases of the whole library are in the repository's CHANGELOG.md.
 
+## 2.0.1 (components 2.1.2)
+
+- Fix: a product past 2^53 (e.g. 123456789×987654321, up to the 12 × 12 digits the parser accepts) was computed as a Number and came out wrong in its last digits, or as NaN; the 「たす」 caption could show an exponent. Both are now exact (BigInt for the product, the partial products written with their zeros).
+
 ## 2.0.0 (components 2.0.0-rc.1 and 2.0.0)
 
 - Moved to `egatariParts.define({name: "hissan", version: "2.0.0", requires: {base: "1.0.0"}, element: "m-hissan"})`,

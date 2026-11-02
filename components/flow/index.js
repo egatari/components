@@ -14,7 +14,7 @@
 // 式（tex）は組み立てのときに KaTeX で描く（spec §6.2）：build.fields の nodes[].tex を作り手が描いて texHtml を足し、
 // この部品は markup-reader で決まった要素と属性だけを読んで置く（再生のときに KaTeX は動かない）。描いた結果がなければ tex を字のまま出して知らせる。
 // 知らないデータ（loop の値、ない箱を指す辺）は ctx.report で知らせる（1.x の console.warn / console.error の代わり）
-egatariParts.define({name: "flow", version: "2.0.1", requires: {base: "1.0.0", "markup-reader": "1.0.0"}, element: "m-flow"}, function(deps){
+egatariParts.define({name: "flow", version: "2.0.2", requires: {base: "1.0.0", "markup-reader": "1.0.0"}, element: "m-flow"}, function(deps){
 "use strict";
 var base = deps.base, MR = deps["markup-reader"];
 return class extends base.MotionElement {
@@ -57,7 +57,7 @@ return class extends base.MotionElement {
     var gE = D.el("g", {}, svg), gN = D.el("g", {}, svg);
     var tone = {term: ["var(--term)", "var(--term-tint)", "var(--fg)"], emph: ["var(--emph)", "var(--emph-tint)", "var(--emph)"],
                 muted: ["var(--muted)", "var(--bg)", "var(--fg)"]};   // muted：枠は --muted、字は --fg（字は情報。薄い字は投影で読めない）
-    var byId = {};
+    var byId = {}, dup = [];
     // 箱。段階の中の開始時刻 at（既定 0）
     this.nodes = (data.nodes || []).map(function(n){
       var c = tone[n.tone || "term"] || tone.term, cx = n.x + n.w / 2, cy = n.y + n.h / 2;
@@ -71,9 +71,12 @@ return class extends base.MotionElement {
         lines.forEach(function(s, j){ D.mtext(g, cx, y0 + j * lh, s, {"text-anchor": "middle", "font-size": P.size, fill: c[2]}); });
       }
       var o = {g: g, cx: cx, cy: cy, n: n, step: n.step || 1, at: n.at || 0};
+      if (byId[n.id]) dup.push(JSON.stringify(n.id));
       byId[n.id] = o;
       return o;
     });
+    // 同じ id の箱が 2 つ以上あれば、辺は後に書いた箱を指す（知らせる）
+    if (dup.length) ctx.report("data", "[flow] node ids are not unique: " + dup.join(", ") + " (edges use the last node with that id)");
     // 矢印：箱の中心どうしを結ぶ線を、箱の縁で切る
     function edgePt(n, dx, dy, gap){
       var hw = n.w / 2 + gap, hh = n.h / 2 + gap;
@@ -87,7 +90,10 @@ return class extends base.MotionElement {
       if (!/^(left|right|top|bottom)$/.test(sd)){ ctx.report("data", "[flow] loop=" + JSON.stringify(lp) + " is not true, left, right, top or bottom (right is used)"); sd = "right"; }
       var hz = sd === "left" || sd === "right", sg = sd === "right" || sd === "bottom" ? 1 : -1;
       var out = function(n){ return hz ? [sg > 0 ? n.x + n.w + 6 : n.x - 6, n.y + n.h / 2] : [n.x + n.w / 2, sg > 0 ? n.y + n.h + 6 : n.y - 6]; };
-      var q0 = out(A), q1 = out(B), j = hz ? 1 : 0, lo = Math.min(q0[j], q1[j]), hi = Math.max(q0[j], q1[j]);
+      var q0 = out(A), q1 = out(B), j = hz ? 1 : 0;
+      // 箱から同じ箱へ戻る辺：その側の辺の 1/4 と 3/4 の所から出入りする（小さな輪）
+      if (A === B){ var u = (hz ? A.h : A.w) / 4; q0[j] -= u; q1[j] += u; }
+      var lo = Math.min(q0[j], q1[j]), hi = Math.max(q0[j], q1[j]);
       var ch = sg > 0 ? Math.max(q0[1 - j], q1[1 - j]) : Math.min(q0[1 - j], q1[1 - j]);
       self.nodes.forEach(function(o){
         var n = o.n, a0 = hz ? n.y : n.x, a1 = hz ? n.y + n.h : n.x + n.w;
@@ -109,8 +115,12 @@ return class extends base.MotionElement {
       var a = byId[e.from], b = byId[e.to];
       if (!a || !b) return null;
       var dx = b.cx - a.cx, dy = b.cy - a.cy, L = Math.hypot(dx, dy) || 1;
-      var p0 = edgePt(a.n, dx / L, dy / L, 6), p1 = edgePt(b.n, -dx / L, -dy / L, 6), route = null;
-      if (e.loop) route = loopRoute(e.loop, a.n, b.n);
+      // 同じ箱へ戻る辺（loop なし）は、右に回る輪にする。中心の重なる 2 つの箱の辺は引けない
+      var lp = e.loop;
+      if (!lp && a === b){ ctx.report("data", "[flow] the edge " + JSON.stringify(e.from) + " → " + JSON.stringify(e.to) + " goes from a node to itself; it is drawn as a loop on the right (set loop to choose the side)"); lp = "right"; }
+      if (!lp && !dx && !dy){ ctx.report("data", "[flow] the edge " + JSON.stringify(e.from) + " → " + JSON.stringify(e.to) + " joins two nodes with the same centre (not drawn)"); return false; }
+      var p0 = lp ? null : edgePt(a.n, dx / L, dy / L, 6), p1 = lp ? null : edgePt(b.n, -dx / L, -dy / L, 6), route = null;
+      if (lp) route = loopRoute(lp, a.n, b.n);
       if (route){ p0 = route.pts[0]; p1 = route.pts[3]; }
       // shift：線に垂直に（進む向きの右へ）ずらす。行きと帰りの 2 本を並べるときに使う
       var sh = e.shift || (autoShift(e) ? 10 : 0);
@@ -122,6 +132,7 @@ return class extends base.MotionElement {
     var boxes = [];
     this.edges = es.map(function(e, ei){
       var q = geo[ei];
+      if (q === false) return null;   // 知らせてある
       if (!q){ ctx.report("data", "[flow] an edge refers to an unknown node: " + JSON.stringify(e.from) + " → " + JSON.stringify(e.to) + " (not drawn)"); return null; }
       var a = q.a, b = q.b, dx = q.dx, dy = q.dy, L = q.L, p0 = q.p0, p1 = q.p1, route = q.route;
       var others = [].concat.apply([], segs.filter(function(_, j){ return j !== ei; }));

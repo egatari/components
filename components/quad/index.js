@@ -8,7 +8,7 @@
 // 点は既定で 1 つ = 1 段階（step で直接、at で段階の中の開始秒）。self の点は強調の色で大きく、着いたときに輪が広がる
 // to は移動先：to.step（既定は点の次の段階）に、点が破線の跡を引きながら滑る
 // 2.0（Egatari spec §6.1 の部品）：base の MotionElement・el・prog・lerp・clamp・previewOpacity を使い、プレイヤーのグローバルは使わない
-egatariParts.define({name: "quad", version: "2.0.1", requires: {base: "1.0.0"}, element: "m-quad"}, function(deps){
+egatariParts.define({name: "quad", version: "2.0.2", requires: {base: "1.0.0"}, element: "m-quad"}, function(deps){
 "use strict";
 var base = deps.base;
 return class extends base.MotionElement {
@@ -51,7 +51,11 @@ return class extends base.MotionElement {
     var P = this.props, D = base, self = this, d = this.data || {};
     this.style.display = "block"; this.style.position = "relative";
     var W = this.clientWidth, H = this.clientHeight;
-    var svg = D.el("svg", {viewBox: "0 0 " + W + " " + H, width: W, height: H, style: "display:block;overflow:visible"}, this);
+    var svg = D.el("svg", {viewBox: "0 0 " + W + " " + H, width: W, height: H, "aria-hidden": "true", style: "display:block;overflow:visible"}, this);
+    // 読み上げ：最後の形（点はすべて置かれ、to の点は行き先にいる）を 1 文で。作者の aria-label があればそれを使う（上書きしない）
+    if (this._aria === undefined) this._aria = this.getAttribute("aria-label");
+    this.setAttribute("role", "img");
+    if (!this._aria) this.setAttribute("aria-label", this.summary(/^ja\b/i.test(ctx.lang || "ja")));
     // 図の枠：両端の言葉の分だけ上下と左右に余白
     var m = {l: 12, r: 12, t: 40, b: 40};
     var x0 = m.l, x1 = W - m.r, y0 = m.t, y1 = H - m.b, cx = (x0 + x1) / 2, cy = (y0 + y1) / 2;
@@ -133,14 +137,38 @@ return class extends base.MotionElement {
     this.pts = items.map(function(m){
       var o = m.o, it = m.it, me = m.me, r = m.r, col = me ? "var(--emph)" : it.tone === "term" ? "var(--term)" : it.tone === "fg" ? "var(--fg)" : "var(--muted)";
       var trail = o.to ? D.el("line", {stroke: col, "stroke-width": 2.5, "stroke-dasharray": "7 6", opacity: 0}, gT) : null;
+      // 動いた跡の印（最後の形にも残す）：出発点の白抜きの丸と、行き先へ向く矢じり（丸の手前）
+      var from = o.to ? D.el("circle", {cx: self.X(it.x).toFixed(2), cy: self.Y(it.y).toFixed(2), r: (r * 0.8).toFixed(1), fill: "var(--bg)", stroke: col, "stroke-width": 2.5, opacity: 0}, gT) : null;
+      var head = o.to ? D.el("path", {d: "M0,0L-14,-7L-14,7Z", fill: col, opacity: 0}, gT) : null;
       var ring = me ? D.el("circle", {r: r, fill: "none", stroke: col, "stroke-width": 3, opacity: 0}, gP) : null;
       var g = D.el("g", {opacity: 0}, gP);
       D.el("circle", {cx: 0, cy: 0, r: r, fill: col, stroke: "var(--bg)", "stroke-width": 2.5}, g);
       var lp = m.place(m.an);
       D.mtext(g, lp[0], lp[1], it.label || "", {"text-anchor": lp[2], "font-size": P.size, "font-weight": me ? 700 : 400, fill: me ? col : "var(--fg)"});
       var lab2 = o.to && o.to.label ? D.mtext(gP, 0, 0, o.to.label, {"text-anchor": "middle", "font-size": 24, fill: col, opacity: 0}) : null;
-      return {o: o, g: g, ring: ring, r: r, trail: trail, lab2: lab2};
+      return {o: o, g: g, ring: ring, r: r, trail: trail, from: from, head: head, lab2: lab2};
     });
+  }
+  // 最後の形を 1 文で（読み上げの名前）：象限の名前と、点ごとの最後の位置（右上・左下など。to の点は出発点から行き先へ）
+  summary(ja){
+    var d = this.data || {}, q = d.quads || {}, xa = d.x || {}, ya = d.y || {};
+    var where = function(x, y, bare){
+      var h = x > 0.5 ? (ja ? "右" : "right") : x < 0.5 ? (ja ? "左" : "left") : "", v = y > 0.5 ? (ja ? "上" : "upper") : y < 0.5 ? (ja ? "下" : "lower") : "";
+      var key = (y > 0.5 ? "t" : "b") + (x > 0.5 ? "r" : "l");
+      var s = ja ? (h + v || "中央") : ([v, h].filter(Boolean).join(" ") || "centre");
+      return s + (h && v && q[key] && !bare ? (ja ? "（" + q[key] + "）" : " (" + q[key] + ")") : "");
+    };
+    var axis = function(a, n){ return a.lo || a.hi ? (ja ? n + "：" + (a.lo || "") + "→" + (a.hi || "") : n + ": " + (a.lo || "") + " to " + (a.hi || "")) : ""; };
+    var ax = [axis(xa, ja ? "横" : "x"), axis(ya, ja ? "縦" : "y")].filter(Boolean).join(ja ? "、" : "; ");
+    var pts = this.plan().map(function(o){
+      var it = o.it, nm = it.label || (ja ? "点" : "a point");
+      if (!o.to) return ja ? nm + "は" + where(it.x, it.y) : nm + " is " + where(it.x, it.y);
+      var lb = o.to.label ? (ja ? "（" + o.to.label + "）" : " (" + o.to.label + ")") : "", w0 = where(it.x, it.y), w1 = where(o.to.x, o.to.y, true);
+      // 同じ象限の中の移動なら、行き先に象限の名前を繰り返さない
+      if (w1 !== where(it.x, it.y, true)) w1 = where(o.to.x, o.to.y);
+      return ja ? nm + "は" + w0 + "から" + w1 + "へ" + lb : nm + " moves from " + w0 + " to " + w1 + lb;
+    });
+    return (ja ? "4 象限" : "Four quadrants") + (ax ? (ja ? "（" + ax + "）" : " (" + ax + ")") : "") + (ja ? "：" : ": ") + pts.join(ja ? "、" : ", ");
   }
   duration(k){
     var P = this.props, d = k === P["quads-step"] && k > 0 ? P.fade : 0;
@@ -185,6 +213,14 @@ return class extends base.MotionElement {
         p.trail.setAttribute("x2", x.toFixed(2)); p.trail.setAttribute("y2", y.toFixed(2));
         if (fm){ p.trail.setAttribute("x2", self.X(o.to.x).toFixed(2)); p.trail.setAttribute("y2", self.Y(o.to.y).toFixed(2)); }
         p.trail.setAttribute("opacity", fm ? PV : m > 0 ? 0.9 : 0);
+        // 出発点の丸は跡と同じ濃さ。矢じりは今の点の丸の手前（丸の縁から 3px）に、跡が丸と出発点の丸の外に出ている長さがあるときだけ
+        var hx = fm ? self.X(o.to.x) : x, hy = fm ? self.Y(o.to.y) : y, len = Math.hypot(hx - x0, hy - y0), ho = fm ? PV : m > 0 ? 0.9 : 0;
+        p.from.setAttribute("opacity", ho);
+        if (len > p.r * 1.8 + 3 + 14 + 4){
+          var ux = (hx - x0) / len, uy = (hy - y0) / len, tip = p.r * s + 3;
+          p.head.setAttribute("transform", "translate(" + (hx - ux * tip).toFixed(2) + " " + (hy - uy * tip).toFixed(2) + ") rotate(" + (Math.atan2(uy, ux) * 180 / Math.PI).toFixed(1) + ")");
+          p.head.setAttribute("opacity", ho);
+        } else { p.head.removeAttribute("transform"); p.head.setAttribute("opacity", 0); }   // 作った直後と同じ（呼ぶ順で DOM が変わらない）
       }
       if (p.lab2){
         p.lab2.setAttribute("x", self.X(o.to.x).toFixed(2)); p.lab2.setAttribute("y", (self.Y(o.to.y) - p.r - 14).toFixed(2));

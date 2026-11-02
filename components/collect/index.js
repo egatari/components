@@ -7,7 +7,7 @@
 // 2.0（Egatari spec §6.1 の部品）：base の MotionElement・el・mtext・prog・lerp・previewOpacity を使い、プレイヤーのグローバルは使わない。
 // 式（tex）は組み立てのときに KaTeX で描く（spec §6.2）：build.fields の targets[].tex を作り手が描いて texHtml を足し、
 // この部品は markup-reader で決まった要素と属性だけを読んで置く（再生のときに KaTeX は動かない）。描いた結果がなければ tex を字のまま出して知らせる
-egatariParts.define({name: "collect", version: "2.0.0", requires: {base: "1.0.0", "markup-reader": "1.0.0"}, element: "m-collect"}, function(deps){
+egatariParts.define({name: "collect", version: "2.0.1", requires: {base: "1.0.0", "markup-reader": "1.0.0"}, element: "m-collect"}, function(deps){
 "use strict";
 var base = deps.base, MR = deps["markup-reader"];
 return class extends base.MotionElement {
@@ -44,8 +44,11 @@ return class extends base.MotionElement {
     var gx = (W - (cw * cols + gap * (cols - 1))) / 2;
     // 箱の並び：下の段に等間隔（x, y を書けばその位置。中心の座標）
     var T = data.targets || [], bw = P["box-w"], bh = P["box-h"];
+    // tex と label のある箱は label を箱の下に書くので、その分（36 px）だけ下の段を上げる（要素の下にはみ出さない）
+    var gR = D.el("g", {}, svg);   // 残る札（箱より下に重ねる。札の段が箱にかかっても箱の字は隠れない）
+    var under = T.some(function(tg){ return tg.tex && tg.label && tg.y === undefined; }) ? 36 : 0;
     this.targets = T.map(function(tg, j){
-      var cx = tg.x !== undefined ? tg.x : W * (j + 1) / (T.length + 1), cy = tg.y !== undefined ? tg.y : H - bh / 2 - 4;
+      var cx = tg.x !== undefined ? tg.x : W * (j + 1) / (T.length + 1), cy = tg.y !== undefined ? tg.y : H - bh / 2 - 4 - under;
       var c = tone[tg.tone || "emph"] || tone.emph;
       var frame = D.el("rect", {x: cx - bw / 2, y: cy - bh / 2, width: bw, height: bh, rx: 12, fill: "none", stroke: "var(--line)", "stroke-width": 2, "stroke-dasharray": "8 6", opacity: 0}, svg);
       var g = D.el("g", {opacity: 0}, svg);
@@ -54,16 +57,25 @@ return class extends base.MotionElement {
       if (tg.tex) MR.texFrame(g, cx, ly + 4, tg, "tex", {size: 30, anchor: "middle", color: c[0], w: bw, h: 50}, sk).firstChild.style.verticalAlign = "top";
       else D.mtext(g, cx, ly, tg.label || "", {"text-anchor": "middle", "font-size": 28, "font-weight": 700, fill: c[0]});
       if (hasV) D.mtext(g, cx, cy + 38, String(tg.value), {"text-anchor": "middle", "font-size": 24, fill: "var(--fg)"});
-      if (tg.tex && tg.label) D.mtext(g, cx, cy + bh / 2 + 32, tg.label, {"text-anchor": "middle", "font-size": 24, fill: "var(--muted)"});
+      // 下に入らなければ（y を書いた箱）箱の上に
+      if (tg.tex && tg.label) D.mtext(g, cx, cy + bh / 2 + 32 + 4 <= H ? cy + bh / 2 + 32 : cy - bh / 2 - 10, tg.label, {"text-anchor": "middle", "font-size": 24, fill: "var(--muted)"});
       return {frame: frame, g: g, cx: cx, cy: cy, col: c, last: 0};
     });
-    // 札と、行き先ごとの写し
-    this.chips = [];
+    // 札と、行き先ごとの写し。もとの札は元の場所に薄い枠で残る（動いた後も、何を集めたかが図に残る。印刷でも読める）
+    this.chips = []; this.rests = [];
+    var badTo = [];
     C.forEach(function(cp, i){
       var r = Math.floor(i / cols), q = i % cols;
       var x = gx + q * (cw + gap) + cw / 2, y = 4 + ch / 2 + r * (ch + gap);
       var to = Array.isArray(cp.to) ? cp.to : [cp.to === undefined ? 0 : cp.to];
       var start = i * P.stagger;
+      to.forEach(function(j){ if (!self.targets[j]) badTo.push("chip " + i + " (" + JSON.stringify(cp.label || "") + "): to " + JSON.stringify(j)); });
+      if (to.some(function(j){ return self.targets[j]; })){
+        var rg = D.el("g", {transform: "translate(" + x.toFixed(2) + " " + y.toFixed(2) + ")", opacity: 0}, gR);
+        D.el("rect", {x: -cw / 2, y: -ch / 2, width: cw, height: ch, rx: 8, fill: "none", stroke: "var(--line)", "stroke-width": 2, "stroke-dasharray": "6 5"}, rg);
+        D.mtext(rg, 0, 9, cp.label || "", {"text-anchor": "middle", "font-size": 24, fill: "var(--muted)"});
+        self.rests.push({g: rg, start: start});
+      }
       to.forEach(function(j){
         var tg = self.targets[j]; if (!tg) return;
         var c = tone[cp.tone || "term"] || tone.term;
@@ -74,6 +86,7 @@ return class extends base.MotionElement {
         self.chips.push({g: g, x0: x, y0: y, x1: tg.cx, y1: tg.cy, start: start});
       });
     });
+    if (badTo.length) ctx.report("data", "[collect] " + badTo.join("; ") + ": not a target number 0–" + (T.length - 1) + " (the copy is not drawn)");
     this.rows = rows;
     sk.flush();   // what the formulas have to report, once per kind (spec §6.2)
   }
@@ -93,6 +106,8 @@ return class extends base.MotionElement {
       c.g.setAttribute("transform", "translate(" + x.toFixed(2) + " " + y.toFixed(2) + ") scale(" + s.toFixed(4) + ")");
       c.g.setAttribute("opacity", op.toFixed(3));
     });
+    // 残る札：写しが出発したら現れる
+    this.rests.forEach(function(c){ c.g.setAttribute("opacity", Math.min(1, pr(c.start, P.move) * 4).toFixed(3)); });
     this.targets.forEach(function(tg){
       tg.frame.setAttribute("opacity", (pr(0, 0.3) * (1 - pr(tg.last - 0.1, 0.3))).toFixed(3));
       var e = pr(tg.last - 0.15, 0.45);

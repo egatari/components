@@ -14,7 +14,7 @@
 // 2.0（Egatari spec §6.1 の部品）：base の MotionElement・el・prog・previewOpacity を使い、プレイヤーのグローバルは使わない。
 // 書き方の誤りは ctx.report("data", "[gendai] …") で知らせる（1.x の console.warn("m-gendai: …") の代わり）。
 // 読み取り（parse）は試験のために static testing に出す（ほかのパーツは読まない）
-egatariParts.define({name: "gendai", version: "2.0.0", requires: {base: "1.0.0"}, element: "m-gendai"}, function(deps){
+egatariParts.define({name: "gendai", version: "2.0.1", requires: {base: "1.0.0"}, element: "m-gendai"}, function(deps){
 "use strict";
 var base = deps.base;
 var D = base;
@@ -121,11 +121,11 @@ return class extends base.MotionElement {
     this.padTop = tate ? (roles ? CHIP + lane + 10 : 20) : (roles ? CHIP + 10 : 20);
     this.padLeft = tate ? 0 : (nLev ? lane - 2 : 4);
     // 重ね順：塗り（指す先の淡い色）→ 字 → 線・枠・矢印
-    this.back = D.el("svg", {width: W, height: H, viewBox: "0 0 " + W + " " + H, style: "position:absolute;left:0;top:0;overflow:visible;pointer-events:none"}, this);
+    this.back = D.el("svg", {width: W, height: H, viewBox: "0 0 " + W + " " + H, "aria-hidden": "true", style: "position:absolute;left:0;top:0;overflow:visible;pointer-events:none"}, this);
     var text = document.createElement("div");
     text.style.cssText = "position:absolute;inset:0;font-size:" + P.size + "px;line-height:" + (tate ? LH_TATE : 1.85) + ";padding-top:" + this.padTop + "px;" + (tate ? "writing-mode:vertical-rl;" : "padding-left:" + this.padLeft + "px;");
     this.appendChild(text);
-    this.front = D.el("svg", {width: W, height: H, viewBox: "0 0 " + W + " " + H, style: "position:absolute;left:0;top:0;overflow:visible;pointer-events:none"}, this);
+    this.front = D.el("svg", {width: W, height: H, viewBox: "0 0 " + W + " " + H, "aria-hidden": "true", style: "position:absolute;left:0;top:0;overflow:visible;pointer-events:none"}, this);
     this.text = text;
     var byId = {};
     this.paras = m.paras.map(function(p, pi){
@@ -180,7 +180,27 @@ return class extends base.MotionElement {
         h1: D.el("path", {d: "M0,0L-13,-6.5L-13,6.5Z", fill: c, opacity: 0}, self.front),
         h0: P2.p.rel === "~" ? D.el("path", {d: "M0,0L-13,-6.5L-13,6.5Z", fill: c, opacity: 0}, self.front) : null};
     });
-    this.setAttribute("aria-label", m.paras.map(function(p){ return (p.role ? "【" + p.role + "】" : "") + p.runs.map(function(r){ return r.t; }).join(""); }).join(" "));
+    // 読み上げ：本文はそのまま読める字（role="figure" の中身）。名前は最後の形の読解のしるし（傍線・指示語・段落の役割とつながり。
+    // phases にある段階のものだけ）を 1 文で。線と枠の SVG は aria-hidden。作者の aria-label があればそれを使う（上書きしない）
+    if (this._aria === undefined) this._aria = this.getAttribute("aria-label");
+    this.setAttribute("role", "figure");
+    if (!this._aria) this.setAttribute("aria-label", this.summary());
+  }
+  // 最後の形の読解のしるしを 1 文で（読み上げの名前）
+  summary(){
+    var m = this.model, ph = this.phaseList, out = [], anchors = {};
+    m.paras.forEach(function(p){ p.runs.forEach(function(r){ if (r.id) anchors[r.id] = r.t; }); });
+    var runs = [].concat.apply([], m.paras.map(function(p){ return p.runs; }));
+    if (ph.indexOf("marks") >= 0) out.push(runs.filter(function(r){ return r.line; }).map(function(r){ return (r.line === 2 ? "二重傍線" : "傍線") + (r.label ? " " + r.label : "") + "「" + r.t + "」"; }).join("、"));
+    if (ph.indexOf("refs") >= 0) out.push(runs.filter(function(r){ return r.ref && anchors[r.ref] !== undefined; }).map(function(r){ return "指示語「" + r.t + "」は「" + anchors[r.ref] + "」を指す"; }).join("、"));
+    if (ph.indexOf("roles") >= 0){
+      var byId = {};
+      m.paras.forEach(function(p){ if (p.id) byId[p.id] = p; });
+      var links = m.paras.filter(function(p){ return p.to && byId[p.to]; }).map(function(p){ return (p.role || "段落") + (p.rel === "~" ? " ↔ " : " → ") + (byId[p.to].role || "段落"); });
+      out.push("段落の役割：" + m.paras.map(function(p){ return p.role; }).filter(Boolean).join("・") + (links.length ? "（" + links.join("、") + "）" : ""));
+    }
+    out = out.filter(Boolean);
+    return "現代文の読解" + (out.length ? "：" + out.join("。") : "");
   }
   // 要素の字の箱（行ごと）を部品の座標で。部品の外側の拡大（舞台の scale・段階の translate）によらない
   rects(e){

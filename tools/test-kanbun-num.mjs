@@ -58,14 +58,17 @@ try {
     const wide = s.nums.filter((n) => n.text.r - n.text.l > n.box.r - n.box.l + 0.5).map((n) => n.n);
     ok(wide.length === 0, `slide ${i}: every number's text fits its box` + (wide.length ? ': ' + wide.join(',') : ''));
     const two = s.nums.filter((n) => n.n.length > 1);
-    ok(two.every((n) => n.box.r - n.box.l === s.L), `slide ${i}: two-digit boxes keep the width L (${s.L}px)`);
+    // 二桁は横に縮めて（transform）幅 L に見せるので、幅は 0.01px の誤差で見る（components 2.1.2）
+    ok(two.every((n) => Math.abs(n.box.r - n.box.l - s.L) < 0.01), `slide ${i}: two-digit boxes keep the width L (${s.L}px)`);
+    // 二桁も 24px のまま（横に縮める割合が 0.75 以上なら。size 60 と 56 の箱はどちらも入る）
+    ok(two.every((n) => n.fs >= 24), `slide ${i}: two-digit numbers stay at 24px or larger` + (two.some((n) => n.fs < 24) ? ': ' + two.find((n) => n.fs < 24).fs + 'px' : ''));
   });
   // 一桁の番号は変えない：箱は字の左（幅 L）、字の大きさと行の高さは max(24, round(S*0.4)) px、中央ぞろえ
   const geometry = (s, nums) => nums.every((n) => Math.abs(n.fs - Math.max(24, Math.round(s.S * 0.4))) < 1e-6 && n.lh === Math.max(24, Math.round(s.S * 0.4)) && n.align === 'center' && n.box.r - n.box.l === s.L);
   r.forEach((s, i) => ok(geometry(s, s.nums.filter((n) => n.n.length === 1)), `slide ${i}: one-digit numbers keep font-size, line-height, width and alignment`));
   ok(r.every((s) => s.nums.every((n) => n.annot)), 'every number carries data-annot (a small annotation: Studio does not apply the minimum text size to it)');
   // 番号の箱は、読む字の箱のすぐ左に幅 L で置く（返り点のない見本なので、n 番目の番号は n 番目の字）。9 字には一桁しかない
-  r.forEach((s, i) => ok(s.nums.every((n, j) => Math.abs(n.box.r - s.chars[j].l) < 0.01 && n.box.r - n.box.l === s.L), `slide ${i}: each number box sits just left of its character, L wide`));
+  r.forEach((s, i) => ok(s.nums.every((n, j) => Math.abs(n.box.r - s.chars[j].l) < 0.01 && Math.abs(n.box.r - n.box.l - s.L) < 0.01), `slide ${i}: each number box sits just left of its character, L wide`));
   ok(r[2].nums.length === 9 && r[2].nums.every((n) => n.n.length === 1), 'slide 2: nine one-digit numbers');
 } finally { await browser.close(); }
 

@@ -10,7 +10,7 @@
 // 2.0（Egatari spec §6.1 の部品）：base の MotionElement・el・prog・variant を使い、プレイヤーのグローバルは使わない。属性の誤りは
 // ctx.report("attr" | "range", "[hissan] …")、要素に入らないときは ctx.report("size", "[hissan] …") で知らせる（1.x の console.warn の代わり。
 // 段階の数を決める plan() は ctx を読まないので、知らせることを貯めておき、mount で知らせる）
-egatariParts.define({name: "hissan", version: "2.0.0", requires: {base: "1.0.0"}, element: "m-hissan"}, function(deps){
+egatariParts.define({name: "hissan", version: "2.0.1", requires: {base: "1.0.0"}, element: "m-hissan"}, function(deps){
 "use strict";
 var base = deps.base;
 // ---- 計算と配置（DOM を使わない。tools/test-hissan.mjs が vm で読む） ----
@@ -215,13 +215,14 @@ var CALC = (function(){
         M.add({t: "focus", r0: pt.row, r1: pt.row, p0: pt.j + ds.length - 1, p1: pt.j, g: g});
       }
     });
-    var prod = a1 * b1, res = {};
+    // exact: up to 12 × 12 digits, past Number's 2^53 (BigInt, ES2020)
+    var prod = String(BigInt(a1) * BigInt(b1)), res = {};
     digitsOf(prod).reverse().forEach(function(d, i){ res[i] = d; });
     if (multi){
       var gs = M.ph("sum", "sum"), pd = digitsOf(prod);
       M.add({t: "rule", r: rR2, g: gs, l: 0.3});
       pd.forEach(function(d, i){ M.add({t: "d", r: rP, p: pd.length - 1 - i, s: String(d), g: gs, o: 0.25}); });
-      M.cap(rP, gs, "たす：" + parts.map(function(pt){ return pt.value * pow10(pt.j); }).join("＋") + "＝" + prod);
+      M.cap(rP, gs, "たす：" + parts.map(function(pt){ return pt.value ? pt.value + new Array(pt.j + 1).join("0") : "0"; }).join("＋") + "＝" + prod);
       M.add({t: "focus", r0: parts[0].row, r1: rP, p0: pd.length - 1, p1: 0, g: gs});
     }
     if (Z){

@@ -2,6 +2,12 @@
 
 The part's own versions (Egatari spec §6.1). Releases of the whole library are in the repository's CHANGELOG.md.
 
+## 2.0.1 (components 2.1.2)
+
+- Fix: a printed menu did not say where its cards lead (print only hid the visited mark); in print each card now shows the target slide's number ("→12", from ctx.slides) at its top right, where the visited mark is on screen, so the cards keep their height and a full menu still fits the slide (cards to another file keep their bottom-right mark).
+- Fix: the visited mark (top right) and the another-file mark (bottom right) were drawn over long titles; cards that can show a mark now keep room for it on the right, and a long word wraps inside the card instead of overflowing it (overflow-wrap). The style element is now `menu-2-0-1-css` (its CSS changed).
+- Fix: the element had no role, so assistive tech read the cards as loose text in DOM order; it is now role="navigation" named by its card titles in one sentence, and an author aria-label is kept.
+
 ## 2.0.0 (components 2.0.0-rc.1 and 2.0.0)
 
 - Moved to `egatariParts.define({name: "menu", version: "2.0.0", requires: {base: "1.0.0"}, element: "m-menu"})`,

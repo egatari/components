@@ -2,6 +2,11 @@
 
 The part's own versions (Egatari spec §6.1). Releases of the whole library are in the repository's CHANGELOG.md.
 
+## 2.0.1 (components 2.1.2)
+
+- Fix: a NaN or ±Infinity value of `f` (for example `log(u)` for u ≤ 0, or a division by zero at one value) put NaN into the path and the whole line disappeared. The part now builds the path itself, breaking it at non-finite samples (finite runs as separate subpaths), with one `data` report per parameter value.
+- Fix: in the final state the grey curves of the earlier values had no label, so a print could not tell which value each curve had. Each grey curve now carries its value (for example "σ = 0.5") in `var(--muted)` at 24 px, on the curve with a background halo, placed away from the other curves, the current value and each other; with more than four grey curves only the first and the last are labelled. A label shows while its curve is shown grey.
+
 ## 2.0.0 (components 2.0.0-rc.1 and 2.0.0)
 
 - Moved to `egatariParts.define({name: "sweep", version: "2.0.0", requires: {base: "1.0.0", expr: "1.0.0", plot: "1.0.0"},

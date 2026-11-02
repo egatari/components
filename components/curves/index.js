@@ -5,11 +5,11 @@
 // 1 系列 = 1 段階（書いた順。系列の step で変えられ、同じ step の系列は一緒に引く）。f は x の式（Math の関数と N(x,平均,標準偏差) が使える）、pts は点列
 // 2.0（Egatari spec §6.1 の部品）：base の MotionElement・el・mtext・prog・previewOpacity、plot の Plot、expr の compile を使い、
 // プレイヤーのグローバルは使わない（1.x は式の評価器 egatari-expr を写して持っていた）。破線の mask の id は
-// curves-2-0-0-<n>m<系列>：このパーツの名前と版に、このパーツだけの数え（1.x は mc<n>m<系列> で、DECK.Plot の数えを進めていた）
-egatariParts.define({name: "curves", version: "2.0.0", requires: {base: "1.0.0", expr: "1.0.0", plot: "1.0.0"}, element: "m-curves"}, function(deps){
+// curves-2-0-1-<n>m<系列>：このパーツの名前と版に、このパーツだけの数え（1.x は mc<n>m<系列> で、DECK.Plot の数えを進めていた）
+egatariParts.define({name: "curves", version: "2.0.1", requires: {base: "1.0.0", expr: "1.0.0", plot: "1.0.0"}, element: "m-curves"}, function(deps){
 "use strict";
 var base = deps.base, plot = deps.plot, expr = deps.expr;
-var ID = "curves-2-0-0-";   // name and version of this part, dots replaced (spec §6.1 Identifiers)
+var ID = "curves-2-0-1-";   // name and version of this part, dots replaced (spec §6.1 Identifiers)
 var count = 0;              // this part's own counter for its ids (deterministic: the order of mounting)
 return class extends base.MotionElement {
   static partName = "curves";   // the registry name (define meta name), for report prefixes
@@ -42,7 +42,7 @@ return class extends base.MotionElement {
     (this.data || []).forEach(function(s, i){ m = Math.max(m, self.stepOf(s, i)); });
     return m;
   }
-  mount(){
+  mount(ctx){
     var P = this.props, D = base, self = this, S = this.data || [];
     this.classList.add("plot"); this.style.display = "block";
     var p = this.p = plot.Plot(this, {xr: P.xr, yr: P.yr, xt: P.xt, yt: P.yt, xf: P.xf, yf: P.yf, xl: P.xl, yl: P.yl, m: {l: 86, r: 24, t: 24, b: 64}});
@@ -59,7 +59,14 @@ return class extends base.MotionElement {
         pts = [];
         for (var j = 0; j <= P.n; j++){ var v = a + (b - a) * j / P.n; pts.push([p.x(v), p.y(g(v))]); }
       }
-      var d = pts.map(function(q, j){ return (j ? "L" : "M") + q[0].toFixed(1) + "," + q[1].toFixed(1); }).join("");
+      // 有限でない点（NaN・±Infinity）は線を切り、有限な区間ごとに M から引き直す（1 つの NaN で線全体が消えない）
+      var d = "", pen = false, gap = false;
+      pts.forEach(function(q){
+        if (isFinite(q[0]) && isFinite(q[1])){ d += (pen ? "L" : "M") + q[0].toFixed(1) + "," + q[1].toFixed(1); pen = true; }
+        else { pen = false; gap = true; }
+      });
+      if (gap) ctx.report("data", "[curves] series " + i + " (" + JSON.stringify(s.label || "") + ") has points that are not finite numbers (NaN or ±Infinity, e.g. log or division by zero); the line is broken there");
+      pts = pts.filter(function(q){ return isFinite(q[0]) && isFinite(q[1]); });
       var col = colorOf(s.tone || s.color, i);
       var it = {step: self.stepOf(s, i)};
       if (s.dash){
@@ -77,6 +84,7 @@ return class extends base.MotionElement {
       var inside = pts.filter(function(q){ return q[0] >= x0 - .5 && q[0] <= x1 + .5 && q[1] >= y0 - .5 && q[1] <= y1 + .5; });
       var end = inside.length ? inside[inside.length - 1] : pts[pts.length - 1];
       var lat = s.labelAt !== undefined ? s.labelAt : s.at;
+      if (!end){ it.lx = it.ly = it.x0 = it.x1 = 0; it.anchor = "start"; it.col = col; it.label = ""; return it; }   // 有限な点がない：名前は書かない
       if (lat !== undefined){
         var ax = p.x(lat), best = pts[0];
         pts.forEach(function(q){ if (Math.abs(q[0] - ax) < Math.abs(best[0] - ax)) best = q; });
@@ -96,20 +104,36 @@ return class extends base.MotionElement {
       it.anchor = anchor; it.col = col; it.label = s.label || "";
       return it;
     });
-    // 名前どうしが重ならないように、横に重なる名前を下へずらす
-    var min = 32, g = self.items.filter(function(it){ return it.label; }).sort(function(u, v){ return u.ly - v.ly; });
+    // 名前どうしが重ならないように、横に重なる名前を下へずらす。先に描く高さ（上は 26、下は横軸の 6 px 上）に収めてから離し、
+    // 下に収まらなければ下から上へ押し戻す（目盛りの数字にかからない）
+    var min = 32, lo = 26, hi = y1 - 6, ov = function(u, v){ return u.x0 < v.x1 && v.x0 < u.x1; };
+    var g = self.items.filter(function(it){ return it.label; });
+    g.forEach(function(it){ it.ly = Math.min(hi, Math.max(lo, it.ly)); });
+    g.sort(function(u, v){ return u.ly - v.ly; });
     g.forEach(function(it, j){
       for (var q = 0; q < j; q++){
         var o = g[q];
-        if (it.x0 < o.x1 && o.x0 < it.x1 && it.ly - o.ly < min) it.ly = o.ly + min;
+        if (ov(it, o) && it.ly - o.ly < min) it.ly = o.ly + min;
       }
     });
+    for (var j = g.length - 1; j >= 0; j--){
+      var it = g[j];
+      it.ly = Math.min(hi, it.ly);
+      for (var q = j + 1; q < g.length; q++) if (ov(it, g[q]) && g[q].ly - it.ly < min) it.ly = g[q].ly - min;
+    }
+    g.forEach(function(it){ it.ly = Math.max(lo, it.ly); });
     this.items.forEach(function(it){
-      it.lab = D.mtext(p.svg, it.lx, Math.max(26, it.ly), it.label, {"text-anchor": it.anchor, fill: it.col, "font-size": 26, "font-weight": 700, opacity: 0});
+      it.lab = D.mtext(p.svg, it.lx, it.ly, it.label, {"text-anchor": it.anchor, fill: it.col, "font-size": 26, "font-weight": 700, opacity: 0});
     });
+    // tone：テーマの色の名前か var(--…)。知らない名前は既定の色（series-1..4 の順）にして知らせる
     function colorOf(c, i){
-      if (!c) return "var(--series-" + (i % 4 + 1) + ")";
-      return c.indexOf("var(") === 0 ? c : "var(--" + c.replace(/^--/, "") + ")";
+      var def = "var(--series-" + (i % 4 + 1) + ")";
+      if (!c) return def;
+      if (c.indexOf("var(") === 0) return c;
+      var nm = c.replace(/^--/, "");
+      if (/^(term|emph|accent2|muted|fg|line|series-[1-4])$/.test(nm)) return "var(--" + nm + ")";
+      ctx.report("attr", "[curves] series " + i + ": tone " + JSON.stringify(c) + " is not term, emph, accent2, muted, fg or series-1..4 (" + def.slice(6, -1) + " is used)");
+      return def;
     }
   }
   duration(k){ return k >= 1 ? this.props.dur * 0.7 + 0.6 : 0; }
