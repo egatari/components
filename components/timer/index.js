@@ -12,10 +12,10 @@
 // 2.0（Egatari spec §6.1 の部品）：base の MotionElement・el・prog を使い、プレイヤーのグローバルは使わない。
 //   延長を戻すのは ctx.entered だけ（1.x の deck:pos の代わりはない）。日本語かどうかは mount の ctx.lang、動画かどうかは ctx.mode。
 //   要素の大きさの問題は ctx.report("size", …)。印刷の前後は document.defaultView の beforeprint・afterprint
-egatariParts.define({name: "timer", version: "2.0.1", requires: {base: "1.0.0"}, element: "m-timer"}, function(deps){
+egatariParts.define({name: "timer", version: "2.0.2", requires: {base: "1.0.0"}, element: "m-timer"}, function(deps){
 "use strict";
 var base = deps.base;
-var CSS_ID = "timer-2-0-0-css";   // the style element this part writes, named with its name and version (spec §6.1 Identifiers)
+var CSS_ID = "timer-2-0-2-css";   // the style element this part writes, named with its name and version (spec §6.1 Identifiers)
 var JA = {ready: "準備の確認", total: "合計", remaining: "残り", done: "時間", start: "準備ができたら　→ キーでスタート", next: "終了　→ キーで次へ", end: "終了",
           min: "分", sec: "秒", plus: "＋1 分", minus: "−1 分"};
 var EN = {ready: "Ready?", total: "Total", remaining: "Remaining", done: "Time's up", start: "When ready, press → to start", next: "Time's up. Press → for the next", end: "Time's up",
@@ -70,6 +70,10 @@ return class extends base.MotionElement {
     var self = this, d = this.data || {};
     this.P = d.phases || [];
     if (this.P.some(function(p){ return !(p.sec > 0); })) throw new Error("every phase needs sec > 0 (whole seconds)");
+    // 読み上げ：要素は区切りとその時間を名前にした group（中の知らせ role="status" と ±1 分のボタンはそのまま届く）。作者の aria-label があればそれを使う（上書きしない）
+    if (this._aria === undefined) this._aria = this.getAttribute("aria-label");
+    this.setAttribute("role", "group");
+    if (!this._aria) this.setAttribute("aria-label", (this.ja ? "タイマー：" : "Timer: ") + this.P.map(function(p){ return p.title + " " + self.span(p.sec); }).join(this.ja ? "、" : ", "));
     this.video = ctx.mode === "video";
     this.style.display = "block"; this.style.position = "relative";
     if (!document.getElementById(CSS_ID)){ var st = document.createElement("style"); st.id = CSS_ID; st.textContent = CSS; document.head.appendChild(st); }

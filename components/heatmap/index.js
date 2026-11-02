@@ -10,8 +10,8 @@
 // 見せ方（docs/conventions.md §1）：fade（セルがフェード、既定）・sweep（同じ段階のセルが左上から順に）
 // 2.0（Egatari spec §6.1 の部品）：base の MotionElement・el・prog・variant・previewOpacity と、計算は heatmap-core（1.x の
 // static calc）を使い、プレイヤーのグローバルは使わない。書き方やデータの知らせ（1.x の console.warn）は mount で ctx.report に。
-// 言語は ctx.lang（mount で読む）。凡例のグラデーションの id は heatmap-2-0-0-legend-<n>（1.x は m-heatmap-legend-<n>）
-egatariParts.define({name: "heatmap", version: "2.0.0", requires: {base: "1.0.0", "heatmap-core": "1.0.0"}, element: "m-heatmap"}, function(deps){
+// 言語は ctx.lang（mount で読む）。凡例のグラデーションの id は heatmap-2-0-1-legend-<n>（1.x は m-heatmap-legend-<n>）
+egatariParts.define({name: "heatmap", version: "2.0.1", requires: {base: "1.0.0", "heatmap-core": "1.0.0"}, element: "m-heatmap"}, function(deps){
 "use strict";
 var base = deps.base;
 // ---- 計算（heatmap-core。tools/test-heatmap.mjs がブラウザなしで試す） ----
@@ -29,9 +29,16 @@ function rgbOf(css){
     return [d[0], d[1], d[2]];
   } catch (e) { return null; }
 }
+// 名前を幅 w（24 px の字で）に収める：入らなければ … で切る
+function clip(s, w, C){
+  if (C.est(s, 24) <= w) return s;
+  var ch = [...s];
+  while (ch.length > 1 && C.est(ch.join("") + "…", 24) > w) ch.pop();
+  return ch.join("").replace(/\s+$/, "") + "…";
+}
 var ON = function(v){ return /^(on|true|yes)$/i.test(String(v || "").trim()); };
 var TONES = ["term", "emph", "accent2"];
-var ID = "heatmap-2-0-0-";   // name and version of this part, dots replaced (spec §6.1 Identifiers)
+var ID = "heatmap-2-0-1-";   // name and version of this part, dots replaced (spec §6.1 Identifiers)
 var SEQ = 0;   // 凡例のグラデーションの id（ページの中で部品ごとに別。mount は 1 回だけ。このパーツだけの数え）
 return class extends base.MotionElement {
   static partName = "heatmap";   // the registry name (define meta name), for report prefixes
@@ -92,7 +99,16 @@ return class extends base.MotionElement {
     var show = norm ? P.show : "count";
     if (norm && ["count", "percent", "both"].indexOf(show) < 0){ notes.push(["attr", '[heatmap] show="' + show + '" is not count, percent or both (percent is used)']); show = "percent"; }
     if (norm && raw.some(function(r){ return !r.reduce(function(a, v){ return a + v; }, 0); })) notes.push(["data", "[heatmap] a row sums to 0; its proportions are drawn as 0"]);
-    var dom = C.domain(shown, kind, +P.center || 0, norm && !P.range ? [0, 1] : P.range);
+    // range：2 つの数 [最小, 最大]、最小 < 最大。そうでなければ知らせて、データの範囲に（同じ値は 0 で割り、逆は色が反転する）
+    var range = P.range;
+    if (range !== null && range !== undefined){
+      var okR = Array.isArray(range) && range.length === 2 && typeof range[0] === "number" && typeof range[1] === "number" && isFinite(range[0]) && isFinite(range[1]);
+      if (!okR || !(range[0] < range[1])){
+        notes.push(["attr", "[heatmap] range=" + JSON.stringify(range) + " is not [min, max] with min < max; the " + (norm ? "range 0 to 1" : "data's range") + " is used"]);
+        range = null;
+      }
+    }
+    var dom = C.domain(shown, kind, +P.center || 0, norm && !range ? [0, 1] : range);
     var st = C.steps(rows.length, cols.length, build, hl);
     var dec = function(v){ var m = String(v).match(/\.(\d+)$/); return m ? m[1].length : 0; };
     var digits = P.digits !== undefined ? P.digits : d.digits !== undefined ? d.digits : Math.min(2, Math.max.apply(null, [0].concat([].concat.apply([], raw).map(dec))));
@@ -143,7 +159,23 @@ return class extends base.MotionElement {
     };
     // ---- 配置 ----
     var dm = pl.dom, legend = [this.lfmt(dm.hi), this.lfmt(dm.c), this.lfmt(dm.lo)];
-    var L = C.layout({W: W, H: H, rows: pl.rows, cols: pl.cols, legend: legend, xl: P.xl, yl: P.yl, rotate: P.rotate});
+    var lay = function(cols){ return C.layout({W: W, H: H, rows: pl.rows, cols: cols, legend: legend, xl: P.xl, yl: P.yl, rotate: P.rotate}); };
+    var cols = pl.cols, L = lay(cols);
+    // 長い列の名前：core は名前の幅で列を k 個おきに間引く（数が多いのではないのに「多すぎる」と知らせる）。名前を … で切って
+    // どの列にも名前が出る幅を探す（セルがいちばん大きくなる幅のうち、いちばん長い名前）。切っても間引くなら（列の数が多い）元の名前のまま
+    if (L.kc > 1){
+      var colW0 = Math.max.apply(null, pl.cols.map(function(s){ return C.est(s, 24); })), tries = [];
+      for (var cap = colW0 * 0.9; cap >= 24 * 3; cap *= 0.9){
+        var cut = pl.cols.map(function(s){ return clip(s, cap, C); }), L2 = lay(cut);
+        if (L2.kc === 1) tries.push({L: L2, cols: cut});
+      }
+      var big = Math.max.apply(null, [0].concat(tries.map(function(o){ return o.L.cs; })));
+      var pick = tries.filter(function(o){ return o.L.cs >= big * 0.95; })[0];
+      if (pick){
+        L = pick.L; cols = pick.cols;
+        ctx.report("size", "[heatmap] the column labels are too long for the cells; they are cut with … (shorten them, or give the element more room)");
+      }
+    }
     L.notes.forEach(function(n){ ctx.report("size", "[heatmap] " + n); });
     var cs = L.cs, fs = L.fs;
     // セルの数字：12×12 を超えたら自動で消す。24 px で入らなければ消す（both は割合だけに）
@@ -210,7 +242,7 @@ return class extends base.MotionElement {
       var x = X(c) + cs / 2, t;
       if (L.orient === "h") t = lab(x, L.gy - 10, "", {"text-anchor": "middle"});
       else t = lab(x + fs * 0.36, L.gy - 10, "", {"text-anchor": "start", transform: "rotate(-90 " + f1(x + fs * 0.36) + " " + f1(L.gy - 10) + ")"});
-      t.textContent = pl.cols[c];
+      t.textContent = cols[c];
     });
     if (P.xl){ var tl = lab(L.gx + L.gw / 2, L.gy - (L.top - (P.xl ? 40 : 0)) - 12, "", {"text-anchor": "middle", "font-weight": 700, "font-size": 26}); tl.textContent = P.xl; }
     if (P.yl){ var yx = L.x0 + 26, yy = L.gy + L.gh / 2, ty = lab(yx, yy, "", {"text-anchor": "middle", "font-weight": 700, "font-size": 26, transform: "rotate(-90 " + f1(yx) + " " + f1(yy) + ")"}); ty.textContent = P.yl; }

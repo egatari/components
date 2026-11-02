@@ -9,7 +9,7 @@
 // 見せ方（docs/conventions.md §1）：fade（フェード、既定）・grow（テープが左から伸び、括弧と矢印は線を引く）
 // 2.0（Egatari spec §6.1 の部品）：base の MotionElement・el・mtext・prog・variant・previewOpacity を使い、プレイヤーのグローバルは使わない。
 // データや大きさの問題は ctx.report で知らせる（1.x の console.warn の代わり）
-egatariParts.define({name: "tape", version: "2.0.0", requires: {base: "1.0.0"}, element: "m-tape"}, function(deps){
+egatariParts.define({name: "tape", version: "2.0.1", requires: {base: "1.0.0"}, element: "m-tape"}, function(deps){
 "use strict";
 var base = deps.base;
 var est = function(s, size){ return [...String(s)].reduce(function(a, c){ return a + (c === " " ? 0.3 : /[\u0000-ɏ]/.test(c) ? 0.56 : 1); }, 0) * size; };
@@ -72,6 +72,20 @@ return class extends base.MotionElement {
     return (this._plan = {rows: rows, braces: braces, times: times, steps: steps, notes: notes});
   }
   duration(k){ return k >= 1 && k <= this.plan().steps ? this.props.dur : 0; }
+  // 最後の形を 1 文で（読み上げの名前）：「テープ図：A 12 m、B 12 m＋5 m、B 全体 □ m」。区切りは図に書く字（? □ と名前）を＋でつなぎ、
+  // 字のない区切りは書かない。括弧は行の名前と括弧の名前、倍の矢印は「A→B 2 倍」
+  summary(ja, line){
+    var pl = this.plan(), rows = pl.rows, sep = ja ? "、" : ", ";
+    var segText = function(s){ return [s.unknown !== undefined ? (UNK.indexOf(s.unknown) >= 0 ? s.unknown : "?") : "", s.label || ""].filter(Boolean).join(" "); };
+    var name = function(i){ return rows[i].o.label || (ja ? (i + 1) + " 行目" : "row " + (i + 1)); };
+    var out = rows.map(function(r, i){
+      var segs = r.o.segs.map(segText).filter(Boolean);
+      return [r.o.label || (rows.length > 1 || !segs.length ? name(i) : ""), segs.join(ja ? "＋" : " + ")].filter(Boolean).join(" ");
+    });
+    pl.braces.forEach(function(b){ if (b.o.label) out.push((rows[b.row].o.label || rows.length > 1 ? name(b.row) + " " : "") + b.o.label); });
+    pl.times.forEach(function(x){ out.push(name(x.o.from) + "→" + name(x.o.to) + (x.o.label ? " " + x.o.label : "")); });
+    return (line ? (ja ? "線分図" : "Line diagram") : (ja ? "テープ図" : "Tape diagram")) + (ja ? "：" : ": ") + out.join(sep);
+  }
   mount(ctx){
     var P = this.props, D = base, pl = this.plan();
     this.variant = base.variant(this);
@@ -80,7 +94,11 @@ return class extends base.MotionElement {
     if (P.kind !== "tape" && P.kind !== "line") ctx.report("data", '[tape] kind="' + P.kind + '" is not tape or line (tape is used)');
     this.style.display = "block";
     var W = this.clientWidth, H = this.clientHeight, dur = P.dur, grow = this.variant === "grow";
-    var svg = D.el("svg", {viewBox: "0 0 " + W + " " + H, width: W, height: H, style: "display:block;overflow:visible"}, this);
+    var svg = D.el("svg", {viewBox: "0 0 " + W + " " + H, width: W, height: H, "aria-hidden": "true", style: "display:block;overflow:visible"}, this);
+    // 読み上げ：最後の形（行ごとの区切り、括弧、倍の矢印）を 1 文で。作者の aria-label があればそれを使う（上書きしない）
+    if (this._aria === undefined) this._aria = this.getAttribute("aria-label");
+    this.setAttribute("role", "img");
+    if (!this._aria) this.setAttribute("aria-label", this.summary(/^ja\b/i.test(ctx.lang || "ja"), line));
     var items = this.items = [];
     var add = function(el, o){ o.el = el; items.push(o); return el; };
     var FS = 24, ROW = 34, BR = 16, BLV = BR + 6 + ROW + 6;

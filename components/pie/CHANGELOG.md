@@ -2,6 +2,12 @@
 
 The part's own versions (Egatari spec §6.1). Releases of the whole library are in the repository's CHANGELOG.md.
 
+## 2.0.1 (components 2.1.2)
+
+- Fix: a slice of about 99.999 % or more vanished, because the two ends of its arc became the same point after rounding (and its inside label was then drawn in --bg on the blank background); such a slice is now drawn as a full circle.
+- Fix: when long outside labels shrank the pie to the smallest radius (40 px), nothing was reported; it now reports `size` with the width that is missing.
+- Fix: the element had no role or accessible name, and screen readers read the raw svg text; it now has role="img" and an aria-label that states the final state in one sentence (each slice with its share, and the centre text). An author's aria-label is kept, and the svg is aria-hidden.
+
 ## 2.0.0 (components 2.0.0-rc.1 and 2.0.0)
 
 - Moved to `egatariParts.define({name: "pie", version: "2.0.0", requires: {base: "1.0.0"}, element: "m-pie"})`,

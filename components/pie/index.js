@@ -9,7 +9,7 @@
 // grow（中心から少し小さい大きさで現れて元の大きさに戻る）。段階の数・長さ・最後の中身は同じ
 // 2.0（Egatari spec §6.1 の部品）：base の MotionElement・el・mtext・prog・variant・previewOpacity を使い、プレイヤーのグローバルは使わない。
 // 負の値と、字が収まらないことは ctx.report で知らせる（1.x の console.warn の代わり）
-egatariParts.define({name: "pie", version: "2.0.0", requires: {base: "1.0.0"}, element: "m-pie"}, function(deps){
+egatariParts.define({name: "pie", version: "2.0.1", requires: {base: "1.0.0"}, element: "m-pie"}, function(deps){
 "use strict";
 var base = deps.base;
 return class extends base.MotionElement {
@@ -52,7 +52,7 @@ return class extends base.MotionElement {
     this.variant = base.variant(this);
     this.style.display = "block"; this.style.position = "relative";
     var W = this.clientWidth, H = this.clientHeight, TAU = Math.PI * 2;
-    var svg = D.el("svg", {viewBox: "0 0 " + W + " " + H, width: W, height: H, style: "display:block;overflow:visible"}, this);
+    var svg = D.el("svg", {viewBox: "0 0 " + W + " " + H, width: W, height: H, "aria-hidden": "true", style: "display:block;overflow:visible"}, this);
     var est = function(s, size){ return [...String(s).replace(/[*_^]/g, "")].reduce(function(a, c){ return a + (/[\u0000-ɏ]/.test(c) ? 0.56 : 1); }, 0) * size; };
     var total = pl.reduce(function(a, o){ return a + Math.max(0, +o.s.value); }, 0);
     if (!(total > 0)) throw new Error("slices: the values add up to 0 (write positive numbers)");
@@ -108,11 +108,12 @@ return class extends base.MotionElement {
     function use(s, f){ s.lines = s.forms[f].lines; s.w = s.forms[f].w; s.h = s.forms[f].h; }
     sl.forEach(function(s){ use(s, 0); });
     // 半径：外の字の幅の分だけ左右をあける。中に収まる切れが増えれば半径を見直す（2 回）
-    var pad = 10, gap = 44, radius = function(outs){
+    var pad = 10, gap = 44, want = 0, radius = function(outs){
       var wl = 0, wr = 0;
       outs.forEach(function(s){ if (Math.sin(s.mid) >= 0) wr = Math.max(wr, s.w); else wl = Math.max(wl, s.w); });
-      var side = Math.max(wl, wr);
-      return Math.max(40, Math.min((H / 2 - pad) * (outs.length ? 0.86 : 1), W / 2 - pad - (side ? side + gap : 0)));
+      var side = Math.max(wl, wr), r = Math.min((H / 2 - pad) * (outs.length ? 0.86 : 1), W / 2 - pad - (side ? side + gap : 0));
+      want = 40 - r;   // 40 px より小さくなるなら、足りない幅（最小の 40 px で描く）
+      return Math.max(40, r);
     };
     var R = radius(sl.filter(function(s){ return s.lines.length; }));
     for (var pass = 0; pass < 2; pass++){
@@ -120,11 +121,16 @@ return class extends base.MotionElement {
       R = radius(sl.filter(function(s){ return !s.inside; }));
     }
     sl.forEach(function(s){ if (!s.inside && s.o.s.place !== "out" && fits(s, R)) s.inside = true; });
+    if (want > 0) ctx.report("size", "[pie] the labels outside leave too little room: the pie is drawn at the smallest radius, 40 px (" + Math.ceil(want * 2) + " px more width needed; make the element wider or the labels shorter)");
     // 字が片側だけなら、字と円をひとまとまりとして真ん中に寄せる
     var wl = 0, wr = 0;
     sl.forEach(function(s){ if (!s.inside && s.lines.length){ if (Math.sin(s.mid) >= 0) wr = Math.max(wr, s.w + gap); else wl = Math.max(wl, s.w + gap); } });
     var cx = W / 2 + (wl - wr) / 2, cy = H / 2, ri = R * ratio;
     this.R = R; this.ri = ri; this.cx = cx; this.cy = cy;
+    // 読み上げ：最後の形（すべての切れ）を 1 文で。作者の aria-label があればそれを使う（上書きしない）
+    if (this._aria === undefined) this._aria = this.getAttribute("aria-label");
+    this.setAttribute("role", "img");
+    if (!this._aria) this.setAttribute("aria-label", this.summary(/^ja\b/i.test(ctx.lang || "ja"), sl, fl, sc, pd, show, total));
     // 1 切れずつ出すときは、全体の輪郭を初めから薄く見せる（どれだけのうちの 1 切れかが分かるように）
     if (pl.some(function(o){ return o.step > 1; })){
       D.el("circle", {cx: cx, cy: cy, r: R, fill: "none", stroke: "var(--line)", "stroke-width": 2}, svg);
@@ -182,6 +188,17 @@ return class extends base.MotionElement {
       cl.forEach(function(t, j){ D.mtext(cg, cx, cy - (cl.length - 1) * 16 + j * 32 + 9, t, {"text-anchor": "middle", "font-size": size, "font-weight": j === 0 ? 700 : 400}); });
     }
   }
+  // 最後の形を 1 文で（読み上げの名前）：「内訳：食費 35%、住まい 41%、…（中：合計 21.2万円）」。show が value / both なら値も書く
+  summary(ja, sl, fl, sc, pd, show, total){
+    var self = this, d = this.data || {};
+    var parts = sl.map(function(s){
+      var pct = (fl[s.i] / sc).toFixed(pd) + "%", v = self.fmt(Math.max(0, +s.o.s.value));
+      var x = show === "value" ? v : show === "both" ? v + (ja ? "（" + pct + "）" : " (" + pct + ")") : pct;
+      return (s.o.s.label ? String(s.o.s.label).replace(/\s*\n\s*/g, " ") + " " : "") + x;
+    });
+    var c = this.ri && d.center ? String(d.center).replace(/\{total\}/g, this.fmt(total)).replace(/\s*\n\s*/g, " ") : "";
+    return (ja ? "内訳：" : "Breakdown: ") + parts.join(ja ? "、" : ", ") + (c ? (ja ? "（中：" + c + "）" : " (centre: " + c + ")") : "");
+  }
   // 数の書き方：3 桁ごとのカンマ、小数桁、単位（m-bars と同じ）
   fmt(v){
     var s = Math.abs(v).toFixed(this.props.digits).split("."), i = s[0].replace(/\B(?=(\d{3})+(?!\d))/g, ",");
@@ -191,7 +208,8 @@ return class extends base.MotionElement {
     var cx = this.cx, cy = this.cy, TAU = Math.PI * 2;
     if (a1 - a0 <= 1e-6 || r1 <= 0) return "";
     var p = function(r, a){ return (cx + r * Math.sin(a)).toFixed(2) + "," + (cy - r * Math.cos(a)).toFixed(2); };
-    if (a1 - a0 >= TAU - 1e-6){
+    // 全周、または残りが小さくて両端の点が丸めると重なる（99.999 % のような切れ）ときは、全周で描く（1 つの弧では何も描かれない）
+    if (a1 - a0 >= TAU - 1e-6 || (TAU - (a1 - a0)) * r1 < 0.05){
       // 全周：2 つの半円で描く
       var full = "M" + p(r1, 0) + "A" + r1 + "," + r1 + " 0 1,1 " + p(r1, Math.PI) + "A" + r1 + "," + r1 + " 0 1,1 " + p(r1, 0) + "Z";
       return r0 > 0 ? full + "M" + p(r0, 0) + "A" + r0 + "," + r0 + " 0 1,0 " + p(r0, Math.PI) + "A" + r0 + "," + r0 + " 0 1,0 " + p(r0, 0) + "Z" : full;

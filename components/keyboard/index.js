@@ -13,7 +13,7 @@
 // 2.0（Egatari spec §6.1 の部品）：base の MotionElement・el・prog・variant・previewOpacity を使い、プレイヤーのグローバルは使わない。
 // 段階の数は ctx にも言語にもよらない（spec §8.4）：既定の鍵盤の名前（日本語ならドレミ、ほかは CDE）は plan() ではなく mount で選ぶ。
 // レッスンのデータや要素の大きさの問題は ctx.report で知らせる（1.x の console.warn("m-keyboard: …") の代わり）
-egatariParts.define({name: "keyboard", version: "2.0.1", requires: {base: "1.0.0"}, element: "m-keyboard"}, function(deps){
+egatariParts.define({name: "keyboard", version: "2.0.2", requires: {base: "1.0.0"}, element: "m-keyboard"}, function(deps){
 "use strict";
 var base = deps.base;
 // ---- 鍵盤の名前と形（DOM を使わない。tools/test-keyboard.mjs が試す） ----
@@ -138,7 +138,12 @@ return class extends base.MotionElement {
     if (this._plan) return this._plan;
     var d = this.data || {}, notes = [];
     var r = KB.parseRange(d.range), kb = KB.keys(r), outside = [];
-    var steps = d.steps.map(function(s, j){
+    // 音の長さ dur（全体と段階ごと）は 0 より長い秒数：0 以下は知らせて、書いていないものとする（次の t まで、なければ 0.8 秒）
+    var gdur = d.dur;
+    if (typeof gdur === "number" && !(gdur > 0)){ notes.push("[keyboard] dur " + gdur + " is not more than 0 seconds (ignored: each note lasts until the next t, or 0.8 s)"); gdur = undefined; }
+    var steps = d.steps.map(function(s0, j){
+      var s = s0;
+      if (typeof s0.dur === "number" && !(s0.dur > 0)){ notes.push("[keyboard] steps[" + j + "] dur " + s0.dur + " is not more than 0 seconds (ignored)"); s = Object.assign({}, s0); delete s.dur; }
       var ks = s.keys.map(function(name){
         var k = KB.parseKey(name);
         if (!k) throw new Error("m-keyboard: steps[" + j + "] key \"" + name + "\" is not a key name (C4, F#3, Bb4, …)");
@@ -148,8 +153,8 @@ return class extends base.MotionElement {
       if (s.t && s.t.length !== s.keys.length) throw new Error("m-keyboard: steps[" + j + "] has " + s.keys.length + " keys but " + s.t.length + " times in t (one per key)");
       if (s.t && s.t.some(function(v){ return !(v >= 0); })) throw new Error("m-keyboard: steps[" + j + "] t must be seconds ≥ 0");
       if (s.tone !== undefined && !TONES.test(s.tone)) notes.push('[keyboard] steps[' + j + '] tone "' + s.tone + '" is not a theme colour (emph is used)');
-      var ev = KB.notes(s, d.dur);
-      return {o: s, keys: ks, ev: ev, len: KB.length(s, d.dur), tone: TONES.test(s.tone || "") ? s.tone : "emph"};
+      var ev = KB.notes(s, gdur);
+      return {o: s, keys: ks, ev: ev, len: KB.length(s, gdur), tone: TONES.test(s.tone || "") ? s.tone : "emph"};
     });
     if (outside.length){
       // 範囲の外の鍵：すべての鍵を覆う範囲を示す（範囲そのものではなく、段階の鍵だけから）
@@ -171,7 +176,12 @@ return class extends base.MotionElement {
     pl.notes.forEach(function(n){ ctx.report("data", n); });
     this.style.display = "block";
     var W = this.clientWidth, H = this.clientHeight;
-    var svg = D.el("svg", {viewBox: "0 0 " + W + " " + H, width: W, height: H, style: "display:block;overflow:visible"}, this);
+    var svg = D.el("svg", {viewBox: "0 0 " + W + " " + H, width: W, height: H, "aria-hidden": "true", style: "display:block;overflow:visible"}, this);
+    // 読み上げ：最後の形で光っている鍵盤（cumulative なら全部の段階の）を 1 文で。作者の aria-label があればそれを使う（上書きしない）
+    var ja = /^ja\b/i.test(ctx.lang || "ja");
+    if (this._aria === undefined) this._aria = this.getAttribute("aria-label");
+    this.setAttribute("role", "img");
+    if (!this._aria) this.setAttribute("aria-label", this.summary(ja, names === "none" ? (ja ? "solfa" : "abc") : names));
     var hasLabel = pl.steps.some(function(s){ return s.o.label; });
     // 光る黒鍵の名前の行：となりの名前に重なるなら 2 行目へ（どの段階でも同じ置き場所）
     var LFS = 30, NFS = 26, BFS = 24;
@@ -189,7 +199,19 @@ return class extends base.MotionElement {
       if (row === 1 && b.cx - b.w / 2 <= rowsEnd[1] + 10) ctx.report("size", "[keyboard] the names of black keys near " + b.s + " overlap (use a wider element or a narrower range)");
       rowsEnd[row] = b.cx + b.w / 2; b.row = row; nRows = Math.max(nRows, row + 1);
     });
-    var labH = hasLabel ? 46 : 0, bnH = nRows * 32, namesH = names === "none" ? 0 : 40, gapTop = nRows ? 8 : (hasLabel ? 10 : 0);
+    // cumulative：段階の名前を、その段階の鍵盤の真ん中の上に残す（前の段階の名前も消さない。色だけで見分けないように）。
+    // 名前が重なれば次の行へ（行は 40 px）
+    var cumLabs = pl.cumulative && hasLabel ? [] : null, labRows = 1;
+    if (cumLabs) pl.steps.forEach(function(s, j){
+      if (!s.o.label) return;
+      var xs = s.keys.map(function(k){ var key = kb.all.filter(function(q){ return q.midi === k.midi; })[0]; return x0 + (key.white ? key.x + 0.5 : key.cx) * unitW; });
+      var w = est(s.o.label, LFS), cx = (Math.min.apply(null, xs) + Math.max.apply(null, xs)) / 2;
+      cx = Math.max(w / 2 + 2, Math.min(W - w / 2 - 2, cx));
+      var row = 0;
+      while (cumLabs.some(function(o){ return o.row === row && Math.abs(o.cx - cx) < (o.w + w) / 2 + 16; })) row++;
+      cumLabs.push({j: j, s: s.o.label, w: w, cx: cx, row: row, tone: s.tone}); labRows = Math.max(labRows, row + 1);
+    });
+    var labH = hasLabel ? 46 + (labRows - 1) * 40 : 0, bnH = nRows * 32, namesH = names === "none" ? 0 : 40, gapTop = nRows ? 8 : (hasLabel ? 10 : 0);
     var avail = H - labH - bnH - gapTop - namesH - 8;
     var keyH = Math.min(avail, unitW * 4.4);
     if (avail < 110) ctx.report("size", "[keyboard] the element (" + W + "×" + H + " px) leaves only " + Math.round(avail) + " px for the keys; make it taller (about " + Math.ceil(H + 110 - avail) + " px)");
@@ -227,8 +249,23 @@ return class extends base.MotionElement {
     });
     // 段階の名前（鍵盤の上、24 px 以上）
     this.lab = D.el("text", {x: (W / 2).toFixed(1), y: labY.toFixed(1), "font-size": LFS, "font-weight": 700, "text-anchor": "middle", fill: "var(--fg)", opacity: 0}, gT);
+    // cumulative の段階の名前：字と、その段階の色の下線（鍵盤の光と同じ色）
+    this.cumLabs = cumLabs && cumLabs.map(function(o){
+      var g = D.el("g", {opacity: 0}, gT), y = labY + o.row * 40;
+      var tx = D.el("text", {x: o.cx.toFixed(1), y: y.toFixed(1), "font-size": LFS, "font-weight": 700, "text-anchor": "middle", fill: "var(--fg)"}, g);
+      tx.textContent = o.s;
+      D.el("rect", {x: (o.cx - o.w / 2).toFixed(1), y: (y + 6).toFixed(1), width: o.w.toFixed(1), height: 4, rx: 2, fill: "var(--" + o.tone + ")"}, g);
+      return {j: o.j, g: g, tx: tx};
+    });
     pl.steps.forEach(function(s, j){ if (s.o.label && est(s.o.label, LFS) > W) ctx.report("size", "[keyboard] steps[" + j + "] label is wider than the element; shorten it"); });
     if (rise) Object.keys(K).forEach(function(m){ K[m].lit.setAttribute("data-y", K[m].y); });
+  }
+  // 最後の形を 1 文で（読み上げの名前）：「鍵盤：ド・ミ・ソ（Ⅰ）」。cumulative なら全部の段階を順に、そうでなければ最後の段階
+  summary(ja, names){
+    var pl = this.plan(), st = pl.cumulative ? pl.steps : pl.steps.slice(-1);
+    return (ja ? "鍵盤：" : "Keyboard: ") + st.map(function(s){
+      return s.keys.map(function(k){ return KB.label(k, names); }).join(ja ? "・" : ", ") + (s.o.label ? (ja ? "（" + s.o.label + "）" : " (" + s.o.label + ")") : "");
+    }).join(ja ? "、" : "; ");
   }
   render(k, t, ctx){
     var pl = this.plan(), K = this.K, v = this.variant, cur = pl.steps[k - 1];
@@ -260,9 +297,18 @@ return class extends base.MotionElement {
         o.bn[id].setAttribute("opacity", a.toFixed(3));
       }
     });
-    var lab = cur && cur.o.label;
+    var lab = cur && cur.o.label, la = lab ? (t === Infinity ? 1 : base.prog(t, 0, Math.min(0.3, cur.len || 0.3))) : 0;
+    if (this.cumLabs){
+      // cumulative：前の段階の名前はそのまま、今の段階の名前は太字でフェードして現れる
+      this.lab.textContent = ""; this.lab.setAttribute("opacity", 0);
+      this.cumLabs.forEach(function(o){
+        o.g.setAttribute("opacity", (o.j < k - 1 ? 1 : o.j === k - 1 ? la : 0).toFixed(3));
+        o.tx.setAttribute("font-weight", o.j === k - 1 ? 700 : 400);
+      });
+      return;
+    }
     this.lab.textContent = lab || "";
-    this.lab.setAttribute("opacity", lab ? (t === Infinity ? 1 : base.prog(t, 0, Math.min(0.3, cur.len || 0.3))).toFixed(3) : 0);
+    this.lab.setAttribute("opacity", lab ? la.toFixed(3) : 0);
   }
 };
 });

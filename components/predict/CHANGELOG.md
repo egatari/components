@@ -2,6 +2,11 @@
 
 The part's own versions (Egatari spec §6.1). Releases of the whole library are in the repository's CHANGELOG.md.
 
+## 2.0.2 (components 2.1.2)
+
+- Fix: in an element narrower than about 590 px the bar axis got a negative length, so the bars vanished and the ticks piled up, silently; it is now reported (size), the axis keeps at least 120 px and the ticks are spaced so their numbers do not overlap.
+- Fix: counts above 9999 were accepted and drawn, then the first +1 clamped them to 9999; they are now reported (data) at mount and shown as 9999 from the start, the most the −1/+1 buttons and the field take. Style id predict-2-0-2-css.
+
 ## 2.0.1 (components 2.0.0)
 
 - `layout(ctx)` (spec §8.4 Layout): at a new laid-out size the part redraws its picture and controls at that size, keeping the viewer's counts and prediction, and puts focus back on the rebuilt control in the same row and place (a field keeps its caret). Same size or a box of size 0: nothing changes (tools/test-layout.mjs).

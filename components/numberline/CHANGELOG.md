@@ -2,6 +2,10 @@
 
 The part's own versions (Egatari spec §6.1). Releases of the whole library are in the repository's CHANGELOG.md.
 
+## 2.0.1 (components 2.1.2)
+
+- Fix: the element had no role, so assistive tech read every tick label in the svg in DOM order; it is now role="img" (the svg aria-hidden) named by the final state built from the data (「数直線 0〜10：3 に印、3→7 に +4」: the lines, then each mark, jump, range, link and magnified part), and an author aria-label is kept.
+
 ## 2.0.0 (components 2.0.0-rc.1 and 2.0.0)
 
 - Moved to `egatariParts.define({name: "numberline", version: "2.0.0", requires: {base: "1.0.0"}, element: "m-numberline"})`,

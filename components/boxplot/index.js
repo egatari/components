@@ -11,7 +11,7 @@
 // 2.0（Egatari spec §6.1 の部品）：base の MotionElement・el・mtext・prog・variant・previewOpacity、plot の Plot、
 // 四分位数は boxplot-core（1.x の static stats）を使い、プレイヤーのグローバルは使わない。書き方やデータの知らせ
 // （1.x の console.warn）は mount で ctx.report に。言語は ctx.lang（mount で読む）
-egatariParts.define({name: "boxplot", version: "2.0.0", requires: {base: "1.0.0", "boxplot-core": "1.0.0", plot: "1.0.0"}, element: "m-boxplot"}, function(deps){
+egatariParts.define({name: "boxplot", version: "2.0.1", requires: {base: "1.0.0", "boxplot-core": "1.0.0", plot: "1.0.0"}, element: "m-boxplot"}, function(deps){
 "use strict";
 var base = deps.base, plot = deps.plot;
 // ---- 四分位数（boxplot-core。tools/test-stats.mjs が試す） ----
@@ -88,6 +88,8 @@ return class extends base.MotionElement {
     if (this._plan) return this._plan;
     var d = this.data || {}, P = this.props, notes = [], S = STATS;
     var method = P.method || "jp", out = ON(P.outliers), build = P.build;
+    // 四分位数の求め方は boxplot-core が知っている 3 つだけ（ほかの名前は core が誤りにして図全体が札になるので、ここで既定に戻す）
+    if (["jp", "inc", "exc"].indexOf(method) < 0){ notes.push(["attr", '[boxplot] method="' + method + '" is not jp, inc or exc (jp is used)']); method = "jp"; }
     if (["steps", "whole"].indexOf(build) < 0){ notes.push(["attr", '[boxplot] build="' + build + '" is not steps or whole (steps is used)']); build = "steps"; }
     var groups = (d.groups || []).map(function(g, i){
       var o = {i: i, label: g.label || "", tone: g.tone};
@@ -115,10 +117,15 @@ return class extends base.MotionElement {
     return (this._plan = {groups: groups, method: method, out: out, build: build, st: st, base: base, notes: notes,
       steps: build === "steps" ? st.whisk : Math.max(1, groups.length)});
   }
+  // 数の書き方：digits があればその桁。なければ値そのもの（四分位数は 6.25 のように割り切れるところまで。丸めない）、ただし値の桁より少なくはしない
   fmt(v){
     var P = this.props, pl = this.plan(), s;
     if (P.digits !== undefined && isFinite(P.digits)) s = Math.abs(v).toFixed(P.digits);
-    else { s = Math.abs(v).toFixed(pl.base + 1); if (s.indexOf(".") >= 0){ s = s.replace(/0+$/, ""); var dd = (s.split(".")[1] || "").length; if (dd < pl.base) s += Array(pl.base - dd + 1).join("0"); s = s.replace(/\.$/, ""); } }
+    else {
+      var a = Math.abs(v), dd = pl.base;
+      while (dd < 10 && Math.abs(a * Math.pow(10, dd) - Math.round(a * Math.pow(10, dd))) > 1e-6 * Math.max(1, a * Math.pow(10, dd - 6))) dd++;
+      s = a.toFixed(dd);
+    }
     var p = s.split("."), i = p[0].replace(/\B(?=(\d{3})+(?!\d))/g, ",");
     return (v < 0 && +s !== 0 ? "−" : "") + i + (p[1] ? "." + p[1] : "");
   }
@@ -270,6 +277,11 @@ return class extends base.MotionElement {
         }
       });
     }
+    // 読み上げ：最後の形（群ごとの 5 つの数）を 1 文で。図の svg は読ませない。作者の aria-label があればそれを使う（上書きしない）
+    p.svg.setAttribute("aria-hidden", "true");
+    if (this._aria === undefined) this._aria = this.getAttribute("aria-label");
+    this.setAttribute("role", "img");
+    if (!this._aria) this.setAttribute("aria-label", this.summary(ja, N));
     var axl = p.svg.querySelectorAll("g.axes > line");
     if (axl.length) axl[0].setAttribute("class", "axis");
     if (!hor && axl.length > 1) axl[1].setAttribute("class", "axis");
@@ -376,6 +388,20 @@ return class extends base.MotionElement {
     });
     function niceStep(r){ var e = Math.pow(10, Math.floor(Math.log10(r))), x = r / e; return S.clean((x <= 1 ? 1 : x <= 2 ? 2 : x <= 2.5 ? 2.5 : x <= 5 ? 5 : 10) * e); }
     function dec(v){ var mm = String(v).match(/\.(\d+)$/); return mm ? mm[1].length : 0; }
+  }
+  // 最後の形を 1 文で（読み上げの名前）：「箱ひげ図（記録（回））：1 組 最小値 3、第1四分位数 6、中央値 9、第3四分位数 13、最大値 18」。
+  // 群ごとに 5 つの数（outliers="on" なら外れ値も）。N は mount の名前の表
+  summary(ja, N){
+    var self = this, P = this.props, pl = this.plan(), G = pl.groups, axis = (P.orient === "v" ? P.yl : P.xl) || "";
+    var v = function(x){ return self.fmt(x) + P.unit; }, sep = ja ? "、" : ", ";
+    var head = (ja ? "箱ひげ図" : "Box plot") + (axis ? (ja ? "（" + axis + "）" : " (" + axis + ")") : "");
+    var gs = G.map(function(g, i){
+      var q = g.q, five = [["min", q.min], ["q1", q.q1], ["med", q.med], ["q3", q.q3], ["max", q.max]].map(function(o){ return (ja ? N[o[0]] : N[o[0]].toLowerCase()) + " " + v(o[1]); }).join(sep);
+      var outs = pl.out && g.f.out.length ? sep + (ja ? N.out : "outliers") + " " + g.f.out.map(v).join(ja ? "・" : ", ") : "";
+      var name = g.label || (G.length > 1 ? (ja ? (i + 1) + " 番目の群" : "group " + (i + 1)) : "");
+      return (name ? name + (ja ? " " : ": ") : "") + five + outs;
+    });
+    return head + (ja ? "：" : ": ") + gs.join(ja ? "。" : "; ");
   }
   duration(k){
     var pl = this.plan();

@@ -20,7 +20,7 @@
 // この部品は markup-reader で決まった要素と属性だけを読んで置く（再生のときに KaTeX は動かない）。描いた結果がなければ tex を字のまま出して知らせる。
 // データと属性の問題、入らないときは ctx.report で知らせる（1.x の console.warn の代わり）。言語は ctx.lang（mount で this.ja）。
 // 配置を決める内部の関数は arrange(size)（1.x の layout(size)。2.0 の layout(ctx) は再生器が呼ぶので名前を分けた）
-egatariParts.define({name: "timeline", version: "2.0.0", requires: {base: "1.0.0", "markup-reader": "1.0.0"}, element: "m-timeline"}, function(deps){
+egatariParts.define({name: "timeline", version: "2.0.1", requires: {base: "1.0.0", "markup-reader": "1.0.0"}, element: "m-timeline"}, function(deps){
 "use strict";
 var base = deps.base, MR = deps["markup-reader"];
 var Part = class extends base.MotionElement {
@@ -117,22 +117,46 @@ var Part = class extends base.MotionElement {
     this.plan();
     this._notes.forEach(function(m){ ctx.report("data", m); });
     // arrange は字の大きさごとに何度も呼ばれるので、同じ知らせは 1 回だけ
-    this.rep = function(code, msg){ if (seen[code + msg]) return; seen[code + msg] = true; if (code === "attr") ctx.report("attr", msg); else if (code === "range") ctx.report("range", msg); else ctx.report("data", msg); };
+    this.rep = function(code, msg){ if (seen[code + msg]) return; seen[code + msg] = true; if (code === "attr") ctx.report("attr", msg); else if (code === "range") ctx.report("range", msg); else if (code === "layout") ctx.report("layout", msg); else ctx.report("data", msg); };
     this.texSink = MR.sink(this, ctx);
     this.style.display = "block"; this.style.position = "relative";
     var W = this.W = this.clientWidth, H = this.H = this.clientHeight;
     this.hz = P.orient !== "v";
     this.ja = /^ja\b/i.test(ctx.lang);
-    var svg = this.svg = D.el("svg", {viewBox: "0 0 " + W + " " + H, width: W, height: H, style: "display:block;overflow:visible"}, this);
-    // 字の大きさ：size から 24 まで、入るまで 2px ずつ縮める
+    var svg = this.svg = D.el("svg", {viewBox: "0 0 " + W + " " + H, width: W, height: H, "aria-hidden": "true", style: "display:block;overflow:visible"}, this);
+    // 字の大きさ：size から 24 まで、入るまで 2px ずつ縮める。24 より小さい size は 24 に、数でなければ既定の 26
+    var s0 = P.size;
+    if (!(typeof s0 === "number" && isFinite(s0))){ ctx.report("attr", "[timeline] size=\"" + this.getAttribute("size") + "\" is not a number (26 is used)"); s0 = 26; }
+    else if (s0 < 24){ ctx.report("attr", "[timeline] size=\"" + this.getAttribute("size") + "\" is below 24 (text is at least 24px; 24 is used)"); s0 = 24; }
     var L = null;
-    for (var s = P.size; ; s = Math.max(24, s - 2)){
+    for (var s = s0; ; s = Math.max(24, s - 2)){
       L = this.arrange(s);
       if (L.fits || s <= 24) break;
     }
     if (!L.fits) ctx.report("size", "[timeline] the timeline does not fit its box even at 24px (" + L.why + "); make the element larger, shorten the labels or use per-step / scale=\"even\"");
     this.draw(L);
+    // 読み上げ：最後の形（時刻の順のすべての出来事と期間）を 1 文で。作者の aria-label があればそれを使う（上書きしない）
+    if (this._aria === undefined) this._aria = this.getAttribute("aria-label");
+    this.setAttribute("role", "img");
+    if (!this._aria) this.setAttribute("aria-label", this.summary(this.ja));
     this.texSink.flush();   // what the formulas have to report, once per kind (spec §6.2)
+  }
+  // 最後の形を 1 文で（読み上げの名前）：「年表：1867年〜1916年 夏目漱石（作家）、1868年 明治維新、1889年2月11日 憲法の発布（2 月 11 日）。
+  // つながり：…。作業の順：…。今日：…」。end は含まない終わりなので、期間は「〜」で書く
+  summary(ja){
+    var pl = this.plan(), P = this.props, one = function(n){ return String(n.label || n.tex || "").replace(/\s*\n\s*/g, " ").replace(/\*/g, ""); };
+    var it = pl.items.map(function(o){
+      var w = o.n.whenLabel !== undefined ? String(o.n.whenLabel) : fmtTime(o.a, ja) + (o.b ? (ja ? "〜" : " to ") + fmtTime(o.b, ja) : "");
+      var ex = [o.n.lane ? String(o.n.lane) : "", o.n.note || "", o.kind === "band" && typeof o.n.progress === "number" && isFinite(o.n.progress) ? (ja ? "進み " : "progress ") + Math.max(0, Math.min(100, o.n.progress)) + "%" : ""].filter(Boolean);
+      return w + " " + one(o.n) + (ex.length ? (ja ? "（" + ex.join("、") + "）" : " (" + ex.join(", ") + ")") : "");
+    });
+    var s = (ja ? "年表：" : "Timeline: ") + it.join(ja ? "、" : "; ");
+    var ed = pl.edges.map(function(x){ return one(x.a.n) + " → " + one(x.b.n) + (x.e.label ? (ja ? "（" + x.e.label + "）" : " (" + x.e.label + ")") : ""); });
+    if (ed.length) s += (ja ? "。つながり：" : ". Links: ") + ed.join(ja ? "、" : ", ");
+    var dp = pl.deps.map(function(x){ return one(x.a.n) + " → " + one(x.b.n); });
+    if (dp.length) s += (ja ? "。作業の順：" : ". Order of work: ") + dp.join(ja ? "、" : ", ");
+    if (this.L && this.L.today) s += (ja ? "。今日：" : ". Today: ") + fmtTime(parseTime(P.today), ja);
+    return s;
   }
   // ---- 配置（u：軸に沿った位置、c：軸に直交する位置。h なら u = x、v なら u = y）
   arrange(size){
@@ -294,6 +318,8 @@ var Part = class extends base.MotionElement {
     });
     var weekends = [], unit = P.unit;
     if (unit && !/^(day|week|month)$/.test(unit)){ self.rep("attr", "[timeline] unit=\"" + unit + "\" is not day, week or month; automatic ticks"); unit = ""; }
+    // 時刻が数だけ（日付でない）なら、日・週・月の目盛りに意味がない
+    if (unit && its.every(function(o){ return o.a.p === "n" && (!o.b || o.b.p === "n"); })){ self.rep("attr", "[timeline] unit=\"" + unit + "\" needs dates (\"YYYY-MM-DD\"), but every when / end is a plain number; automatic ticks"); unit = ""; }
     if (hasL){
       if (unit){ var ut = unitTicks(unit, tmin, tmax, U, ja, hz, M, Lu, uA, uB); ticks = ut.ticks; weekends = ut.weekends; }
       else ticks = makeTicks(its, tmin, tmax, uniq, U, uA, uB, even, ja, hz, M, Lu);
@@ -436,7 +462,11 @@ var Part = class extends base.MotionElement {
       return {o: o, g: g, lg: lg, rect: rect, dia: dia, r: r, mc: dia ? (hz ? [o.u0, c0 + th / 2] : [c0 + 15, o.u0]) : null,
         cx: r.x + r.w / 2, cy: r.y + r.h / 2};
     });
-    // ほかのつながり（edges）：破線、箱の縁から縁へ
+    // ほかのつながり（edges）：破線、箱の縁から縁へ。名前が避けるもの：箱・帯・節目と、軸（期間があれば目盛りの字まで）
+    var box2 = function(u0, c0, u1, c1){ var p = self.xy(u0, c0), q = self.xy(u1, c1); return {x: Math.min(p[0], q[0]), y: Math.min(p[1], q[1]), w: Math.abs(q[0] - p[0]), h: Math.abs(q[1] - p[1])}; };
+    var obst = this.points.map(function(o){ return box2(o.o.u0b, o.o.c0, o.o.u0b + o.o.eu, o.o.c0 + o.o.ec); })
+      .concat(this.lanes.map(function(o){ var g0 = L.groups[o.o.group], c0 = g0.subC[o.o.sub]; return box2(o.o.lo, c0, o.o.hi, c0 + g0.thick[o.o.sub]); }));
+    obst.push(box2(L.axisU0, L.axisC - 10, L.axisU1, L.axisC + 10 + (L.hasL ? L.tickExt : 0)));
     this.edges = this.plan().edges.map(function(x){
       var e = x.e, A = rects[e.from], B = rects[e.to];
       if (!A || !B) return null;
@@ -447,9 +477,10 @@ var Part = class extends base.MotionElement {
       D.el("line", {x1: p0[0].toFixed(1), y1: p0[1].toFixed(1), x2: (p1[0] - ux / l2 * 14).toFixed(1), y2: (p1[1] - uy / l2 * 14).toFixed(1), stroke: col, "stroke-width": 3, "stroke-dasharray": e.dash === false ? "none" : "8 6"}, g);
       D.el("path", {d: "M0,0L-16,-7L-16,7Z", fill: col, transform: "translate(" + p1[0].toFixed(1) + " " + p1[1].toFixed(1) + ") rotate(" + (Math.atan2(uy, ux) * 180 / Math.PI).toFixed(1) + ")"}, g);
       if (e.label){
-        var nx = -uy / l2, ny = ux / l2;
-        if (ny > 0){ nx = -nx; ny = -ny; }
-        D.mtext(g, (p0[0] + p1[0]) / 2 + nx * 16, (p0[1] + p1[1]) / 2 + ny * 16, e.label, {"text-anchor": "middle", "font-size": 24, fill: e.tone ? col : "var(--muted)"});
+        // 名前は線の横に（線・軸と目盛り・箱・帯と重ならない所。なければ知らせる）
+        var at = sideLabel(p0, p1, est(e.label, 24), 30, obst, self.W, self.H);
+        if (!at.ok) self.rep("layout", "[timeline] the label \"" + e.label + "\" of the edge " + JSON.stringify(e.from) + " → " + JSON.stringify(e.to) + " has no free place beside its line (it may overlap; make the element larger or the label shorter)");
+        D.mtext(g, at.x, at.y, e.label, {"text-anchor": "middle", "font-size": 24, fill: e.tone ? col : "var(--muted)"});
       }
       return {g: g, step: x.step, at: x.at};
     }).filter(Boolean);
@@ -593,6 +624,24 @@ var Part = class extends base.MotionElement {
 
 // ---- 下の関数は m-timeline の中だけで使う（字の幅の見積もり・箱の中の行・詰め方・目盛り）
 // 時刻：{v: 年を単位にした数, p: "n" | "y" | "m" | "d", y, m, d}。読めなければ null（日付の計算は Date を使わない）
+// 線 p0 → p1 の名前（幅 w、高さ h）の置き場：線の真ん中（次に 1/3・2/3・1/4・3/4・端の近く）の横に、線から離して（近くになければ 24・48 px 遠くへ）。
+// 上（か左）の側を先に試す。箱 obst と枠の外を避ける。返すのは字の基線の中心 {x, y, ok}（m-cycle と同じ）
+function sideLabel(p0, p1, w, h, obst, W, H){
+  var ux = p1[0] - p0[0], uy = p1[1] - p0[1], l = Math.hypot(ux, uy) || 1, nx = -uy / l, ny = ux / l, first = null;
+  if (ny > 0 || (ny === 0 && nx > 0)){ nx = -nx; ny = -ny; }
+  var ts = [0.5, 0.35, 0.65, 0.25, 0.75, 0.1, 0.9];
+  for (var ex = 0; ex <= 48; ex += 24) for (var i = 0; i < ts.length; i++) for (var sd = 1; sd >= -1; sd -= 2){
+    var d = Math.abs(nx) * w / 2 + Math.abs(ny) * h / 2 + 8 + ex;
+    var cx = p0[0] + ux * ts[i] + sd * nx * d, cy = p0[1] + uy * ts[i] + sd * ny * d;
+    var b = {l: cx - w / 2, r: cx + w / 2, t: cy - h / 2, b: cy + h / 2};
+    var at = {x: cx, y: cy + 8, ok: true};
+    if (!first) first = at;
+    if (b.l < 0 || b.r > W || b.t < 0 || b.b > H) continue;
+    if (obst.some(function(o){ return b.l < o.x + o.w + 4 && o.x - 4 < b.r && b.t < o.y + o.h + 4 && o.y - 4 < b.b; })) continue;
+    return at;
+  }
+  return {x: first.x, y: first.y, ok: false};
+}
 function parseTime(v){
   if (typeof v === "number") return isFinite(v) ? {v: v, p: "n", y: v} : null;
   var m = /^\s*(-?\d{1,4})(?:-(\d{1,2})(?:-(\d{1,2}))?)?\s*$/.exec(String(v));

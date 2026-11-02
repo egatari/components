@@ -2,6 +2,13 @@
 
 The part's own versions (Egatari spec §6.1). Releases of the whole library are in the repository's CHANGELOG.md.
 
+## 2.0.1 (components 2.1.2)
+
+- Fix: an edge label was centred on its own line, so it straddled a vertical line and the axis; it is now placed beside the line, clear of the axis (and its ticks), the event boxes and the bands, and `layout` is reported when there is no clear place.
+- Fix: a size below 24 was used as written, and a size that is not a number never stopped shrinking; a size below 24 is now 24, a non-number is the default 26, and both report `attr`.
+- Fix: unit with plain numeric years gave meaningless day / week / month ticks; when every when / end is a plain number, unit is now ignored (automatic ticks) and `attr` is reported.
+- Fix: the element had no role or accessible name, and screen readers read the raw svg text; it now has role="img" and an aria-label that states the final state in one sentence (every event and period in time order, with lanes, notes and progress, the other links, the order of work and today). An author's aria-label is kept, and the svg is aria-hidden.
+
 ## 2.0.0 (components 2.0.0-rc.1 and 2.0.0)
 
 - Moved to `egatariParts.define({name: "timeline", version: "2.0.0", requires: {base: "1.0.0", "markup-reader": "1.0.0"}, element: "m-timeline"})`,

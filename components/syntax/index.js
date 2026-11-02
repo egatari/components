@@ -14,7 +14,7 @@
 // 書き方の誤りは ctx.report("data", "[syntax] …")、属性の誤りは ctx.report("attr", …)・ctx.report("range", …)、矢印が行をまたぐときと
 // 要素の高さが足りないときは ctx.report("size", …) で知らせる（1.x の console.warn("m-syntax: …") の代わり）。
 // 読み取りと段階（parse・plan・durationOf と表）は試験のために static testing に出す（ほかのパーツは読まない）
-egatariParts.define({name: "syntax", version: "2.0.0", requires: {base: "1.0.0"}, element: "m-syntax"}, function(deps){
+egatariParts.define({name: "syntax", version: "2.0.1", requires: {base: "1.0.0"}, element: "m-syntax"}, function(deps){
 "use strict";
 var base = deps.base;
 var D = base;
@@ -245,7 +245,7 @@ var ROWH = 40;      // 要素の下線と記号の段の高さ
 var POSH = 30;      // 品詞の段の高さ
 var ON = function(v){ return /^(on|true|yes)$/i.test(String(v || "").trim()); };
 var f1 = function(x){ return x.toFixed(1); };
-var CSS_ID = "syntax-2-0-0-css";   // the style element this part writes, named with its name and version (spec §6.1 Identifiers)
+var CSS_ID = "syntax-2-0-1-css";   // the style element this part writes, named with its name and version (spec §6.1 Identifiers)
 return class extends base.MotionElement {
   static partName = "syntax";   // the registry name (define meta name), for report prefixes
   static testing = {parse: parse, plan: plan, durationOf: durationOf, POS: POS, KIND: KIND};   // for tools/test-syntax.mjs only (no part reads it)
@@ -270,6 +270,7 @@ return class extends base.MotionElement {
     this._src = this.textContent;
     m.warnings.forEach(function(w){ ctx.report("data", "[syntax] " + w); });
     if (!/^(steps|whole)$/.test(String(P.build).trim())) ctx.report("attr", '[syntax] build="' + P.build + '" is not steps or whole (steps is used)');
+    if (!(typeof size === "number" && isFinite(size))){ ctx.report("attr", '[syntax] size="' + self.getAttribute("size") + '" is not a number (36 is used)'); size = 36; }
     if (size < 27){ ctx.report("range", "[syntax] size " + size + " is below 27 px (27 is used)"); size = 27; }
     this.size = size;
     this.variant = base.variant(this);

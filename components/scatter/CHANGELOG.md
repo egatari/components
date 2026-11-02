@@ -2,6 +2,12 @@
 
 The part's own versions (Egatari spec §6.1). Releases of the whole library are in the repository's CHANGELOG.md.
 
+## 2.0.1 (components 2.1.2)
+
+- Fix: points outside xr / yr were drawn outside the axes or off the slide; they are now left out and reported as `data`.
+- Fix: a malformed xr / yr (one number, reversed, or not numbers) or an r that is not a positive number broke the plot silently; it is now reported as `attr`, and the automatic range or the default radius 9 is used.
+- Fix: the element had no role or accessible name, and screen readers read the raw svg text; it now has role="img" and an aria-label that states the final state in one sentence (axes, the number of points drawn, their ranges, named points and the direction of each trend line). An author's aria-label is kept, and the svg is aria-hidden.
+
 ## 2.0.0 (components 2.0.0-rc.1 and 2.0.0)
 
 - Moved to `egatariParts.define({name: "scatter", version: "2.0.0", requires: {base: "1.0.0", plot: "1.0.0"}, element:

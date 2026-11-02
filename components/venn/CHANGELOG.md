@@ -2,6 +2,13 @@
 
 The part's own versions (Egatari spec §6.1). Releases of the whole library are in the repository's CHANGELOG.md.
 
+## 2.0.1 (components 2.1.2)
+
+- Fix: long set names or a small element made the radius negative, so no circles were drawn; the radius is now at least 60 px and `size` is reported with the width or height that is missing.
+- Fix: a size that is not a number (size="abc") threw; it is now the default 26 and `attr` is reported.
+- Fix: the element had no role or accessible name, and screen readers read the raw svg text; it now has role="img" and an aria-label that states the final state in one sentence (the sets and the items of each region). An author's aria-label is kept, and the svg is aria-hidden.
+- Fix: the clipPath ids carried the old version (venn-2-0-0-); they are now venn-2-0-1-, so two versions can live on one page.
+
 ## 2.0.0 (components 2.0.0-rc.1 and 2.0.0)
 
 - Moved to `egatariParts.define({name: "venn", version: "2.0.0", requires: {base: "1.0.0"}, element: "m-venn"})`,

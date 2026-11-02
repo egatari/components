@@ -2,6 +2,10 @@
 
 The part's own versions (Egatari spec §6.1). Releases of the whole library are in the repository's CHANGELOG.md.
 
+## 2.0.2 (components 2.1.2)
+
+- Fix: the element had no role or name, so assistive tech met the clock, the list and the buttons without knowing what they belong to; it is now role="group" named by the phases and their durations (「タイマー：① 付箋に書く 1分30秒、② …」; the role="status" announcements and the ±1 min buttons stay inside it), and an author aria-label is kept. Style id timer-2-0-2-css.
+
 ## 2.0.1 (components 2.0.0)
 
 - `layout(ctx)` (spec §8.4 Layout): at a new laid-out size the part redraws its picture at that size; the ±1 min buttons are moved, not rebuilt, so focus and the extension are kept. Same size or a box of size 0: nothing changes (tools/test-layout.mjs).

@@ -2,6 +2,10 @@
 
 The part's own versions (Egatari spec §6.1). Releases of the whole library are in the repository's CHANGELOG.md.
 
+## 2.0.1 (components 2.1.2)
+
+- Fix: a `size` that is not a number (for example size="big") made the size NaN and the words ran together. It is now reported (`attr`) and the default 36 is used. The style element is now syntax-2-0-1-css.
+
 ## 2.0.0 (components 2.0.0-rc.1 and 2.0.0)
 
 - Moved to `egatariParts.define({name: "syntax", version: "2.0.0", requires: {base: "1.0.0"}, element: "m-syntax"})`,

@@ -11,11 +11,11 @@
 // 見せ方（docs/conventions.md §1）：fade（既定。円が薄く現れる）・draw（円の線を引いてから、塗りと字が現れる）。
 // どちらも長さは dur で、段階の数・長さ・最後の中身は変わらない
 // 2.0（Egatari spec §6.1 の部品）：base の MotionElement・el・mtext・prog・lerp・variant・previewOpacity を使い、プレイヤーのグローバルは使わない。
-// 切り抜き（clipPath）の id は venn-2-0-0-<n>-in<i>・-out<i>（部品の名前と版。n はこの部品の数え。1.x は m-venn-<n>）
-egatariParts.define({name: "venn", version: "2.0.0", requires: {base: "1.0.0"}, element: "m-venn"}, function(deps){
+// 切り抜き（clipPath）の id は venn-2-0-1-<n>-in<i>・-out<i>（部品の名前と版。n はこの部品の数え。1.x は m-venn-<n>）
+egatariParts.define({name: "venn", version: "2.0.1", requires: {base: "1.0.0"}, element: "m-venn"}, function(deps){
 "use strict";
 var base = deps.base;
-var ID = "venn-2-0-0-", count = 0;   // ids this part writes: its name and version, and a counter of its own (spec §6.1 Identifiers)
+var ID = "venn-2-0-1-", count = 0;   // ids this part writes: its name and version, and a counter of its own (spec §6.1 Identifiers)
 // 形の要素ごとに、書き直すと形が作り直される属性（render の終わりで使う）
 var SHAPE_GEOM = {rect: "width", circle: "r", ellipse: "rx", path: "d", line: "x1", polyline: "points", polygon: "points"};
 return class extends base.MotionElement {
@@ -60,7 +60,7 @@ return class extends base.MotionElement {
     }
     this.style.display = "block"; this.style.position = "relative";
     var W = this.clientWidth, H = this.clientHeight;
-    var svg = D.el("svg", {viewBox: "0 0 " + W + " " + H, width: W, height: H, style: "display:block;overflow:visible"}, this);
+    var svg = D.el("svg", {viewBox: "0 0 " + W + " " + H, width: W, height: H, "aria-hidden": "true", style: "display:block;overflow:visible"}, this);
     var sets = data.sets || [], n = sets.length, R = data.regions || {}, LET = "ABC";
     var TONES = /^(term|emph|muted|accent2|series-[1-4])$/, DEF = ["term", "accent2", "series-4"];
     var tone = function(i){ return "var(--" + (TONES.test(sets[i].tone || "") ? sets[i].tone : DEF[i]) + ")"; };
@@ -70,14 +70,19 @@ return class extends base.MotionElement {
     var LS = 30, sp = Math.max(0.5, Math.min(1.5, P.spread));
     var lab = sets.map(function(s){ return est(s.label, LS, true); });
     var lw = Math.max.apply(null, lab.concat([0])) + 14;
-    var C = [], r;
+    // 半径は 60 px より小さくしない（名前が長い・要素が小さいと負になり、円が描かれなかった）。足りない幅・高さを知らせる
+    var C = [], r, RMIN = 60, kh = n === 3 ? 2 + 0.866 * sp : 2, rH = (H - 8) / kh, rW = (W - 2 * lw) / (2 + sp);
+    if (Math.min(rH, rW) < RMIN){
+      var need = [rW < RMIN ? Math.ceil((RMIN - rW) * (2 + sp)) + " px more width" : "", rH < RMIN ? Math.ceil((RMIN - rH) * kh) + " px more height" : ""].filter(Boolean).join(" and ");
+      ctx.report("size", "[venn] the circles do not fit beside the set names: they are drawn at the smallest radius, " + RMIN + " px, and need " + need + " (make the element larger or the set names shorter)");
+    }
     if (n === 3){
       // 左上 A・右上 B・下 C。高さ 2r + 0.866 d、幅 2r + d と左右の名前
-      r = Math.min((H - 8) / (2 + 0.866 * sp), (W - 2 * lw) / (2 + sp));
+      r = Math.max(RMIN, Math.min(rH, rW));
       var d = sp * r, top = (H - (2 * r + 0.866 * d)) / 2 + r;
       C = [{x: W / 2 - d / 2, y: top}, {x: W / 2 + d / 2, y: top}, {x: W / 2, y: top + 0.866 * d}];
     } else {
-      r = Math.min((H - 8) / 2, (W - 2 * lw) / (2 + sp));
+      r = Math.max(RMIN, Math.min(rH, rW));
       var d2 = sp * r;
       C = [{x: W / 2 - d2 / 2, y: H / 2}, {x: W / 2 + d2 / 2, y: H / 2}];
     }
@@ -109,7 +114,10 @@ return class extends base.MotionElement {
     };
     var keys = n === 3 ? ["A", "B", "C", "AB", "AC", "BC", "ABC"] : ["A", "B", "AB"];
     var L = null;
-    for (var fs = Math.max(24, P.size); fs >= 24; fs--){
+    // size が数でなければ既定の 26
+    var size0 = P.size;
+    if (!(typeof size0 === "number" && isFinite(size0))){ ctx.report("attr", "[venn] size=\"" + this.getAttribute("size") + "\" is not a number (26 is used)"); size0 = 26; }
+    for (var fs = Math.max(24, size0); fs >= 24; fs--){
       var lh = Math.round(fs * 1.25), ok = true, pos = {};
       keys.forEach(function(k){
         var ls = linesOf(R[k]);
@@ -173,6 +181,25 @@ return class extends base.MotionElement {
     });
     // 形の一覧（render の終わりに形を作り直すため。下の render を見る）
     this.shapes = [].slice.call(svg.querySelectorAll("rect,circle,ellipse,path,line,polyline,polygon"));
+    // 読み上げ：最後の形（集合と、領域ごとの項目）を 1 文で。作者の aria-label があればそれを使う（上書きしない）
+    if (this._aria === undefined) this._aria = this.getAttribute("aria-label");
+    this.setAttribute("role", "img");
+    if (!this._aria) this.setAttribute("aria-label", this.summary(/^ja\b/i.test(ctx.lang || "ja")));
+  }
+  // 最後の形を 1 文で（読み上げの名前）：「哺乳類と海の生き物：哺乳類だけ ライオン、ウマ。海の生き物だけ マグロ、タコ。両方 クジラ、イルカ」
+  summary(ja){
+    var d = this.data || {}, sets = d.sets || [], n = sets.length, R = d.regions || {}, LET = "ABC";
+    var nm = sets.map(function(s){ return String(s.label || "").replace(/\s*\n\s*/g, " ").replace(/\*/g, ""); });
+    var items = function(v){ return (v === undefined ? [] : Array.isArray(v) ? v.map(String) : String(v).split("\n")).filter(function(x){ return x.trim(); }); };
+    var name = function(k){
+      var ins = [...k].map(function(ch){ return nm[LET.indexOf(ch)]; }), outs = nm.filter(function(x, i){ return k.indexOf(LET[i]) < 0; });
+      if (k.length === 1) return ja ? ins[0] + "だけ" : "only " + ins[0];
+      if (k.length === n) return ja ? (n === 2 ? "両方" : "3 つとも") : (n === 2 ? "both" : "all three");
+      return ja ? ins.join("と") + "（" + outs.join("と") + "ではない）" : ins.join(" and ") + " (not " + outs.join(" or ") + ")";
+    };
+    var keys = n === 3 ? ["A", "B", "C", "AB", "AC", "BC", "ABC"] : ["A", "B", "AB"];
+    var rs = keys.filter(function(k){ return items(R[k]).length; }).map(function(k){ return name(k) + " " + items(R[k]).join(ja ? "、" : ", "); });
+    return (ja ? nm.join("と") : nm.join(n === 3 ? ", " : " and ")) + (rs.length ? (ja ? "：" : ": ") + rs.join(ja ? "。" : "; ") : (ja ? "の重なり" : " overlapping"));
   }
   duration(k){
     return k >= 1 && k <= this.steps ? this.props.dur : 0;

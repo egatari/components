@@ -2,6 +2,12 @@
 
 The part's own versions (Egatari spec §6.1). Releases of the whole library are in the repository's CHANGELOG.md.
 
+## 2.0.2 (components 2.1.2)
+
+- Fix: with cumulative, the label of an earlier step vanished when the next step began, so only the colour told the lit keys apart; each step's label now stays above the middle of its keys (underlined in its colour, the current one bold), on a second line when labels would overlap. Without cumulative nothing changes.
+- Fix: a dur of 0 or less (for the whole keyboard or a step) was accepted silently and gave notes of no or negative length; it is now reported (data) and ignored (each note lasts until the next t, or 0.8 s).
+- Fix: the element had no role, so assistive tech read every key name in the svg; it is now role="img" (the svg aria-hidden) named by the keys lit in the final state (「鍵盤：ド・ミ・ソ（Ⅰ）」; every step with cumulative), and an author aria-label is kept.
+
 ## 2.0.1 (components 2.1.0)
 
 - Keys outside `range`: the error lists every such key and names a range that covers all keys in `steps`, with white

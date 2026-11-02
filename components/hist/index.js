@@ -9,7 +9,7 @@
 // 2.0（Egatari spec §6.1 の部品）：base の MotionElement・el・mtext・prog・lerp・variant・previewOpacity、plot の Plot、
 // 代表値と度数は hist-core（1.x の static stats）を使い、プレイヤーのグローバルは使わない。書き方やデータの知らせ
 // （1.x の console.warn）は mount で ctx.report に。言語は ctx.lang（mount で読む）
-egatariParts.define({name: "hist", version: "2.0.0", requires: {base: "1.0.0", "hist-core": "1.0.0", plot: "1.0.0"}, element: "m-hist"}, function(deps){
+egatariParts.define({name: "hist", version: "2.0.1", requires: {base: "1.0.0", "hist-core": "1.0.0", plot: "1.0.0"}, element: "m-hist"}, function(deps){
 "use strict";
 var base = deps.base, plot = deps.plot;
 // ---- 代表値と度数（hist-core。tools/test-stats.mjs が試す） ----
@@ -101,7 +101,12 @@ return class extends base.MotionElement {
     var src = Array.isArray(d.series) && d.series.length ? d.series : [{values: d.values, table: d.table}];
     var ser = src.map(function(s, i){
       return {i: i, label: s.label || "", tone: s.tone, values: Array.isArray(s.values) ? s.values.map(Number) : null,
-              table: Array.isArray(s.table) ? s.table.map(function(r){ return {from: +r.from, to: +r.to, count: +r.count}; }).sort(function(a, b){ return a.from - b.from; }) : null};
+              table: Array.isArray(s.table) ? s.table.map(function(r){
+                // 度数は 0 以上の数：負の度数は知らせて 0 に（そのまま数えると合計・平均・中央値・相対度数が狂う）
+                var c = +r.count;
+                if (!(c >= 0)){ notes.push(["data", "[hist] " + (s.label ? s.label + ": " : "") + "the count " + r.count + " of the class " + r.from + "〜" + r.to + " is not 0 or more (0 is used)"]); c = 0; }
+                return {from: +r.from, to: +r.to, count: c};
+              }).sort(function(a, b){ return a.from - b.from; }) : null};
     });
     var raw = ser.every(function(s){ return s.values; });
     if (kind === "dots" && !raw) throw new Error("m-hist: kind=\"dots\" needs raw values (\"values\": [...]), not a frequency table");
@@ -198,6 +203,8 @@ return class extends base.MotionElement {
     var p = s.split("."), i = p[0].replace(/\B(?=(\d{3})+(?!\d))/g, ",");
     return (v < 0 && +s !== 0 ? "−" : "") + i + (p[1] ? "." + p[1] : "");
   }
+  // 相対度数の書き方：小数第 2 位まで、十進の四捨五入（0.175 → 0.18、0.875 → 0.88。toFixed は 2 進の値で丸めるので 0.175 が 0.17 になる）
+  rel2(v){ return (Math.round(v * 100 + 1e-9) / 100).toFixed(2); }
   mount(ctx){
     var P = this.props, D = base, self = this, pl = this.plan(), S = STATS;
     this.variant = base.variant(this);
@@ -285,7 +292,7 @@ return class extends base.MotionElement {
         // 棒の上の数（系列が 1 つで、棒の幅に収まるとき）
         var bw = p.x(bins.edges[1]) - p.x(bins.edges[0]);
         s.nums = two ? [] : bins.mids.map(function(mid, b){
-          var txt = pl.rel ? s.H[b].toFixed(2) : String(s.H[b]);
+          var txt = pl.rel ? self.rel2(s.H[b]) : String(s.H[b]);
           if (est(txt, 24) > bw - 4) return null;
           // 度数折れ線があれば、折れ線が棒の上を通らない側（となりの低い方）に寄せる（累積は右上がりなので左）
           var x = p.x(mid), an = "middle";
@@ -375,9 +382,41 @@ return class extends base.MotionElement {
       var tx = D.mtext(gT, f.a === "start" ? f.x + 8 : f.x - 8, base, f.text, {"text-anchor": f.a, "font-size": 24, "font-weight": 700, fill: f.col, opacity: 0});
       return {f: f, lines: lines, text: tx};
     });
+    // 読み上げ：最後の形（階級ごとの度数と代表値）を 1 文で。図の svg は読ませない。作者の aria-label があればそれを使う（上書きしない）
+    p.svg.setAttribute("aria-hidden", "true");
+    if (this._aria === undefined) this._aria = this.getAttribute("aria-label");
+    this.setAttribute("role", "img");
+    if (!this._aria) this.setAttribute("aria-label", this.summary(ja, flags, heights));
     function niceStep(r, whole){ var e = Math.pow(10, Math.floor(Math.log10(r))), x = r / e, s3 = (x <= 1 ? 1 : x <= 2 ? 2 : x <= 2.5 ? 2.5 : x <= 5 ? 5 : 10) * e; return whole ? (s3 === 2.5 ? 2 : Math.max(1, Math.round(s3))) : S.clean(s3); }
     // ドットプロットの目盛り：整数の値で幅が 24 までなら 1 ずつ
     function dotStep(span){ var allInt = pl.ser.every(function(s){ return s.values.every(function(v){ return v === Math.floor(v); }); }); return allInt && span <= 24 ? 1 : niceStep(Math.max(span, 1e-9) / 8, allInt); }
+  }
+  // 最後の形を 1 文で（読み上げの名前）：「ヒストグラム（記録（m））：15〜20 は 2、20〜25 は 3、…（計 10）。平均値 26.2、中央値 26.5」。
+  // 系列が 2 つなら系列ごとに。相対度数・累積度数のときは度数の後ろに（）で。階級を書かないドットプロットは値ごとの数。
+  // flags は mount の代表値の名前、heights は mount の高さの関数
+  summary(ja, flags, heights){
+    var self = this, P = this.props, pl = this.plan(), bins = pl.bins, sep = ja ? "、" : ", ", MAX = 20;
+    var num = function(v){ return String(v).replace(/^-/, "−"); };
+    var head = (pl.kind === "dots" ? (ja ? "ドットプロット" : "Dot plot") : (ja ? "ヒストグラム" : "Histogram")) + (P.xl ? (ja ? "（" + P.xl + "）" : " (" + P.xl + ")") : "");
+    var per = pl.ser.map(function(s){
+      var parts;
+      if (bins){
+        var h = pl.rel || pl.cum ? heights(s.counts, s.n) : null;
+        parts = s.counts.map(function(c, b){
+          var x = h ? (ja ? "（" : " (") + (pl.cum ? (ja ? "累積 " : "cumulative ") : "") + (pl.rel ? self.rel2(h[b]) : h[b]) + (ja ? "）" : ")") : "";
+          return num(bins.edges[b]) + (ja ? "〜" : "–") + num(bins.edges[b + 1]) + (ja ? " は " : ": ") + c + x;
+        });
+      } else {
+        var cnt = {}, xs = [];
+        s.values.forEach(function(v){ if (!cnt[v]) xs.push(v); cnt[v] = (cnt[v] || 0) + 1; });
+        parts = xs.sort(function(a, b){ return a - b; }).map(function(v){ return self.fmt(v) + (ja ? " が " : ": ") + cnt[v]; });
+      }
+      var n = parts.length;
+      if (n > MAX){ parts = parts.slice(0, MAX); parts.push(ja ? "…（全 " + n + (bins ? " 階級）" : " 個の値）") : "… (" + n + (bins ? " classes)" : " values)")); }
+      return (s.label ? s.label + (ja ? " " : ": ") : "") + parts.join(sep) + (ja ? "（計 " + s.n + "）" : " (total " + s.n + ")");
+    });
+    var mk = flags.map(function(f){ return (pl.ser.length > 1 && f.s.label ? f.s.label + " " : "") + f.text; });
+    return head + (ja ? "：" : ": ") + per.join(ja ? "。" : "; ") + (mk.length ? (ja ? "。" : ". ") + mk.join(sep) : "");
   }
   duration(k){
     var P = this.props, pl = this.plan(), d = 0;
@@ -439,7 +478,7 @@ return class extends base.MotionElement {
         if (nt){
           var no = pl.build === "values" ? (st3 > k ? (lecture ? FAINT : 0) : 1) : (function(){ var e2 = ph(st3, (pl.build === "bins" ? dur * 0.75 : dur) * 0.55, (pl.build === "bins" ? dur * 0.75 : dur) * 0.45); return e2 < 0 ? FAINT : e2; })();
           var hv = pl.build === "values" ? h : s.H[b];
-          nt.textContent = pl.rel ? hv.toFixed(2) : String(Math.round(hv));
+          nt.textContent = pl.rel ? self.rel2(hv) : String(Math.round(hv));
           nt.setAttribute("y", (p.y(pl.build === "values" ? h : s.H[b]) - 8).toFixed(1));
           nt.setAttribute("opacity", (hv > 0 ? no : 0).toFixed(3));   // 度数 0 の階級には書かない
         }

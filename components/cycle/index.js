@@ -15,7 +15,7 @@
 // この部品は markup-reader で決まった要素と属性だけを読んで置く（再生のときに KaTeX は動かない）。描いた結果がなければ tex を字のまま出して知らせる。
 // データの問題（ない箱を指す辺）と、入らないときは ctx.report で知らせる（1.x の console.warn の代わり）。
 // 配置を決める内部の関数は arrange(size)（1.x の layout(size)。2.0 の layout(ctx) は再生器が呼ぶので名前を分けた）
-egatariParts.define({name: "cycle", version: "2.0.1", requires: {base: "1.0.0", "markup-reader": "1.0.0"}, element: "m-cycle"}, function(deps){
+egatariParts.define({name: "cycle", version: "2.0.2", requires: {base: "1.0.0", "markup-reader": "1.0.0"}, element: "m-cycle"}, function(deps){
 "use strict";
 var base = deps.base, MR = deps["markup-reader"];
 var Part = class extends base.MotionElement {
@@ -89,14 +89,23 @@ var Part = class extends base.MotionElement {
     this.texSink = MR.sink(this, ctx);
     this.style.display = "block"; this.style.position = "relative";
     var W = this.W = this.clientWidth, H = this.H = this.clientHeight;
-    this.svg = D.el("svg", {viewBox: "0 0 " + W + " " + H, width: W, height: H, style: "display:block;overflow:visible"}, this);
+    this.svg = D.el("svg", {viewBox: "0 0 " + W + " " + H, width: W, height: H, "aria-hidden": "true", style: "display:block;overflow:visible"}, this);
+    this.reportLayout = function(msg){ ctx.report("layout", msg); };   // draw の知らせ（名前の置き場がない辺）
+    // size：24 より小さい字は使わない（24 にする）。数でなければ既定の 26
+    var s0 = P.size;
+    if (!(typeof s0 === "number" && isFinite(s0))){ ctx.report("attr", "[cycle] size=\"" + this.getAttribute("size") + "\" is not a number (26 is used)"); s0 = 26; }
+    else if (s0 < 24){ ctx.report("attr", "[cycle] size=\"" + this.getAttribute("size") + "\" is below 24 (text is at least 24px; 24 is used)"); s0 = 24; }
     var L = null;
-    for (var s = P.size; ; s = Math.max(24, s - 2)){
+    for (var s = s0; ; s = Math.max(24, s - 2)){
       L = this.arrange(s);
       if (L.fits || s <= 24) break;
     }
     if (!L.fits) ctx.report("size", "[cycle] the cycle does not fit its box even at 24px (" + L.why + "); make the element larger or shorten the labels");
     this.draw(L);
+    // 読み上げ：最後の形（一回りと、ほかのつながり）を 1 文で。作者の aria-label があればそれを使う（上書きしない）
+    if (this._aria === undefined) this._aria = this.getAttribute("aria-label");
+    this.setAttribute("role", "img");
+    if (!this._aria) this.setAttribute("aria-label", this.summary(/^ja\b/i.test(ctx.lang || "ja")));
     this.texSink.flush();   // what the formulas have to report, once per kind (spec §6.2)
   }
   arrange(size){
@@ -123,7 +132,8 @@ var Part = class extends base.MotionElement {
       return [lo, hi];
     };
     var rxMax = W / 2 - 4;
-    boxes.forEach(function(b){ var c = Math.abs(Math.cos(b.th)); if (c > 1e-6) rxMax = Math.min(rxMax, (W / 2 - 3 - b.w / 2) / c); });
+    // 12 時と 6 時の箱（cos = 0）は rx によらない：要素より広ければ入らない
+    boxes.forEach(function(b, i){ var c = Math.abs(Math.cos(b.th)); if (c > 1e-6) rxMax = Math.min(rxMax, (W / 2 - 3 - b.w / 2) / c); else if (b.w > W - 6) why.push("box " + (i + 1) + " is " + Math.ceil(b.w) + "px wide, wider than the element (" + W + "px)"); });
     var a = 0, b = H;
     for (var it = 0; it < 40; it++){ var m = (a + b) / 2, sp = span(m); if (sp[1] - sp[0] <= H - 6) a = m; else b = m; }
     var ry = Math.max(0, Math.min(a, rxMax)), sp = span(ry), cy = 3 - sp[0] + (H - 6 - (sp[1] - sp[0])) / 2, cx = W / 2;
@@ -193,12 +203,26 @@ var Part = class extends base.MotionElement {
       D.el("line", {x1: p0[0].toFixed(1), y1: p0[1].toFixed(1), x2: (p1[0] - ux / l2 * 14).toFixed(1), y2: (p1[1] - uy / l2 * 14).toFixed(1), stroke: col, "stroke-width": 3, "stroke-dasharray": e.dash === false ? "none" : "8 6"}, g);
       D.el("path", {d: "M0,0L-16,-7L-16,7Z", fill: col, transform: "translate(" + p1[0].toFixed(1) + " " + p1[1].toFixed(1) + ") rotate(" + (Math.atan2(uy, ux) * 180 / Math.PI).toFixed(1) + ")"}, g);
       if (e.label){
-        var nx = -uy / l2, ny = ux / l2;
-        if (ny > 0){ nx = -nx; ny = -ny; }
-        D.mtext(g, (p0[0] + p1[0]) / 2 + nx * 16, (p0[1] + p1[1]) / 2 + ny * 16, e.label, {"text-anchor": "middle", "font-size": 24, fill: e.tone ? col : "var(--muted)"});
+        // 名前は線の横に（線・真ん中の名前・箱と重ならない所。なければ知らせる）
+        var obst = L.boxes.map(function(b){ return {x: b.x, y: b.y, w: b.w, h: b.h}; });
+        if (L.cen) obst.push({x: L.cx - L.cen.w / 2, y: L.cy - L.cen.h / 2, w: L.cen.w, h: L.cen.h});
+        var at = sideLabel(p0, p1, est(e.label, 24), 30, obst, self.W, self.H);
+        if (!at.ok) self.reportLayout("[cycle] the label \"" + e.label + "\" of the edge " + JSON.stringify(e.from) + " → " + JSON.stringify(e.to) + " has no free place beside its line (it may overlap; make the element larger or the label shorter)");
+        D.mtext(g, at.x, at.y, e.label, {"text-anchor": "middle", "font-size": 24, fill: e.tone ? col : "var(--muted)"});
       }
       return {g: g, step: x.step, at: x.at};
     }).filter(Boolean);
+  }
+  // 最後の形を 1 文で（読み上げの名前）：「循環（PDCA）：計画：目標と手順 → 実行 → 評価 → 改善 → 計画に戻る。ほかのつながり：計画 → 評価（見直し）」
+  summary(ja){
+    var pl = this.plan(), one = function(n){ return String(n.label || n.tex || "").replace(/\s*\n\s*/g, " ").replace(/\*/g, ""); };
+    var full = function(n){ return one(n) + (n.note ? (ja ? "：" : ": ") + n.note : ""); };
+    var st = pl.stages.map(function(o){ return full(o.n); });
+    var s = (ja ? "循環" : "Cycle") + (pl.center ? (ja ? "（" + full(pl.center.n) + "）" : " (" + full(pl.center.n) + ")") : "") + (ja ? "：" : ": ") +
+      st.join(" → ") + (st.length > 1 ? (ja ? " → " + one(pl.stages[0].n) + "に戻る" : " → back to " + one(pl.stages[0].n)) : "");
+    var ed = pl.edges.map(function(x){ return one(x.a.n) + " → " + one(x.b.n) + (x.e.label ? (ja ? "（" + x.e.label + "）" : " (" + x.e.label + ")") : ""); });
+    if (ed.length) s += (ja ? "。ほかのつながり：" : ". Other links: ") + ed.join(ja ? "、" : ", ");
+    return s;
   }
   duration(k){
     var T = this.props.dur, p = this.plan(), d = 0;
@@ -265,6 +289,24 @@ var Part = class extends base.MotionElement {
 
 // ---- 下の関数は m-cycle の中だけで使う（字の幅の見積もり・箱の中の行）
 // 属性は値が変わるときだけ書く：同じ値を書き直しても Chrome は塗り直し、macOS では入り直すたびに箱の縁の画素が揺れた（DOM は同じ）
+// 線 p0 → p1 の名前（幅 w、高さ h）の置き場：線の真ん中（次に 1/3・2/3・1/4・3/4・端の近く）の横に、線から離して（近くになければ 24・48 px 遠くへ）。
+// 上（か左）の側を先に試す。箱 obst と枠の外を避ける。返すのは字の基線の中心 {x, y, ok}
+function sideLabel(p0, p1, w, h, obst, W, H){
+  var ux = p1[0] - p0[0], uy = p1[1] - p0[1], l = Math.hypot(ux, uy) || 1, nx = -uy / l, ny = ux / l, first = null;
+  if (ny > 0 || (ny === 0 && nx > 0)){ nx = -nx; ny = -ny; }
+  var ts = [0.5, 0.35, 0.65, 0.25, 0.75, 0.1, 0.9];
+  for (var ex = 0; ex <= 48; ex += 24) for (var i = 0; i < ts.length; i++) for (var sd = 1; sd >= -1; sd -= 2){
+    var d = Math.abs(nx) * w / 2 + Math.abs(ny) * h / 2 + 8 + ex;
+    var cx = p0[0] + ux * ts[i] + sd * nx * d, cy = p0[1] + uy * ts[i] + sd * ny * d;
+    var b = {l: cx - w / 2, r: cx + w / 2, t: cy - h / 2, b: cy + h / 2};
+    var at = {x: cx, y: cy + 8, ok: true};
+    if (!first) first = at;
+    if (b.l < 0 || b.r > W || b.t < 0 || b.b > H) continue;
+    if (obst.some(function(o){ return b.l < o.x + o.w + 4 && o.x - 4 < b.r && b.t < o.y + o.h + 4 && o.y - 4 < b.b; })) continue;
+    return at;
+  }
+  return {x: first.x, y: first.y, ok: false};
+}
 function setIf(el, a, v){ v = String(v); if (el.getAttribute(a) !== v) el.setAttribute(a, v); }
 function tone(t){ return "var(--" + (/^(term|emph|muted|accent2|series-[1-4])$/.test(t || "") ? t : "term") + ")"; }
 // 箱の地と字の色（m-tree・m-fishbone と同じ決まり）：term と emph はテーマの薄い色の地、emph は字も emph

@@ -2,7 +2,13 @@
 
 The part's own versions (Egatari spec §6.1). Releases of the whole library are in the repository's CHANGELOG.md.
 
-## 2.0.1 (unreleased)
+## 2.0.2 (components 2.1.2)
+
+- Fix: in a dark theme the lit and shadow fills were inverted (the lit part was darker than the shadow). The part now reads whether --bg is darker than --fg and picks fills so the lit part is always the lighter one; the light theme looks as before.
+- Fix: an `earth` or `moon` value that is not a number, or out of range, drew NaN geometry. It is now reported (`attr`) and the default is used.
+- Fix: the element had no accessible name. It is now role="img" with an aria-label that states the final position and its name (for example 「月の満ち欠け：位置 4、満月（地球から見た形）」); an author's aria-label is kept.
+
+## 2.0.1 (components 2.1.1)
 
 - Fix: the person on Earth no longer spins a full turn on a step between two positions with the same observer angle
   (e.g. `start` 1 → `visit` [2] with 8 positions, both held at evening). A full turn is added only when the step passes

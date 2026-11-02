@@ -4,7 +4,7 @@
 //   2. a text that does not fit is cut with … (the last line) and reported once as layout, naming the card; the rest fit
 //   3. an unknown icon draws the dashed placeholder and is reported once as data with the closest names; a bad hilite is
 //      reported as attr
-//   4. grid with arrows: 4 cards are 2×2, the arrows run 1→2 (right), 2→3 (down), 3→4 (right); 5 cards are 3×2
+//   4. grid with arrows: 4 cards are 2×2, the arrows run 1→2 (right), 2→3 (from under 2, along the gap, down into 3), 3→4 (right); 5 cards are 3×2
 //   5. numbers stay with their counters when wrapping (「5 分」 is never split)
 //   node tools/test-cards.mjs [work dir]
 import fs from 'node:fs';
@@ -71,9 +71,12 @@ try {
   const B = g.boxes, near = (p, q) => Math.abs(p - q) < 1;
   ok(near(B[0].y, B[1].y) && near(B[2].y, B[3].y) && B[2].y > B[0].y + B[0].h && near(B[0].x, B[2].x) && B[1].x > B[0].x + B[0].w, 'grid of 4: 2×2');
   const tip = (d) => d.split(/[ML]/).filter(Boolean).map((p) => p.split(',').map(Number));
-  const [r1, d2, r3] = g.arrows.map(tip);
-  ok(r1[1][0] > r1[0][0] && d2[1][1] > d2[0][1] && r3[1][0] > r3[0][0] && r1[1][0] > B[0].x + B[0].w && r1[1][0] < B[1].x && d2[1][1] > B[1].y + B[1].h && d2[1][1] < B[2].y,
-    'arrows in Z order: 1→2 right in the gap, 2→3 down between the rows, 3→4 right');
+  // the row-change arrow (2→3) is one path of M, V, H and L: from under the last card of the first row, along the gap, down into the first card of the second row
+  const route = (d) => { const out = []; let x = 0, y = 0; for (const m of d.matchAll(/([MLHV])([^MLHV]*)/g)){ const v = m[2].split(/[ ,]+/).filter(Boolean).map(Number); if (m[1] === 'H') x = v[0]; else if (m[1] === 'V') y = v[0]; else { x = v[0]; y = v[1]; } out.push([x, y]); } return out; };
+  const [r1, , r3] = g.arrows.map(tip), d2 = route(g.arrows[1]), d2tip = d2.reduce((m, q) => q[1] > m[1] ? q : m), inX = (q, b) => q[0] > b.x && q[0] < b.x + b.w;
+  ok(r1[1][0] > r1[0][0] && r3[1][0] > r3[0][0] && r1[1][0] > B[0].x + B[0].w && r1[1][0] < B[1].x &&
+    inX(d2[0], B[1]) && inX(d2tip, B[2]) && d2.every((q) => q[1] > B[1].y + B[1].h && q[1] < B[2].y),
+    'arrows in Z order: 1→2 right in the gap, 2→3 from under card 2 along the gap down into card 3, 3→4 right');
   const B5 = g5.boxes;
   ok(B5.length === 5 && near(B5[0].y, B5[2].y) && near(B5[3].y, B5[4].y) && B5[3].y > B5[0].y, 'grid of 5: 3×2');
   // 5

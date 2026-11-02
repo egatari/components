@@ -1,6 +1,6 @@
 ---
 name: m-fishbone
-version: 2.0.0
+version: 2.0.1
 series: common
 tier: standard
 summary: 原因と結果の図（特性要因図・フィッシュボーン図）を、大骨 1 本ずつ組み立て、最後に結果（頭）を出す。座標は書かず、配置は部品が決める

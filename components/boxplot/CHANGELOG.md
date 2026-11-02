@@ -2,6 +2,12 @@
 
 The part's own versions (Egatari spec §6.1). Releases of the whole library are in the repository's CHANGELOG.md.
 
+## 2.0.1 (components 2.1.2)
+
+- Fix: quartiles and other written values were rounded to one decimal more than the data without a ≈ (n = 10: inc 6.25 showed as 6.3, exc 5.75 and 12.25 as 5.8 and 12.3), disagreeing with the README table; without digits they are now written exactly (6.25), never with fewer decimals than the data.
+- Fix: an unknown method (e.g. method="tukey") threw in boxplot-core and the whole figure became an error placeholder; it is now reported (attr) and jp is used.
+- Fix: the element had no role, so assistive tech read every tick and label in the svg in DOM order; it is now role="img" (the svg aria-hidden) named by each group's five-number summary (and its outliers with outliers="on"), and an author aria-label is kept.
+
 ## 2.0.0 (components 2.0.0-rc.1 and 2.0.0)
 
 - Moved to `egatariParts.define({name: "boxplot", version: "2.0.0", requires: {base: "1.0.0", "boxplot-core": "1.0.0",

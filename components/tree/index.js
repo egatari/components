@@ -19,7 +19,7 @@
 // 式（tex）は組み立てのときに KaTeX で描く（spec §6.2）：build.fields の nodes[].tex を作り手が描いて texHtml を足し、
 // この部品は markup-reader で決まった要素と属性だけを読んで置く（再生のときに KaTeX は動かない）。描いた結果がなければ tex を字のまま出して知らせる。
 // 入らないときは ctx.report("size", "[tree] …") で知らせる（1.x の console.warn の代わり）
-egatariParts.define({name: "tree", version: "2.0.0", requires: {base: "1.0.0", "markup-reader": "1.0.0"}, element: "m-tree"}, function(deps){
+egatariParts.define({name: "tree", version: "2.0.1", requires: {base: "1.0.0", "markup-reader": "1.0.0"}, element: "m-tree"}, function(deps){
 "use strict";
 var base = deps.base, MR = deps["markup-reader"];
 // 形の要素ごとに、書き直すと形が作り直される属性（render の終わりで使う）
@@ -53,8 +53,12 @@ var Part = class extends base.MotionElement {
   // 木の形と段階（mount の前にも段階の数のために使う）
   plan(){
     if (this._plan) return this._plan;
-    var d = this.data || {}, P = this.props, byId = {}, roots = [];
-    var nodes = (d.nodes || []).map(function(n){ var o = {n: n, kids: [], depth: 0}; byId[n.id] = o; return o; });
+    var d = this.data || {}, P = this.props, byId = {}, roots = [], notes = this._notes = [];   // データの問題：mount が ctx.report で知らせる
+    var nodes = (d.nodes || []).map(function(n){
+      var o = {n: n, kids: [], depth: 0};
+      if (byId[n.id]) notes.push("[tree] the id " + JSON.stringify(n.id) + " is used by more than one node (parent, edges and path refer to the last one; give each node its own id)");
+      byId[n.id] = o; return o;
+    });
     nodes.forEach(function(o){
       if (o.n.parent === undefined || o.n.parent === null) roots.push(o);
       else if (!byId[o.n.parent]) throw new Error("m-tree: node " + JSON.stringify(o.n.id) + " has an unknown parent " + JSON.stringify(o.n.parent));
@@ -96,10 +100,11 @@ var Part = class extends base.MotionElement {
   }
   mount(ctx){
     var P = this.props, D = base, self = this, pl = this.plan(), sk = MR.sink(this, ctx);
+    this._notes.forEach(function(m){ ctx.report("data", m); });
     this.variant = base.variant(this);
     this.style.display = "block"; this.style.position = "relative";
     var W = this.clientWidth, H = this.clientHeight, right = P.orient === "right";
-    var svg = D.el("svg", {viewBox: "0 0 " + W + " " + H, width: W, height: H, style: "display:block;overflow:visible"}, this);
+    var svg = D.el("svg", {viewBox: "0 0 " + W + " " + H, width: W, height: H, "aria-hidden": "true", style: "display:block;overflow:visible"}, this);
     var root = D.el("g", {}, svg), gL = D.el("g", {}, root), gE = D.el("g", {}, root), gN = D.el("g", {}, root);
     // 字の幅の見積もり（和文 1 字 = 1 字幅、ほかは 0.6 字幅。*斜体* などの記号は数えない）
     var plain = function(s){ return String(s).replace(/\*/g, "").replace(/[_^](.)/g, "$1"); };
@@ -337,7 +342,26 @@ var Part = class extends base.MotionElement {
     }
     // 形の一覧（render の終わりに形を作り直すため。下の render を見る）
     this.shapes = [].slice.call(svg.querySelectorAll("rect,circle,ellipse,path,line,polyline,polygon"));
+    // 読み上げ：最後の形（すべての節、ほかのつながり、強調した道）を 1 文で。作者の aria-label があればそれを使う（上書きしない）
+    if (this._aria === undefined) this._aria = this.getAttribute("aria-label");
+    this.setAttribute("role", "img");
+    if (!this._aria) this.setAttribute("aria-label", this.summary(/^ja\b/i.test(ctx.lang || "ja")));
     sk.flush();   // what the formulas have to report, once per kind (spec §6.2)
+  }
+  // 最後の形を 1 文で（読み上げの名前）：「木：動物。動物の下に 脊椎動物、無脊椎動物。脊椎動物の下に（はい）魚類、…。つながり：…。強調した道：動物 → 脊椎動物（…）」
+  summary(ja){
+    var pl = this.plan(), one = function(n){ return String(n.label || n.tex || "").replace(/\s*\n\s*/g, " ").replace(/\*/g, "").replace(/[_^](.)/g, "$1"); };
+    var lp = ja ? "（" : " (", rp = ja ? "）" : ")", cm = ja ? "、" : ", ", dot = ja ? "。" : ". ";
+    var full = function(n){ return one(n) + (n.note ? lp + n.note + rp : ""); };
+    var s = (ja ? "木：" : "Tree: ") + full(pl.root.n);
+    pl.order.forEach(function(o){
+      if (!o.kids.length) return;
+      s += dot + (ja ? one(o.n) + "の下に " : "Under " + one(o.n) + ": ") + o.kids.map(function(c){ return (c.n.branch ? (ja ? "（" + c.n.branch + "）" : "(" + c.n.branch + ") ") : "") + full(c.n); }).join(cm);
+    });
+    var ed = pl.edges.map(function(x){ return one(x.a.n) + " → " + one(x.b.n) + (x.e.label ? lp + x.e.label + rp : ""); });
+    if (ed.length) s += dot + (ja ? "つながり：" : "Links: ") + ed.join(cm);
+    if (pl.path) s += dot + (ja ? "強調した道：" : "Highlighted path: ") + pl.path.nodes.map(function(o){ return one(o.n); }).join(" → ") + (pl.path.note ? lp + pl.path.note + rp : "");
+    return s;
   }
   // 箱 1 つの動きの長さ（どの見せ方でも同じ）：箱が現れて線を引き終わるまで
   span(){ return this.props.fade * 0.6 + this.props.draw; }

@@ -558,7 +558,11 @@ return class extends base.MotionElement {
     if (Lo.totW > W - 8) ctx.report("size", "[hissan] " + P.expr + " needs " + Math.round(Lo.totW) + " px of width, but the element is " + W + " px (it overflows); give it more width");
     if (G.h > H) ctx.report("size", "[hissan] " + P.expr + " needs " + Math.round(G.h) + " px of height, but the element is " + H + " px (it overflows); give it more height" + (M.op === "÷" ? " or fewer digits" : ""));
     this.geo = {X: X, Yb: Yb, capX: capX};
-    var svg = D.el("svg", {viewBox: "0 0 " + W + " " + H, width: W, height: H, style: "display:block;overflow:visible"}, this);
+    var svg = D.el("svg", {viewBox: "0 0 " + W + " " + H, width: W, height: H, "aria-hidden": "true", style: "display:block;overflow:visible"}, this);
+    // 読み上げ：svg の字（消える仮の商・くり上がりの小さな数も）を順に読ませず、最後の答えを 1 文で。作者の aria-label があればそれを使う（上書きしない）
+    if (this._aria === undefined) this._aria = this.getAttribute("aria-label");
+    this.setAttribute("role", "img");
+    if (!this._aria) this.setAttribute("aria-label", this.summary(/^ja\b/i.test(ctx.lang || "ja")));
     var gF = D.el("g", {}, svg), gL = D.el("g", {}, svg), gT = D.el("g", {}, svg);
     var items = this.items = [], draw = this.variant === "draw";
     var put = function(el, it, kind){ items.push({el: el, it: it, kind: kind}); return el; };
@@ -686,6 +690,17 @@ return class extends base.MotionElement {
         o.until = nxt;
       });
     });
+  }
+  // 最後の答えを 1 文で（読み上げの名前）：「筆算：851 ÷ 23 = 37」。あまりがあれば「あまり 1」、わり切れないまま止めた商は ≒
+  summary(ja){
+    var M = this.plan().M, e = CALC.parse(this.props.expr), I = M.info, ans, sign = "=";
+    if (M.op === "÷"){
+      ans = I.quotient;
+      if (I.rem){ if (I.remainder && +I.remainder.value > 0) ans += (ja ? " あまり " : " remainder ") + I.remainder.value; }
+      else if (!I.exact) sign = "≒";
+    } else if (M.op === "×") ans = CALC.dec(String(BigInt(e.A.ip + e.A.fp) * BigInt(e.B.ip + e.B.fp)), e.A.scale + e.B.scale);   // info.value は Number の積（2^53 を超えると末尾が違う）
+    else ans = I.value;
+    return (ja ? "筆算：" : "Written calculation: ") + e.A.text + " " + M.op + " " + e.B.text + " " + sign + " " + ans;
   }
   duration(k){
     var pl = this.plan();

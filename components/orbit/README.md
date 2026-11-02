@@ -1,6 +1,6 @@
 ---
 name: m-orbit
-version: 2.0.1
+version: 2.0.2
 series: academic
 tier: specialized
 set: science

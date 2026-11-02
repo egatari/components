@@ -2,6 +2,12 @@
 
 The part's own versions (Egatari spec §6.1). Releases of the whole library are in the repository's CHANGELOG.md.
 
+## 2.0.1 (components 2.1.2)
+
+- Fix: a negative count in a frequency table was accepted silently and went into the total, the mean, the median and the relative frequencies; it is now reported (data) and counted as 0.
+- Fix: relative frequencies rounded inconsistently because toFixed rounds the binary value (0.175 showed as 0.17 but 0.875 as 0.88); they now round half up in decimal (0.18, 0.88).
+- Fix: the element had no role, so assistive tech read every tick and number in the svg in DOM order; it is now role="img" (the svg aria-hidden) named by the count of each class (or of each value for a dot plot without bins), the relative or cumulative value when shown, and the marks, and an author aria-label is kept.
+
 ## 2.0.0 (components 2.0.0-rc.1 and 2.0.0)
 
 - Moved to `egatariParts.define({name: "hist", version: "2.0.0", requires: {base: "1.0.0", "hist-core": "1.0.0", plot:

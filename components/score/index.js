@@ -17,7 +17,7 @@
 // 読める層：音の名前を文字で（「ド レ ミ ファ｜ソ …」）。描いた図は aria-hidden
 // 2.0（Egatari spec §6.1 の部品）：base の MotionElement・el・prog・variant・previewOpacity を使い、プレイヤーのグローバルは使わない。
 // 楽譜の描画は組み立てのとき（spec §6.2 build.fields の abcjs）。レッスンのデータや要素の大きさの問題は ctx.report で知らせる（console.warn の代わり）
-egatariParts.define({name: "score", version: "2.0.0", requires: {base: "1.0.0", "markup-reader": "1.0.0"}, element: "m-score"}, function(deps){
+egatariParts.define({name: "score", version: "2.0.1", requires: {base: "1.0.0", "markup-reader": "1.0.0"}, element: "m-score"}, function(deps){
 "use strict";
 var base = deps.base;
 // ---- 楽譜のデータ（DOM を使わない。tools/test-score.mjs が試す） ----
@@ -339,7 +339,9 @@ return class extends base.MotionElement {
     var names = this.props.names;
     var notes = [];
     if (["solfa", "abc", "iroha", "none"].indexOf(names) < 0){ notes.push('[score] names="' + names + '" is not solfa, abc, iroha or none (none is used)'); names = "none"; }
-    var pl = SC.plan(d.abcMap, this.props.by);
+    var by = this.props.by;
+    if (["note", "measure"].indexOf(by) < 0){ notes.push('[score] by="' + by + '" is not note or measure (note is used)'); by = "note"; }
+    var pl = SC.plan(d.abcMap, by);
     pl.names = names;
     pl.attrNotes = notes;   // attribute problems, reported in mount (steps reads plan before there is a ctx)
     return (this._plan = pl);

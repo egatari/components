@@ -2,6 +2,11 @@
 
 The part's own versions (Egatari spec §6.1). Releases of the whole library are in the repository's CHANGELOG.md.
 
+## 2.0.1 (components 2.1.2)
+
+- Fix: `range` with the same two values turned every cell black (a division by 0), and a reversed range silently inverted the colours. A `range` that is not [min, max] with min < max is now reported (`attr`) and the data's range (0 to 1 with normalize="row") is used. The legend gradient id is now heatmap-2-0-1-legend-<n>.
+- Fix: long column labels made the layout keep one label for every second column, with a report that there were too many columns. The part now cuts long column labels with … to the width that gives the largest cells, so every column has its label, and reports `size`; the readable table keeps the full labels.
+
 ## 2.0.0 (components 2.0.0-rc.1 and 2.0.0)
 
 - Moved to `egatariParts.define({name: "heatmap", version: "2.0.0", requires: {base: "1.0.0", "heatmap-core": "1.0.0"},

@@ -2,6 +2,13 @@
 
 The part's own versions (Egatari spec §6.1). Releases of the whole library are in the repository's CHANGELOG.md.
 
+## 2.0.2 (components 2.1.2)
+
+- Fix: an edge label was centred on its own line, so it straddled a vertical line and the centre name; it is now placed beside the line, clear of the boxes and the centre name, and `layout` is reported when there is no clear place.
+- Fix: a box at 12 or 6 o'clock wider than the element was not checked; it now makes the layout fail and `size` is reported.
+- Fix: a size below 24 was used as written, and a size that is not a number never stopped shrinking; a size below 24 is now 24, a non-number is the default 26, and both report `attr`.
+- Fix: the element had no role or accessible name, and screen readers read the raw svg text; it now has role="img" and an aria-label that states the final state in one sentence (the centre name, the stages in order and the other links). An author's aria-label is kept, and the svg is aria-hidden.
+
 ## 2.0.1 (components 2.0.0)
 
 - Render writes an attribute only when its value changes (the 1.13.1 fix): writing the same value again made Chrome repaint, and on macOS re-entering a step moved two pixels. The DOM at every step is unchanged (tools/test-cycle-rewrite.mjs).

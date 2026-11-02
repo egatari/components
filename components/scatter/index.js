@@ -10,7 +10,7 @@
 // 2.0（Egatari spec §6.1 の部品）：base の MotionElement・el・mtext・prog・lerp・variant・previewOpacity と plot の Plot を使い、
 // プレイヤーのグローバルは使わない。名前の置き場がない・傾向の線が軸の外・上の名前が図より広い、は ctx.report で知らせる
 // （1.x は console.warn）
-egatariParts.define({name: "scatter", version: "2.0.0", requires: {base: "1.0.0", plot: "1.0.0"}, element: "m-scatter"}, function(deps){
+egatariParts.define({name: "scatter", version: "2.0.1", requires: {base: "1.0.0", plot: "1.0.0"}, element: "m-scatter"}, function(deps){
 "use strict";
 var base = deps.base, plot = deps.plot;
 return class extends base.MotionElement {
@@ -89,7 +89,22 @@ return class extends base.MotionElement {
       if (lo >= 0 && a < 0) a = 0;
       return [+a.toFixed(10), +b.toFixed(10)];
     };
-    var xr = P.xr || auto(all.map(function(p){ return p.x; }), 0.04), yr = P.yr || auto(all.map(function(p){ return p.y; }), 0.06);
+    // 書かれた範囲は [小, 大] の 2 つの数のときだけ使う（1 つの数・逆向き・数でない、は知らせてデータから決める）
+    var range = function(name){
+      var v = P[name];
+      if (v === null || v === undefined) return null;
+      if (Array.isArray(v) && v.length === 2 && v.every(function(x){ return typeof x === "number" && isFinite(x); }) && v[0] < v[1]) return v;
+      ctx.report("attr", "[scatter] " + name + "=\"" + self.getAttribute(name) + "\" is not a range [low, high] of two numbers with low < high (the range is taken from the data)");
+      return null;
+    };
+    var xr = range("xr") || auto(all.map(function(p){ return p.x; }), 0.04), yr = range("yr") || auto(all.map(function(p){ return p.y; }), 0.06);
+    // 範囲の外の点は描かない（軸の外や枠の外に出さない）。系列ごとにまとめて知らせる
+    pl.series.forEach(function(o){
+      var outs = o.pts.filter(function(q){ return !(q.x >= xr[0] && q.x <= xr[1] && q.y >= yr[0] && q.y <= yr[1]); });
+      outs.forEach(function(q){ q.out = true; });
+      if (outs.length) ctx.report("data", "[scatter] " + outs.length + " point" + (outs.length > 1 ? "s" : "") + (o.s.label ? " of \"" + o.s.label + "\"" : " of series " + (o.i + 1)) + " lie outside xr/yr and are not drawn: " +
+        outs.slice(0, 3).map(function(q){ return "(" + q.x + ", " + q.y + ")"; }).join(", ") + (outs.length > 3 ? ", …" : "") + " (widen xr/yr or leave them out)");
+    });
     var ticks = function(r){ var st = tickStep(r[1] - r[0]), out = []; for (var v = Math.ceil(r[0] / st - 1e-9) * st; v <= r[1] + st * 1e-6; v += st) out.push(+v.toFixed(10)); return out; };
     var xt = P.xt || ticks(xr), yt = P.yt || ticks(yr);
     var fmt = function(v, f){ return f !== undefined ? v.toFixed(f) : String(v); };
@@ -97,12 +112,17 @@ return class extends base.MotionElement {
     var yw = Math.max.apply(null, yt.map(function(v){ return est(fmt(v, P.yf), 24); }).concat([0]));
     var m = {l: Math.max(64, yw + 22 + (P.yl ? 40 : 0)), r: 24, t: named ? 72 : 20, b: P.xl ? 66 : 42};
     var p = this.p = plot.Plot(this, {xr: xr, yr: yr, xt: xt, yt: yt, xf: P.xf, yf: P.yf, xl: P.xl, yl: P.yl, m: m});
+    p.svg.setAttribute("aria-hidden", "true");
     // 軸の線（横軸と縦軸。目盛りの短い線は除く）に印を付ける（tools/test-components.mjs が字との交差を見る）
     var axl = p.svg.querySelectorAll("g.axes > line");
     for (var a = 0; a < Math.min(2, axl.length); a++) axl[a].setAttribute("class", "axis");
     var W = p.W, H = p.H, x0 = m.l, x1 = W - m.r, y0 = m.t, y1 = H - m.b;
     var gT = D.el("g", {}, p.svg), gP = D.el("g", {}, p.svg), gL = D.el("g", {}, p.svg);
     var R = P.r;
+    if (!(typeof R === "number" && isFinite(R) && R > 0)){
+      ctx.report("attr", "[scatter] r=\"" + this.getAttribute("r") + "\" is not a positive number (the default radius 9 is used)");
+      R = 9;
+    }
     // 系列の印の形：丸・四角・三角・ひし形（色だけに頼らない）
     var shapes = [
       function(r){ return "M" + r + ",0A" + r + "," + r + " 0 1,1 " + (-r) + ",0A" + r + "," + r + " 0 1,1 " + r + ",0Z"; },
@@ -111,11 +131,11 @@ return class extends base.MotionElement {
       function(r){ var s = r * 1.2; return "M0," + (-s) + "L" + s + ",0L0," + s + "L" + (-s) + ",0Z"; }];
     // 置いた字と点の箱（重なりを避ける）
     var boxes = [];
-    all.forEach(function(q){ boxes.push({l: p.x(q.x) - R - 2, r: p.x(q.x) + R + 2, t: p.y(q.y) - R - 2, b: p.y(q.y) + R + 2, pt: q}); });
+    all.forEach(function(q){ if (!q.out) boxes.push({l: p.x(q.x) - R - 2, r: p.x(q.x) + R + 2, t: p.y(q.y) - R - 2, b: p.y(q.y) + R + 2, pt: q}); });
     var hits = function(b, self2){ return boxes.some(function(o){ return o.pt !== self2 && b.l < o.r && o.l < b.r && b.t < o.b && o.t < b.b; }); };
     this.series = pl.series.map(function(o){
       var col = colorOf(o.s.tone, o.i), path = shapes[o.i % 4](R);
-      var marks = o.pts.map(function(q){
+      var marks = o.pts.filter(function(q){ return !q.out; }).map(function(q){
         var g = D.el("g", {transform: "translate(" + p.x(q.x).toFixed(1) + " " + p.y(q.y).toFixed(1) + ")", opacity: 0}, gP);
         var c = q.tone ? colorOf(q.tone, o.i) : col;
         var sh = D.el("path", {d: path, fill: c, "fill-opacity": 0.85, stroke: "var(--bg)", "stroke-width": 1.5}, g);
@@ -188,7 +208,7 @@ return class extends base.MotionElement {
       var dg = t.digits !== undefined ? t.digits : 2, num = function(v){ return v === null ? "" : (v < 0 ? "−" : "") + Math.abs(v).toFixed(dg); };
       var text = String(t.label || "").replace(/\{r\}/g, num(r)).replace(/\{a\}/g, num(a)).replace(/\{b\}/g, num(b));
       var len = Math.hypot(B[0] - A[0], B[1] - A[1]);
-      return {o: o, line: line, text: out ? "" : text, col: col, A: A, B: B, len: len, dash: !!t.dash, out: out};
+      return {o: o, line: line, text: out ? "" : text, col: col, A: A, B: B, len: len, dash: !!t.dash, out: out, a: a};
     });
     // 系列と傾向の線の名前：図の上（右寄せ）に印と一緒に並べる（凡例の箱は作らない。点や線と重ならない）
     var lx = x1, entries = this.series.filter(function(se){ return se.o.s.label; }).map(function(se){ return {it: se, text: se.o.s.label, col: se.col, path: se.path}; })
@@ -206,8 +226,33 @@ return class extends base.MotionElement {
       lx = sx - 32;
     });
     if (lx + 32 < 0) ctx.report("size", "[scatter] the names above the figure are wider than the figure");
+    // 読み上げ：最後の形（描いた点と傾向の線）を 1 文で。作者の aria-label があればそれを使う（上書きしない）
+    if (this._aria === undefined) this._aria = this.getAttribute("aria-label");
+    this.setAttribute("role", "img");
+    if (!this._aria) this.setAttribute("aria-label", this.summary(/^ja\b/i.test(ctx.lang || "ja")));
     function tickStep(span){ var r = span / 5, e = Math.pow(10, Math.floor(Math.log10(r))), x = r / e;
       return (x <= 1 ? 1 : x <= 2 ? 2 : x <= 2.5 ? 2.5 : x <= 5 ? 5 : 10) * e; }
+  }
+  // 最後の形を 1 文で（読み上げの名前）：「散布図（横：最高気温、縦：売上）：12 点（晴れ 8 点、雨 4 点）、横 24〜34、縦 210〜690、
+  // 猛暑日 (34, 690)、傾向の線は右上がり（r = 0.93）」。範囲の外で描かない点は数えない
+  summary(ja){
+    var P = this.props, self = this, one = function(s){ return String(s || "").replace(/\s*\n\s*/g, " ").replace(/[*_^]/g, ""); };
+    var ax = [P.xl ? (ja ? "横：" : "x: ") + one(P.xl) : "", P.yl ? (ja ? "縦：" : "y: ") + one(P.yl) : ""].filter(Boolean).join(ja ? "、" : ", ");
+    var pts = [], ss = this.series.map(function(se){ se.marks.forEach(function(mk){ pts.push(mk.q); }); return {l: se.o.s.label, n: se.marks.length}; });
+    var cnt = function(n){ return ja ? n + " 点" : n + (n === 1 ? " point" : " points"); };
+    var out = [cnt(pts.length) + (ss.length > 1 && ss.some(function(x){ return x.l; }) ? (ja ? "（" : " (") + ss.map(function(x){ return (x.l ? one(x.l) + " " : "") + cnt(x.n); }).join(ja ? "、" : ", ") + (ja ? "）" : ")") : "")];
+    if (pts.length){
+      var mm = function(f){ var v = pts.map(f), lo = Math.min.apply(null, v), hi = Math.max.apply(null, v); return lo === hi ? String(lo) : lo + (ja ? "〜" : " to ") + hi; };
+      out.push((ja ? "横 " : "x ") + mm(function(q){ return q.x; }), (ja ? "縦 " : "y ") + mm(function(q){ return q.y; }));
+    }
+    pts.filter(function(q){ return q.label; }).slice(0, 6).forEach(function(q){ out.push(one(q.label) + " (" + q.x + ", " + q.y + ")"); });
+    this.trends.forEach(function(tr){
+      if (tr.out) return;
+      var dir = tr.a === null ? (ja ? "垂直" : "vertical") : tr.a > 0 ? (ja ? "右上がり" : "rising") : tr.a < 0 ? (ja ? "右下がり" : "falling") : (ja ? "水平" : "flat");
+      var ts = tr.o.t.series, sn = !tr.o.t.pts && ts !== undefined && [].concat(ts).length === 1 && self.series[[].concat(ts)[0]] ? self.series[[].concat(ts)[0]].o.s.label : "";
+      out.push((sn ? one(sn) + (ja ? "の" : ": ") : "") + (ja ? "傾向の線は" : "the trend line is ") + dir + (tr.text ? (ja ? "（" : " (") + one(tr.text) + (ja ? "）" : ")") : ""));
+    });
+    return (ja ? "散布図" : "Scatter plot") + (ax ? (ja ? "（" + ax + "）" : " (" + ax + ")") : "") + (ja ? "：" : ": ") + out.join(ja ? "、" : ", ");
   }
   duration(k){
     var P = this.props, d = 0, pl = this.plan();

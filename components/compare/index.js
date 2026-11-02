@@ -10,7 +10,7 @@
 // reveal（列の中を上の行から 1 行ずつ）。どれも動く距離（16 px）と長さ（dur）は同じで、段階の数・長さ・最後の中身は変わらない
 // 2.0（Egatari spec §6.1 の部品）：base の MotionElement・el・mtext・prog・lerp・variant・previewOpacity を使い、プレイヤーのグローバルは使わない。
 // 違いの列の既定の見出しの言語は ctx.lang（mount で読む）。収まらない表は ctx.report で知らせる（1.x の console.warn の代わり）
-egatariParts.define({name: "compare", version: "2.0.0", requires: {base: "1.0.0"}, element: "m-compare"}, function(deps){
+egatariParts.define({name: "compare", version: "2.0.1", requires: {base: "1.0.0"}, element: "m-compare"}, function(deps){
 "use strict";
 var base = deps.base;
 return class extends base.MotionElement {
@@ -52,7 +52,7 @@ return class extends base.MotionElement {
     });
     this.style.display = "block"; this.style.position = "relative";
     var W = this.clientWidth, H = this.clientHeight;
-    var svg = D.el("svg", {viewBox: "0 0 " + W + " " + H, width: W, height: H, style: "display:block;overflow:visible"}, this);
+    var svg = D.el("svg", {viewBox: "0 0 " + W + " " + H, width: W, height: H, "aria-hidden": "true", style: "display:block;overflow:visible"}, this);
     var sides = data.sides || [], rows = data.rows || [], n = sides.length;
     var TONES = /^(term|emph|muted|accent2|series-[1-4])$/, DEF = ["term", "accent2", "series-4"];
     var tone = function(s, i){ return "var(--" + (TONES.test(s.tone || "") ? s.tone : DEF[i] || "term") + ")"; };
@@ -79,7 +79,10 @@ return class extends base.MotionElement {
     };
     // 字の大きさを size から 24 まで下げて、要素の箱に収まる配置を探す
     var gap = 14, padX = 16, padY = 12, bar = 7, L = null;
-    for (var fs = Math.max(24, P.size); fs >= 24; fs--){
+    // size が数でなければ既定の 28
+    var size0 = P.size;
+    if (!(typeof size0 === "number" && isFinite(size0))){ ctx.report("attr", "[compare] size=\"" + this.getAttribute("size") + "\" is not a number (28 is used)"); size0 = 28; }
+    for (var fs = Math.max(24, size0); fs >= 24; fs--){
       L = (function(fs){
         var lh = Math.round(fs * 1.3), hs = fs + 2, hlh = Math.round(hs * 1.25), over = false;
         var anyLabel = rows.some(function(r){ return r.label; });
@@ -168,6 +171,24 @@ return class extends base.MotionElement {
       });
     }
     this.pieces = pieces; this.m = m;
+    // 読み上げ：最後の形（すべての列と行、違い）を 1 文で。作者の aria-label があればそれを使う（上書きしない）
+    if (this._aria === undefined) this._aria = this.getAttribute("aria-label");
+    this.setAttribute("role", "img");
+    if (!this._aria) this.setAttribute("aria-label", this.summary(this.ja, diffHead));
+  }
+  // 最後の形を 1 文で（読み上げの名前）：「紙の申請とオンライン申請の比較。受付時間：紙の申請 平日 9〜17 時、オンライン申請 24 時間（オンライン申請がよい。違い：いつでも出せる）」
+  summary(ja, diffHead){
+    var d = this.data || {}, sides = d.sides || [], one = function(v){ return String(v === undefined || v === null ? "" : v).replace(/\s*\n\s*/g, " ").replace(/\*/g, ""); };
+    var names = sides.map(function(s){ return one(s.label); });
+    var s = ja ? names.join("と") + "の比較" : "Comparison of " + names.join(" and ");
+    (d.rows || []).forEach(function(r){
+      var vs = sides.map(function(sd, i){ return names[i] + " " + one((r.values || [])[i]); }).join(ja ? "、" : ", ");
+      var ex = [];
+      if (r.better !== undefined && names[r.better] !== undefined) ex.push(ja ? names[r.better] + "がよい" : names[r.better] + " is better");
+      if (r.diff !== undefined && r.diff !== "") ex.push(one(diffHead) + (ja ? "：" : ": ") + one(r.diff));
+      s += (ja ? "。" : ". ") + (r.label ? one(r.label) + (ja ? "：" : ": ") : "") + vs + (ex.length ? (ja ? "（" + ex.join("。") + "）" : " (" + ex.join("; ") + ")") : "");
+    });
+    return s;
   }
   duration(k){
     var d = 0, F = this.props.dur;

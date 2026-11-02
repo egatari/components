@@ -1,6 +1,6 @@
 ---
 name: m-compare
-version: 2.0.0
+version: 2.0.1
 series: common
 tier: standard
 summary: 2 つ（3 つまで）を横に並べて比べる表。一方の列、もう一方の列、それから行ごとの違い

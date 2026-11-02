@@ -2,6 +2,10 @@
 
 The part's own versions (Egatari spec §6.1). Releases of the whole library are in the repository's CHANGELOG.md.
 
+## 2.0.1 (components 2.1.2)
+
+- Fix: an unknown `by` (for example by="bar") threw and the whole part became a placeholder. It is now reported (`attr`) and by="note" is used, as `names` already does.
+
 ## 2.0.0 (components 2.0.0-rc.1 and 2.0.0)
 
 The first version of m-score: it was never released in 1.x (branch `m-score`, last 1.x-form commit cc0e60a).

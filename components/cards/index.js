@@ -7,7 +7,7 @@
 // 説明は和文を文節の切れ目らしい所（平仮名の後ろで平仮名でない字の前、読点・空白の後ろ）で折り返し、入らなければ … で切って ctx.report
 // 見せ方（docs/conventions.md §1）：rise（下から、既定）・fade（その場で）・draw（枠と矢印を描いてから中身）。段階の数・長さ・最後の中身はどれも同じ
 // 2.0（Egatari spec §6.1 の部品）：base の MotionElement・el・mtext・prog・clamp・variant・previewOpacity と icons の svg を使い、プレイヤーのグローバルは使わない
-egatariParts.define({name: "cards", version: "2.0.0", requires: {base: "1.0.0", icons: "1.0.0"}, element: "m-cards"}, function(deps){
+egatariParts.define({name: "cards", version: "2.0.1", requires: {base: "1.0.0", icons: "1.0.0"}, element: "m-cards"}, function(deps){
 "use strict";
 var base = deps.base, icons = deps.icons;
 var TONES = /^(term|emph|accent2|series-[1-4])$/;
@@ -93,10 +93,19 @@ return class extends base.MotionElement {
     this.variant = base.variant(this);
     this.style.display = "block"; this.style.position = "relative";
     var W = this.clientWidth, H = this.clientHeight;
-    var svg = D.el("svg", {viewBox: "0 0 " + W + " " + H, width: W, height: H, role: "list", style: "display:block;overflow:visible"}, this);
     var grid = P.layout === "grid" && n > 2, cols = grid ? (n <= 4 ? 2 : 3) : n, rows = grid ? 2 : 1;
     var gap = P.arrows ? 60 : 24, vgap = P.arrows ? 48 : 24;
     var cw = (W - gap * (cols - 1)) / cols, ch = (H - vgap * (rows - 1)) / rows;
+    this.cards = []; this.arrows = [];
+    // 高さ（幅）のない要素：カードの枠が負の大きさになる。描かずに知らせる
+    if (!(cw > 0 && ch > 0)){
+      ctx.report("size", "[cards] the element is " + W + "×" + H + "px, too small for " + n + " card" + (n === 1 ? "" : "s") + "; give it a height (e.g. style=\"height:320px\")");
+      return;
+    }
+    // 読み上げの名前：作者の aria-label、なければカードの数と見出し
+    var ja = /^ja\b/i.test(ctx.lang || "ja");
+    var name = this.getAttribute("aria-label") || (ja ? "カード " + n + " 枚：" : n + " cards: ") + pl.map(function(o){ return o.c.title; }).join(ja ? "、" : ", ");
+    var svg = D.el("svg", {viewBox: "0 0 " + W + " " + H, width: W, height: H, role: "list", "aria-label": name, style: "display:block;overflow:visible"}, this);
     var hl = P.hilite === "last" ? n - 1 : /^\d+$/.test(P.hilite) ? +P.hilite - 1 : -1;
     if (P.hilite && (hl < 0 || hl >= n)) ctx.report("attr", '[cards] hilite="' + P.hilite + '" is not last or a card number 1–' + n);
     // カードの中：横に広いカード（幅が高さの 1.6 倍以上）は 番号・アイコン・見出しを 1 行に、ほかは縦に積む
@@ -105,7 +114,6 @@ return class extends base.MotionElement {
     var tsz = Math.round(Math.max(26, Math.min(34, cw * 0.11))), xsz = 24, lh = 34, bd = 44;
     var missing = function(m){ ctx.report("data", "[cards] " + m); };
     var unfit = [];
-    this.arrows = [];
     this.cards = pl.map(function(o, i){
       var c = o.c, col = i % cols, row = Math.floor(i / cols);
       var x = col * (cw + gap), y = row * (ch + vgap);
@@ -145,10 +153,16 @@ return class extends base.MotionElement {
       var arrow = null;
       if (P.arrows && i > 0){
         var pc = (i - 1) % cols, pr = Math.floor((i - 1) / cols);
-        var ax, ay, d;
+        var ax, ay, d, alen = 60;
         if (pr === row){ ax = pc * (cw + gap) + cw + gap / 2; ay = y + ch / 2; d = "M" + (ax - 10) + "," + (ay - 16) + "L" + (ax + 8) + "," + ay + "L" + (ax - 10) + "," + (ay + 16); }
-        else { ax = W / 2; ay = pr * (ch + vgap) + ch + vgap / 2; d = "M" + (ax - 16) + "," + (ay - 9) + "L" + ax + "," + (ay + 8) + "L" + (ax + 16) + "," + (ay - 9); }
+        else {
+          // 段が変わる（grid の 2→3、3→4）：前の段の最後のカードの下から出て、段の間を左へ、次の段の最初のカードへ下りる
+          var bx = pc * (cw + gap) + cw / 2, ex = col * (cw + gap) + cw / 2, y0 = pr * (ch + vgap) + ch + 6, ym = y0 - 6 + vgap / 2, y1 = y - 6;
+          d = "M" + bx + "," + y0 + "V" + ym + "H" + ex + "V" + y1 + "L" + (ex - 10) + "," + (y1 - 9) + "L" + ex + "," + y1 + "L" + (ex + 10) + "," + (y1 - 9);
+          alen = (ym - y0) + Math.abs(bx - ex) + (y1 - ym) + 42;   // 1 本の道（破線で描くとき矢じりが最後に出る）
+        }
         arrow = D.el("path", {d: d, fill: "none", stroke: "var(--muted)", "stroke-width": 5, "stroke-linecap": "round", "stroke-linejoin": "round", opacity: 0, "aria-hidden": "true"}, svg);
+        arrow._len = alen;
         self.arrows.push(arrow);
       }
       return {o: o, g: g, body: body, frame: frame, arrow: arrow, per: 2 * (cw + ch)};
@@ -197,7 +211,7 @@ return class extends base.MotionElement {
       if (o.arrow){
         var a = tt < 0 ? 0 : D.prog(tt, at, vr === "draw" ? dr : P.dur * 0.6);
         o.arrow.setAttribute("opacity", ahead ? PV.toFixed(3) : vr === "draw" ? (a > 0 ? "1" : "0") : a.toFixed(3));
-        o.arrow.setAttribute("stroke-dasharray", vr === "draw" && a < 1 ? (60 * a).toFixed(1) + " 60" : "");
+        o.arrow.setAttribute("stroke-dasharray", vr === "draw" && a < 1 ? (o.arrow._len * a).toFixed(1) + " " + o.arrow._len.toFixed(1) : "");
       }
     });
   }

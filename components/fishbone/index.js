@@ -16,7 +16,7 @@
 // 式（tex）は組み立てのときに KaTeX で描く（spec §6.2）：build.fields の effect.tex・nodes[].tex を作り手が描いて texHtml を足し、
 // この部品は markup-reader で決まった要素と属性だけを読んで置く（再生のときに KaTeX は動かない）。描いた結果がなければ tex を字のまま出して知らせる。
 // 入らないときは ctx.report("size", "[fishbone] …") で知らせる（1.x の console.warn の代わり）
-egatariParts.define({name: "fishbone", version: "2.0.0", requires: {base: "1.0.0", "markup-reader": "1.0.0"}, element: "m-fishbone"}, function(deps){
+egatariParts.define({name: "fishbone", version: "2.0.1", requires: {base: "1.0.0", "markup-reader": "1.0.0"}, element: "m-fishbone"}, function(deps){
 "use strict";
 var base = deps.base, MR = deps["markup-reader"];
 var Part = class extends base.MotionElement {
@@ -47,8 +47,12 @@ var Part = class extends base.MotionElement {
   // 骨の形と段階（mount の前にも段階の数のために使う）
   plan(){
     if (this._plan) return this._plan;
-    var d = this.data || {}, P = this.props, byId = {}, cats = [];
-    var nodes = (d.nodes || []).map(function(n){ var o = {n: n, kids: []}; byId[n.id] = o; return o; });
+    var d = this.data || {}, P = this.props, byId = {}, cats = [], notes = this._notes = [];   // データの問題：mount が ctx.report で知らせる
+    var nodes = (d.nodes || []).map(function(n){
+      var o = {n: n, kids: []};
+      if (byId[n.id]) notes.push("[fishbone] the id " + JSON.stringify(n.id) + " is used by more than one node (parent and edges refer to the last one; give each node its own id)");
+      byId[n.id] = o; return o;
+    });
     nodes.forEach(function(o){
       if (o.n.parent === undefined || o.n.parent === null) cats.push(o);
       else if (!byId[o.n.parent]) throw new Error("m-fishbone: node " + JSON.stringify(o.n.id) + " has an unknown parent " + JSON.stringify(o.n.parent));
@@ -91,10 +95,11 @@ var Part = class extends base.MotionElement {
   span(){ return this.props.fade * 0.6 + this.props.draw; }
   mount(ctx){
     var P = this.props, D = base, self = this, pl = this.plan(), sk = MR.sink(this, ctx);
+    this._notes.forEach(function(m){ ctx.report("data", m); });
     this.variant = base.variant(this);
     this.style.display = "block"; this.style.position = "relative";
     var W = this.clientWidth, H = this.clientHeight;
-    var svg = D.el("svg", {viewBox: "0 0 " + W + " " + H, width: W, height: H, style: "display:block;overflow:visible"}, this);
+    var svg = D.el("svg", {viewBox: "0 0 " + W + " " + H, width: W, height: H, "aria-hidden": "true", style: "display:block;overflow:visible"}, this);
     var root = D.el("g", {}, svg), gL = D.el("g", {}, root), gT = D.el("g", {}, root), gE = D.el("g", {}, root), gN = D.el("g", {}, root);
     var plain = function(s){ return String(s).replace(/\*/g, "").replace(/[_^](.)/g, "$1"); };
     var est = function(s){ return [...plain(s)].reduce(function(a, ch){ return a + (/[\u0000-ɏ]/.test(ch) ? 0.6 : 1); }, 0); };
@@ -163,7 +168,10 @@ var Part = class extends base.MotionElement {
       return {geo: geo, hb: hb, xs: xs, tail: tail, spineEnd: spineEnd, width: width, height: hh, ext: ext};
     }
     // 入る大きさを探す：字（27 → 24 px）、行の高さ（52 → 40 px）、傾き（0.5 → 0.3）
-    var sizes = P.size ? [P.size] : [27, 26, 25, 24], L = null, fit = true;
+    // size：24 より小さい字は使わない（24 にする）
+    var sz0 = P.size;
+    if (sz0 && sz0 < 24){ ctx.report("attr", "[fishbone] size=\"" + this.getAttribute("size") + "\" is below 24 (text is at least 24px; 24 is used)"); sz0 = 24; }
+    var sizes = sz0 ? [sz0] : [27, 26, 25, 24], L = null, fit = true;
     search: for (var si = 0; si < sizes.length; si++){
       for (var rh = 52; rh >= 40; rh -= 2){
         for (var k = 0.5; k >= 0.29; k -= 0.1){
@@ -281,7 +289,24 @@ var Part = class extends base.MotionElement {
       [ra, rb].forEach(function(r){ if (r.step === x.step) after = Math.max(after, r.at + 0.45); });
       return {g: g, line: line, head: head, lab: lab, path: self.poly(pts), step: x.step, at: e.at !== undefined ? e.at : after};
     });
+    // 読み上げ：最後の形（結果と、大骨ごとの原因）を 1 文で。作者の aria-label があればそれを使う（上書きしない）
+    if (this._aria === undefined) this._aria = this.getAttribute("aria-label");
+    this.setAttribute("role", "img");
+    if (!this._aria) this.setAttribute("aria-label", this.summary(/^ja\b/i.test(ctx.lang || "ja")));
     sk.flush();   // what the formulas have to report, once per kind (spec §6.2)
+  }
+  // 最後の形を 1 文で（読み上げの名前）：「原因と結果の図。結果：配送の遅れ。人：人手が足りない（休みが多い）、新人が多い。機械：車の故障。つながり：…」
+  summary(ja){
+    var pl = this.plan(), one = function(n){ return String(n.label || n.tex || "").replace(/\s*\n\s*/g, " ").replace(/\*/g, "").replace(/[_^](.)/g, "$1") + (n.note ? " " + n.note : ""); };
+    var lp = ja ? "（" : " (", rp = ja ? "）" : ")", cm = ja ? "、" : ", ", dot = ja ? "。" : ". ";
+    var s = (ja ? "原因と結果の図" : "Cause-and-effect diagram") + (pl.head.n.label || pl.head.n.tex ? dot + (ja ? "結果：" : "Effect: ") + one(pl.head.n) : "");
+    pl.cats.forEach(function(c){
+      var ks = c.kids.map(function(k){ return one(k.n) + (k.kids.length ? lp + k.kids.map(function(x){ return one(x.n); }).join(cm) + rp : ""); });
+      s += dot + one(c.n) + (ks.length ? (ja ? "：" : ": ") + ks.join(cm) : "");
+    });
+    var ed = pl.edges.map(function(x){ return one(x.a.n) + " → " + one(x.b.n) + (x.e.label ? lp + x.e.label + rp : ""); });
+    if (ed.length) s += dot + (ja ? "つながり：" : "Links: ") + ed.join(cm);
+    return s;
   }
   poly(pts){
     var L = [0];

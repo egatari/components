@@ -11,7 +11,7 @@
 // 字は部品の中の表から授業の言語（ctx.lang）で選ぶ。データの labels・notes で位置ごとに上書きできる（null は表のまま、"" は字なし）。
 // eclipse（月だけ）：新月と満月の位置で、太陽・月・地球がそろったときの影（日食・月食）を描く。月の軌道の傾きは描かない（README）。
 // 2.0（Egatari spec §6.1 の部品）：base の MotionElement・el・prog・lerp だけを使い、プレイヤーのグローバルは使わない。
-egatariParts.define({name: "orbit", version: "2.0.1", requires: {base: "1.0.0"}, element: "m-orbit"}, function(deps){
+egatariParts.define({name: "orbit", version: "2.0.2", requires: {base: "1.0.0"}, element: "m-orbit"}, function(deps){
 "use strict";
 var base = deps.base;
 var TAU = 2 * Math.PI;
@@ -36,8 +36,12 @@ var TEXT = {
 };
 // 金星の軌道の半径（地球の軌道を 1 とした比。距離と最大離角はこの値から計算する）
 var VENUS_R = 0.723;
-// 光っている面と影の面の色（テーマの色だけ。明るい面は --accent2 を地に薄く混ぜ、影の面は字の色を地に混ぜた灰）
-var LIT = "color-mix(in srgb, var(--accent2) 22%, var(--bg))", DARK = "color-mix(in srgb, var(--fg) 42%, var(--bg))";
+// 光っている面と影の面の色（テーマの色だけ）。明るい地（地が字より明るい）：明るい面は --accent2 を地に薄く混ぜ、影の面は字の色を
+// 地に混ぜた灰。暗い地：明るい面は --accent2 を字の色に混ぜ、影の面は字の色を地に少し混ぜる。どちらの地でも明るい面が影の面より明るい
+var FILLS = {
+  light: {lit: "color-mix(in srgb, var(--accent2) 22%, var(--bg))", dark: "color-mix(in srgb, var(--fg) 42%, var(--bg))", eclipse: "var(--muted)"},
+  dark:  {lit: "color-mix(in srgb, var(--accent2) 55%, var(--fg))", dark: "color-mix(in srgb, var(--fg) 22%, var(--bg))", eclipse: "color-mix(in srgb, var(--muted) 45%, var(--bg))"},
+};
 var Part = class extends base.MotionElement {
   static partName = "orbit";
   // 先の形は答え（どう欠けるかを予想させる）：授業の表示でも先を見せない
@@ -92,6 +96,15 @@ var Part = class extends base.MotionElement {
       var ok = {mode: ["moon", "venus"], hemisphere: ["north", "south"], sun: ["right", "left"]}[a];
       if (ok.indexOf(P[a]) < 0) ctx.report("attr", "[orbit] " + a + "=\"" + P[a] + "\" is not one of " + ok.join(", ") + "; using " + ok[0]);
     });
+    // earth・moon：正の数でなければ既定に（NaN の図にしない）
+    [["earth", 0.2, 0.5], ["moon", 0.5, 2]].forEach(function(a){
+      var v = P[a[0]];
+      if (!(typeof v === "number" && v > 0 && v <= a[2])){
+        ctx.report("attr", "[orbit] " + a[0] + "=\"" + self.getAttribute(a[0]) + "\" is not a number above 0 and up to " + a[2] + "; using " + a[1]);
+        P[a[0]] = a[1];
+      }
+    });
+    this.F = isDarkBg(this) ? FILLS.dark : FILLS.light;
     this.south = P.hemisphere === "south";
     this.sunLeft = !pl.venus && P.sun === "left";
     this.T = /^ja\b/i.test(ctx.lang || "") ? TEXT.ja : TEXT.en;
@@ -103,6 +116,15 @@ var Part = class extends base.MotionElement {
     var L = this.L = this.arrange();
     if (!L.fits) ctx.report("size", "[orbit] the diagram does not fit its box (" + L.why + "); make the element larger");
     this.draw(L);
+    // 読み上げ：最後の状態（最後の位置と、その名前か説明）。作者の aria-label はそのまま
+    this.setAttribute("role", "img");
+    if (!this.getAttribute("aria-label")){
+      var last = pl.visit.length ? pl.visit[pl.visit.length - 1] : pl.start, ja = this.T === TEXT.ja;
+      var what = this.labels[last] || this.caption(last, this.observerAngleAt(last));
+      this.setAttribute("aria-label", ja
+        ? (pl.venus ? "金星の満ち欠け" : "月の満ち欠け") + "：位置 " + last + (what ? "、" + what : "") + (pl.venus ? "" : "（地球から見た形）")
+        : (pl.venus ? "Phases of Venus" : "Phases of the Moon") + ": position " + last + (what ? ", " + what : "") + (pl.venus ? "" : " (as seen from Earth)"));
+    }
   }
   // 位置ごとの名前：データの labels が先、なければ表（月は角度で、金星は最大離角に近い位置）
   positionLabels(){
@@ -258,12 +280,12 @@ var Part = class extends base.MotionElement {
     this.ghosts = [];
     for (var i = 0; i < N; i++){
       var b = this.bodyAt(i), g = D.el("g", {opacity: 0.35}, fig);
-      body(g, X(b.x), Y(b.y), L.mr, b.sun);
+      body(g, X(b.x), Y(b.y), L.mr, b.sun, null, this.F);
       this.ghosts.push(g);
     }
     // 地球
     var eb = pl.venus ? {x: 0, y: -L.R} : {x: 0, y: 0}, esun = pl.venus ? [0, 1] : this.bodyAt(0).sun;
-    body(D.el("g", {}, fig), X(eb.x), Y(eb.y), L.er, esun, "var(--term)");
+    body(D.el("g", {}, fig), X(eb.x), Y(eb.y), L.er, esun, "var(--term)", this.F);
     if (pl.venus) D.el("text", {x: X(eb.x), y: Y(eb.y) + L.er + 28, "font-size": 24, fill: "var(--fg)", "text-anchor": "middle"}, fig).textContent = T.earth;
     // 見る線（地球の上の人、または地球から天体へ）と人
     this.sight = D.el("path", {d: "", fill: "none", stroke: "var(--fg)", "stroke-width": 2, "stroke-dasharray": "4 5"}, fig);
@@ -293,8 +315,8 @@ var Part = class extends base.MotionElement {
     // 右：地球から見た形
     var view = D.el("g", {}, svg);
     this.vSun = D.el("circle", {cx: L.dcx, cy: L.dcy, r: L.dr, fill: "var(--accent2)", opacity: 0}, view);
-    this.vDark = D.el("circle", {cx: L.dcx, cy: L.dcy, r: L.dr, fill: DARK}, view);
-    this.vLit = D.el("path", {d: "", fill: LIT}, view);
+    this.vDark = D.el("circle", {cx: L.dcx, cy: L.dcy, r: L.dr, fill: this.F.dark}, view);
+    this.vLit = D.el("path", {d: "", fill: this.F.lit}, view);
     this.vRim = D.el("circle", {cx: L.dcx, cy: L.dcy, r: L.dr, fill: "none", stroke: "var(--muted)", "stroke-width": 2}, view);
     this.vName = D.el("text", {x: L.dcx, y: L.nameY, "font-size": L.fs, "font-weight": 700, fill: "var(--fg)", "text-anchor": "middle"}, view);
     this.vNote = D.el("text", {x: L.dcx, y: L.noteY, "font-size": 24, fill: "var(--muted)", "text-anchor": "middle"}, view);
@@ -310,7 +332,7 @@ var Part = class extends base.MotionElement {
     // 天体
     var b = this.bodyAt(a), ph = this.phaseAt(a);
     while (this.cur.firstChild) this.cur.removeChild(this.cur.firstChild);
-    body(this.cur, X(b.x), Y(b.y), L.mr, b.sun);
+    body(this.cur, X(b.x), Y(b.y), L.mr, b.sun, null, this.F);
     // 地球の上の人と見る線
     if (!pl.venus){
       var w0 = this.observerAngleAt(from), w1 = this.observerAngleAt(to);
@@ -355,8 +377,8 @@ var Part = class extends base.MotionElement {
     }
     setIf(this.vSun, "opacity", solar.toFixed(3));
     setIf(this.vSun, "r", (r * 1.1).toFixed(2));   // 日食：月のまわりに太陽の縁が少し出る
-    // 月食：影に入った月は暗く（--muted）
-    setIf(this.vDark, "style", "fill:" + (lunar > 0.5 ? "var(--muted)" : DARK) + ";");   // base.el と同じ書き方
+    // 月食：影に入った月は暗く（明るい地では --muted）
+    setIf(this.vDark, "style", "fill:" + (lunar > 0.5 ? this.F.eclipse : this.F.dark) + ";");   // base.el と同じ書き方
     if (lunar > 0) setIf(this.vLit, "opacity", (1 - lunar).toFixed(3)); else setIf(this.vLit, "opacity", "1");
     // 影の形：日食は月から地球へ、月食は地球から月の先へ
     var sd = "";
@@ -397,12 +419,32 @@ function est(s, fs){
   for (var ch of String(s || "")) w += /[0-9]/.test(ch) ? 0.6 : ch === " " ? 0.3 : /[\u0000-ɏ]/.test(ch) ? 0.55 : 1;
   return w * fs;
 }
+// 地が字の色より暗いか（テーマの変数を読む。読めなければ明るい地）
+function isDarkBg(el){
+  var cs = getComputedStyle(el), bg = rgbOf(cs.getPropertyValue("--bg").trim()), fg = rgbOf(cs.getPropertyValue("--fg").trim());
+  return !!(bg && fg) && luma(bg) < luma(fg);
+}
+// 色を sRGB で読む（m-map-world と同じ：キャンバスに 1 点塗って読む。読めなければ null）
+function rgbOf(css){
+  try {
+    if (!css) return null;
+    var cv = document.createElement("canvas"); cv.width = cv.height = 1;
+    var g = cv.getContext("2d", {willReadFrequently: true});
+    if (!g) return null;
+    g.fillStyle = "#010203"; g.fillStyle = css;
+    if (/^#010203$/i.test(g.fillStyle) && !/^#010203$/i.test(css)) return null;
+    g.fillRect(0, 0, 1, 1);
+    var d = g.getImageData(0, 0, 1, 1).data;
+    return [d[0], d[1], d[2]];
+  } catch (e) { return null; }
+}
+function luma(c){ return 0.2126 * c[0] + 0.7152 * c[1] + 0.0722 * c[2]; }
 // 上から見た天体：暗い円盤と、太陽の側の明るい半分
-function body(g, cx, cy, r, sun, litFill){
-  base.el("circle", {cx: cx.toFixed(2), cy: cy.toFixed(2), r: r.toFixed(2), fill: DARK}, g);
+function body(g, cx, cy, r, sun, litFill, F){
+  base.el("circle", {cx: cx.toFixed(2), cy: cy.toFixed(2), r: r.toFixed(2), fill: F.dark}, g);
   var a = Math.atan2(-sun[1], sun[0]), p = [];
   for (var i = 0; i <= 24; i++){ var u = a - Math.PI / 2 + Math.PI * i / 24; p.push([cx + r * Math.cos(u), cy + r * Math.sin(u)]); }
-  base.el("path", {d: "M" + p.map(function(q){ return q[0].toFixed(2) + "," + q[1].toFixed(2); }).join("L") + "Z", fill: litFill || LIT}, g);
+  base.el("path", {d: "M" + p.map(function(q){ return q[0].toFixed(2) + "," + q[1].toFixed(2); }).join("L") + "Z", fill: litFill || F.lit}, g);
   base.el("circle", {cx: cx.toFixed(2), cy: cy.toFixed(2), r: r.toFixed(2), fill: "none", stroke: "var(--muted)", "stroke-width": 1.5}, g);
 }
 // 地球から見た明るい部分：光っている側の縁（半円）と、明暗の境（横の半径が r·|cos 位相角| の半楕円）

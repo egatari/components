@@ -2,6 +2,12 @@
 
 The part's own versions (Egatari spec §6.1). Releases of the whole library are in the repository's CHANGELOG.md.
 
+## 2.0.1 (components 2.1.2)
+
+- Fix: duplicate node ids were accepted silently; they are now reported as `data` (parent and edges use the last node with that id, as before).
+- Fix: a size below 24 was used as written; it is now 24 and `attr` is reported.
+- Fix: the element had no role or accessible name, and screen readers read the raw svg text; it now has role="img" and an aria-label that states the final state in one sentence (the effect and each main bone with its causes and sub-causes, and the other links). An author's aria-label is kept, and the svg is aria-hidden.
+
 ## 2.0.0 (components 2.0.0-rc.1 and 2.0.0)
 
 - Moved to `egatariParts.define({name: "fishbone", version: "2.0.0", requires: {base: "1.0.0", "markup-reader": "1.0.0"}, element: "m-fishbone"})`,

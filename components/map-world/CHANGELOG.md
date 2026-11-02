@@ -2,6 +2,12 @@
 
 The part's own versions (Egatari spec §6.1). Releases of the whole library are in the repository's CHANGELOG.md.
 
+## 2.0.1 (components 2.1.2)
+
+- Fix: in a dark theme the value classes collapsed (the lightest class was set below the darkest). When --bg is darker than --fg the lightness ramp now runs the other way, from just above the background and the land colour up toward --fg, so the classes stay apart; the light theme is unchanged.
+- Fix: one unknown country key in `values`, `regions` or `categories`, an unknown region group, a value that is not a number, or `classes` that do not increase threw, and the whole map became a placeholder. Each is now reported (`data`) and skipped (classes fall back to the quartiles), and the rest is drawn.
+- Fix: a point with `lat` outside −90 to 90 drew NaN; it is now reported (`data`) and not drawn. With an XUD region the aria-label started with an empty name; empty names are left out. The host now has role="figure" so its aria-label is exposed with the readable paragraph.
+
 ## 2.0.0 (components 2.0.0-rc.1 and 2.0.0)
 
 - Moved to `egatariParts.define({name: "map-world", version: "2.0.0", requires: {base: "1.0.0"}, element: "m-map-world"})`,

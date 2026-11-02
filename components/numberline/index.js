@@ -10,7 +10,7 @@
 // 見せ方（docs/conventions.md §1）：fade（フェード、既定）・draw（線・弧・範囲の線を引き、目盛りは左から）。拡大の動きはどちらも同じ
 // 2.0（Egatari spec §6.1 の部品）：base の MotionElement・el・mtext・prog・variant・previewOpacity を使い、プレイヤーのグローバルは使わない。
 // データや大きさの問題は ctx.report で知らせる（1.x の console.warn の代わり）。幾何はテストのために static testing.geom（部品は読まない）
-egatariParts.define({name: "numberline", version: "2.0.0", requires: {base: "1.0.0"}, element: "m-numberline"}, function(deps){
+egatariParts.define({name: "numberline", version: "2.0.1", requires: {base: "1.0.0"}, element: "m-numberline"}, function(deps){
 "use strict";
 var base = deps.base;
 // 形の要素ごとに、書き直すと形が作り直される属性（render の終わりで使う）
@@ -250,6 +250,35 @@ return class extends base.MotionElement {
     var steps = Math.max.apply(null, [1, tickStep].concat([marks, links, jumps, ranges, mags].map(function(a){ return Math.max.apply(null, [0].concat(a.map(function(x){ return x.st; }))); })));
     return (this._plan = {lines: lines, marks: marks, jumps: jumps, ranges: ranges, links: links, mags: mags, tickStep: tickStep, steps: steps, notes: notes});
   }
+  // 最後の形を 1 文で（読み上げの名前）：「数直線 0〜10：3 に印、3→7 に +4」。線が 2 本なら上と下、項目は印・ジャンプ・範囲・対応・拡大の順
+  summary(ja){
+    var pl = this.plan(), L = pl.lines.length, sep = ja ? "、" : ", ";
+    var sv = function(v){ return String(v).trim().replace(/^[-–]/, NL.MINUS); };
+    var tx = function(s){ return String(s).replace(/(^|[\s(（=＝<>≦≧≤≥+×÷,、])-(?=[\d.\/])/g, "$1" + NL.MINUS); };
+    var where = function(li){ return L > 1 ? (li === 0 ? (ja ? "上の線の " : "top line ") : (ja ? "下の線の " : "bottom line ")) : ""; };
+    var line = function(l){ var o = l.src; return (o.label ? tx(o.label) + " " : "") + sv(o.from) + (ja ? "〜" : " to ") + sv(o.to) + (o.unit ? " " + o.unit : ""); };
+    var head = (ja ? "数直線 " : "Number line ") + (L > 1 ? (ja ? "上 " : "top ") + line(pl.lines[0]) + sep + (ja ? "下 " : "bottom ") + line(pl.lines[1]) : line(pl.lines[0]));
+    var out = [];
+    pl.marks.forEach(function(m){
+      var at = where(m.li) + sv(m.o.at), what = m.o.label ? tx(m.o.label) : m.kind === "open" ? (ja ? "白丸" : "an open dot") : m.kind === "box" ? "□" : (ja ? "印" : "a mark");
+      out.push(ja ? at + " に" + what : what + " at " + at);
+    });
+    pl.jumps.forEach(function(j){ var s2 = where(j.li) + sv(j.o.from) + "→" + sv(j.o.to); out.push(j.o.label ? (ja ? s2 + " に " + tx(j.o.label) : s2 + " " + tx(j.o.label)) : (ja ? s2 : "jump " + s2)); });
+    pl.ranges.forEach(function(r){
+      var lo = r.lo > -Infinity, hi = r.hi < Infinity, s3;
+      if (ja) s3 = where(r.li) + [lo ? sv(r.o.from) + (r.incl[0] ? " 以上" : " より大きい") : "", hi ? sv(r.o.to) + (r.incl[1] ? " 以下" : " 未満") : ""].filter(Boolean).join(" ") + "の範囲";
+      else s3 = "range " + where(r.li) + (lo ? sv(r.o.from) + (r.incl[0] ? " ≤ " : " < ") : "") + "x" + (hi ? (r.incl[1] ? " ≤ " : " < ") + sv(r.o.to) : "");
+      out.push(s3 + (r.o.label ? (ja ? "（" + tx(r.o.label) + "）" : " (" + tx(r.o.label) + ")") : ""));
+    });
+    var src = (this.data || {}).link || [];
+    pl.links.forEach(function(k, i){
+      var at = Array.isArray(src[i]) ? src[i] : src[i].at;   // 書いたとおりの値（"2/3" を 0.666… にしない）
+      var s4 = ja ? "上 " + sv(at[0]) + " と下 " + sv(at[1]) + " が対応" : "top " + sv(at[0]) + " matches bottom " + sv(at[1]);
+      out.push(s4 + (k.o.label ? (ja ? "（" + tx(k.o.label) + "）" : " (" + tx(k.o.label) + ")") : ""));
+    });
+    pl.mags.forEach(function(m){ out.push(ja ? sv(m.o.from) + "〜" + sv(m.o.to) + " を拡大" : "magnified " + sv(m.o.from) + " to " + sv(m.o.to)); });
+    return head + (out.length ? (ja ? "：" : ": ") + out.join(sep) : "");
+  }
   duration(k){
     var pl = this.plan(), dur = this.props.dur, out = 0;
     if (k < 1 || k > pl.steps) return 0;
@@ -265,7 +294,11 @@ return class extends base.MotionElement {
     if (P.arrow !== "on" && P.arrow !== "off") ctx.report("attr", '[numberline] arrow="' + P.arrow + '" is not on or off');
     this.style.display = "block";
     var W = this.clientWidth, H = this.clientHeight, L = pl.lines.length, dur = P.dur, arrow = P.arrow === "on";
-    var svg = D.el("svg", {viewBox: "0 0 " + W + " " + H, width: W, height: H, style: "display:block;overflow:visible"}, this);
+    var svg = D.el("svg", {viewBox: "0 0 " + W + " " + H, width: W, height: H, "aria-hidden": "true", style: "display:block;overflow:visible"}, this);
+    // 読み上げ：最後の形（線と、印・ジャンプ・範囲・対応・拡大のすべて）を 1 文で。作者の aria-label があればそれを使う（上書きしない）
+    if (this._aria === undefined) this._aria = this.getAttribute("aria-label");
+    this.setAttribute("role", "img");
+    if (!this._aria) this.setAttribute("aria-label", this.summary(/^ja\b/i.test(ctx.lang || "ja")));
     var items = this.items = [];
     var add = function(el, o){ o.el = el; items.push(o); return el; };
     var FS = 24, ROW = 34, FROW = 68, OVER = 14;

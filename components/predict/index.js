@@ -15,10 +15,10 @@
 // 2.0（Egatari spec §6.1 の部品）：base の MotionElement・el・mtext・prog・variant を使い、プレイヤーのグローバルは使わない。
 //   見る人の入力を戻すのは ctx.entered だけ（1.x の deck:pos の代わりはない）。動画かどうかは mount の ctx.mode。
 //   要素の大きさの問題は ctx.report("size", …)。印刷の前後は document.defaultView の beforeprint・afterprint
-egatariParts.define({name: "predict", version: "2.0.1", requires: {base: "1.0.0"}, element: "m-predict"}, function(deps){
+egatariParts.define({name: "predict", version: "2.0.2", requires: {base: "1.0.0"}, element: "m-predict"}, function(deps){
 "use strict";
 var base = deps.base;
-var CSS_ID = "predict-2-0-0-css";   // the style element this part writes, named with its name and version (spec §6.1 Identifiers)
+var CSS_ID = "predict-2-0-2-css";   // the style element this part writes, named with its name and version (spec §6.1 Identifiers)
 var CSS = [
   "m-predict .pd-say{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}",
   "m-predict .pd-pick{position:absolute;background:transparent;border:0;border-radius:10px;cursor:pointer;padding:0;margin:0}",
@@ -59,13 +59,16 @@ return class extends base.MotionElement {
   // 作者の数（counts。書かなければ全部 0）
   get author(){
     var d = this.data || {}, n = (d.choices || []).length;
-    return Array.from({length: n}, function(_, i){ var v = d.counts && d.counts[i]; return Number.isInteger(v) && v > 0 ? v : 0; });
+    // 9999 まで（−1・＋1 と数の欄が扱う数の上限。mount で知らせる）
+    return Array.from({length: n}, function(_, i){ var v = d.counts && d.counts[i]; return Number.isInteger(v) && v > 0 ? Math.min(9999, v) : 0; });
   }
   mount(ctx){
     var self = this, d = this.data || {}, n = (d.choices || []).length;
     if (!(d.answer >= 0 && d.answer < n)) throw new Error("answer " + d.answer + " is not a choice index (0–" + (n - 1) + ")");
     if (d.counts && d.counts.length !== n) throw new Error("counts has " + d.counts.length + " numbers for " + n + " choices");
     if (d.counts && d.counts.some(function(v){ return v < 0; })) throw new Error("counts must be 0 or more");
+    var big = (d.counts || []).filter(function(v){ return v > 9999; });
+    if (big.length) ctx.report("data", "[predict] counts " + big.join(", ") + " are more than 9999, the most the −1/+1 buttons and the field take; 9999 is shown");
     this.variant = base.variant(this);
     this.video = ctx.mode === "video";
     this.style.display = "block"; this.style.position = "relative";
@@ -119,8 +122,11 @@ return class extends base.MotionElement {
     var lw = Math.min(W * 0.34, Math.max.apply(null, ch.map(function(c){ return est(c.label, LS); })) + 16);
     var cw = inter ? 232 : 0;
     var valW = est("9999" + P.unit, 26) + 12, okW = est("✓ 正解", 26) + 16;
+    // 棒の軸の長さ：選択肢の名前・数・「正解」・操作の残り。BARMIN px より短ければ知らせ、その長さは残す（負の長さで棒が消え、目盛りが重ならないように）
+    var x0 = mk + lw + 8, x1 = W - cw - valW - okW - 8, BARMIN = 120;
+    if (x1 < x0 + BARMIN){ ctx.report("size", "[predict] the element is " + W + " px wide; the bars get " + Math.round(x1 - x0) + " px, less than " + BARMIN + " (make it about " + Math.ceil(W + x0 + BARMIN - x1) + " px wide or shorten the labels)"); x1 = x0 + BARMIN; }
     this.g = {W: W, H: H, qh: qh, nh: nh, rh: rh, mk: mk, lw: lw, cw: cw,
-      x0: mk + lw + 8, x1: W - cw - valW - okW - 8, y0: qh, y1: qh + rh * n};
+      x0: x0, x1: x1, y0: qh, y1: qh + rh * n};
     var G = this.g;
     var svg = this.svg = D.el("svg", {viewBox: "0 0 " + W + " " + H, width: W, height: H, style: "display:block;overflow:visible"});
     this.insertBefore(svg, this.say);
@@ -294,6 +300,8 @@ return class extends base.MotionElement {
     // 数の軸
     var M = nice(Math.max(4, Math.max.apply(null, c)) * 1.12), len = G.x1 - G.x0, X = function(v){ return G.x0 + Math.min(v, M) / M * len; };
     var ts = Math.max(1, tickStep(M)), ti = 0;
+    // 短い軸では目盛りの数が重ならない間隔まで広げる（数の幅＋16 px）
+    while (ts < M && len * ts / M < est(String(Math.ceil(M)), 24) + 16) ts = up(ts);
     this.ticks.forEach(function(o, j){
       var v = (j + 1) * ts, on = v <= M + 1e-9;
       o.grid.setAttribute("x1", X(v).toFixed(1)); o.grid.setAttribute("x2", X(v).toFixed(1));
@@ -334,6 +342,7 @@ return class extends base.MotionElement {
     function est(s, size){ return [...String(s)].reduce(function(a, c){ return a + (/[\u0000-ɏ]/.test(c) ? 0.56 : 1); }, 0) * size; }
     function nice(v){ var e = Math.pow(10, Math.floor(Math.log10(v))), x = v / e;
       return [1, 1.2, 1.5, 2, 2.5, 3, 4, 5, 6, 8, 10].filter(function(s){ return s >= x - 1e-9; })[0] * e; }
+    function up(v){ var e = Math.pow(10, Math.floor(Math.log10(v))); return Math.round([1, 2, 5, 10, 20].filter(function(s){ return s * e > v + 1e-9; })[0] * e); }
     function tickStep(M){ var r = M / 4.5, e = Math.pow(10, Math.floor(Math.log10(r))), x = r / e;
       return Math.round((x <= 1 ? 1 : x <= 2 ? 2 : x <= 2.5 ? 2.5 : x <= 5 ? 5 : 10) * e); }
   }
