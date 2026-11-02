@@ -9,8 +9,12 @@ Only the maintainer releases. To withdraw a release, add it to `yanked.json` und
    ```bash
    git status --short            # nothing
    npm test
-   node tools/release.mjs X.Y.Z  # dist/egatari-components-vX.Y.Z.tar.gz, dist/manifest.json, and the sha256 line
+   curl -sL -o /tmp/prev-manifest.json https://github.com/egatari/components/releases/download/vPREV/manifest.json
+   node tools/release.mjs X.Y.Z --previous /tmp/prev-manifest.json
+   # dist/egatari-components-vX.Y.Z.tar.gz, dist/manifest.json, the sha256 line, and the line
+   # "changed without a version bump since PREV: …"
    ```
+   A part's version follows its code (`index.js`) alone: a change to its README, demo or other files does not bump it. With `--previous`, the manifest gets `changedWithoutBump: {since, parts}` and the command prints those parts; the notes list them under For Studio. It is for people reading it: Studio's importer decides by the per-file sha256, since it may skip releases. While the AI instructions are frozen, a README change outside `<!-- llm: omit -->` changes them as a new part would: hold it, or tell the standards side first.
 3. Tag and release (the notes end with the tarball's sha256 line that `tools/release.mjs` printed). Before the sha line, the notes say how many bytes the READMEs of `m-bars`, `m-flow`, `m-menu`, `m-curves`, `m-quad` and `m-kpi` changed since the previous release (Egatari Studio's free-plan AI pack carries them and sits near its size cap):
    ```bash
    for n in bars flow menu curves quad kpi; do echo "m-$n $(( $(wc -c < components/$n/README.md) - $(git show vPREV:components/$n/README.md | wc -c) ))"; done

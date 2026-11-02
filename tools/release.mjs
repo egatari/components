@@ -1,5 +1,5 @@
 // Make the release assets for a version (run on a clean checkout of the commit to tag; CI runs it with --check):
-//   node tools/release.mjs 1.0.0 [--out dist]
+//   node tools/release.mjs 1.0.0 [--out dist] [--previous <the previous release's manifest.json>]
 // Writes
 //   dist/egatari-components-v1.0.0.tar.gz   LICENSE and components/<name>/… as <name>/… (every file of each component except out/)
 //   dist/manifest.json                       {name, version, tag, repository, license, tarball: {file, sha256, bytes},
@@ -18,7 +18,11 @@
 //                                               {kind: "library", version, requires: {<name>: <exact version>}, license, withdrawn?, sha256, files}},
 //                                             (version is the part's; the manifest's own version is the catalogue version, package.json)
 //                                             yanked: {<version>: {replacement, reason, date}}  (from yanked.json releases; Egatari spec §6: a withdrawn release stays available),
-//                                             files: {<path in the tarball>: sha256}}
+//                                             files: {<path in the tarball>: sha256},
+//                                             changedWithoutBump? ({since: <previous catalogue version>, parts: {<name>: [<files>]}}, with --previous:
+//                                               parts whose version did not change but whose other files (README.md, demo.html, …) did; a part
+//                                               version follows index.js alone, spec §6.1. For people reading it: an importer decides by the
+//                                               per-file sha256, since it may skip releases)}
 // Per-file and component sha256 values are identity hashes (line endings normalized for text files, Egatari spec §6); the tarball's is byte-exact.
 // The tarball is deterministic (tools/tar.mjs): the same files give the same bytes.
 // Egatari Studio's `npm run components:update -- v1.0.0` downloads both, checks the tarball's sha256 against the manifest
@@ -84,7 +88,20 @@ export function readWithdrawn(name, current, file = readYankedFile()) {
   return Object.fromEntries(Object.keys(y).sort(cmp).map((v) => [v, y[v]]));
 }
 
-export function release(version) {
+// Parts whose version is the same in prev (a manifest) but whose files differ, added or removed: {name: [files]}
+export function changedWithoutBump(prev, components) {
+  const out = {};
+  for (const [name, c] of Object.entries(components)) {
+    const q = prev.components && prev.components[name];
+    if (!q || q.version !== c.version) continue;
+    const a = q.files || {}, b = c.files || {};
+    const diff = [...new Set([...Object.keys(a), ...Object.keys(b)])].filter((f) => a[f] !== b[f]).sort();
+    if (diff.length) out[name] = diff;
+  }
+  return out;
+}
+
+export function release(version, { previous } = {}) {
   if (!/^\d+\.\d+\.\d+(-rc\.\d+)?$/.test(version)) throw new Error(`version ${version} is not X.Y.Z or X.Y.Z-rc.N`);
   const pe = publishedProblems();
   if (pe.length) throw new Error('published.json:\n  ' + pe.join('\n  '));
@@ -128,6 +145,10 @@ export function release(version) {
     yanked: readYanked(version),
     files: Object.fromEntries(entries.map(([p, b]) => [p, idSha(p, b)])),
   };
+  if (previous) {
+    const parts = changedWithoutBump(previous, components);
+    if (Object.keys(parts).length) manifest.changedWithoutBump = { since: previous.version, parts };
+  }
   // the tarball reads back to exactly these files
   const back = readTarGz(gz);
   if (back.size !== entries.length || entries.some(([p, b]) => !back.has(p) || !Buffer.from(back.get(p)).equals(Buffer.from(b)))) throw new Error('the tarball does not read back to the same files');
@@ -139,8 +160,10 @@ if (process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.me
   const check = args.includes('--check');
   const oi = args.indexOf('--out');
   const out = path.resolve(oi >= 0 ? args[oi + 1] : path.join(ROOT, 'dist'));
-  const version = args.find((a, i) => !a.startsWith('--') && !(oi >= 0 && i === oi + 1)) || JSON.parse(fs.readFileSync(path.join(ROOT, 'package.json'), 'utf8')).version;
-  const a = release(version), b = release(version);
+  const pi = args.indexOf('--previous');
+  const previous = pi >= 0 ? JSON.parse(fs.readFileSync(args[pi + 1], 'utf8')) : null;
+  const version = args.find((a, i) => !a.startsWith('--') && !(oi >= 0 && i === oi + 1) && !(pi >= 0 && i === pi + 1)) || JSON.parse(fs.readFileSync(path.join(ROOT, 'package.json'), 'utf8')).version;
+  const a = release(version, { previous }), b = release(version, { previous });
   if (!Buffer.from(a.gz).equals(Buffer.from(b.gz))) { console.error('release: the tarball is not deterministic'); process.exit(1); }
   if (check) {
     console.log(`release --check: ${a.file} ${a.manifest.tarball.sha256} (${Object.keys(a.manifest.components).length} components, ${Object.keys(a.manifest.files).length} files, deterministic)`);
@@ -149,5 +172,8 @@ if (process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.me
     fs.writeFileSync(path.join(out, a.file), a.gz);
     fs.writeFileSync(path.join(out, 'manifest.json'), JSON.stringify(a.manifest, null, 2) + '\n');
     console.log(`${path.join(out, a.file)}\n${path.join(out, 'manifest.json')}\nsha256 ${a.manifest.tarball.sha256}  ${a.file}`);
+    // for the release notes' For Studio
+    const cw = a.manifest.changedWithoutBump;
+    if (previous) console.log(cw ? `changed without a version bump since ${cw.since}: ${Object.entries(cw.parts).map(([n, fs_]) => `${n}@${a.manifest.components[n].version} (${fs_.join(', ')})`).join('; ')}` : `changed without a version bump since ${previous.version}: none`);
   }
 }
