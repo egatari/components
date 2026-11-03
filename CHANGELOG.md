@@ -15,6 +15,7 @@ Changes what Studio's AI instruction pack carries (released after the standards 
 ### Changed
 
 - `base` 1.1.0: `textWidth(str, size, {font, mark})`, per-character widths measured in the theme fonts (BIZ UDPGothic, BIZ UDPMincho, Source Sans 3), picked by the element's own font, the widest table for an unknown font. 28 element parts use it in place of their private estimates, which put Latin letters and digits at 0.56–0.6 em (25–35 % narrow), so long numbers and Latin labels overflowed. `mtext` draws sub- and superscripts at 3/4 of the text and never under 24 px (they were 17 px), shifted by a fixed −0.25 em / +0.45 em. `plot` and `markup-reader` 1.0.1 require it; every element part requires base 1.1.0 and has a new patch version.
+- `m-kakijun` moves from the kokugo set to tier `extra` (#170, owner's decision): it covers kana stroke order only, too narrow for a subject set, so Studio's instruction packs no longer carry it; a lesson can still use it.
 - `m-codetree`: shown as ハフマン木 / Huffman tree (was 文脈木 / Context tree; #168). The part draws Modified Huffman decoding.
 
 ### Added

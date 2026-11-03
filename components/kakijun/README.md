@@ -2,8 +2,7 @@
 name: m-kakijun
 version: 2.0.1
 series: kokugo
-tier: specialized
-set: kokugo
+tier: extra
 summary: かな（ひらがな・カタカナ）の書き順。字を 1 画ずつ、書く順と向きのとおりに書いて見せる
 steps: 字 1 つ＝1 段階（段階の中で 1 画ずつ）。per="stroke" なら 1 画＝1 段階
 purposes: process

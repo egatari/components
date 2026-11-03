@@ -5,6 +5,7 @@ The part's own versions (Egatari spec §6.1). Releases of the whole library are 
 ## 2.0.1 (components 2.2.0)
 
 - Requires base 1.1.0 (sub- and superscripts at least 24px, a measured text-width estimate).
+- Tier extra instead of the kokugo set (#170): kana stroke order is too narrow for a subject set, so instruction packs no longer carry it.
 
 ## 2.0.0 (components 2.0.0-rc.1 and 2.0.0)
 
