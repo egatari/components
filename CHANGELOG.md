@@ -8,6 +8,25 @@ Versions follow [README.md § Releases and versions](README.md#releases-and-vers
 
 - `m-compare` `by="row"`; an "outside every set" region for `m-venn`; planned-vs-actual bars for `m-timeline`
 
+## 2.2.0 - 2026-11-03
+
+Changes what Studio's AI instruction pack carries (released after the standards side's eval B). Every part has a new version: lessons pinned to earlier releases keep their drawing; **rebuilding a lesson on 2.2.0 can change its layout** (measured text widths, larger sub- and superscripts).
+
+### Changed
+
+- `base` 1.1.0: `textWidth(str, size, {font, mark})`, per-character widths measured in the theme fonts (BIZ UDPGothic, BIZ UDPMincho, Source Sans 3), picked by the element's own font, the widest table for an unknown font. 28 element parts use it in place of their private estimates, which put Latin letters and digits at 0.56–0.6 em (25–35 % narrow), so long numbers and Latin labels overflowed. `mtext` draws sub- and superscripts at 3/4 of the text and never under 24 px (they were 17 px), shifted by a fixed −0.25 em / +0.45 em. `plot` and `markup-reader` 1.0.1 require it; every element part requires base 1.1.0 and has a new patch version.
+- `m-codetree`: shown as ハフマン木 / Huffman tree (was 文脈木 / Context tree; #168). The part draws Modified Huffman decoding.
+
+### Added
+
+- `m-score` 2.1.0: `per-step="N"` with `by="measure"` makes N measures one step, as long as the music (so the 1.2 s hold of spec §5.5 does not stretch it); a pickup measure joins the next step (also with the default N = 1, so a `by="measure"` lesson that opens with a pickup has one step fewer when rebuilt). The README says when to use `by="note"` (names and pitches, no rhythm) and `by="measure"`.
+
+### Documentation
+
+- READMEs of 30 parts corrected from the audit: `console.warn` → `ctx.report`; missing props (`m-kanbun` `order-by`, `m-codetree`'s 8 props and its step count, `m-bars` `stack="percent"`, `m-heatmap` `unit`/`digits`, `m-flow`'s shape schema: node `shape`, edge `loop` and `pulseAt`); `m-timeline`'s Gantt limits; `m-map-world` `shapes`/`valuesStep`/`labelAt`, `m-map-japan` `valuesStep` and flow widths; `tone` in `m-numberline`, `m-tape`, `m-market`, `m-collect`; `m-timer`'s `labels.ready` and 8 phases; `m-kpi`'s minus sign; `m-quad`'s label placement; `m-kobun`'s `detail` for print. Drawing details the AI does not need moved into `llm: omit` (kokugo parts, for room in the free pack). mtext's `*…*` / `_` / `^` markup is described once in Studio's pack body (v0.6.5), not in each README.
+- Demos: `m-curves` uses current attributes; `m-tree` and `m-seq` mark their invented values 架空. Library READMEs no longer say "2.0 alpha".
+- `docs/conventions`: `m-sweep` has no `xf`/`yf`; `m-orbit` is preview-exempt; §1.6's one owner-approved exception (v2.2.0 moves layouts, so `test-default-variant` compares only the default variant's name against older baselines).
+
 ## 2.1.2 - 2026-11-03
 
 Fixes from an audit of all 38 element parts (wrong answers, drawings broken by ordinary data, information lost in the final state that print and small views show, and text equivalents). Code only: no README text, prop `doc` or `static shape` changed, so Studio's AI instruction pack is the same as with 2.1.1 but for version strings. 37 parts have a new patch version; `m-kakijun` is unchanged. Each part's CHANGELOG.md lists its fixes.
