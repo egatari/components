@@ -2,6 +2,10 @@
 
 The part's own versions (Egatari spec §6.1). Releases of the whole library are in the repository's CHANGELOG.md.
 
+## 2.0.2 (components 2.2.0)
+
+- Requires base 1.1.0 (sub- and superscripts at least 24px, a measured text-width estimate).
+
 ## 2.0.1 (components 2.1.2)
 
 - Fix: in window mode the summary step drew only the deepest codeword path (the other paths had opacity 0), although the summary promises all decoded paths; the summary now lays out the whole tree of all decoded paths without the window when its levels are at least 20 px apart, and otherwise keeps the deepest-path window and reports `layout`.

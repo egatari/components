@@ -14,7 +14,7 @@
 // 2.0（Egatari spec §6.1 の部品）：base の MotionElement・prog・lerp・previewOpacity と、読み取り・訓読の順の kanbun-core を使い、
 // プレイヤーのグローバルは使わない。書き方の誤りは ctx.report("data", "[kanbun] …")、要素に収まらないときは
 // ctx.report("size", "[kanbun] …") で知らせる（1.x の console.warn("m-kanbun: …") の代わり）
-egatariParts.define({name: "kanbun", version: "2.0.1", requires: {base: "1.0.0", "kanbun-core": "1.0.0"}, element: "m-kanbun"}, function(deps){
+egatariParts.define({name: "kanbun", version: "2.0.2", requires: {base: "1.1.0", "kanbun-core": "1.0.0"}, element: "m-kanbun"}, function(deps){
 "use strict";
 var base = deps.base;
 var D = base;

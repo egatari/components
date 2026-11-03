@@ -2,6 +2,10 @@
 
 The part's own versions (Egatari spec §6.1). Releases of the whole library are in the repository's CHANGELOG.md.
 
+## 2.0.2 (components 2.2.0)
+
+- Requires base 1.1.0 (sub- and superscripts at least 24px, a measured text-width estimate).
+
 ## 2.0.1 (components 2.1.2)
 
 - Fix: a `size` that is not a number (for example size="big") made the size NaN and the words ran together. It is now reported (`attr`) and the default 36 is used. The style element is now syntax-2-0-1-css.

@@ -10,7 +10,7 @@
 // 2.0（Egatari spec §6.1 の部品）：base の MotionElement・el・prog・variant を使い、プレイヤーのグローバルは使わない。属性の誤りは
 // ctx.report("attr" | "range", "[hissan] …")、要素に入らないときは ctx.report("size", "[hissan] …") で知らせる（1.x の console.warn の代わり。
 // 段階の数を決める plan() は ctx を読まないので、知らせることを貯めておき、mount で知らせる）
-egatariParts.define({name: "hissan", version: "2.0.1", requires: {base: "1.0.0"}, element: "m-hissan"}, function(deps){
+egatariParts.define({name: "hissan", version: "2.0.2", requires: {base: "1.1.0"}, element: "m-hissan"}, function(deps){
 "use strict";
 var base = deps.base;
 // ---- 計算と配置（DOM を使わない。tools/test-hissan.mjs が vm で読む） ----

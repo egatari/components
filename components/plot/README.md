@@ -1,14 +1,14 @@
 ---
 name: plot
-version: 1.0.0
+version: 1.0.1
 kind: library
 summary: 2.0 のパーツが使う座標軸つきの図（軸・目盛り・軸の名前・切り抜き）。教材の作者が直接は書かない
-requires: base@1.0.0
+requires: base@1.1.0
 ---
 
 **2.0 alpha (branch `c2-base`; not for lessons).** A library part (Egatari spec §6.1). Parts that draw on axes (today
 `m-boxplot`, `m-curves`, `m-hist`, `m-scatter`, `m-seq`, `m-sweep` through `DECK.Plot`) require it as
-`requires: {base: "1.0.0", plot: "1.0.0"}` and receive `{Plot}`:
+`requires: {base: "1.1.0", plot: "1.0.1"}` and receive `{Plot}`:
 
 ```js
 const p = plot.Plot(box, {xr: [0, 10], yr: [0, 1], xt: [0, 5, 10], yt: [0, 0.5, 1], xf: 0, yf: 1, xl: "x", yl: "y"});

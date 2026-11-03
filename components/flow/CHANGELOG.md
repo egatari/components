@@ -2,6 +2,10 @@
 
 The part's own versions (Egatari spec §6.1). Releases of the whole library are in the repository's CHANGELOG.md.
 
+## 2.0.3 (components 2.2.0)
+
+- Requires base 1.1.0 (sub- and superscripts at least 24px, a measured text-width estimate) and markup-reader 1.0.1.
+
 ## 2.0.2 (components 2.1.2)
 
 - Fix: an edge from a box to itself without `loop` had zero length, gave NaN coordinates and drew a stray arrowhead in the top-left corner. It is now drawn as a small loop on the right of the box (from 1/4 and 3/4 of its side), with a `data` report naming the edge; with `loop` it is the same loop on that side. An edge between two boxes with the same centre is reported and not drawn.

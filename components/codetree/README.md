@@ -1,6 +1,6 @@
 ---
 name: m-codetree
-version: 2.0.1
+version: 2.0.2
 series: info
 tier: extra
 display: 文脈木 / Context tree

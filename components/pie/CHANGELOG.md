@@ -2,6 +2,10 @@
 
 The part's own versions (Egatari spec §6.1). Releases of the whole library are in the repository's CHANGELOG.md.
 
+## 2.0.2 (components 2.2.0)
+
+- Requires base 1.1.0 (sub- and superscripts at least 24px, a measured text-width estimate).
+
 ## 2.0.1 (components 2.1.2)
 
 - Fix: a slice of about 99.999 % or more vanished, because the two ends of its arc became the same point after rounding (and its inside label was then drawn in --bg on the blank background); such a slice is now drawn as a full circle.

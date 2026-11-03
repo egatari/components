@@ -2,6 +2,10 @@
 
 The part's own versions (Egatari spec §6.1). Releases of the whole library are in the repository's CHANGELOG.md.
 
+## 2.0.3 (components 2.2.0)
+
+- Requires base 1.1.0 (sub- and superscripts at least 24px, a measured text-width estimate).
+
 ## 2.0.2 (components 2.1.2)
 
 - Fix: in an element narrower than about 590 px the bar axis got a negative length, so the bars vanished and the ticks piled up, silently; it is now reported (size), the axis keeps at least 120 px and the ticks are spaced so their numbers do not overlap.

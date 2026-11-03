@@ -9,7 +9,7 @@
 // 2.0（Egatari spec §6.1 の部品）：base の MotionElement・el・mtext・prog・lerp・variant・previewOpacity、plot の Plot、
 // 代表値と度数は hist-core（1.x の static stats）を使い、プレイヤーのグローバルは使わない。書き方やデータの知らせ
 // （1.x の console.warn）は mount で ctx.report に。言語は ctx.lang（mount で読む）
-egatariParts.define({name: "hist", version: "2.0.1", requires: {base: "1.0.0", "hist-core": "1.0.0", plot: "1.0.0"}, element: "m-hist"}, function(deps){
+egatariParts.define({name: "hist", version: "2.0.2", requires: {base: "1.1.0", "hist-core": "1.0.0", plot: "1.0.1"}, element: "m-hist"}, function(deps){
 "use strict";
 var base = deps.base, plot = deps.plot;
 // ---- 代表値と度数（hist-core。tools/test-stats.mjs が試す） ----

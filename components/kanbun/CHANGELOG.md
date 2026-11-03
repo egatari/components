@@ -2,6 +2,10 @@
 
 The part's own versions (Egatari spec §6.1). Releases of the whole library are in the repository's CHANGELOG.md.
 
+## 2.0.2 (components 2.2.0)
+
+- Requires base 1.1.0 (sub- and superscripts at least 24px, a measured text-width estimate).
+
 ## 2.0.1 (components 2.1.2)
 
 - Fix: in the final 書き下し文 state the return arcs faded to 0 and the order numbers to 40 %, so prints and the script view lost the reading order; the arcs and numbers now stay as they were at the end of the order steps.

@@ -6,7 +6,7 @@
 // 2.0（Egatari spec §6.1 の部品）：base の MotionElement・el・mtext・prog・previewOpacity、plot の Plot、expr の compile を使い、
 // プレイヤーのグローバルは使わない（1.x は式の評価器 egatari-expr を写して持っていた）。破線の mask の id は
 // curves-2-0-1-<n>m<系列>：このパーツの名前と版に、このパーツだけの数え（1.x は mc<n>m<系列> で、DECK.Plot の数えを進めていた）
-egatariParts.define({name: "curves", version: "2.0.1", requires: {base: "1.0.0", expr: "1.0.0", plot: "1.0.0"}, element: "m-curves"}, function(deps){
+egatariParts.define({name: "curves", version: "2.0.2", requires: {base: "1.1.0", expr: "1.0.0", plot: "1.0.1"}, element: "m-curves"}, function(deps){
 "use strict";
 var base = deps.base, plot = deps.plot, expr = deps.expr;
 var ID = "curves-2-0-1-";   // name and version of this part, dots replaced (spec §6.1 Identifiers)

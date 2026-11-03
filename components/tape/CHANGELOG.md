@@ -2,6 +2,10 @@
 
 The part's own versions (Egatari spec §6.1). Releases of the whole library are in the repository's CHANGELOG.md.
 
+## 2.0.2 (components 2.2.0)
+
+- Requires base 1.1.0 (sub- and superscripts at least 24px, a measured text-width estimate).
+
 ## 2.0.1 (components 2.1.2)
 
 - Fix: the element had no role, so assistive tech read the labels in the svg in DOM order without saying which row or brace they belong to; it is now role="img" (the svg aria-hidden) named by the final state built from the data (「テープ図：A 12 m、B 12 m＋5 m、B 全体 □ m」: each row's segments, each brace, each times arrow), and an author aria-label is kept.

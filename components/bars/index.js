@@ -13,7 +13,7 @@
 // 負の値（積み上げでない棒）：値の軸に 0 を含め、0 の基線から下（横棒は左）へ伸ばす。値の数字は棒の端の外側（下・左）に書く
 // 2.0（Egatari spec §6.1 の部品）：base の MotionElement・el・mtext・prog・lerp・previewOpacity を使い、プレイヤーのグローバルは使わない。
 // 要素が小さすぎるときは ctx.report で知らせる（1.x の console.warn("m-bars: …") の代わり）
-egatariParts.define({name: "bars", version: "2.0.1", requires: {base: "1.0.0"}, element: "m-bars"}, function(deps){
+egatariParts.define({name: "bars", version: "2.0.2", requires: {base: "1.1.0"}, element: "m-bars"}, function(deps){
 "use strict";
 var base = deps.base;
 return class extends base.MotionElement {

@@ -1,16 +1,16 @@
 ---
 name: base
-version: 1.0.0
+version: 1.1.0
 kind: library
 summary: 2.0 の要素のパーツが使う土台（基底のクラス MotionElement と、SVG・時間・見せ方の補助）。データの形は mount の前に確かめる。教材の作者が直接は書かない
 requires: shape@1.0.0
 ---
 
 **2.0 alpha (branch `c2-base`; not for lessons).** A library part (Egatari spec §6.1): it defines no element. Element parts
-of components 2.0 require it as `requires: {base: "1.0.0"}` and receive what its factory returns:
+of components 2.0 require it as `requires: {base: "1.1.0"}` and receive what its factory returns:
 
 ```js
-egatariParts.define({name: "bars", version: "2.0.0", requires: {base: "1.0.0"}, element: "m-bars"},
+egatariParts.define({name: "bars", version: "2.0.2", requires: {base: "1.1.0"}, element: "m-bars"},
   ({base}) => class extends base.MotionElement { /* … */ });
 ```
 
@@ -21,7 +21,8 @@ egatariParts.define({name: "bars", version: "2.0.0", requires: {base: "1.0.0"}, 
 | `lerp(a, b, e)` | `a + (b − a)·e` | `DECK.lerp` |
 | `prog(t, start, dur)` | eased progress 0…1 of a motion from `start` lasting `dur` (1 at `t = ∞`); `prog(x, 0, 1)` is deck.js's `ease(x)` | `DECK.prog` (`DECK.ease`) |
 | `clamp(x)` | `x` limited to 0…1 | `DECK.clamp01` |
-| `mtext(parent, x, y, str, attrs?)` | SVG `<text>` with `*italic*`, `_sub`, `^sup` (24 px; a run-time helper, not the build-time `tex` of spec §6.2) | `DECK.mtext` |
+| `mtext(parent, x, y, str, attrs?)` | SVG `<text>` with `*italic*`, `_sub`, `^sup` (24 px; a run-time helper, not the build-time `tex` of spec §6.2). Since 1.1.0 a sub/superscript is 3/4 of the text and never under 24 px (1.0.0 and `DECK.mtext`: 17 px) | `DECK.mtext` |
+| `textWidth(str, size, {font?, mark?})` (1.1.0) | the estimated width in px of `str` at `size`: per-character widths measured in the theme fonts (BIZ UDPGothic, BIZ UDPMincho, Source Sans 3; `font` is an element or a font-family, its first family picks the table; an unknown font takes the widest); `mark: true` skips mtext's `*_^` | — |
 | `variant(el, names?)` | the presentation variant: the `variant` attribute when it is one of `names` (default `el.constructor.variants`), else the first; an unknown name warns | `VARIANT.of(el)` (tools/variant.js) |
 | `previewOpacity(el)` | the theme's `--preview-opacity` seen from `el`, or 0.45 when unset or outside 0…1 | the inline `getComputedStyle` read |
 

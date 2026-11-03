@@ -2,6 +2,10 @@
 
 The part's own versions (Egatari spec §6.1). Releases of the whole library are in the repository's CHANGELOG.md.
 
+## 2.0.2 (components 2.2.0)
+
+- Requires base 1.1.0 (sub- and superscripts at least 24px, a measured text-width estimate).
+
 ## 2.0.1 (components 2.1.2)
 
 - Fix: with `tate`, the element took Studio's `.tate` layout rule (vertical writing, height 100%) and was 0 wide, so an auxiliary's card opened off the slide. The part now uses its own class `kb-tate`; the `tate` attribute is unchanged.

@@ -1,4 +1,4 @@
-// components/markup-reader 1.0.0, the reader of build-time rendered output (Egatari spec §6.2 "Rendered output is data"):
+// components/markup-reader 1.0.1, the reader of build-time rendered output (Egatari spec §6.2 "Rendered output is data"):
 //   1. list       its embedded element and attribute list equals egatari-spec's normative schema/rendered-markup-1.json at the
 //                 commit pinned in tools/spec.json (tools/markup-sync.mjs --check; the spec is fetched into .spec/)
 //   2. cases      the reader in a browser on small markups: what it keeps (namespaces, attributes, values, style one property
@@ -47,7 +47,7 @@ const page = await browser.newPage();
 const errors = [];
 page.on('pageerror', (e) => errors.push(e.message));
 await page.goto(S.browser.fileUrl(page0));
-ok(await page.evaluate(() => EGATARI_PARTS_SHIM.status('markup-reader@1.0.0')) === 'ok', 'markup-reader@1.0.0 is defined through the registry');
+ok(await page.evaluate(() => EGATARI_PARTS_SHIM.status('markup-reader@1.0.1')) === 'ok', 'markup-reader@1.0.1 is defined through the registry');
 
 // ---- 2. cases: [markup, ns, expected outerHTML of the container's content, expected drops (substrings, in order)]
 const CASES = [
@@ -81,7 +81,7 @@ const CASES = [
   ['a</span>b', 'html', 'ab', ['an end tag </span> without its start']],
 ];
 const res = await page.evaluate((cases) => {
-  const MR = EGATARI_PARTS_SHIM.get('markup-reader', '1.0.0');
+  const MR = EGATARI_PARTS_SHIM.get('markup-reader', '1.0.1');
   return cases.map(([m, ns]) => { const d = document.createElement('div'); const drop = MR.read(m, d, ns); return { html: d.innerHTML, drop, ns: [...d.querySelectorAll('*')].map((e) => e.namespaceURI.split('/').pop()) }; });
 }, CASES);
 CASES.forEach(([m, , want, drops], j) => {
@@ -91,7 +91,7 @@ CASES.forEach(([m, , want, drops], j) => {
     + (r.html === want ? '' : `\n     got ${JSON.stringify(r.html)}\n     want ${JSON.stringify(want)}`) + (dropsOk ? '' : `\n     dropped ${JSON.stringify(r.drop)}`));
 });
 const nsr = await page.evaluate(() => {
-  const MR = EGATARI_PARTS_SHIM.get('markup-reader', '1.0.0'), d = document.createElement('div');
+  const MR = EGATARI_PARTS_SHIM.get('markup-reader', '1.0.1'), d = document.createElement('div');
   MR.read('<span><svg><path d="M0"/></svg><math><mi>x</mi></math></span>', d, 'html');
   return [...d.querySelectorAll('*')].map((e) => e.localName + ':' + e.namespaceURI);
 });
@@ -99,7 +99,7 @@ ok(JSON.stringify(nsr) === JSON.stringify(['span:http://www.w3.org/1999/xhtml', 
   'each element is made in its namespace (HTML, SVG, MathML)');
 // texFrame: rendered output read; missing output shown as source and reported once; drops reported once
 const tf = await page.evaluate(() => {
-  const MR = EGATARI_PARTS_SHIM.get('markup-reader', '1.0.0'), reports = [];
+  const MR = EGATARI_PARTS_SHIM.get('markup-reader', '1.0.1'), reports = [];
   const part = document.createElement('m-flow'), ctx = { report: (c, m) => reports.push([c, m]) };
   document.body.appendChild(part);
   const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg'); part.appendChild(svg);
@@ -153,7 +153,7 @@ for (const [out, options] of Object.entries(outputs)) {
   }
   ok(warn.length === 0, `corpus (${out}): KaTeX ${KATEX_VERSION} renders all ${corpus.length} formulas with the producer's options` + (warn.length ? `: ${warn.length} refused, e.g. ${warn[0]}` : ''));
   const r = await page.evaluate(({ items, out, macros }) => {
-    const MR = EGATARI_PARTS_SHIM.get('markup-reader', '1.0.0'), drops = [], unfaithful = [];
+    const MR = EGATARI_PARTS_SHIM.get('markup-reader', '1.0.1'), drops = [], unfaithful = [];
     let same = 0;
     for (const it of items) {
       const d = document.createElement('div'), drop = MR.read(it.m, d, 'html');

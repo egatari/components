@@ -1,6 +1,6 @@
 ---
 name: m-scatter
-version: 2.0.1
+version: 2.0.2
 series: common
 tier: standard
 summary: 散布図。点の組（系列）を段階ごとに出し、そのあと傾向の線（最小二乗の直線か、書いた 2 点）を引く

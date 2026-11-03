@@ -12,7 +12,7 @@
 // どちらも長さは dur で、段階の数・長さ・最後の中身は変わらない
 // 2.0（Egatari spec §6.1 の部品）：base の MotionElement・el・mtext・prog・lerp・variant・previewOpacity を使い、プレイヤーのグローバルは使わない。
 // 切り抜き（clipPath）の id は venn-2-0-1-<n>-in<i>・-out<i>（部品の名前と版。n はこの部品の数え。1.x は m-venn-<n>）
-egatariParts.define({name: "venn", version: "2.0.1", requires: {base: "1.0.0"}, element: "m-venn"}, function(deps){
+egatariParts.define({name: "venn", version: "2.0.2", requires: {base: "1.1.0"}, element: "m-venn"}, function(deps){
 "use strict";
 var base = deps.base;
 var ID = "venn-2-0-1-", count = 0;   // ids this part writes: its name and version, and a counter of its own (spec §6.1 Identifiers)

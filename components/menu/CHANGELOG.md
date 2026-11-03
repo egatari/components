@@ -2,6 +2,10 @@
 
 The part's own versions (Egatari spec §6.1). Releases of the whole library are in the repository's CHANGELOG.md.
 
+## 2.0.2 (components 2.2.0)
+
+- Requires base 1.1.0 (sub- and superscripts at least 24px, a measured text-width estimate).
+
 ## 2.0.1 (components 2.1.2)
 
 - Fix: a printed menu did not say where its cards lead (print only hid the visited mark); in print each card now shows the target slide's number ("→12", from ctx.slides) at its top right, where the visited mark is on screen, so the cards keep their height and a full menu still fits the slide (cards to another file keep their bottom-right mark).

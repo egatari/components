@@ -2,6 +2,10 @@
 
 The part's own versions (Egatari spec §6.1). Releases of the whole library are in the repository's CHANGELOG.md.
 
+## 2.0.2 (components 2.2.0)
+
+- Requires base 1.1.0 (sub- and superscripts at least 24px, a measured text-width estimate).
+
 ## 2.0.1 (components 2.1.2)
 
 - Fix: `range` with the same two values turned every cell black (a division by 0), and a reversed range silently inverted the colours. A `range` that is not [min, max] with min < max is now reported (`attr`) and the data's range (0 to 1 with normalize="row") is used. The legend gradient id is now heatmap-2-0-1-legend-<n>.

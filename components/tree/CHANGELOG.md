@@ -2,6 +2,10 @@
 
 The part's own versions (Egatari spec §6.1). Releases of the whole library are in the repository's CHANGELOG.md.
 
+## 2.0.2 (components 2.2.0)
+
+- Requires base 1.1.0 (sub- and superscripts at least 24px, a measured text-width estimate) and markup-reader 1.0.1.
+
 ## 2.0.1 (components 2.1.2)
 
 - Fix: duplicate node ids were accepted silently; they are now reported as `data` (parent, edges and path use the last node with that id, as before).

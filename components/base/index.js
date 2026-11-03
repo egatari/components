@@ -1,5 +1,5 @@
 // base 1.0.0: the shared base class and helpers of Egatari components 2.0 (a library part, Egatari spec §6.1).
-// Element parts require it ({base: "1.0.0"}) and receive what this factory returns:
+// Element parts require it ({base: "1.1.0"}) and receive what this factory returns:
 //   {MotionElement, el, lerp, prog, clamp, mtext, variant, previewOpacity}
 // It uses no import, no network and no global of the player (spec §6.1): only the DOM, getComputedStyle and console.
 // It requires shape (the data-shape checker): MotionElement checks the part's data against its declared shape before the
@@ -16,7 +16,7 @@
 // compSummary, compPlaceholder) is deck.js's, with DECK.shape → the shape part and DECK.ja → ctx.lang. Differences: base's
 // own warnings start "[base] " (deck.js: "deck.js: ", "[deck] "), and a data problem is reported with a spec §8.4 code
 // (reportCode) and the part's "[<name>] " prefix.
-egatariParts.define({name: "base", version: "1.0.0", requires: {shape: "1.0.0"}}, function(deps){
+egatariParts.define({name: "base", version: "1.1.0", requires: {shape: "1.0.0"}}, function(deps){
 "use strict";
 var NS = "http://www.w3.org/2000/svg";
 var SH = deps.shape;
@@ -51,6 +51,8 @@ function el(tag, attrs, parent){
 // SVG の中の簡単な数式記法：*..* は斜体、_x は下付き、^x は上付き（本格的な式は組み立てのときに描く。spec §6.2）
 function mtext(parent, x, y, str, attrs){
   var t = el("text", Object.assign({x: x, y: y, "font-size": 24}, attrs || {}), parent);
+  // 下付き・上付きは本文の 3/4、ただし 24px より小さくしない（図の字は 24px 以上。1.0.0 は 17px だった）
+  var subSize = Math.max(24, Math.round((+t.getAttribute("font-size") || 24) * 0.75));
   var it = false, i = 0, buf = "";
   function flush(extra){
     if (!buf) return;
@@ -63,12 +65,37 @@ function mtext(parent, x, y, str, attrs){
     if (c === "*"){ flush(); it = !it; i++; }
     else if ((c === "_" || c === "^") && i + 1 < str.length){
       flush(); buf = str[i + 1];
-      flush({"baseline-shift": c === "_" ? "sub" : "super", "font-size": "17"});
+      flush({"baseline-shift": c === "_" ? "sub" : "super", "font-size": String(subSize)});
       i += 2;
     } else { buf += c; i++; }
   }
   flush();
   return t;
+}
+
+// 字の幅の見積もり（px）。テーマの字で 1 字ずつ測った幅（em）を、字の種類ごとに表にした（2026-11 測定、普通と太字で同じ）。
+// 字の種類：数字・英小文字・英大文字・空白・. , : ;・( ) [ ]・+ − × =・% # & / ?・かな・、。（）・「」・ほかのラテン文字・ほか（漢字ほか 1）
+var TW_CLASS = [/[0-9]/, /[a-z]/, /[A-Z]/, / /, /[.,:;'"!|]/, /[()[\]{}]/, /[+\-\u2212\u00d7\u00f7=<>\u00b1~]/, /[%#&@$\/?]/,
+  /[\u3040-\u30ff]/, /[\u3001\u3002\uff08\uff09\u30fb\u300c\u300d]/, /[\u0000-\u024f]/];
+var TW_FONT = {
+  "biz udpgothic": [0.75, 0.62, 0.76, 0.3, 0.31, 0.5, 0.84, 0.75, 0.94, 0.54, 0.62],
+  "biz udpmincho": [0.67, 0.6, 0.76, 0.3, 0.33, 0.49, 0.84, 0.75, 0.9, 0.54, 0.6],
+  "source sans 3": [0.5, 0.48, 0.57, 0.22, 0.25, 0.31, 0.5, 0.6, 1, 0.7, 0.5]
+};
+// 知らない字（テーマが別の字を名前で指すときなど）：表の中でいちばん広い幅（はみ出さない側に見積もる）
+var TW_WIDE = TW_CLASS.map(function(_, i){ return Math.max.apply(null, Object.keys(TW_FONT).map(function(f){ return TW_FONT[f][i]; })); });
+function twTable(font){
+  if (font && font.nodeType === 1) font = getComputedStyle(font).fontFamily;
+  var first = String(font || "").split(",")[0].replace(/["']/g, "").trim().toLowerCase();
+  return TW_FONT[first] || TW_WIDE;
+}
+// textWidth(文字列, 大きさ, {font: 要素か font-family, mark: true で mtext の *_^ を数えない})
+function textWidth(str, size, opts){
+  opts = opts || {};
+  var s = String(str == null ? "" : str), tb = twTable(opts.font), w = 0;
+  if (opts.mark) s = s.replace(/[*_^]/g, "");
+  for (var ch of s){ var e = 1; for (var i = 0; i < TW_CLASS.length; i++) if (TW_CLASS[i].test(ch)){ e = tb[i]; break; } w += e; }
+  return w * (size || 24);
 }
 
 // ---------------------------------------------------------------- 部品のデータの形 (kit/deck.js; spec §6.1 Data shapes)
@@ -278,5 +305,5 @@ function previewOpacity(e){
   return pv >= 0 && pv <= 1 ? pv : 0.45;
 }
 
-return {MotionElement: MotionElement, el: el, lerp: lerp, prog: prog, clamp: clamp01, mtext: mtext, variant: variant, previewOpacity: previewOpacity};
+return {MotionElement: MotionElement, el: el, lerp: lerp, prog: prog, clamp: clamp01, mtext: mtext, textWidth: textWidth, variant: variant, previewOpacity: previewOpacity};
 });

@@ -2,6 +2,10 @@
 
 The part's own versions (Egatari spec §6.1). Releases of the whole library are in the repository's CHANGELOG.md.
 
+## 2.0.2 (components 2.2.0)
+
+- Requires base 1.1.0 (sub- and superscripts at least 24px, a measured text-width estimate).
+
 ## 2.0.1 (components 2.1.2)
 
 - Fix: the element had no role, so its aria-label (the whole passage) was ignored and the line and frame labels in the svg were read as loose text; it is now role="figure" whose name sums up the final reading marks (underlines, what each demonstrative points to, paragraph roles and links, for the phases shown), the passage stays readable as its content, the svgs are aria-hidden, and an author aria-label is kept.

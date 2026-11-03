@@ -13,7 +13,7 @@
 // 2.0（Egatari spec §6.1 の部品）：base を使い、プレイヤーのグローバルは使わない。札の行き先（# の後ろ、spec §9.1A）はこのパーツが
 // ctx.slides で読み（slideOf）、「見た」は ctx.visited(スライドの鍵)。印はスライドに入ったときの描画（ctx.entered）で付け直す
 // （1.x は DECK の deck:pos を聞いていた。ほかのスライドを見られるのは、このスライドを離れている間だけ）
-egatariParts.define({name: "menu", version: "2.0.1", requires: {base: "1.0.0"}, element: "m-menu"}, function(deps){
+egatariParts.define({name: "menu", version: "2.0.2", requires: {base: "1.1.0"}, element: "m-menu"}, function(deps){
 "use strict";
 var base = deps.base;
 var CSS_ID = "menu-2-0-1-css";   // the style element this part writes, named with its name and version (spec §6.1 Identifiers)

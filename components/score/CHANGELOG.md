@@ -2,6 +2,10 @@
 
 The part's own versions (Egatari spec §6.1). Releases of the whole library are in the repository's CHANGELOG.md.
 
+## 2.1.0 (components 2.2.0)
+
+- Requires base 1.1.0 (sub- and superscripts at least 24px, a measured text-width estimate) and markup-reader 1.0.1.
+
 ## 2.0.1 (components 2.1.2)
 
 - Fix: an unknown `by` (for example by="bar") threw and the whole part became a placeholder. It is now reported (`attr`) and by="note" is used, as `names` already does.

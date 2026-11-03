@@ -7,7 +7,7 @@
 // 2.0（Egatari spec §6.1 の部品）：base の MotionElement・el・mtext・prog・lerp・previewOpacity を使い、プレイヤーのグローバルは使わない。
 // 式（tex）は組み立てのときに KaTeX で描く（spec §6.2）：build.fields の targets[].tex を作り手が描いて texHtml を足し、
 // この部品は markup-reader で決まった要素と属性だけを読んで置く（再生のときに KaTeX は動かない）。描いた結果がなければ tex を字のまま出して知らせる
-egatariParts.define({name: "collect", version: "2.0.1", requires: {base: "1.0.0", "markup-reader": "1.0.0"}, element: "m-collect"}, function(deps){
+egatariParts.define({name: "collect", version: "2.0.2", requires: {base: "1.1.0", "markup-reader": "1.0.1"}, element: "m-collect"}, function(deps){
 "use strict";
 var base = deps.base, MR = deps["markup-reader"];
 return class extends base.MotionElement {

@@ -2,6 +2,10 @@
 
 The part's own versions (Egatari spec §6.1). Releases of the whole library are in the repository's CHANGELOG.md.
 
+## 2.0.3 (components 2.2.0)
+
+- Requires base 1.1.0 (sub- and superscripts at least 24px, a measured text-width estimate) and markup-reader 1.0.1.
+
 ## 2.0.2 (components 2.1.2)
 
 - Fix: an edge label was centred on its own line, so it straddled a vertical line and the centre name; it is now placed beside the line, clear of the boxes and the centre name, and `layout` is reported when there is no clear place.

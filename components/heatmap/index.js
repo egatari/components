@@ -11,7 +11,7 @@
 // 2.0（Egatari spec §6.1 の部品）：base の MotionElement・el・prog・variant・previewOpacity と、計算は heatmap-core（1.x の
 // static calc）を使い、プレイヤーのグローバルは使わない。書き方やデータの知らせ（1.x の console.warn）は mount で ctx.report に。
 // 言語は ctx.lang（mount で読む）。凡例のグラデーションの id は heatmap-2-0-1-legend-<n>（1.x は m-heatmap-legend-<n>）
-egatariParts.define({name: "heatmap", version: "2.0.1", requires: {base: "1.0.0", "heatmap-core": "1.0.0"}, element: "m-heatmap"}, function(deps){
+egatariParts.define({name: "heatmap", version: "2.0.2", requires: {base: "1.1.0", "heatmap-core": "1.0.0"}, element: "m-heatmap"}, function(deps){
 "use strict";
 var base = deps.base;
 // ---- 計算（heatmap-core。tools/test-heatmap.mjs がブラウザなしで試す） ----

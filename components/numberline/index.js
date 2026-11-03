@@ -10,7 +10,7 @@
 // 見せ方（docs/conventions.md §1）：fade（フェード、既定）・draw（線・弧・範囲の線を引き、目盛りは左から）。拡大の動きはどちらも同じ
 // 2.0（Egatari spec §6.1 の部品）：base の MotionElement・el・mtext・prog・variant・previewOpacity を使い、プレイヤーのグローバルは使わない。
 // データや大きさの問題は ctx.report で知らせる（1.x の console.warn の代わり）。幾何はテストのために static testing.geom（部品は読まない）
-egatariParts.define({name: "numberline", version: "2.0.1", requires: {base: "1.0.0"}, element: "m-numberline"}, function(deps){
+egatariParts.define({name: "numberline", version: "2.0.2", requires: {base: "1.1.0"}, element: "m-numberline"}, function(deps){
 "use strict";
 var base = deps.base;
 // 形の要素ごとに、書き直すと形が作り直される属性（render の終わりで使う）

@@ -2,6 +2,10 @@
 
 The part's own versions (Egatari spec §6.1). Releases of the whole library are in the repository's CHANGELOG.md.
 
+## 2.0.2 (components 2.2.0)
+
+- Requires base 1.1.0 (sub- and superscripts at least 24px, a measured text-width estimate).
+
 ## 2.0.1 (components 2.1.2)
 
 - Fix: a product past 2^53 (e.g. 123456789×987654321, up to the 12 × 12 digits the parser accepts) was computed as a Number and came out wrong in its last digits, or as NaN; the 「たす」 caption could show an exponent. Both are now exact (BigInt for the product, the partial products written with their zeros).

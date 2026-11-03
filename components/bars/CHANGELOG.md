@@ -2,6 +2,10 @@
 
 The part's own versions (Egatari spec §6.1). Releases of the whole library are in the repository's CHANGELOG.md.
 
+## 2.0.2 (components 2.2.0)
+
+- Requires base 1.1.0 (sub- and superscripts at least 24px, a measured text-width estimate).
+
 ## 2.0.1 (components 2.1.2)
 
 - Fix: the element had no role, so assistive tech read the tick labels and values in DOM order and ignored an aria-label on the element; it is now role="img" (the svg aria-hidden) named by the final values in one sentence (axis or series name and unit, then each group's values; stacked bars add the total, percent stacks give %), and an author aria-label is kept.

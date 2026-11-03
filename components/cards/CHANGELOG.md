@@ -2,6 +2,10 @@
 
 The part's own versions (Egatari spec §6.1). Releases of the whole library are in the repository's CHANGELOG.md.
 
+## 2.0.2 (components 2.2.0)
+
+- Requires base 1.1.0 (sub- and superscripts at least 24px, a measured text-width estimate).
+
 ## 2.0.1 (components 2.1.2)
 
 - Fix: in a 3×2 grid with `arrows`, the arrow from card 3 to card 4 was a chevron at the middle of the slide, under card 2 and pointing at card 5. The row-change arrow now leaves the bottom of the last card of the first row, runs left between the rows and comes down into the first card of the second row (2×2 likewise for 2→3).

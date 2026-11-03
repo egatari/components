@@ -2,6 +2,10 @@
 
 The part's own versions (Egatari spec §6.1). Releases of the whole library are in the repository's CHANGELOG.md.
 
+## 2.0.3 (components 2.2.0)
+
+- Requires base 1.1.0 (sub- and superscripts at least 24px, a measured text-width estimate).
+
 ## 2.0.2 (components 2.1.2)
 
 - Fix: after a `to` move the final state lost where the point started (the dashed trail had no start mark or direction), so a print did not read as a move; the start point now keeps a hollow dot in the point colour and the trail ends in an arrowhead just before the point.

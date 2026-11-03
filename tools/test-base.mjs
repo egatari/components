@@ -3,7 +3,8 @@
 // alpha.2 can move parts from DECK to base with byte-identical rendering.
 //   lerp, prog, clamp   ≡ DECK.lerp, DECK.prog, DECK.clamp01 (Object.is, on a grid including ±0, ±Infinity and NaN);
 //                       prog(x, 0, 1) ≡ DECK.ease(x), which base does not export (m-flow and m-kpi use it)
-//   el, mtext           ≡ DECK.el, DECK.mtext (outerHTML and namespace; attributes, var() colours, style merging, markup)
+//   el, mtext           ≡ DECK.el, DECK.mtext (outerHTML and namespace; attributes, var() colours, style merging, markup);
+//                       mtext's sub/superscripts are 3/4 of the text and at least 24px (base 1.1.0; DECK: 17px); textWidth's tables
 //   MotionElement       ≡ DECK.MotionElement for two classes with the same declarations: steps, from, props, data,
 //                         mount / render / duration / cues, the warnings, and props / data caching
 //   variant(el)         ≡ VARIANT.of(el) of tools/variant.js (names from static variants, or passed), with the same warnings
@@ -64,7 +65,7 @@ function make(Base, kind){
     cues(k){ return [0.5]; }
   };
 }
-var BASE = EGATARI_PARTS_SHIM.get("base", "1.0.0");
+var BASE = EGATARI_PARTS_SHIM.get("base", "1.1.0");
 KINDS.forEach(function(kind, i){ customElements.define("x-d" + i, make(DECK.MotionElement, kind)); customElements.define("x-b" + i, make(BASE.MotionElement, kind)); });
 `;
 const S = await studio();
@@ -95,7 +96,7 @@ try {
   await page.goto(S.browser.fileUrl(out) + '?mode=video');
   await page.waitForFunction(() => window.DECK && DECK.ready, null, { timeout: 15000 });
   const r = await page.evaluate(() => {
-    const B = EGATARI_PARTS_SHIM.get('base', '1.0.0'), res = {};
+    const B = EGATARI_PARTS_SHIM.get('base', '1.1.0'), res = {};
     res.keys = Object.keys(B);
     const same = (a, b) => Object.is(a, b);
     const host = document.getElementById('host');
@@ -122,7 +123,13 @@ try {
     const STR = ['x', '', '*x*', '*x*_i', 'a^2+b^2', '*f*(*x*) = *x*^2', 'x_', 'x^', '**', '***', '_1_2', '^-1', 'σ^2 / *n*', '平均 *μ*', 'β_0 + β_1*x*', '*a*_*b*', '100%', '−3.5'];
     const ATTRS = [undefined, {}, { 'text-anchor': 'middle' }, { 'font-size': 30, fill: 'var(--term)' }, { fill: 'var(--muted)', style: 'font-weight:700' }];
     const mOut = (lib) => { const out = []; for (const s of STR) for (const a of ATTRS) { const p = document.createElementNS('http://www.w3.org/2000/svg', 'svg'); const t = lib.mtext(p, 12.5, 30, s, a && Object.assign({}, a)); out.push([t.parentNode === p, p.innerHTML]); } return out; };
-    res.mtext = { n: STR.length * ATTRS.length, same: JSON.stringify(mOut(B)) === JSON.stringify(mOut(DECK)) };
+    // base 1.1.0: a sub/superscript is 3/4 of the text, never under 24px (DECK.mtext: 17px); otherwise the same markup
+    const subless = (o) => JSON.stringify(o).replace(/(baseline-shift=\\"(?:sub|super)\\" font-size=\\")\d+/g, '$1S');
+    const sizes = [...JSON.stringify(mOut(B)).matchAll(/baseline-shift=\\"(?:sub|super)\\" font-size=\\"(\d+)/g)].map((m) => +m[1]);
+    res.mtext = { n: STR.length * ATTRS.length, same: subless(mOut(B)) === subless(mOut(DECK)), sub: sizes.length, subMin: Math.min(...sizes) };
+    // textWidth: per-font tables (measured), the widest table for an unknown font, mark: true skips *_^
+    res.tw = { goth: B.textWidth('200000', 24, { font: '"BIZ UDPGothic", sans-serif' }), en: B.textWidth('200000', 24, { font: 'Source Sans 3' }),
+      unknown: B.textWidth('200000', 24, { font: 'Foo' }), cjk: B.textWidth('日本語', 30), mark: B.textWidth('*x*_1', 24, { mark: true }) === B.textWidth('x1', 24) };
     // ------------------------------------------------ MotionElement
     const decl = (C) => class extends C {
       static props = { n: { type: 'number', default: 3 }, on: { type: 'bool', default: true }, j: { type: 'json', default: [1] }, s: { type: 'string', default: 'a' }, u: { default: null } };
@@ -218,10 +225,12 @@ try {
   }, CASES);
   console.log(`(reference: ${pinLabel()} kit/deck.js DECK.*, tools/variant.js VARIANT.of)`);
   ok(errors.length === 0, 'no exception or console error' + (errors.length ? ': ' + errors[0] : ''));
-  ok(r.keys.join() === 'MotionElement,el,lerp,prog,clamp,mtext,variant,previewOpacity', `base returns exactly ${r.keys.join(', ')}`);
+  ok(r.keys.join() === 'MotionElement,el,lerp,prog,clamp,mtext,textWidth,variant,previewOpacity', `base returns exactly ${r.keys.join(', ')}`);
   ok(r.nums.nbad === 0, `clamp ≡ DECK.clamp01, lerp ≡ DECK.lerp, prog ≡ DECK.prog, prog(x, 0, 1) ≡ DECK.ease(x) (${r.nums.n} inputs${r.nums.nbad ? '; differ: ' + r.nums.bad.join(' | ') : ''})`);
   ok(r.el.same, `el ≡ DECK.el (${r.el.n} tag/attribute sets, with and without a parent)`);
-  ok(r.mtext.same, `mtext ≡ DECK.mtext (${r.mtext.n} strings × attributes)`);
+  ok(r.mtext.same, `mtext ≡ DECK.mtext but for the sub/superscript size (${r.mtext.n} strings × attributes)`);
+  ok(r.mtext.sub > 0 && r.mtext.subMin >= 24, `sub/superscripts are 24px or more (${r.mtext.sub}, smallest ${r.mtext.subMin})`);
+  ok(r.tw.goth === 108 && r.tw.en === 72 && r.tw.unknown === 108 && r.tw.cjk === 90 && r.tw.mark, `textWidth: 200000 at 24px is 108 (Gothic), 72 (Source Sans 3), 108 (unknown font); 日本語 at 30 is 90; *_^ skipped (${JSON.stringify(r.tw)})`);
   ok(r.me.same && r.me.warned > 0, `MotionElement ≡ DECK.MotionElement: steps, from, props, data, defaults, caching and warnings (${r.me.n} cases, ${r.me.warned} warnings compared)` + (r.me.diff.length ? '\n     ' + r.me.diff.map((d) => d.join('\n     ')).join('\n     ') : ''));
   ok(r.me.proto, 'base.MotionElement extends HTMLElement (not DECK.MotionElement) and has mount, render, duration, cues');
   ok(r.variant.bad.length === 0 && r.variant.warned > 0, `variant(el) ≡ variant(el, names) ≡ VARIANT.of(el), with the same warnings (${r.variant.n} cases)` + (r.variant.bad.length ? ': ' + JSON.stringify(r.variant.bad[0]) : ''));

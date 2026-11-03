@@ -1,6 +1,6 @@
 ---
 name: m-kobun
-version: 2.0.1
+version: 2.0.2
 series: kokugo
 tier: specialized
 set: kokugo

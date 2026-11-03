@@ -2,6 +2,10 @@
 
 The part's own versions (Egatari spec §6.1). Releases of the whole library are in the repository's CHANGELOG.md.
 
+## 2.0.2 (components 2.2.0)
+
+- Requires base 1.1.0 (sub- and superscripts at least 24px, a measured text-width estimate).
+
 ## 2.0.1 (components 2.1.2)
 
 - Fix: the element had no role, so assistive tech read every tick label in the svg in DOM order; it is now role="img" (the svg aria-hidden) named by the final state built from the data (「数直線 0〜10：3 に印、3→7 に +4」: the lines, then each mark, jump, range, link and magnified part), and an author aria-label is kept.

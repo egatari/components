@@ -2,6 +2,10 @@
 
 The part's own versions (Egatari spec §6.1). Releases of the whole library are in the repository's CHANGELOG.md.
 
+## 2.0.2 (components 2.2.0)
+
+- Requires base 1.1.0 (sub- and superscripts at least 24px, a measured text-width estimate) and plot 1.0.1.
+
 ## 2.0.1 (components 2.1.2)
 
 - Fix: a NaN or ±Infinity value of `f` (for example `log(u)` for u ≤ 0, or a division by zero at one value) put NaN into the path and the whole line disappeared. The part now builds the path itself, breaking it at non-finite samples (finite runs as separate subpaths), with one `data` report per parameter value.

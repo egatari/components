@@ -17,7 +17,7 @@
 // 読める層：音の名前を文字で（「ド レ ミ ファ｜ソ …」）。描いた図は aria-hidden
 // 2.0（Egatari spec §6.1 の部品）：base の MotionElement・el・prog・variant・previewOpacity を使い、プレイヤーのグローバルは使わない。
 // 楽譜の描画は組み立てのとき（spec §6.2 build.fields の abcjs）。レッスンのデータや要素の大きさの問題は ctx.report で知らせる（console.warn の代わり）
-egatariParts.define({name: "score", version: "2.0.1", requires: {base: "1.0.0", "markup-reader": "1.0.0"}, element: "m-score"}, function(deps){
+egatariParts.define({name: "score", version: "2.1.0", requires: {base: "1.1.0", "markup-reader": "1.0.1"}, element: "m-score"}, function(deps){
 "use strict";
 var base = deps.base;
 // ---- 楽譜のデータ（DOM を使わない。tools/test-score.mjs が試す） ----

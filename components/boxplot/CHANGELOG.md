@@ -2,6 +2,10 @@
 
 The part's own versions (Egatari spec §6.1). Releases of the whole library are in the repository's CHANGELOG.md.
 
+## 2.0.2 (components 2.2.0)
+
+- Requires base 1.1.0 (sub- and superscripts at least 24px, a measured text-width estimate) and plot 1.0.1.
+
 ## 2.0.1 (components 2.1.2)
 
 - Fix: quartiles and other written values were rounded to one decimal more than the data without a ≈ (n = 10: inc 6.25 showed as 6.3, exc 5.75 and 12.25 as 5.8 and 12.3), disagreeing with the README table; without digits they are now written exactly (6.25), never with fewer decimals than the data.

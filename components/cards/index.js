@@ -7,7 +7,7 @@
 // 説明は和文を文節の切れ目らしい所（平仮名の後ろで平仮名でない字の前、読点・空白の後ろ）で折り返し、入らなければ … で切って ctx.report
 // 見せ方（docs/conventions.md §1）：rise（下から、既定）・fade（その場で）・draw（枠と矢印を描いてから中身）。段階の数・長さ・最後の中身はどれも同じ
 // 2.0（Egatari spec §6.1 の部品）：base の MotionElement・el・mtext・prog・clamp・variant・previewOpacity と icons の svg を使い、プレイヤーのグローバルは使わない
-egatariParts.define({name: "cards", version: "2.0.1", requires: {base: "1.0.0", icons: "1.0.0"}, element: "m-cards"}, function(deps){
+egatariParts.define({name: "cards", version: "2.0.2", requires: {base: "1.1.0", icons: "1.0.0"}, element: "m-cards"}, function(deps){
 "use strict";
 var base = deps.base, icons = deps.icons;
 var TONES = /^(term|emph|accent2|series-[1-4])$/;

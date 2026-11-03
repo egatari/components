@@ -152,10 +152,10 @@ function sandbox() {
     run(js, `components/${n}/index.js`);
     ok(S.status(`${n}@${m.version}`) === 'ok', `${n}@${m.version} defines without failure in dependency order`);
   }
-  const base = S.get('base', '1.0.0');
-  ok(base && Object.keys(base).join() === 'MotionElement,el,lerp,prog,clamp,mtext,variant,previewOpacity', 'base returns exactly {MotionElement, el, lerp, prog, clamp, mtext, variant, previewOpacity}');
+  const base = S.get('base', '1.1.0');
+  ok(base && Object.keys(base).join() === 'MotionElement,el,lerp,prog,clamp,mtext,textWidth,variant,previewOpacity', 'base returns exactly {MotionElement, el, lerp, prog, clamp, mtext, textWidth, variant, previewOpacity}');
   ok(['shape', 'base', 'plot', 'expr'].every((n) => Object.isFrozen(S.get(n, '1.0.0'))), 'every library part\'s value is frozen by the registry');
-  ok(Object.keys(S.get('shape', '1.0.0')).join() === 'check,describe,gotOf,typeOf,dataLike,near,brief' && Object.keys(S.get('plot', '1.0.0')).join() === 'Plot', 'shape returns DECK.shape\'s members, plot returns {Plot}');
+  ok(Object.keys(S.get('shape', '1.0.0')).join() === 'check,describe,gotOf,typeOf,dataLike,near,brief' && Object.keys(S.get('plot', '1.0.1')).join() === 'Plot', 'shape returns DECK.shape\'s members, plot returns {Plot}');
   const ex = S.get('expr', '1.0.0');
   const ref = vm.createContext({ Math, Object, Array, SyntaxError, Error, Number, String });
   vm.runInContext(read('tools/expr.js') + '\nthis.EXPR = EXPR;', ref);
@@ -172,7 +172,7 @@ function sandbox() {
 const S = await studio();
 const work = path.resolve(process.argv[2] || fs.mkdtempSync(path.join(os.tmpdir(), 'test-registry-')));
 fs.mkdirSync(work, { recursive: true });
-const PROBE = `egatariParts.define({name: "c2probe", version: "0.0.1", requires: {base: "1.0.0"}, element: "m-c2probe"}, function(d){
+const PROBE = `egatariParts.define({name: "c2probe", version: "0.0.1", requires: {base: "1.1.0"}, element: "m-c2probe"}, function(d){
   var base = d.base;
   return class extends base.MotionElement {
     static props = {label: {type: "string", default: "既定"}};
@@ -188,11 +188,11 @@ const PROBE = `egatariParts.define({name: "c2probe", version: "0.0.1", requires:
     }
   };
 });`;
-const FAILING = `egatariParts.define({name: "c2fail", version: "0.0.1", requires: {base: "1.0.0"}, element: "m-c2fail"}, function(){ throw new Error("probe failure"); });
+const FAILING = `egatariParts.define({name: "c2fail", version: "0.0.1", requires: {base: "1.1.0"}, element: "m-c2fail"}, function(){ throw new Error("probe failure"); });
 egatariParts.define({name: "c2badlib", version: "0.0.1", requires: {}}, function(){ throw new TypeError("library probe failure"); });
-egatariParts.define({name: "c2dep", version: "0.0.1", requires: {base: "1.0.0", c2badlib: "0.0.1"}, element: "m-c2dep"}, function(d){ return class extends d.base.MotionElement {}; });`;
+egatariParts.define({name: "c2dep", version: "0.0.1", requires: {base: "1.1.0", c2badlib: "0.0.1"}, element: "m-c2dep"}, function(d){ return class extends d.base.MotionElement {}; });`;
 // containment (spec §6.1): a part that throws from steps, mount, render or layout, chosen by its attribute at
-const THROWING = `egatariParts.define({name: "c2throw", version: "0.0.1", requires: {base: "1.0.0"}, element: "m-c2throw"}, function(d){
+const THROWING = `egatariParts.define({name: "c2throw", version: "0.0.1", requires: {base: "1.1.0"}, element: "m-c2throw"}, function(d){
   return class extends d.base.MotionElement {
     get steps(){ if (this.getAttribute("at") === "steps"){ this._x = (this._x || 0) + 1; throw new RangeError("bad steps"); } return 2; }
     mount(ctx){ this._m = (this._m || 0) + 1; if (this.getAttribute("at") === "mount"){ this._x = (this._x || 0) + 1; throw new Error("bad mount"); } this._svg = d.base.el("svg", {viewBox: "0 0 10 10"}, this); }
@@ -200,10 +200,10 @@ const THROWING = `egatariParts.define({name: "c2throw", version: "0.0.1", requir
     layout(ctx){ this._l = (this._l || 0) + 1; if (this.getAttribute("at") === "layout"){ this._x = (this._x || 0) + 1; throw new Error("bad layout"); } }
   };
 });
-egatariParts.define({name: "c2named", version: "0.0.1", requires: {base: "1.0.0"}, element: "m-c2named"}, function(d){
+egatariParts.define({name: "c2named", version: "0.0.1", requires: {base: "1.1.0"}, element: "m-c2named"}, function(d){
   return class extends d.base.MotionElement { static partName = "c2named-part"; mount(){ throw new Error("named"); } };
 });
-egatariParts.define({name: "c2bare", version: "0.0.1", requires: {base: "1.0.0"}, element: "x-c2bare"}, function(d){
+egatariParts.define({name: "c2bare", version: "0.0.1", requires: {base: "1.1.0"}, element: "x-c2bare"}, function(d){
   return class extends d.base.MotionElement { mount(){ throw new Error("bare"); } };
 });`;
 fs.writeFileSync(path.join(work, 'deck.html'), `<!DOCTYPE html>

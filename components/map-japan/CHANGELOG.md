@@ -2,6 +2,10 @@
 
 The part's own versions (Egatari spec §6.1). Releases of the whole library are in the repository's CHANGELOG.md.
 
+## 2.0.2 (components 2.2.0)
+
+- Requires base 1.1.0 (sub- and superscripts at least 24px, a measured text-width estimate).
+
 ## 2.0.1 (components 2.1.2)
 
 - Fix: in a dark theme the value classes collapsed (the lightest class was set below the darkest). When --bg is darker than --fg the lightness ramp now runs the other way, from just above the background and the land colour up toward --fg, so the classes stay apart; the light theme is unchanged.

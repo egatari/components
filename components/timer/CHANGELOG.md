@@ -2,6 +2,10 @@
 
 The part's own versions (Egatari spec §6.1). Releases of the whole library are in the repository's CHANGELOG.md.
 
+## 2.0.3 (components 2.2.0)
+
+- Requires base 1.1.0 (sub- and superscripts at least 24px, a measured text-width estimate).
+
 ## 2.0.2 (components 2.1.2)
 
 - Fix: the element had no role or name, so assistive tech met the clock, the list and the buttons without knowing what they belong to; it is now role="group" named by the phases and their durations (「タイマー：① 付箋に書く 1分30秒、② …」; the role="status" announcements and the ±1 min buttons stay inside it), and an author aria-label is kept. Style id timer-2-0-2-css.

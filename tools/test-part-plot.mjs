@@ -3,7 +3,7 @@
 // ticks, a box given by id) the drawn SVG is the same markup (outerHTML, with the clip number written as #), and the
 // returned object agrees: W, H, m, x(v), y(v), clip, d(f, a, b, n), poly(pts). The clip paths are numbered by each copy's own
 // counter from 1, as DECK.Plot numbers them.
-// One deliberate deviation is allowed, and only this one: plot's clip ids carry its name and version (plot-1-0-0-clip3 where
+// Two deliberate deviations: the sub/superscript size of base 1.1.0's mtext, and plot's clip ids carry its name and version (plot-1-0-1-clip3 where
 // DECK.Plot writes clip3; spec §6.1 Identifiers). Every id and url(#…) plot writes must have exactly that prefix; with the
 // prefix removed, the markup must equal DECK.Plot's.
 //   node tools/test-part-plot.mjs [work dir]
@@ -43,7 +43,7 @@ try {
   await page.goto(S.browser.fileUrl(out) + '?mode=video');
   await page.waitForFunction(() => window.DECK && DECK.ready, null, { timeout: 15000 });
   const r = await page.evaluate((PREFIX) => {
-    const P = EGATARI_PARTS_SHIM.get('plot', '1.0.0').Plot, host = document.getElementById('host');
+    const P = EGATARI_PARTS_SHIM.get('plot', '1.0.1').Plot, host = document.getElementById('host');
     const n0 = P.n;
     const OPTS = [
       { xr: [0, 10], yr: [0, 1] },
@@ -57,7 +57,10 @@ try {
     const F = [(x) => x * x, Math.sin, (x) => 1 / (1 + Math.exp(-x)), (x) => (x < 0 ? -x : 2 * x)];
     // plot's ids: the prefix removed after checking that every clip id and reference has it (the documented deviation)
     let unprefixed = 0, prefixed = 0;
+    // and the sub/superscript size of base 1.1.0's mtext (3/4, at least 24px; DECK.mtext: 17px)
+    const subS = (s) => s.replace(/(baseline-shift="(?:sub|super)" font-size=")\d+/g, '$1S');
     const norm = (s, own) => {
+      s = subS(s);
       if (!own) return s.replace(/clip\d+/g, 'clip#');
       for (const m of s.matchAll(/([\w-]*)clip\d+/g)) { if (m[1] === PREFIX) prefixed++; else unprefixed++; }
       return s.split(PREFIX + 'clip').join('clip').replace(/clip\d+/g, 'clip#');
@@ -83,7 +86,7 @@ try {
     // the raw clipPath id (kept for the id checks below) is compared after normalising, in svg and clip
     const cmp = (x) => JSON.stringify(x.map(({ id, ...rest }) => rest));
     return { n: a.length, same: cmp(a) === cmp(b), firstDiff: a.findIndex((x, i) => cmp([x]) !== cmp([b[i]])), a0: a[1], b0: b[1],
-      ids: [b[0].id, b[1].id, b[b.length - 1].id], n0, n1: P.n, deckIds: [a[0].id, a[a.length - 1].id], d0, frozenPlot: Object.isFrozen(EGATARI_PARTS_SHIM.get('plot', '1.0.0')), prefixed, unprefixed };
+      ids: [b[0].id, b[1].id, b[b.length - 1].id], n0, n1: P.n, deckIds: [a[0].id, a[a.length - 1].id], d0, frozenPlot: Object.isFrozen(EGATARI_PARTS_SHIM.get('plot', '1.0.1')), prefixed, unprefixed };
   }, PREFIX);
   console.log(`(reference: ${pinLabel()} kit/deck.js DECK.Plot)`);
   ok(errors.length === 0, 'no exception or console error' + (errors.length ? ': ' + errors[0] : ''));

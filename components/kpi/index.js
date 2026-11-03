@@ -8,7 +8,7 @@
 // 見せ方（docs/conventions.md §1）：count（数え上げ、既定）・rise（最後の値のまま少し小さい大きさから戻る）・flip（右の桁から 1 桁ずつ
 // めくれて止まる）・underline（出たあと数字の下に線を引く）。段階の数・長さ・合図・最後の中身はどれも同じ
 // 2.0（Egatari spec §6.1 の部品）：base の MotionElement・el・mtext・prog・lerp・clamp・variant・previewOpacity を使い、プレイヤーのグローバルは使わない
-egatariParts.define({name: "kpi", version: "2.0.1", requires: {base: "1.0.0"}, element: "m-kpi"}, function(deps){
+egatariParts.define({name: "kpi", version: "2.0.2", requires: {base: "1.1.0"}, element: "m-kpi"}, function(deps){
 "use strict";
 var base = deps.base;
 return class extends base.MotionElement {

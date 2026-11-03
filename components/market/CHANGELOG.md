@@ -2,6 +2,10 @@
 
 The part's own versions (Egatari spec §6.1). Releases of the whole library are in the repository's CHANGELOG.md.
 
+## 2.0.2 (components 2.2.0)
+
+- Requires base 1.1.0 (sub- and superscripts at least 24px, a measured text-width estimate).
+
 ## 2.0.1 (components 2.1.2)
 
 - Fix: with `scale="area"`, values that were zero, negative, or not strictly decreasing from the outer ring gave NaN radii or rings larger than the element (over the slide title). Such data is now reported (`data`) and the figure falls back to the fixed spacing.

@@ -1,6 +1,6 @@
 ---
 name: m-map-japan
-version: 2.0.1
+version: 2.0.2
 series: social
 tier: specialized
 set: maps

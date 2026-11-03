@@ -1,7 +1,7 @@
 // plot 1.0.0: axes for figures of Egatari components 2.0 (a library part, Egatari spec §6.1). It requires base (el, mtext)
 // and returns {Plot}: Plot(box, o) draws the axes into box (an element or its id) and returns
 // {svg, W, H, m, x(v), y(v), clip, d(f, a, b, n), poly(pts)}. Plot.n counts the clip paths of this copy; their ids are
-// prefixed with this part's name and version (plot-1-0-0-clip1, plot-1-0-0-clip2, …), so that they are unique across parts
+// prefixed with this part's name and version (plot-1-0-1-clip1, plot-1-0-1-clip2, …), so that they are unique across parts
 // and part versions in one file and deterministic (spec §6.1 Identifiers: a counter, no randomness, no timing). This is the
 // one deliberate difference from DECK.Plot, whose ids are clip1, clip2, … (CHANGELOG; tools/test-part-plot.mjs allows it).
 //
@@ -9,10 +9,10 @@
 // 03eaf0607598b993eb020f8e619caa53526bc771, DECK.Plot there), MIT License, Copyright (c) 2026 Gendo Kumoi, the same owner
 // and licence as this repository; el and mtext come from base instead of deck.js's closure.
 // tools/test-part-plot.mjs compares it with the pinned Studio's DECK.Plot.
-egatariParts.define({name: "plot", version: "1.0.0", requires: {base: "1.0.0"}}, function(deps){
+egatariParts.define({name: "plot", version: "1.0.1", requires: {base: "1.1.0"}}, function(deps){
 "use strict";
 var el = deps.base.el, mtext = deps.base.mtext;
-var ID = "plot-1-0-0-";   // name and version of this part, dots replaced (spec §6.1 Identifiers)
+var ID = "plot-1-0-1-";   // name and version of this part, dots replaced (spec §6.1 Identifiers)
 
 // 座標軸つきの図（キットの Plot。色はテーマの変数）
 // o = {xr:[min,max], yr:[min,max], xt:[目盛り], yt:[目盛り], xf:小数桁, yf:小数桁, xl:"横軸名", xl2:"横軸の補足", yl:"縦軸名", noY:true, m:{l,r,t,b}}

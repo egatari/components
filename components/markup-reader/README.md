@@ -1,16 +1,16 @@
 ---
 name: markup-reader
-version: 1.0.0
+version: 1.0.1
 kind: library
 summary: 組み立てのときに描いた結果（KaTeX の HTML・MathML、abcjs の SVG）を、決まった要素と属性だけで読んで置く。教材の作者が直接は書かない
-requires: base@1.0.0
+requires: base@1.1.0
 ---
 
 **2.0 alpha (branch `c2-a3a`; not for lessons).** A library part (Egatari spec §6.1). Parts that show build-time rendered
 output (spec §6.2) insert it only through this reader: today the six parts with `tex` fields (`m-collect`, `m-cycle`,
 `m-fishbone`, `m-flow`, `m-timeline`, `m-tree`). `m-score` (abcjs SVG) reads only `LIST` (its svg entries) and keeps its
 own tree reader, which its step plan uses without a DOM; the list is the same one. They require it as
-`requires: {base: "1.0.0", "markup-reader": "1.0.0"}` and receive `{read, texFrame, sink, LIST}`:
+`requires: {base: "1.1.0", "markup-reader": "1.0.1"}` and receive `{read, texFrame, sink, LIST}`:
 
 ```js
 var MR = deps["markup-reader"];

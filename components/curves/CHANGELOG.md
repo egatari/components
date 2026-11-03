@@ -2,6 +2,10 @@
 
 The part's own versions (Egatari spec §6.1). Releases of the whole library are in the repository's CHANGELOG.md.
 
+## 2.0.2 (components 2.2.0)
+
+- Requires base 1.1.0 (sub- and superscripts at least 24px, a measured text-width estimate) and plot 1.0.1.
+
 ## 2.0.1 (components 2.1.2)
 
 - Fix: a sample of `f` that is NaN or ±Infinity (for example `log(x)` at 0, `1/(x-2)` at 2) put NaN into the path, and the whole line disappeared. The finite runs are now drawn as separate subpaths, the name sits on the last finite point, and a `data` report names the series once.
