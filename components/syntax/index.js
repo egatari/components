@@ -245,7 +245,7 @@ var ROWH = 40;      // 要素の下線と記号の段の高さ
 var POSH = 30;      // 品詞の段の高さ
 var ON = function(v){ return /^(on|true|yes)$/i.test(String(v || "").trim()); };
 var f1 = function(x){ return x.toFixed(1); };
-var CSS_ID = "syntax-2-0-1-css";   // the style element this part writes, named with its name and version (spec §6.1 Identifiers)
+var CSS_ID = "syntax-2-0-2-css";   // the style element this part writes, named with its name and version (spec §6.1 Identifiers)
 return class extends base.MotionElement {
   static partName = "syntax";   // the registry name (define meta name), for report prefixes
   static testing = {parse: parse, plan: plan, durationOf: durationOf, POS: POS, KIND: KIND};   // for tools/test-syntax.mjs only (no part reads it)

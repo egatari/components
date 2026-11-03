@@ -5,6 +5,7 @@ The part's own versions (Egatari spec §6.1). Releases of the whole library are 
 ## 2.0.3 (components 2.2.0)
 
 - Requires base 1.1.0 (sub- and superscripts at least 24px, a measured text-width estimate).
+- Fix: point, axis and quadrant name widths use base's measured textWidth in the deck's font (0.58–0.6 em before), so the placer avoids the real text.
 
 ## 2.0.2 (components 2.1.2)
 

@@ -16,7 +16,7 @@
 egatariParts.define({name: "menu", version: "2.0.2", requires: {base: "1.1.0"}, element: "m-menu"}, function(deps){
 "use strict";
 var base = deps.base;
-var CSS_ID = "menu-2-0-1-css";   // the style element this part writes, named with its name and version (spec §6.1 Identifiers)
+var CSS_ID = "menu-2-0-2-css";   // the style element this part writes, named with its name and version (spec §6.1 Identifiers)
 var CSS =
   "m-menu{display:grid;gap:var(--mm-gap,18px);grid-template-columns:repeat(var(--mm-cols,3),minmax(0,1fr));grid-auto-rows:minmax(var(--mm-h,104px),auto);align-content:start}" +
   "m-menu>a{position:relative;display:flex;align-items:center;gap:18px;padding:14px 22px;box-sizing:border-box;" +

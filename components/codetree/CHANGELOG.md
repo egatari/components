@@ -5,6 +5,8 @@ The part's own versions (Egatari spec §6.1). Releases of the whole library are 
 ## 2.0.2 (components 2.2.0)
 
 - Requires base 1.1.0 (sub- and superscripts at least 24px, a measured text-width estimate).
+- Display name ハフマン木 / Huffman tree (was 文脈木 / Context tree): the part draws Modified Huffman decoding, and "context tree" reads as CTW (#168). The tag stays m-codetree.
+- Fix: the codeword labels (白 3, 黒 30 …) are placed by base's measured textWidth (digits were 0.6 em, so neighbouring labels could touch).
 
 ## 2.0.1 (components 2.1.2)
 

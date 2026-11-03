@@ -101,7 +101,7 @@ return class extends base.MotionElement {
     this.lab = D.mtext(p.svg, p.m.l + 10, 30, "", {fill: "var(--emph)", "font-size": 27});
     // 灰色の線の名前（「σ = 0.5」）：最後の段階で残る線（最後の値と違う値。同じ値は最初の 1 本）に、--muted の 24px で線の上に（背景色で縁取って）書く。
     // 5 本以上なら最初と最後だけ。置き場所は最後の段階の形（今の線と灰色の線）で決め、灰色の線が見えている間だけ出す
-    var V = P.values, L = V.length - 1, fs = 24, wOf = function(str){ var w = 0; String(str).replace(/[*_^]/g, "").split("").forEach(function(ch){ w += ch.charCodeAt(0) > 255 ? fs : fs * 0.6; }); return w; };
+    var V = P.values, L = V.length - 1, fs = 24, wOf = function(str){ return D.textWidth(str, fs, {font: self, mark: true}); };   // base の textWidth（記法の * _ ^ を除く）
     var shown = [];
     V.forEach(function(v, i){ if (i < L && v !== V[L] && V.indexOf(v) === i) shown.push(i); });
     if (shown.length > 4) shown = [shown[0], shown[shown.length - 1]];

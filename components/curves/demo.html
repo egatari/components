@@ -16,10 +16,10 @@ document.addEventListener("DOMContentLoaded", function(){
   var mean = Math.exp(s * s / 2), med = 1, q90 = Math.exp(s * 1.2815516);
   var v = function(x){ return [[x, 0], [x, pdf(x)]]; };
   document.getElementById("pred-data").textContent = JSON.stringify([
-    {label: "予測分布 *p*(*y*|*w*)", f: "exp(-pow(log(x),2)/(2*0.36))/(x*0.6*sqrt(2*PI))", xr: [0.02, 4], color: "fg", at: 3, anchor: "start", dy: -30},
-    {label: "中央値", pts: v(med), color: "term", anchor: "end", ly: 0.04},
-    {label: "平均", pts: v(mean), color: "emph", anchor: "start", ly: 0.04},
-    {label: "90% 分位点", pts: v(q90), color: "accent2", dash: true, anchor: "start", dx: -4}
+    {label: "予測分布 *p*(*y*|*w*)", f: "exp(-pow(log(x),2)/(2*0.36))/(x*0.6*sqrt(2*PI))", xr: [0.02, 4], tone: "fg", labelAt: 3, anchor: "right", dy: -30},
+    {label: "中央値", pts: v(med), tone: "term", anchor: "left", ly: 0.04},
+    {label: "平均", pts: v(mean), tone: "emph", anchor: "right", ly: 0.04},
+    {label: "90% 分位点", pts: v(q90), tone: "accent2", dash: true, anchor: "right", dx: -4}
   ]);
 });
 </script>
@@ -40,9 +40,9 @@ document.addEventListener("DOMContentLoaded", function(){
   <div class="body">
     <m-curves xr="[-2,2]" yr="[0,4]" xt="[-2,-1,0,1,2]" yt="[0,1,2,3,4]" xl="誤差 *u* = *y* − *a*" yl="損失" style="height:420px">
       <script type="application/json">[
-        {"label": "二乗 *u*^2", "f": "x*x", "at": 1.6, "anchor": "end", "dx": -14},
-        {"label": "絶対値 |*u*|", "f": "abs(x)", "at": -2, "anchor": "start", "ly": 1.1},
-        {"label": "分位点（*τ* = 0.9）", "f": "x >= 0 ? 0.9*x : -0.1*x", "at": -2, "anchor": "start", "dy": -6}
+        {"label": "二乗 *u*^2", "f": "x*x", "labelAt": 1.6, "anchor": "left", "dx": -14},
+        {"label": "絶対値 |*u*|", "f": "abs(x)", "labelAt": -2, "anchor": "right", "ly": 1.1},
+        {"label": "分位点（*τ* = 0.9）", "f": "x >= 0 ? 0.9*x : -0.1*x", "labelAt": -2, "anchor": "right", "dy": -6}
       ]</script>
     </m-curves>
   </div>

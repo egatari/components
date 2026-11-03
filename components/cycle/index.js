@@ -206,7 +206,7 @@ var Part = class extends base.MotionElement {
         // 名前は線の横に（線・真ん中の名前・箱と重ならない所。なければ知らせる）
         var obst = L.boxes.map(function(b){ return {x: b.x, y: b.y, w: b.w, h: b.h}; });
         if (L.cen) obst.push({x: L.cx - L.cen.w / 2, y: L.cy - L.cen.h / 2, w: L.cen.w, h: L.cen.h});
-        var at = sideLabel(p0, p1, est(e.label, 24), 30, obst, self.W, self.H);
+        var at = sideLabel(p0, p1, est(e.label, 24, self), 30, obst, self.W, self.H);
         if (!at.ok) self.reportLayout("[cycle] the label \"" + e.label + "\" of the edge " + JSON.stringify(e.from) + " → " + JSON.stringify(e.to) + " has no free place beside its line (it may overlap; make the element larger or the label shorter)");
         D.mtext(g, at.x, at.y, e.label, {"text-anchor": "middle", "font-size": 24, fill: e.tone ? col : "var(--muted)"});
       }
@@ -313,12 +313,8 @@ function tone(t){ return "var(--" + (/^(term|emph|muted|accent2|series-[1-4])$/.
 function boxFill(t){ return t === "emph" ? "var(--emph-tint)" : /^(muted|accent2|series-[1-4])$/.test(t || "") ? tint(tone(t), 12) : "var(--term-tint)"; }
 function textFill(t){ return t === "emph" ? "var(--emph)" : "var(--fg)"; }
 function tint(c, p){ return "color-mix(in srgb," + c + " " + p + "%,var(--bg))"; }
-// 字の幅（px）：数字 0.6 字、ほかの欧文 0.62 字、空白 0.3 字、和文 1 字。*斜体* の * は数えない
-function est(s, fs){
-  var w = 0;
-  for (var ch of String(s).replace(/\*/g, "")) w += /[0-9]/.test(ch) ? 0.6 : ch === " " ? 0.3 : /[\u0000-ɏ]/.test(ch) ? 0.62 : /[｡-ﾟ]/.test(ch) ? 0.5 : 1;
-  return w * fs;
-}
+// 字の幅（px）：base の textWidth（font の要素の字で測った幅）。mtext の *_^ は数えない
+function est(s, fs, font){ return base.textWidth(s, fs, {font: font, mark: true}); }
 // KaTeX の式の幅：一度置いて測る
 function texWidth(el, l){
   var g = base.el("g", {opacity: 0}, el.svg), fo = MR.texFrame(g, 0, 0, l.src, "tex", {size: l.size, anchor: "start"}, el.texSink);
@@ -335,7 +331,7 @@ function labelLines(n, size, fill){
 function boxSize(el, lines){
   var w = 0, y = 10, prev = null;
   lines.forEach(function(l){
-    l.w = l.tex ? texWidth(el, l) : est(l.text, l.size) * (l.weight ? 1.05 : 1);
+    l.w = l.tex ? texWidth(el, l) : est(l.text, l.size, el) * (l.weight ? 1.05 : 1);
     w = Math.max(w, l.w);
     y += prev ? 0.3 * prev.size + 1.12 * l.size : 0.9 * l.size;
     l.y = y; prev = l;

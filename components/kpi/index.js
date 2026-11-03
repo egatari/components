@@ -71,7 +71,8 @@ return class extends base.MotionElement {
     var n = pl.length || 1, cols = P.cols || Math.min(4, n), rows = Math.ceil(n / cols), gap = 28;
     var cw = (W - gap * (cols - 1)) / cols, ch = (H - gap * (rows - 1)) / rows;
     var size = P.size || Math.max(48, Math.min(84, ch * 0.3, cw * 0.24));
-    var est = function(s, sz){ return [...String(s)].reduce(function(a, c){ return a + (/[0-9.,+−-]/.test(c) ? 0.58 : /[\u0000-ɏ]/.test(c) ? 0.62 : 1); }, 0) * sz; };
+    // 字の幅（base の textWidth：テーマの字で測った幅。mk：mtext で書く字で、*_^ は数えない）
+    var est = function(s, sz, mk){ return D.textWidth(s, sz, {font: self, mark: !!mk}); };
     this.cards = pl.map(function(o, i){
       var c = o.c, x = (i % cols) * (cw + gap), y = Math.floor(i / cols) * (ch + gap), cx = x + cw / 2;
       var col = "var(--" + (/^(term|emph|accent2|series-[1-4])$/.test(c.tone || "") ? c.tone : "term") + ")";
@@ -103,7 +104,7 @@ return class extends base.MotionElement {
       if (hasD){
         // 増減：▲ / ▼ と一言。良い向き（good、既定は up）なら --term、悪い向きなら --emph
         var up = c.delta.dir !== "down", good = c.delta.good !== undefined ? !!c.delta.good : up;
-        var dc = good ? "var(--term)" : "var(--emph)", yd = yn + Math.max(44, size * 0.62), tw = est(c.delta.text || "", 24) + 30;
+        var dc = good ? "var(--term)" : "var(--emph)", yd = yn + Math.max(44, size * 0.62), tw = est(c.delta.text || "", 24, true) + 30;
         gd = D.el("g", {opacity: 0}, g);
         var tx = cx - tw / 2;
         D.el("path", {d: up ? "M0,-9L9,7L-9,7Z" : "M0,9L9,-7L-9,-7Z", fill: dc, transform: "translate(" + (tx + 9).toFixed(1) + " " + (yd - 8).toFixed(1) + ")"}, gd);

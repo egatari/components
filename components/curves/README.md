@@ -17,7 +17,7 @@ props: xr, yr, xt, yt, xf, yf, xl, yl, n, dur, lw
 
 | 欄 | 意味 |
 |---|---|
-| `label` | 線の名前（`*斜体*` `_下付き` `^上付き`） |
+| `label` | 線の名前。`*…*` は斜体、`_` `^` は次の 1 字を下付き・上付き（記号のままなら全角 ＿ ＾ ＊） |
 | `f` | x の算術の式（`exp(…)` `sqrt(…)` `PI` などの `Math` の関数と定数、`N(x, 平均, 標準偏差)`、`+ - * / % **`、比較と `? :`。下を見よ）。`xr` で描く範囲を狭められる |
 | `pts` | 点列 `[[x, y], …]`（縦線や実測の折れ線） |
 | `tone` | `term` `emph` `accent2` `muted` `fg` `series-1..4`（既定は `series-1..4` の順） |
@@ -32,7 +32,7 @@ props: xr, yr, xt, yt, xf, yf, xl, yl, n, dur, lw
 - `color`：`tone` の古い名前（両方あれば `tone`）。`var(--…)` もそのまま使える
 - `at`：`labelAt` の古い名前で、`labelAt` がないときだけ効く。ほかの部品（`m-scatter` など）の `at` は「段階の中の開始秒」なので意味がぶつかる。かといって `at` を開始秒に変えると古い教材の名前の位置が変わるので、`at` は名前の位置のまま残し、説明には `labelAt` だけを書く
 - `anchor` の `start` `middle` `end`：text-anchor そのもの（`right` = `start`、`left` = `end`、`above` / `below` は `middle` で、点の上・下に約 0.9 字ぶん離す。`below` が軸の下にはみ出すときは上に置く）
-- `step` を書かなければ系列 i（0 から）は段階 i + 1 で、今までと同じ。授業の表示で先の線を薄く見せることはしない（今までどおり）
+- `step` を書かなければ系列 i（0 から）は段階 i + 1 で、今までと同じ。授業の表示（`ctx.preview`）では、`step` があってもなくても、後の段階の線と名前を引き終えた形でテーマの `--preview-opacity` の薄さで見せる
 - 見本は `demo.html`（予測分布と代表値、損失関数の形、段階をそろえた線と `below` の名前）
 - 使いどころは motion-slides スキル §6「線を 1 本ずつ引く」
 - 系列の語（`label` `tone` `step` `anchor`）は `m-scatter` と同じ（共通の決まり §3）

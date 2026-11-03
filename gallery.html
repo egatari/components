@@ -32,17 +32,17 @@ document.addEventListener("DOMContentLoaded", function(){
   var mean = Math.exp(s * s / 2), med = 1, q90 = Math.exp(s * 1.2815516);
   var v = function(x){ return [[x, 0], [x, pdf(x)]]; };
   document.getElementById("pred-data").textContent = JSON.stringify([
-    {label: "予測分布 *p*(*y*|*w*)", f: "exp(-pow(log(x),2)/(2*0.36))/(x*0.6*sqrt(2*PI))", xr: [0.02, 4], color: "fg", at: 3, anchor: "start", dy: -30},
-    {label: "中央値", pts: v(med), color: "term", anchor: "end", ly: 0.04},
-    {label: "平均", pts: v(mean), color: "emph", anchor: "start", ly: 0.04},
-    {label: "90% 分位点", pts: v(q90), color: "accent2", dash: true, anchor: "start", dx: -4}
+    {label: "予測分布 *p*(*y*|*w*)", f: "exp(-pow(log(x),2)/(2*0.36))/(x*0.6*sqrt(2*PI))", xr: [0.02, 4], tone: "fg", labelAt: 3, anchor: "right", dy: -30},
+    {label: "中央値", pts: v(med), tone: "term", anchor: "left", ly: 0.04},
+    {label: "平均", pts: v(mean), tone: "emph", anchor: "right", ly: 0.04},
+    {label: "90% 分位点", pts: v(q90), tone: "accent2", dash: true, anchor: "right", dx: -4}
   ]);
 });
 })();
 </script>
 <script>/* m-seq */
 (function(){
-// 見本の数値：分散 1 が既知の正規モデルで、平均 θ の事後分布 N(μ_n, σ_n^2) を観測 1 個ずつ更新する（事前 N(0, 1.5^2)）
+// 見本の数値：分散 1 が既知の正規モデルで、平均 θ の事後分布 N(μ_n, σ_n^2) を観測 1 個ずつ更新する（事前 N(0, 1.5^2)。観測 ys は架空の値）
 document.addEventListener("DOMContentLoaded", function(){
   var ys = [1.8, 0.9, 1.4, 2.1, 1.2, 1.6], m0 = 0, s0 = 1.5, xs = [];
   for (var i = 0; i <= 280; i++) xs.push(+(-3 + 7 * i / 280).toFixed(4));
@@ -64,7 +64,7 @@ document.addEventListener("DOMContentLoaded", function(){
   <h2>部品の一覧（38 個、153 枚）</h2>
   <div class="body">
     <p>部品ごとに、説明の 1 枚と見本のスライドが続く。→ で段階を進める。</p>
-    <p>m-bars（変わった）　m-boxplot（変わった）　m-cards（変わった）　m-codetree（変わった）　m-collect（変わった）　m-compare（変わった）　m-curves（変わった）　m-cycle（変わった）　m-fishbone（変わった）　m-flow（変わった）　m-gendai（変わった）　m-heatmap（変わった）　m-hissan（変わった）　m-hist（変わった）　m-kanbun（変わった）　m-keyboard（変わった）　m-kobun（変わった）　m-kpi（変わった）　m-map-japan（変わった）　m-map-world（変わった）　m-market（変わった）　m-menu（変わった）　m-numberline（変わった）　m-orbit（変わった）　m-pie（変わった）　m-predict（変わった）　m-quad（変わった）　m-scatter（変わった）　m-score（変わった）　m-seq（変わった）　m-sweep（変わった）　m-syntax（変わった）　m-tape（変わった）　m-timeline（変わった）　m-timer（変わった）　m-tree（変わった）　m-venn（変わった）　m-kakijun</p>
+    <p>m-bars（変わった）　m-boxplot（変わった）　m-cards（変わった）　m-codetree（変わった）　m-collect（変わった）　m-compare（変わった）　m-curves（変わった）　m-cycle（変わった）　m-fishbone（変わった）　m-flow（変わった）　m-gendai（変わった）　m-heatmap（変わった）　m-hissan（変わった）　m-hist（変わった）　m-kakijun（変わった）　m-kanbun（変わった）　m-keyboard（変わった）　m-kobun（変わった）　m-kpi（変わった）　m-map-japan（変わった）　m-map-world（変わった）　m-market（変わった）　m-menu（変わった）　m-numberline（変わった）　m-orbit（変わった）　m-pie（変わった）　m-predict（変わった）　m-quad（変わった）　m-scatter（変わった）　m-score（変わった）　m-seq（変わった）　m-sweep（変わった）　m-syntax（変わった）　m-tape（変わった）　m-timeline（変わった）　m-timer（変わった）　m-tree（変わった）　m-venn（変わった）</p>
   </div>
 </section>
 
@@ -652,9 +652,9 @@ document.addEventListener("DOMContentLoaded", function(){
   <div class="body">
     <m-curves xr="[-2,2]" yr="[0,4]" xt="[-2,-1,0,1,2]" yt="[0,1,2,3,4]" xl="誤差 *u* = *y* − *a*" yl="損失" style="height:420px">
       <script type="application/json">[
-        {"label": "二乗 *u*^2", "f": "x*x", "at": 1.6, "anchor": "end", "dx": -14},
-        {"label": "絶対値 |*u*|", "f": "abs(x)", "at": -2, "anchor": "start", "ly": 1.1},
-        {"label": "分位点（*τ* = 0.9）", "f": "x >= 0 ? 0.9*x : -0.1*x", "at": -2, "anchor": "start", "dy": -6}
+        {"label": "二乗 *u*^2", "f": "x*x", "labelAt": 1.6, "anchor": "left", "dx": -14},
+        {"label": "絶対値 |*u*|", "f": "abs(x)", "labelAt": -2, "anchor": "right", "ly": 1.1},
+        {"label": "分位点（*τ* = 0.9）", "f": "x >= 0 ? 0.9*x : -0.1*x", "labelAt": -2, "anchor": "right", "dy": -6}
       ]</script>
     </m-curves>
   </div>
@@ -1088,6 +1088,42 @@ document.addEventListener("DOMContentLoaded", function(){
     </div>
   </div>
   <div class="concl"><span>→ 2 組は重ねて比べる（架空の各 40 人）</span></div>
+</section>
+
+<section class="slide">
+  <h2>m-kakijun（変わった、v2.1.2）</h2>
+  <div class="body">
+    <p>かな（ひらがな・カタカナ）の書き順。字を 1 画ずつ、書く順と向きのとおりに書いて見せる</p>
+    <ul>
+      <li>伝えたいこと：手順・工程</li>
+      <li>見せ方：draw・pen</li>
+      <li>系列：国語　見本のスライド：3 枚</li>
+    </ul>
+  </div>
+</section>
+
+<section id="g-kakijun-1" class="slide">
+  <h2>ひらがなの書き順：あさ</h2>
+  <div class="body">
+    <m-kakijun text="あさ" ends="on" style="height:400px"></m-kakijun>
+  </div>
+  <div class="concl"><span>→ 「あ」の 3 画目は、結びを作ってから右へはらう</span></div>
+</section>
+
+<section id="g-kakijun-2" class="slide">
+  <h2>濁点のあるカタカナ：ガム</h2>
+  <div class="body">
+    <m-kakijun text="ガム" style="height:400px"></m-kakijun>
+  </div>
+  <div class="concl"><span>→ 濁点は、字を書き終えてから左上から右下へ 2 つ</span></div>
+</section>
+
+<section id="g-kakijun-3" class="slide">
+  <h2>縦書きの小さい字：きょう</h2>
+  <div class="body">
+    <m-kakijun text="きょう" writing="tate" size="140" nums="off" style="height:440px"></m-kakijun>
+  </div>
+  <div class="concl"><span>→ 縦書きの「ょ」は、ます目の右上に小さく書く</span></div>
 </section>
 
 <section class="slide">
@@ -2002,7 +2038,7 @@ document.addEventListener("DOMContentLoaded", function(){
 </section>
 
 <section id="g-seq-1" class="slide">
-  <h2>逐次更新</h2>
+  <h2>平均の事後分布が観測ごとに狭くなる（観測は架空）</h2>
   <div class="body">
     <m-seq per-step="2" xr="[-3,4]" yr="[0,1.25]" xt="[-2,0,2,4]" yt="[0,0.5,1]" yf="1" xl="平均 *θ*" yl="密度" style="height:420px">
       <script type="application/json" id="seq-data">{}</script>
@@ -2379,9 +2415,9 @@ document.addEventListener("DOMContentLoaded", function(){
 </section>
 
 <section id="g-tree-4" class="slide">
-  <h2>確率の木：雨の日に遅れる確率（branch・path）</h2>
+  <h2>確率の木：雨の日に遅れる確率（架空の値）</h2>
   <div class="body">
-    <m-tree orient="right" aria-label="天気と遅刻の確率の木" style="height:440px">
+    <m-tree orient="right" aria-label="天気と遅刻の確率の木（架空の値）" style="height:440px">
       <script type="application/json">{
         "nodes": [
           {"id": "s", "label": "出発"},
@@ -2462,42 +2498,6 @@ document.addEventListener("DOMContentLoaded", function(){
     </div>
   </div>
   <div class="concl"><span>→ 書かなければ最初の見せ方（fade）になる。例は架空</span></div>
-</section>
-
-<section class="slide">
-  <h2>m-kakijun</h2>
-  <div class="body">
-    <p>かな（ひらがな・カタカナ）の書き順。字を 1 画ずつ、書く順と向きのとおりに書いて見せる</p>
-    <ul>
-      <li>伝えたいこと：手順・工程</li>
-      <li>見せ方：draw・pen</li>
-      <li>系列：国語　見本のスライド：3 枚</li>
-    </ul>
-  </div>
-</section>
-
-<section id="g-kakijun-1" class="slide">
-  <h2>ひらがなの書き順：あさ</h2>
-  <div class="body">
-    <m-kakijun text="あさ" ends="on" style="height:400px"></m-kakijun>
-  </div>
-  <div class="concl"><span>→ 「あ」の 3 画目は、結びを作ってから右へはらう</span></div>
-</section>
-
-<section id="g-kakijun-2" class="slide">
-  <h2>濁点のあるカタカナ：ガム</h2>
-  <div class="body">
-    <m-kakijun text="ガム" style="height:400px"></m-kakijun>
-  </div>
-  <div class="concl"><span>→ 濁点は、字を書き終えてから左上から右下へ 2 つ</span></div>
-</section>
-
-<section id="g-kakijun-3" class="slide">
-  <h2>縦書きの小さい字：きょう</h2>
-  <div class="body">
-    <m-kakijun text="きょう" writing="tate" size="140" nums="off" style="height:440px"></m-kakijun>
-  </div>
-  <div class="concl"><span>→ 縦書きの「ょ」は、ます目の右上に小さく書く</span></div>
 </section>
 
 </div>

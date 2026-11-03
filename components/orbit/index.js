@@ -148,12 +148,12 @@ var Part = class extends base.MotionElement {
     var head = 40, gap = 24, fs = Math.max(24, P.size);
     var rightW = Math.max(300, Math.min(420, W * 0.32)), topW = W - rightW - gap, rightX = topW + gap;
     var lab = 24, lh = 30, labelW = 0, self = this;
-    this.labels.forEach(function(s){ labelW = Math.max(labelW, est(s, lab)); });
+    this.labels.forEach(function(s){ labelW = Math.max(labelW, est(s, lab, self)); });
     var L = {head: head, topW: topW, rightX: rightX, rightW: rightW, fs: fs, lab: lab, why: why};
     var areaTop = head, areaH = H - head;
     if (!pl.venus){
       // 太陽の光の矢印の列（太陽の側の端）。題の字の幅だけ取る
-      var col = Math.max(70, est(this.T.light, 24) + 8);
+      var col = Math.max(70, est(this.T.light, 24, self) + 8);
       var side = this.sunLeft ? -1 : 1;
       // 軌道の半径 R：横は（光の列を除いた幅）、縦は（高さ）に、月と名前が入る最大
       var mr = function(R){ return R * P.earth * P.moon; };
@@ -185,7 +185,7 @@ var Part = class extends base.MotionElement {
     L.nameY = L.dcy + L.dr + 12 + fs; L.noteY = L.nameY + 10 + 24;
     var noteW = 0;
     this.L = L;   // caption が位置の幾何を使う
-    for (var i = 0; i < N; i++) noteW = Math.max(noteW, est(this.caption(i, this.observerAngleAt(i)), 24), est(this.labels[i], fs));
+    for (var i = 0; i < N; i++) noteW = Math.max(noteW, est(this.caption(i, this.observerAngleAt(i)), 24, self), est(this.labels[i], fs, self));
     if (noteW > rightW) why.push("a caption is " + Math.round(noteW) + "px wide, the right side " + Math.round(rightW) + "px");
     if (L.dr < 50) why.push("the view from Earth is " + Math.round(L.dr) + "px");
     L.fits = !why.length; L.why = why.join("; ");
@@ -413,12 +413,8 @@ var Part = class extends base.MotionElement {
 // ---- 下の関数は m-orbit の中だけで使う
 function setIf(el, a, v){ v = String(v); if (el.getAttribute(a) !== v) el.setAttribute(a, v); }
 function setText(el, s){ if (el.textContent !== s) el.textContent = s; }
-// 字の幅（px）：数字 0.6 字、ほかの欧文 0.55 字、空白 0.3 字、和文 1 字
-function est(s, fs){
-  var w = 0;
-  for (var ch of String(s || "")) w += /[0-9]/.test(ch) ? 0.6 : ch === " " ? 0.3 : /[\u0000-ɏ]/.test(ch) ? 0.55 : 1;
-  return w * fs;
-}
+// 字の幅（px）：base の textWidth（font の要素の字で測った幅）
+function est(s, fs, font){ return base.textWidth(s || "", fs, {font: font}); }
 // 地が字の色より暗いか（テーマの変数を読む。読めなければ明るい地）
 function isDarkBg(el){
   var cs = getComputedStyle(el), bg = rgbOf(cs.getPropertyValue("--bg").trim()), fg = rgbOf(cs.getPropertyValue("--fg").trim());

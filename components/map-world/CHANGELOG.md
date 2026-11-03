@@ -5,6 +5,7 @@ The part's own versions (Egatari spec §6.1). Releases of the whole library are 
 ## 2.0.2 (components 2.2.0)
 
 - Requires base 1.1.0 (sub- and superscripts at least 24px, a measured text-width estimate).
+- Fix: legend and chip widths use base's measured textWidth in the deck's font (in place of 0.6 em for chips and 0.72 em for the legend).
 
 ## 2.0.1 (components 2.1.2)
 

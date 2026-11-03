@@ -5,6 +5,10 @@ The part's own versions (Egatari spec §6.1). Releases of the whole library are 
 ## 2.1.0 (components 2.2.0)
 
 - Requires base 1.1.0 (sub- and superscripts at least 24px, a measured text-width estimate) and markup-reader 1.0.1.
+- New prop `per-step="N"` (as in m-cards): with by="measure", N measures form one step. `duration(k)` is the summed length of its measures and `events(k)` keep each note's `t` from the step's start, so a step of 1.2 s or longer is not held (Egatari spec §5.5) and the music joins up without gaps; the current notes of all N measures are highlighted. A remainder at the end is its own step. Default 1: lessons without a pickup are unchanged.
+- A pickup (a first measure shorter than one bar of the first `M:` in `abc`; `C` = 4/4, `C|` = 2/2) is not counted and goes with the next step, with by="measure" at any per-step. Without `M:` (or `M:none`) no pickup is detected. `static sc.barBeats(abc)` reads the bar length.
+- A per-step that is not a whole number of 1 or more is reported (`attr`) and 1 is used; per-step with by="note" is reported (`attr`) and has no effect (by="note" stays one note a step). The README now says by="note" is for showing note names and pitches (each step is held for at least 1.2 s, so rhythm is lost) and by="measure" with per-step is for rhythm.
+- The default aria-label counts the distinct measures (it counted steps with by="measure"; the same unless per-step or a pickup merges measures).
 
 ## 2.0.1 (components 2.1.2)
 

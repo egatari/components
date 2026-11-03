@@ -40,7 +40,7 @@ return class extends base.MotionElement {
     ticks:      {type: "bool", default: true, doc: "値の軸の目盛りと格子"},
     zoom:       {type: "number", default: 1.6, doc: "scale で上限を動かす秒数"},
     al:         {type: "string", default: "", doc: "値の軸の名前"},
-    stack:      {type: "bool", default: false, doc: "組の値を 1 本に積み上げる（積み上げ棒）"},
+    stack:      {type: "bool", default: false, doc: "組の値を 1 本に積み上げる（積み上げ棒）。\"percent\" なら各組を 100 % にそろえる"},
   };
   get steps(){
     if (this.getAttribute("steps") !== null) return +this.getAttribute("steps");
@@ -91,15 +91,15 @@ return class extends base.MotionElement {
     this.levels = [this.M0].concat(pl.scale.map(function(s){ return s.max || nice(Math.max.apply(null, all) * 1.12); }));
     }
     pl.scale.forEach(function(s, i){ s.max = self.levels[i + 1]; });
-    // 余白：横棒は組の名前の幅（和文 1 字 = 1 字幅、ほかは 0.55 字幅の見積もり）、縦棒は値の軸の目盛り
-    var est = function(s, size){ return [...String(s)].reduce(function(a, c){ return a + (/[\u0000-ɏ]/.test(c) ? 0.56 : 1); }, 0) * size; };
-    var longest = Math.max.apply(null, pl.groups.map(function(g){ return Math.max.apply(null, String(g.g.label || "").split("\n").map(function(s){ return est(s, 26); })); }).concat([0]));
+    // 余白：横棒は組の名前の幅、縦棒は値の軸の目盛り（字の幅は base の textWidth：テーマの字で測った幅。mk は mtext で書く字）
+    var est = function(s, size, mk){ return D.textWidth(s, size, {font: self, mark: !!mk}); };
+    var longest = Math.max.apply(null, pl.groups.map(function(g){ return Math.max.apply(null, String(g.g.label || "").split("\n").map(function(s){ return est(s, 26, true); })); }).concat([0]));
     var valW = Math.max.apply(null, all.map(function(v){ return est(self.fmt(v), 26); }).concat([0]));
     var lines = Math.max.apply(null, pl.groups.map(function(g){ return String(g.g.label || "").split("\n").length; }).concat([1]));
     var m = this.m = hor ? {l: Math.min(W * 0.42, longest + 24), r: valW + 24, t: P.al ? 40 : 8, b: P.ticks ? 44 : 8}
                          : {l: P.ticks ? 24 + est(this.fmtTick(this.levels[this.levels.length - 1], 1), 24) + (P.al ? 36 : 0) : 16, r: 16, t: ns > 1 ? 80 : 44, b: 18 + 30 * lines};
     // 積み上げ棒：系列の名前を縦棒は右に、横棒は最初の棒の上に書くので、その分をあける
-    var serW = Math.max.apply(null, series.map(function(sr){ return est(sr.label || "", 24); }).concat([0]));
+    var serW = Math.max.apply(null, series.map(function(sr){ return est(sr.label || "", 24, true); }).concat([0]));
     if (st && hor && ns > 1) m.t = Math.max(m.t, P.al ? 40 : 36);
     if (st && !hor){ m.t = 44; if (ns > 1 && serW) m.r = serW + 30; }
     this.x0 = m.l; this.x1 = W - m.r; this.y0 = m.t; this.y1 = H - m.b;
@@ -173,9 +173,8 @@ return class extends base.MotionElement {
           val: D.el("text", {"font-size": 24, "font-weight": 700, "text-anchor": "middle", fill: "var(--bg)", opacity: 0, style: "font-variant-numeric:tabular-nums"}, gL)};
         // 区切りの中の値は単位を付けない（単位は端の合計に付く）
         sg.val.textContent = self.fmt(v, undefined, pct ? "%" : "");
+        // 太字 24 px の数字の幅（base の textWidth。字の読み込みを待たない）
         sg.vw = est(sg.val.textContent, 24);
-        // 100 % の積み上げ棒：太字 24 px の数字の幅で見積もる（数字 0.76、% 1、. と , 0.32、− 0.84 字幅。字の読み込みを待たない）
-        sg.vw2 = [...sg.val.textContent].reduce(function(a, ch){ return a + (/[0-9]/.test(ch) ? 0.76 : ch === "%" ? 1 : /[.,]/.test(ch) ? 0.32 : ch === "−" ? 0.84 : /[\u0000-ɏ]/.test(ch) ? 0.6 : 1); }, 0) * 24;
         cum += v;
         return sg;
       });
@@ -188,7 +187,7 @@ return class extends base.MotionElement {
       var ref = hor ? this.stacks[0] : this.stacks[this.stacks.length - 1];
       ref.segs.forEach(function(sg){
         if (!series[sg.j] || !series[sg.j].label) return;
-        self.serLabs.push({sg: sg, ref: ref, el: D.mtext(gL, 0, 0, series[sg.j].label, {"text-anchor": hor ? "middle" : "start", "font-size": 24, "font-weight": 700, fill: sg.col, opacity: 0}), w: est(series[sg.j].label, 24)});
+        self.serLabs.push({sg: sg, ref: ref, el: D.mtext(gL, 0, 0, series[sg.j].label, {"text-anchor": hor ? "middle" : "start", "font-size": 24, "font-weight": 700, fill: sg.col, opacity: 0}), w: est(series[sg.j].label, 24, true)});
       });
     }
     if (!st) this.groups = pl.groups.map(function(o, i){
@@ -348,9 +347,9 @@ return class extends base.MotionElement {
         else { sg.rect.setAttribute("x", (sk.c - w / 2).toFixed(1)); sg.rect.setAttribute("width", w.toFixed(1)); sg.rect.setAttribute("y", pb.toFixed(1)); sg.rect.setAttribute("height", px.toFixed(1)); }
         sg.rect.setAttribute("opacity", px > 0 ? (f ? PV : 1) : 0);
         // 区切りの中の値：伸びきった区切りに字が収まるときだけ。100 % の積み上げ棒では、字の箱（幅の見積もり × 24 px）が
-        // 四方に 6 px 以上の余白をもって入るときだけ（ふつうの積み上げ棒は v1.11.0 のまま）
+        // 四方に 6 px 以上の余白をもって入るときだけ
         var full = len(sg.from, sg.from + sg.v) - gap, mid = (pos(sg.from) + pos(sg.from + sg.v)) / 2;
-        var room = self.pct ? (hor ? full >= sg.vw2 + 12 && w >= 36 : full >= 36 && w >= sg.vw2 + 12)
+        var room = self.pct ? (hor ? full >= sg.vw + 12 && w >= 36 : full >= 36 && w >= sg.vw + 12)
           : hor ? full >= sg.vw + 12 && w >= 30 : full >= 30 && w >= sg.vw + 8;
         if (hor){ sg.val.setAttribute("x", mid.toFixed(1)); sg.val.setAttribute("y", (sk.c + 8).toFixed(1)); }
         else { sg.val.setAttribute("x", sk.c.toFixed(1)); sg.val.setAttribute("y", (mid + 8).toFixed(1)); }

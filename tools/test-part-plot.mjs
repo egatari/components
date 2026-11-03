@@ -58,7 +58,7 @@ try {
     // plot's ids: the prefix removed after checking that every clip id and reference has it (the documented deviation)
     let unprefixed = 0, prefixed = 0;
     // and the sub/superscript size of base 1.1.0's mtext (3/4, at least 24px; DECK.mtext: 17px)
-    const subS = (s) => s.replace(/(baseline-shift="(?:sub|super)" font-size=")\d+/g, '$1S');
+    const subS = (s) => s.replace(/baseline-shift="(sub|super|-0\.25em|0\.45em)" font-size="\d+/g, (_, v) => 'baseline-shift=' + (v === 'sub' || v === '-0.25em' ? 'SUB' : 'SUP') + ' S');
     const norm = (s, own) => {
       s = subS(s);
       if (!own) return s.replace(/clip\d+/g, 'clip#');

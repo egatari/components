@@ -18,6 +18,7 @@ props: donut, unit, digits, pct-digits, show, per-step, dur
 - slice：`label`（名前）、`value`（数。割合はこの値から計算する）、`tone`（`term` `emph` `accent2` `muted` `fg` `series-1..4`）、`step`、`place`（`auto`（既定）・`in`・`out`）
   - 切れは 12 時の位置から時計回りに、書いた順に並ぶ。「その他」は最後に書き、`"tone": "muted"` にするとよい
   - 既定の色は `--series-1..3`、4〜6 切れ目は同じ 3 色を薄くしたもの、7 切れ目は `--series-4`。切れは 6〜7 つまでにする
+  - `label` と `center`の `*…*` は斜体、`_` `^` は次の 1 字を下付き・上付き（記号のままなら全角 ＿ ＾ ＊）
 - `center`：ドーナツの穴の中の字（`\n` で改行。`{total}` は合計の値に置き換わる。例：`"回答\n{total}"`）。`center` は字（文字列）。`m-cycle` の `center` は `{"label": …}` のオブジェクトなので取り違えない
 - `donut`：ドーナツにする（内側の半径の割合。`0.5`〜`0.6` がよい。0 なら円グラフ）
 - `show`：名前の下に書くもの：`pct`（割合、既定）・`value`（値）・`both`（値と割合）・`none`

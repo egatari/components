@@ -108,8 +108,8 @@ function EE(lon, lat){
   return [k * lam * Math.cos(l) / (M * (A1 + 3 * A2 * l2 + l6 * (7 * A3 + 9 * A4 * l2))), -k * l * (A1 + A2 * l2 + l6 * (A3 + A4 * l2))];
 }
 var TONES = /^(term|emph|muted|accent2|fg|series-[1-4])$/;
-// 字の幅の見積もり（m-pie と同じ。字の読み込みを待たない）
-function est(s, size){ return [...String(s)].reduce(function(a, c){ return a + (/[\u0000-ɏ]/.test(c) ? 0.6 : 1); }, 0) * size; }
+// 字の幅の見積もり（字の読み込みを待たない。base の textWidth：font の要素の字で測った幅）
+function est(s, size, font){ return base.textWidth(s, size, {font: font}); }
 // 色を sRGB で読む（テーマの変数の値をキャンバスに 1 点塗って読む。読めなければ null）
 function rgbOf(css){
   try {
@@ -255,8 +255,7 @@ return class extends base.MotionElement {
     cats.forEach(function(k){ rows.push({t: k.x.o.label, fill: k.fill, cat: k}); });
     var legendRowsText = rows.filter(function(r){ return r.kind === "values"; }).map(function(r){ return r.t; }).reverse();
     var lw = function(f){ return rows.length ? Math.max(title ? f(title, LS) : 0, 40 + Math.max.apply(null, rows.map(function(r){ return f(r.t, LS); }))) : 0; };
-    var wide = function(s, size){ return [...String(s)].reduce(function(a, c){ return a + (/[\u0000-ɏ]/.test(c) ? 0.72 : 1); }, 0) * size; };
-    var legendW = rows.length ? lw(wide) + 4 : 0, legendH = (rows.length + (title ? 1 : 0)) * 36;
+    var legendW = rows.length ? lw(function(s, size){ return est(s, size, self); }) + 4 : 0, legendH = (rows.length + (title ? 1 : 0)) * 36;
     // ---- 縮尺と位置：地図を要素に収める。凡例は右に並べる（地図が 0.85 倍より小さくならないとき）か、地図の隅の陸のない所に重ねる
     var M = MAP.bounds, GAP = 20;
     var fit = function(w, h){ return Math.max(0, Math.min(w / M[2], h / M[3])); };
@@ -382,7 +381,7 @@ return class extends base.MotionElement {
       return dd(p1, p2, p3) * dd(p1, p2, p4) < 0 && dd(p3, p4, p1) * dd(p3, p4, p2) < 0;
     };
     // 字の札（地の色の角丸の箱に --fg の字）
-    var chipSize = function(t, size){ return {w: est(t, size) + 10, h: size + 8}; };
+    var chipSize = function(t, size){ return {w: est(t, size, self) + 10, h: size + 8}; };
     var chip = function(parent, b, t, size, weight){
       var g = D.el("g", {opacity: 0}, parent);
       D.el("rect", {x: b.x.toFixed(1), y: b.y.toFixed(1), width: Math.max(0, b.w).toFixed(1), height: Math.max(0, b.h).toFixed(1), rx: 6, fill: "var(--bg)"}, g);

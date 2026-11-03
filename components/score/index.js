@@ -8,9 +8,9 @@
 // 組み立ては SVG の音符・休符に data-note="i"、連桁に data-beam="k"、小節線に data-measure="m"、弧の線に data-arc="n" を付ける
 // 再生のときに abcjs は持たない。この部品は abcSvg を読み、許した要素と属性だけで組み直して（スクリプト・外への参照・色は入らない）、
 // 組み立てが付けた印（data-note・data-beam・data-measure・data-arc）で段階ごとに出す（abcjs の class は読まない）。五線・音部記号・調号・拍子は段階 0 から見える
-// 段階：by="note"（既定）は音符・和音・休符 1 つ、by="measure" は 1 小節。休符とタイでつながった音は鳴らさずに進む
+// 段階：by="note"（既定）は音符・和音・休符 1 つ、by="measure" は 1 小節（per-step="N" なら N 小節。弱起の小節は次の小節の段階に、終わりの余りは 1 段階に）。休符とタイでつながった音は鳴らさずに進む
 // 音（仕様 §8.4「Component sounds」）：events(k) は段階 k で出る音の note（pitch・dur（秒、tempo から。タイは次の音符の分も鳴る）・vel 0.7）。
-// 和音は同じ t。duration(k) は段階の音符の長さ（by="measure" は小節の終わりまで）
+// 和音は同じ t。duration(k) は段階の音符の長さ（by="measure" は段階の小節の長さの和。t は段階の頭から）
 // 名前：names="solfa|abc|iroha|none" で符頭の下（五線の下の帯）に 26 px で書く。位置は abcMap の符頭の箱（box）から。
 // 名前が重なる小節は、その小節の名前を全部ジグザグ（奇数番目は上の段、偶数番目は下の段）に
 // 今の段階の音符は --emph、前の段階は --fg。授業の表示（ctx.preview）では先の音符を --preview-opacity で薄く
@@ -123,9 +123,11 @@ var SC = (function(){
     if (names === "iroha") return (p.acc === "#" ? "嬰" : p.acc === "b" ? "変" : p.acc === "##" ? "重嬰" : p.acc === "bb" ? "重変" : "") + IROHA[p.letter];
     return (names === "abc" ? p.letter : SOLFA[p.letter]) + sign;
   }
-  // abcMap を確かめ、段階に分ける。by = "note" | "measure"。違えば Error（どこが・どう書くか）
-  // → {tempo, spb（四分音符 1 つの秒）, notes: [{…, p: [parsePitch], i}], steps: [{notes: [i…], len}], stepOf: [i → 段階], at: [i → 段階の中の秒], sound: [i → 鳴る秒]}
-  function plan(map, by){
+  // abcMap を確かめ、段階に分ける。by = "note" | "measure"。違えば Error（どこが・どう書くか）。
+  // opts（by="measure" だけ）：per（1 段階の小節の数、既定 1）、bar（1 小節の拍、四分音符 = 1。barBeats(abc)。なければ弱起を見ない）
+  // → {tempo, spb（四分音符 1 つの秒）, notes: [{…, p: [parsePitch], i}], steps: [{notes: [i…], len, measures?}], stepOf: [i → 段階], at: [i → 段階の中の秒], sound: [i → 鳴る秒], pickup}
+  function plan(map, by, opts){
+    opts = opts || {};
     if (!map || typeof map !== "object") throw new Error("m-score: abcMap is missing (the build renders abc with abcjs and adds abcSvg and abcMap)");
     if (!(map.tempo > 0)) throw new Error("m-score: abcMap.tempo must be quarter notes per minute (> 0)");
     if (!Array.isArray(map.notes) || !map.notes.length) throw new Error("m-score: abcMap.notes is empty");
@@ -170,17 +172,42 @@ var SC = (function(){
         return d * spb;
       });
     });
-    var steps = [], stepOf = [], at = [];
+      var steps = [], stepOf = [], at = [], per = opts.per || 1, pickup = false;
     if (by === "note") notes.forEach(function(n){ stepOf[n.i] = steps.length + 1; at[n.i] = 0; steps.push({notes: [n.i], len: n.dur * spb}); });
-    else notes.forEach(function(n){
-      var last = steps[steps.length - 1];
-      if (!last || last.m !== n.m){ last = {m: n.m, notes: [], len: 0, b0: n.beat}; steps.push(last); }
-      last.notes.push(n.i); stepOf[n.i] = steps.length;
-      at[n.i] = Math.max(0, (n.beat - last.b0) * spb);
-      last.len = Math.max(last.len, at[n.i] + n.dur * spb);
-    });
-    steps.forEach(function(s){ s.len = +s.len.toFixed(6); delete s.b0; });
-    return {tempo: map.tempo, spb: spb, notes: notes, steps: steps, stepOf: stepOf, at: at, sound: sound, beams: beams, arcs: arcs, byN: byN};
+    else {
+      // 小節ごと（音符の秒は小節の頭から）
+      var ms = [], inM = [];
+      notes.forEach(function(n){
+        var last = ms[ms.length - 1];
+        if (!last || last.m !== n.m){ last = {m: n.m, notes: [], len: 0, b0: n.beat}; ms.push(last); }
+        last.notes.push(n.i);
+        inM[n.i] = Math.max(0, (n.beat - last.b0) * spb);
+        last.len = Math.max(last.len, inM[n.i] + n.dur * spb);
+      });
+      // 弱起：最初の小節が拍子の 1 小節（opts.bar 拍）より短い。次の小節の段階にまとめる（数に入れない）
+      pickup = opts.bar > 0 && ms.length > 1 && ms[0].len < opts.bar * spb - 1e-6;
+      // per 小節で 1 段階。音符の秒は段階の頭から（前の小節の長さを足す）。終わりの余りも 1 段階
+      var cur = null, cnt = 0;
+      ms.forEach(function(x, j){
+        if (!cur || cnt === per){ cur = {m: x.m, measures: [], notes: [], len: 0}; steps.push(cur); cnt = 0; }
+        x.notes.forEach(function(i){ cur.notes.push(i); stepOf[i] = steps.length; at[i] = cur.len + inM[i]; });
+        cur.len += x.len; cur.measures.push(x.m);
+        if (!(j === 0 && pickup)) cnt++;
+      });
+    }
+    steps.forEach(function(s){ s.len = +s.len.toFixed(6); });
+    return {tempo: map.tempo, spb: spb, notes: notes, steps: steps, stepOf: stepOf, at: at, sound: sound, beams: beams, arcs: arcs, byN: byN, pickup: pickup};
+  }
+  // abc の M:（最初の 1 つ）→ 1 小節の拍（四分音符 = 1）。M:C は 4、M:C| は 4（2/2）、M:6/8 は 3、M:2+3/8 は 2.5。M:none・なし・読めない は null
+  function barBeats(abc){
+    var m = /^M:[ \t]*([^\n%]*)/m.exec(String(abc || ""));
+    if (!m) return null;
+    var v = m[1].trim().replace(/[()\s]/g, "");
+    if (v === "C" || v === "C|") return 4;
+    var f = /^(\d+(?:\+\d+)*)\/(\d+)$/.exec(v);
+    if (!f || !+f[2]) return null;
+    var num = f[1].split("+").reduce(function(a, x){ return a + +x; }, 0);
+    return num > 0 ? num * 4 / +f[2] : null;
   }
   // 段階 k の音：音の高さ 1 つに 1 つの note（和音は同じ t）。休符・タイの先は鳴らない
   function events(pl, k){
@@ -297,7 +324,7 @@ var SC = (function(){
     if (noArc.length) mismatch.push("no element has data-arc for abcMap.arcs n " + noArc.join(", "));
     return {parts: out, missing: missing, mismatch: mismatch};
   }
-  return {MARKUP: MARKUP, place: place, parseSvg: parseSvg, parsePitch: parsePitch, label: label, plan: plan, events: events, names: names, readable: readable, assign: assign};
+  return {MARKUP: MARKUP, place: place, parseSvg: parseSvg, parsePitch: parsePitch, label: label, plan: plan, barBeats: barBeats, events: events, names: names, readable: readable, assign: assign};
 })();
 
 var FS = 26, ROW = 30;   // 名前の字（24 px 以上）と行の高さ
@@ -325,6 +352,7 @@ return class extends base.MotionElement {
   static props = {
     by: {type: "string", default: "note", doc: "note（1 音・和音ずつ）| measure（1 小節ずつ）"},
     names: {type: "string", default: "none", doc: "符頭の下の名前：solfa（ドレミ）| abc | iroha（ハニホ）| none"},
+    "per-step": {type: "number", default: 1, doc: "by=\"measure\" で 1 段階にまとめる小節の数（既定 1）。1 段階が 1.2 秒以上になるように。弱起の小節は次の小節とまとめる"},
   };
   get steps(){
     if (this.getAttribute("steps") !== null) return +this.getAttribute("steps");
@@ -341,7 +369,11 @@ return class extends base.MotionElement {
     if (["solfa", "abc", "iroha", "none"].indexOf(names) < 0){ notes.push('[score] names="' + names + '" is not solfa, abc, iroha or none (none is used)'); names = "none"; }
     var by = this.props.by;
     if (["note", "measure"].indexOf(by) < 0){ notes.push('[score] by="' + by + '" is not note or measure (note is used)'); by = "note"; }
-    var pl = SC.plan(d.abcMap, by);
+    // per-step：by="measure" で 1 段階の小節の数（1 以上の整数。違えば 1）。by="note" では使わない
+    var per = this.props["per-step"];
+    if (!(Number.isInteger(per) && per >= 1)){ notes.push('[score] per-step="' + this.getAttribute("per-step") + '" is not a whole number of 1 or more (1 is used)'); per = 1; }
+    else if (per !== 1 && by === "note") notes.push('[score] per-step="' + per + '" works with by="measure" only (by="note" shows one note a step)');
+    var pl = SC.plan(d.abcMap, by, {per: per, bar: SC.barBeats(d.abc)});
     pl.names = names;
     pl.attrNotes = notes;   // attribute problems, reported in mount (steps reads plan before there is a ctx)
     return (this._plan = pl);
@@ -433,7 +465,7 @@ return class extends base.MotionElement {
     sr.setAttribute("style", "position:absolute;width:1px;height:1px;margin:-1px;padding:0;overflow:hidden;clip-path:inset(50%);white-space:nowrap;border:0");
     sr.textContent = (ja ? "楽譜：" : "Score: ") + SC.readable(pl, mode, ja);
     this.appendChild(sr);
-    var nm = pl.steps.length && this.props.by === "measure" ? pl.steps.length : pl.notes.reduce(function(a, n){ return a.indexOf(n.m) < 0 ? a.concat([n.m]) : a; }, []).length;
+    var nm = pl.notes.reduce(function(a, n){ return a.indexOf(n.m) < 0 ? a.concat([n.m]) : a; }, []).length;
     if (!this.getAttribute("aria-label")) this.setAttribute("aria-label", ja ? "楽譜（" + nm + " 小節）" : "Score (" + nm + " measures)");
   }
   // abc not rendered at build time: its source as plain text (spec §6.2 Missing output), reported once

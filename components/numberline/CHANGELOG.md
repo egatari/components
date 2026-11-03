@@ -5,6 +5,7 @@ The part's own versions (Egatari spec §6.1). Releases of the whole library are 
 ## 2.0.2 (components 2.2.0)
 
 - Requires base 1.1.0 (sub- and superscripts at least 24px, a measured text-width estimate).
+- Fix: label widths use base's measured textWidth in the deck's font (its own estimate took digits and Latin letters as 0.56–0.6 em, about 25–35 % too narrow in BIZ UDPGothic, so long numbers and Latin labels overflowed silently). Tick thinning, margins and the placement of marks, jumps and ranges follow it (6- and 7-digit tick labels could touch).
 
 ## 2.0.1 (components 2.1.2)
 

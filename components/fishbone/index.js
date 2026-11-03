@@ -101,8 +101,8 @@ var Part = class extends base.MotionElement {
     var W = this.clientWidth, H = this.clientHeight;
     var svg = D.el("svg", {viewBox: "0 0 " + W + " " + H, width: W, height: H, "aria-hidden": "true", style: "display:block;overflow:visible"}, this);
     var root = D.el("g", {}, svg), gL = D.el("g", {}, root), gT = D.el("g", {}, root), gE = D.el("g", {}, root), gN = D.el("g", {}, root);
-    var plain = function(s){ return String(s).replace(/\*/g, "").replace(/[_^](.)/g, "$1"); };
-    var est = function(s){ return [...plain(s)].reduce(function(a, ch){ return a + (/[\u0000-ɏ]/.test(ch) ? 0.6 : 1); }, 0); };
+    // 字の幅の見積もり（字の大きさ 1 あたり。base の textWidth：テーマの字で測った幅。*斜体* などの記号は数えない）
+    var est = function(s){ return D.textWidth(s, 1, {font: self, mark: true}); };
     var texEst = function(s){ return Math.max(1, String(s).replace(/\\[a-zA-Z]+/g, "x").replace(/[{}^_\\ ]/g, "").length) * 0.62; };
     var tones = {term: ["var(--term)", "var(--term-tint)", "var(--fg)"], emph: ["var(--emph)", "var(--emph-tint)", "var(--emph)"]};
     var toneOf = function(t, dflt){

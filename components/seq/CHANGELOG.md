@@ -5,6 +5,7 @@ The part's own versions (Egatari spec §6.1). Releases of the whole library are 
 ## 2.0.2 (components 2.2.0)
 
 - Requires base 1.1.0 (sub- and superscripts at least 24px, a measured text-width estimate) and plot 1.0.1.
+- Fix: the ghost-curve labels (n = 3) are placed by base's measured textWidth in the deck's font (0.6 em before).
 
 ## 2.0.1 (components 2.1.2)
 

@@ -124,8 +124,9 @@ try {
     const ATTRS = [undefined, {}, { 'text-anchor': 'middle' }, { 'font-size': 30, fill: 'var(--term)' }, { fill: 'var(--muted)', style: 'font-weight:700' }];
     const mOut = (lib) => { const out = []; for (const s of STR) for (const a of ATTRS) { const p = document.createElementNS('http://www.w3.org/2000/svg', 'svg'); const t = lib.mtext(p, 12.5, 30, s, a && Object.assign({}, a)); out.push([t.parentNode === p, p.innerHTML]); } return out; };
     // base 1.1.0: a sub/superscript is 3/4 of the text, never under 24px (DECK.mtext: 17px); otherwise the same markup
-    const subless = (o) => JSON.stringify(o).replace(/(baseline-shift=\\"(?:sub|super)\\" font-size=\\")\d+/g, '$1S');
-    const sizes = [...JSON.stringify(mOut(B)).matchAll(/baseline-shift=\\"(?:sub|super)\\" font-size=\\"(\d+)/g)].map((m) => +m[1]);
+    const shift = (v) => (v === 'sub' || v === '-0.25em' ? 'SUB' : 'SUP');
+    const subless = (o) => JSON.stringify(o).replace(/baseline-shift=\\"(sub|super|-0\.25em|0\.45em)\\" font-size=\\"\d+/g, (_, v) => 'baseline-shift=' + shift(v) + ' S');
+    const sizes = [...JSON.stringify(mOut(B)).matchAll(/baseline-shift=\\"(?:-0\.25em|0\.45em)\\" font-size=\\"(\d+)/g)].map((m) => +m[1]);
     res.mtext = { n: STR.length * ATTRS.length, same: subless(mOut(B)) === subless(mOut(DECK)), sub: sizes.length, subMin: Math.min(...sizes) };
     // textWidth: per-font tables (measured), the widest table for an unknown font, mark: true skips *_^
     res.tw = { goth: B.textWidth('200000', 24, { font: '"BIZ UDPGothic", sans-serif' }), en: B.textWidth('200000', 24, { font: 'Source Sans 3' }),

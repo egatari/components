@@ -5,6 +5,8 @@ The part's own versions (Egatari spec §6.1). Releases of the whole library are 
 ## 2.0.3 (components 2.2.0)
 
 - Requires base 1.1.0 (sub- and superscripts at least 24px, a measured text-width estimate) and markup-reader 1.0.1.
+- Fix: edge text is placed by base's measured textWidth in the deck's font (digits and Latin were 0.6 em, so the space kept free for a label with numbers could be too short).
+- Fix: in a box label of several lines, a line with a subscript (_) and the next line with a superscript (^) are moved apart by what the 24px sub- and superscripts of base 1.1.0 reach (they touched at 1.25 lines); labels without them are placed as before.
 
 ## 2.0.2 (components 2.1.2)
 

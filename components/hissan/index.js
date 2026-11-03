@@ -460,16 +460,16 @@ var CALC = (function(){
     for (var p = ks[0]; p >= ks[ks.length - 1]; p--){ s += ds[p] !== undefined ? ds[p] : "_"; if (pt === p && p !== ks[ks.length - 1]) s += "."; }
     return s;
   }
-  // 字の幅の見積もり（字が読み込まれる前でも同じ配置。数字は BIZ UDPGothic で約 0.76 字）
-  function est(s, size){ return Array.from(String(s)).reduce(function(a, c){ return a + (/[0-9]/.test(c) ? 0.78 : /[−×÷＋＝→]/.test(c) ? 1 : /[\u0000-\u024f]/.test(c) ? 0.6 : 1); }, 0) * size; }
+  // 字の幅の見積もり（字が読み込まれる前でも同じ配置。base の textWidth：font の要素の字で測った幅）
+  function est(s, size, font){ return base.textWidth(s, size, {font: font}); }
   // 要素の中の配置：列 p の中心 X(p)、行 r の字の下端 Yb(r)。図と右の言葉をまとめて左右の真ん中に、上下も真ん中に
-  function layout(M, W, H, whole){
+  function layout(M, W, H, whole, font){
     var G = geom(M), opCol = G.hi + 1, divItem = M.items.filter(function(it){ return it.t === "div"; })[0];
     var CW = M.cw || CW0;
     var leftExtra = divItem ? divItem.s.replace(".", "").length * CW + 30 : OPG;   // 記号は数字から OPG px 離す
     var labW = {}, capW = 0;
-    M.items.forEach(function(it){ if (it.t === "lab") labW[it.r] = Math.max(labW[it.r] || 0, est(it.s, CAP) + 24); });
-    M.items.forEach(function(it){ if (it.t === "cap" && !whole) capW = Math.max(capW, (labW[it.r] || 0) + est(it.s, CAP)); });
+    M.items.forEach(function(it){ if (it.t === "lab") labW[it.r] = Math.max(labW[it.r] || 0, est(it.s, CAP, font) + 24); });
+    M.items.forEach(function(it){ if (it.t === "cap" && !whole) capW = Math.max(capW, (labW[it.r] || 0) + est(it.s, CAP, font)); });
     var labMax = Math.max.apply(null, [0].concat(Object.keys(labW).map(function(k){ return labW[k]; })));
     var figW = divItem ? (G.hi - G.lo + 1) * CW + leftExtra : (opCol - G.lo + 1) * CW + OPG;
     var totW = figW + 28 + Math.max(capW, labMax);
@@ -554,7 +554,7 @@ return class extends base.MotionElement {
     pl.notes.forEach(function(n){ var code = n[0], msg = "[hissan] " + n[1]; if (code === "attr") ctx.report("attr", msg); else if (code === "range") ctx.report("range", msg); else ctx.report("size", msg); });
     this.style.display = "block";
     var W = this.clientWidth, H = this.clientHeight, whole = pl.build === "whole", words = !whole && ON(P.words), FS = C.FS, SS = C.SS, CAPS = C.CAP;
-    var Lo = C.layout(M, W, H, !words), CW = Lo.cw, G = Lo.G, X = Lo.X, Yb = Lo.Yb, Yt = Lo.Yt, Ybot = Lo.Ybot, capX = Lo.capX, labW = Lo.labW, divItem = Lo.divItem, opCol = Lo.opCol;
+    var Lo = C.layout(M, W, H, !words, self), CW = Lo.cw, G = Lo.G, X = Lo.X, Yb = Lo.Yb, Yt = Lo.Yt, Ybot = Lo.Ybot, capX = Lo.capX, labW = Lo.labW, divItem = Lo.divItem, opCol = Lo.opCol;
     if (Lo.totW > W - 8) ctx.report("size", "[hissan] " + P.expr + " needs " + Math.round(Lo.totW) + " px of width, but the element is " + W + " px (it overflows); give it more width");
     if (G.h > H) ctx.report("size", "[hissan] " + P.expr + " needs " + Math.round(G.h) + " px of height, but the element is " + H + " px (it overflows); give it more height" + (M.op === "÷" ? " or fewer digits" : ""));
     this.geo = {X: X, Yb: Yb, capX: capX};

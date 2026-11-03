@@ -87,13 +87,11 @@ var NL = (function(){
     if (last < s.length) out.push({t: s.slice(last)});
     return out;
   }
-  // 字の幅の見積もり（フォントを待たない）
-  function est(s, size){
-    return [...String(s).replace(/\*/g, "")].reduce(function(a, c){ return a + (c === MINUS ? 0.62 : c === " " ? 0.3 : /[\u0000-ɏ]/.test(c) ? 0.56 : 1); }, 0) * size;
-  }
+  // 字の幅の見積もり（フォントを待たない。base の textWidth：font の要素の字で測った幅。mtext の *_^ は数えない）
+  function est(s, size, font){ return base.textWidth(s, size, {font: font, mark: true}); }
   var GAP = 4;
-  function segW(g, size){ return g.t !== undefined ? est(g.t, size) : Math.max(est(g.num, size), est(g.den, size)) + 10; }
-  function width(str, size){ var sg = split(str); return sg.reduce(function(a, g){ return a + segW(g, size); }, 0) + GAP * Math.max(0, sg.length - 1); }
+  function segW(g, size, font){ return g.t !== undefined ? est(g.t, size, font) : Math.max(est(g.num, size, font), est(g.den, size, font)) + 10; }
+  function width(str, size, font){ var sg = split(str); return sg.reduce(function(a, g){ return a + segW(g, size, font); }, 0) + GAP * Math.max(0, sg.length - 1); }
   function hasFrac(str){ return str !== null && str !== undefined && split(str).some(function(g){ return g.num !== undefined; }); }
   // 名前を間引く：items は [{i, x, w, keep}]（x は名前の中心、w は幅）。keep の名前（線の端・labels に書いた値）は必ず残し、
   // 間引くのは部品が作った目盛りの名前だけ。avoid（□ の印など作る人の書いたもの）[{x, w}] と keep の名前に 12 px より近い名前は落とし、
@@ -307,7 +305,7 @@ return class extends base.MotionElement {
     var lab = function(par, x, top, str, o){
       o = o || {};
       var g = D.el("g", {}, par), size = o.size || FS, fill = o.fill || "var(--fg)", segs = G.split(str), base = top + (o.frac ? 42 : 25), bar = base - 8;
-      var w = G.width(str, size), x0 = o.anchor === "start" ? x : o.anchor === "end" ? x - w : x - w / 2;
+      var w = G.width(str, size, self), x0 = o.anchor === "start" ? x : o.anchor === "end" ? x - w : x - w / 2;
       var attrs = {"font-size": size, fill: fill};
       if (o.weight) attrs["font-weight"] = o.weight;
       if (segs.length === 1 && segs[0].t !== undefined){
@@ -315,7 +313,7 @@ return class extends base.MotionElement {
         return g;
       }
       segs.forEach(function(sg){
-        var sw = sg.t !== undefined ? G.est(sg.t, size) : Math.max(G.est(sg.num, size), G.est(sg.den, size)) + 10;
+        var sw = sg.t !== undefined ? G.est(sg.t, size, self) : Math.max(G.est(sg.num, size, self), G.est(sg.den, size, self)) + 10;
         if (sg.t !== undefined){ if (sg.t.trim()) D.mtext(g, x0 + sw / 2, base, sg.t.trim(), Object.assign({"text-anchor": "middle"}, attrs)); }
         else {
           D.el("text", Object.assign({x: (x0 + sw / 2).toFixed(1), y: (bar - 7).toFixed(1), "text-anchor": "middle"}, attrs), g).textContent = sg.num;
@@ -332,18 +330,18 @@ return class extends base.MotionElement {
       return D.el("path", {d: "M" + p(0, 0) + "L" + p(-a, -b) + "L" + p(-a, b) + "Z", fill: col}, par);
     };
     // ---- 横の置き場所：線の名前（左）と単位（右）、端の目盛りの名前の半分 ----
-    var labW = Math.max.apply(null, [0].concat(pl.lines.map(function(l){ return l.src.label ? G.est(l.src.label, 26) : 0; })));
-    var unitW = Math.max.apply(null, [0].concat(pl.lines.map(function(l){ return l.src.unit ? G.width(l.src.unit, FS) : 0; })));
-    var endW = function(l, first){ var tk = l.ticks.filter(function(t){ return t.major; }); var t = first ? tk[0] : tk[tk.length - 1]; return t ? G.width(t.label, FS) / 2 : 0; };
+    var labW = Math.max.apply(null, [0].concat(pl.lines.map(function(l){ return l.src.label ? G.est(l.src.label, 26, self) : 0; })));
+    var unitW = Math.max.apply(null, [0].concat(pl.lines.map(function(l){ return l.src.unit ? G.width(l.src.unit, FS, self) : 0; })));
+    var endW = function(l, first){ var tk = l.ticks.filter(function(t){ return t.major; }); var t = first ? tk[0] : tk[tk.length - 1]; return t ? G.width(t.label, FS, self) / 2 : 0; };
     var mL = Math.max(labW ? labW + OVER + 18 : 0, Math.max.apply(null, pl.lines.map(function(l){ return endW(l, true); })) + 6, OVER + 6);
     var mR = Math.max(unitW ? unitW + OVER + (arrow ? 30 : 10) : 0, Math.max.apply(null, pl.lines.map(function(l){ return endW(l, false); })) + 6, OVER + (arrow ? 26 : 6));
-    pl.mags.forEach(function(m){ var tk = m.ticks; mL = Math.max(mL, G.width(tk[0].label, FS) / 2 + 6); mR = Math.max(mR, G.width(tk[tk.length - 1].label, FS) / 2 + 6); });
+    pl.mags.forEach(function(m){ var tk = m.ticks; mL = Math.max(mL, G.width(tk[0].label, FS, self) / 2 + 6); mR = Math.max(mR, G.width(tk[tk.length - 1].label, FS, self) / 2 + 6); });
     var x0 = mL, x1 = W - mR, SP = G.spans(pl.lines.map(function(l){ return l.src; }), x0, x1);
     if (L > 1 && SP[0].z === null) ctx.report("data", "[numberline] the 2 lines are not aligned at 0 (one of them does not contain 0)");
     // ---- 目盛りの名前（間引き）と、□ の印が隠す名前 ----
     var pickLabels = function(l, X, boxes){
       var spec = l.src ? l.src.labels : l.labels, tk = l.ticks.filter(function(t){ return t.major; });
-      tk.forEach(function(t){ t.x = X(t.v); t.w = G.width(t.label, FS); });
+      tk.forEach(function(t){ t.x = X(t.v); t.w = G.width(t.label, FS, self); });
       // □ の印のある値の名前は □ に替わる（□ が答えの数の場所）
       tk = tk.filter(function(t){ return !boxes.some(function(b){ return Math.abs(b.m.v - t.v) < 1e-9; }); });
       tk.forEach(function(t){ t.keep = false; });
@@ -368,7 +366,7 @@ return class extends base.MotionElement {
       o.marks = pl.marks.filter(function(m){ return m.li === li; });
       o.jumps = pl.jumps.filter(function(j){ return j.li === li; });
       o.ranges = pl.ranges.filter(function(r){ return r.li === li; });
-      o.boxes = o.marks.filter(function(m){ return m.kind === "box"; }).map(function(m){ var w = Math.max(40, m.o.label ? G.width(m.o.label, FS) + 16 : 40); return {m: m, x: o.X(m.v), w: w}; });
+      o.boxes = o.marks.filter(function(m){ return m.kind === "box"; }).map(function(m){ var w = Math.max(40, m.o.label ? G.width(m.o.label, FS, self) + 16 : 40); return {m: m, x: o.X(m.v), w: w}; });
       o.shown = pickLabels(l, o.X, o.boxes);
       o.tickH = Math.max(rowH(o.shown.map(function(t){ return t.label; })), o.boxes.length ? 46 : 0, o.boxes.some(function(b){ return G.hasFrac(b.m.o.label); }) ? FROW : 0);
       var named = o.marks.filter(function(m){ return m.kind !== "box" && m.o.label; });
@@ -390,7 +388,7 @@ return class extends base.MotionElement {
             var i = o.jumps[ii], ia = o.X(i.a), ib = o.X(i.b);
             if (Math.max(ia, ib) <= Math.min(xa, xb) + 1 || Math.min(ia, ib) >= Math.max(xa, xb) - 1) return false;
             var top = i.h + 8, w = 0, cx = (ia + ib) / 2;
-            if (i.o.label){ w = G.width(i.o.label, FS); top = i.h + 6 + o.jRow + 8; }
+            if (i.o.label){ w = G.width(i.o.label, FS, self); top = i.h + 6 + o.jRow + 8; }
             var lo = Math.min(ia, ib), hi = Math.max(ia, ib), m = (hi - lo) * 0.2; lo += m; hi -= m;   // 内の弧の真ん中の 6 割の上
             return G.arcAt(xa, xb, j.h, lo, hi) < i.h + 10 || (w && G.arcAt(xa, xb, j.h, cx - w / 2, cx + w / 2) < top);
           });
@@ -483,7 +481,7 @@ return class extends base.MotionElement {
         add(arrowHead(gMark, xb, jBase, Math.atan2(jBase - cy, xb - c2), col), {st: j.st, at: dur * 0.55, len: dur * 0.2, kind: "fade"});
         if (j.o.label){
           var top = jd < 0 ? jBase - h - 6 - o.jRow : jBase + h + 6;
-          var lx = Math.max(G.width(j.o.label, FS) / 2 + 2, Math.min(W - G.width(j.o.label, FS) / 2 - 2, xa + dx / 2));
+          var lx = Math.max(G.width(j.o.label, FS, self) / 2 + 2, Math.min(W - G.width(j.o.label, FS, self) / 2 - 2, xa + dx / 2));
           add(lab(gText, lx, top + (o.jRow - (G.hasFrac(j.o.label) ? FROW : ROW)) / 2, j.o.label, {frac: G.hasFrac(j.o.label)}), {st: j.st, at: dur * 0.3, len: dur * 0.5, kind: "fade"});
         }
       });
@@ -502,7 +500,7 @@ return class extends base.MotionElement {
           add(D.el("circle", {cx: X(e[0]).toFixed(1), cy: y.toFixed(1), r: 9, fill: e[1] ? col : "var(--bg)", stroke: col, "stroke-width": 3, opacity: 0}, gMark), {st: r.st, at: 0, len: dur * 0.4, kind: "fade"});
         });
         if (r.o.label){
-          var rf = G.hasFrac(r.o.label), w = G.width(r.o.label, FS), vl = Math.max(xl, edgeL), vr = Math.min(xr, edgeR);
+          var rf = G.hasFrac(r.o.label), w = G.width(r.o.label, FS, self), vl = Math.max(xl, edgeL), vr = Math.min(xr, edgeR);
           var cx = Math.max(w / 2 + 2, Math.min(W - w / 2 - 2, (vl + vr) / 2)), top = rd < 0 ? yl - 4 - o.rRow : yl + 4;
           add(lab(gText, cx, top + (o.rRow - (rf ? FROW : ROW)) / 2, r.o.label, {frac: rf, fill: "var(--fg)"}), {st: r.st, at: dur * 0.4, len: dur * 0.4, kind: "fade"});
         }
@@ -526,7 +524,7 @@ return class extends base.MotionElement {
       var col = toneOf(k.o.tone, "var(--term)"), s0 = up ? [xb, yb] : [xa, ya], e0 = up ? [xa, ya + 6] : [xb, yb - 6];
       add(D.el("line", {x1: s0[0].toFixed(1), y1: s0[1].toFixed(1), x2: e0[0].toFixed(1), y2: e0[1].toFixed(1), stroke: col, "stroke-width": 3, opacity: 0}, gMark), {st: k.st, at: 0, len: dur * 0.6, kind: "line"});
       add(arrowHead(gMark, up ? xa : xb, up ? ya - 2 : yb + 2, Math.atan2(e0[1] - s0[1], e0[0] - s0[0]), col), {st: k.st, at: dur * 0.5, len: dur * 0.2, kind: "fade"});
-      var lf = G.hasFrac(k.o.label), w = G.width(k.o.label, FS), mx = (xa + xb) / 2, my = (ya + yb) / 2, right = mx + 14 + w < W - 2;
+      var lf = G.hasFrac(k.o.label), w = G.width(k.o.label, FS, self), mx = (xa + xb) / 2, my = (ya + yb) / 2, right = mx + 14 + w < W - 2;
       add(lab(gText, right ? mx + 14 : mx - 14, my - (lf ? 34 : 17), k.o.label, {anchor: right ? "start" : "end", frac: lf}), {st: k.st, at: dur * 0.3, len: dur * 0.5, kind: "fade"});
     });
     // ---- 拡大 ----

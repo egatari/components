@@ -10,6 +10,10 @@
 // Deliberate exception approved by the owner (v1.8.0): m-map-japan's default drawing changed (no 小笠原諸島 inset unless
 // islands="all"; territory names and the readable layer per docs/map-design.md §5.3), so it is not compared with a baseline
 // older than v1.8.0 (CHANGED_IN). Pinned lessons keep the drawing of the version they pin.
+// Deliberate change approved by the owner (v2.2.0, 2026-11-03): base 1.1.0 measures text widths in the theme fonts and draws
+// sub/superscripts at 24px or more, so every part's layout may move by some pixels when a lesson is rebuilt. Against a baseline
+// older than v2.2.0 the default variant's NAME is compared instead (the first of `static variants`, which a lesson without a
+// variant gets); pixels are compared again from a v2.2.0 baseline on. Pinned lessons keep the drawing of the version they pin.
 // Deliberate change (v1.10.0, for Egatari Studio's checker, which requires ≥ 26.6 px HTML text): m-predict's −1 / +1 buttons
 // and count field went from 26 to 27 px text. Against a baseline older than v1.10.0, its controls (.pd-ctl, the presenter's
 // input, not part of the figure) are hidden in both builds (MASKED_IN); everything else must still be pixel-identical.
@@ -34,6 +38,20 @@ let fail = 0, n = 0;
 const CHANGED_IN = { 'map-japan': '1.8.0' };
 const MASKED_IN = { predict: { since: '1.10.0', css: 'm-predict .pd-ctl{visibility:hidden!important}' } };
 const older = (a, b) => { const x = a.split('.').map(Number), y = b.split('.').map(Number); for (let i = 0; i < 3; i++) if (x[i] !== y[i]) return x[i] < y[i]; return false; };
+const ALL_CHANGED_IN = '2.2.0';
+const firstVariant = (js) => { const m = /static\s+variants\s*=\s*\[\s*["']([^"']+)["']/.exec(js); return m ? m[1] : null; };
+if (older(base.slice(1), ALL_CHANGED_IN)) {
+  for (const name of USERS) {
+    let oldJs; try { oldJs = git('show', `${base}:components/${name}/index.js`); } catch { console.log(`-- ${name}: not in ${base} (new component, nothing to compare)`); continue; }
+    const a = firstVariant(oldJs), c = firstVariant(fs.readFileSync(path.join(ROOT, 'components', name, 'index.js'), 'utf8'));
+    n++;
+    if (a !== c) { fail++; console.log(`FAIL ${name}: default variant ${a} in ${base}, ${c} now`); }
+    else console.log(`ok   ${name}: default variant ${c} (layouts changed on purpose in v${ALL_CHANGED_IN}: pixels not compared with ${base})`);
+  }
+  await b.close();
+  console.log(fail ? `\n${fail} component(s) changed their default variant` : `test-default-variant: ok (${n} component(s), default variant names against ${base})`);
+  process.exit(fail ? 1 : 0);
+}
 for (const name of USERS) {
   if (CHANGED_IN[name] && older(base.slice(1), CHANGED_IN[name])) { console.log(`-- ${name}: changed on purpose in v${CHANGED_IN[name]} (owner's decision), not compared with ${base}`); continue; }
   let oldJs, demo;

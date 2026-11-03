@@ -17,6 +17,19 @@
 egatariParts.define({name: "flow", version: "2.0.3", requires: {base: "1.1.0", "markup-reader": "1.0.1"}, element: "m-flow"}, function(deps){
 "use strict";
 var base = deps.base, MR = deps["markup-reader"];
+// 複数行の名前の行の位置（1 行目からの下がり、px）と、上下に足す余白。base 1.1.0 で mtext の下付き・上付きは 24px 以上になり、
+// 行の間 lh（字の 1.25 倍）では上の行の下付きと下の行の上付きが重なる。下付きの字の下端は基線から添字の 0.75 倍まで、上付きの字の
+// 上端は添字の 1.4 倍まで（Source Sans 3 で測った値。BIZ UDPGothic ではそれぞれ 0.5 倍と 1.2 倍）。上の行に下付き（_）があれば
+// その下端から字の下の余白（字の 0.12 倍）を引いた分、下の行に上付き（^）があればその上端から字の上の高さ（0.88 倍）を引いた分だけ
+// 行の間を広げる。top・bottom は 1 行目の上付き・最後の行の下付きの分（添字がなければどれも 0 で、行は lh ずつ）
+function subX(s, fs){ var ss = Math.max(24, Math.round(fs * 0.75)); return /_./.test(s) ? Math.max(0, 0.75 * ss - 0.12 * fs) : 0; }
+function supX(s, fs){ var ss = Math.max(24, Math.round(fs * 0.75)); return /\^./.test(s) ? Math.max(0, 1.4 * ss - 0.88 * fs) : 0; }
+function lineYs(lines, lh, fs){
+  var y = [0];
+  for (var j = 1; j < lines.length; j++) y.push(y[j - 1] + lh + subX(lines[j - 1], fs) + supX(lines[j], fs));
+  y.top = supX(lines[0], fs); y.bottom = subX(lines[lines.length - 1], fs);
+  return y;
+}
 return class extends base.MotionElement {
   static partName = "flow";   // the registry name (define meta name), for report prefixes
   // 組み立てのときに描く欄（spec §6.2）。式の意味は字（tex）でも持つので、KaTeX の出力は HTML だけ
@@ -26,10 +39,11 @@ return class extends base.MotionElement {
     schema: {type: "object", additionalProperties: false, required: ["nodes"], properties: {
       nodes: {type: "array", minItems: 1, items: {type: "object", required: ["id", "x", "y", "w", "h"], properties: {
         id: {type: ["string", "integer"]}, label: {type: "string"}, tex: {type: "string"}, texHtml: {type: "string"}, x: {type: "number"}, y: {type: "number"}, w: {type: "number"}, h: {type: "number"},
-        step: {type: "integer"}, tone: {type: "string"}, at: {type: "number"}}}},
+        step: {type: "integer"}, tone: {type: "string"}, at: {type: "number"}, shape: {type: "string"}}}},
       edges: {type: "array", items: {type: "object", required: ["from", "to"], properties: {
         from: {type: ["string", "integer"]}, to: {type: ["string", "integer"]}, step: {type: "integer"}, label: {type: "string"}, tone: {type: "string"}, dash: {type: "boolean"},
-        kind: {enum: ["money", "service", "data"]}, amount: {type: ["string", "number"]}, shift: {type: "number"}, pulse: {type: ["boolean", "array"]}, offset: {type: "number"}, at: {type: "number"}}}},
+        kind: {enum: ["money", "service", "data"]}, amount: {type: ["string", "number"]}, shift: {type: "number"}, pulse: {type: ["boolean", "array"]}, pulseAt: {type: "number"}, offset: {type: "number"}, at: {type: "number"},
+        loop: {type: ["boolean", "string"]}}}},
       renderers: {type: "object"}}},
     example: {nodes: [{id: "a", label: "観測", x: 20, y: 40, w: 200, h: 70, step: 1}, {id: "b", label: "更新", x: 320, y: 40, w: 200, h: 70, step: 2}], edges: [{from: "a", to: "b", step: 2}]},
   };
@@ -67,8 +81,8 @@ return class extends base.MotionElement {
       // 式の div は行の中の inline-block なので、上端にそろえないと親の行の高さの分だけ下へずれる
       if (n.tex) MR.texFrame(g, cx, cy + P.size * 0.36, n, "tex", {size: P.size, anchor: "middle", color: c[2], w: n.w, h: n.h}, sk).firstChild.style.verticalAlign = "top";
       else {
-        var lines = String(n.label || "").split("\n"), lh = P.size * 1.25, y0 = cy - (lines.length - 1) * lh / 2 + P.size * 0.36;
-        lines.forEach(function(s, j){ D.mtext(g, cx, y0 + j * lh, s, {"text-anchor": "middle", "font-size": P.size, fill: c[2]}); });
+        var lines = String(n.label || "").split("\n"), ys = lineYs(lines, P.size * 1.25, P.size), y0 = cy - ys[ys.length - 1] / 2 + P.size * 0.36;
+        lines.forEach(function(s, j){ D.mtext(g, cx, y0 + ys[j], s, {"text-anchor": "middle", "font-size": P.size, fill: c[2]}); });
       }
       var o = {g: g, cx: cx, cy: cy, n: n, step: n.step || 1, at: n.at || 0};
       if (byId[n.id]) dup.push(JSON.stringify(n.id));
@@ -152,11 +166,11 @@ return class extends base.MotionElement {
       // かかるか、自分の線とのあいだにほかの辺の線が入るなら、線から離していく（6 px ずつ、60 px まで）。
       // それでも置けなければ線の反対の側で同じように試す（label は amount があるときは自分の側だけ。amount は両側）。
       // どこにも置けなければ最初の位置に置いて知らせる（layout）。
-      // 幅は字数から見積もる（和文 1 字 = 1 字幅、ほかは 0.6 字幅）ので、字の読み込みによらず同じ位置になる
+      // 幅は字から見積もる（base の textWidth：テーマの字で測った幅）ので、字の読み込みによらず同じ位置になる
       var mid = [(p0[0] + p1[0]) / 2, (p0[1] + p1[1]) / 2];
       var side = function(sg, text, attrs, both){
         var fs = attrs["font-size"] || 24, base = e.offset !== undefined ? e.offset : 18, pos = null, anc0 = null, box0 = null, free = false;
-        var w = [...text].reduce(function(a, ch){ return a + (/[\u0000-\u024f]/.test(ch) ? 0.6 : 1); }, 0) * fs;
+        var w = D.textWidth(text, fs, {font: self, mark: true});
         var sides = both ? [sg, -sg] : [sg];
         search: for (var si = 0; si < sides.length; si++){
           var sgn = sides[si], anc = Math.abs(nx) < 0.3 ? "middle" : nx * sgn > 0 ? "start" : "end";
@@ -183,7 +197,7 @@ return class extends base.MotionElement {
       // 戻る辺の名前は回り道の長い線の外側に、金額は内側に。外側が図の外に出るなら名前も内側に
       var rside = function(out, text, attrs){
         var r = route, m = r.hz ? (r.pts[1][1] + r.pts[2][1]) / 2 : (r.pts[1][0] + r.pts[2][0]) / 2, o2 = out ? r.sg : -r.sg;
-        var tw = [...text].reduce(function(a, ch){ return a + (/[\u0000-\u024f]/.test(ch) ? 0.6 : 1); }, 0) * 26;
+        var tw = D.textWidth(text, 26, {font: self, mark: true});
         if (out && (r.hz ? (o2 > 0 ? r.ch + 10 + tw > W : r.ch - 10 - tw < 0) : (o2 > 0 ? r.ch + 30 > H : r.ch - 34 < 0))) o2 = -o2;
         var at2 = r.hz ? {x: r.ch + o2 * 10, y: m + 8, a: o2 > 0 ? "start" : "end"} : {x: m, y: r.ch + (o2 > 0 ? 30 : -10), a: "middle"};
         var bx0 = at2.a === "start" ? at2.x : at2.a === "end" ? at2.x - tw : at2.x - tw / 2;

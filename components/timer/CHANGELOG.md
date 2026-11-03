@@ -5,6 +5,7 @@ The part's own versions (Egatari spec §6.1). Releases of the whole library are 
 ## 2.0.3 (components 2.2.0)
 
 - Requires base 1.1.0 (sub- and superscripts at least 24px, a measured text-width estimate).
+- Fix: the title and text are fitted and wrapped by base's measured textWidth in the deck's font (0.56 em before).
 
 ## 2.0.2 (components 2.1.2)
 

@@ -10,7 +10,7 @@
 </head>
 <body>
 <script>
-// 見本の数値：分散 1 が既知の正規モデルで、平均 θ の事後分布 N(μ_n, σ_n^2) を観測 1 個ずつ更新する（事前 N(0, 1.5^2)）
+// 見本の数値：分散 1 が既知の正規モデルで、平均 θ の事後分布 N(μ_n, σ_n^2) を観測 1 個ずつ更新する（事前 N(0, 1.5^2)。観測 ys は架空の値）
 document.addEventListener("DOMContentLoaded", function(){
   var ys = [1.8, 0.9, 1.4, 2.1, 1.2, 1.6], m0 = 0, s0 = 1.5, xs = [];
   for (var i = 0; i <= 280; i++) xs.push(+(-3 + 7 * i / 280).toFixed(4));
@@ -28,7 +28,7 @@ document.addEventListener("DOMContentLoaded", function(){
 <div id="stage">
 
 <section class="slide">
-  <h2>逐次更新</h2>
+  <h2>平均の事後分布が観測ごとに狭くなる（観測は架空）</h2>
   <div class="body">
     <m-seq per-step="2" xr="[-3,4]" yr="[0,1.25]" xt="[-2,0,2,4]" yt="[0,0.5,1]" yf="1" xl="平均 *θ*" yl="密度" style="height:420px">
       <script type="application/json" id="seq-data">{}</script>

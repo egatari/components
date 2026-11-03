@@ -5,6 +5,8 @@ The part's own versions (Egatari spec §6.1). Releases of the whole library are 
 ## 2.0.2 (components 2.2.0)
 
 - Requires base 1.1.0 (sub- and superscripts at least 24px, a measured text-width estimate) and plot 1.0.1.
+- Fix: line-label widths use base's measured textWidth in the deck's font (Latin was 15 px at 26 px, about 0.58 em).
+- Fix: a line label with a superscript is kept inside the top of the plot and one with a subscript above the tick labels, and stacked labels keep apart by what the 24px sub- and superscripts of base 1.1.0 reach; labels without them are placed as before.
 
 ## 2.0.1 (components 2.1.2)
 

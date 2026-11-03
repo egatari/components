@@ -15,7 +15,7 @@ props: cols, digits, per-step, dur, stagger, count, size
 
 子の JSON：`{"cards": [{"label", "value", "digits", "unit", "prefix", "from", "tone", "delta", "note", "step", "at"}, …]}`。
 
-- `label`：札の上の名前。`value`：数字（`digits` 桁、3 桁ごとにカンマ）。`unit`：数字の後ろの単位（小さめの字）。`prefix`：数字の前の記号（`−` `+` `約` など）
+- `label`：札の上の名前。`value`：数字（`digits` 桁、3 桁ごとにカンマ）。`unit`：数字の後ろの単位（小さめの字）。`prefix`：数字の前の記号（`+` `約` など）。負の `value` は自分で − が付くので、`prefix` に `−` を重ねない（`"prefix": "−"` と `-12` は「−−12」）。減った量を正の数で見せるときだけ `value` を正にして `prefix: "−"`
 - `from`：数え上げを始める値（既定 0。「20 分 → 7.5 分」のように減らす数も見せられる）
 - `tone`：数字と札の上の帯の色（`term`（既定）・`emph`・`accent2`・`series-1..4`）
 - `delta`：`{"dir": "up" | "down", "text": "前の期から 4 社", "good": true}`。▲ / ▼ と一言を数字の下に出す。良い向き（`good`、既定は `up` なら良い）なら `--term`、悪い向きなら `--emph`

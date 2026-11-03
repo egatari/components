@@ -9,6 +9,8 @@
 //      spec leaves out on purpose (EXPECTED_LOSSES: exactly those, so that anything else fails here); renderers recorded once on top
 //   2. abcMap parsing and errors (pitch names, tempo, dur, measure, beams, arcs, by); held pitches from tie arcs; the fixtures have the §4.1 fields
 //   3. step grouping: one note, chord or rest per step (by="note"), one measure per step (by="measure")
+//   3b. per-step (by="measure"): N measures a step with their real length, a pickup merged into the next step, a remainder
+//      at the end its own step, events in order from the step's start; a bad per-step reported (attr), per-step with by="note" reported
 //   4. sound events: pitch, dur in seconds from beats and tempo, chords at one t, notes of a measure at their beat,
 //      rests and tie continuations silent, a tied note sounding on through the next note (past the end of its step)
 //   5. which notes each SVG element appears with (every note found; bar lines with the last note of their measure,
@@ -139,6 +141,72 @@ for (const [name, [byNote, byMeasure]] of Object.entries(want)) {
 const kM = SC.plan(FX.kaeru.abcMap, 'measure');
 eq(kM.steps[6].notes.length, 8, 'kaeru measure 7 has its 8 eighth notes in one step');
 eq(kM.steps.map((s) => s.len), Array(8).fill(+(4 * 60 / 104).toFixed(6)), 'kaeru: every measure lasts 4 beats at 104 per minute');
+
+// ---- 3b. per-step (by="measure"): N measures a step, a pickup merged into the next step, a remainder at the end ----
+eq(['X:1\nM:4/4\nK:C', 'M:2/4', 'M:6/8', 'M:C', 'M:C|', 'M:2+3/8', 'M:none', 'K:C', 'M:3/4 % waltz'].map(SC.barBeats), [4, 2, 3, 4, 4, 2.5, null, null, 3],
+  'barBeats: beats a bar (quarter = 1) from the first M: (C = 4/4, C| = 2/2, none or no M: = null)');
+eq(SC.barBeats(FX.rhythm.abc), 2, 'rhythm: M:2/4 is 2 beats a bar');
+{
+  const kq = 60 / 104;
+  for (const per of [2, 3]) {
+    const p = SC.plan(FX.kaeru.abcMap, 'measure', { per, bar: SC.barBeats(FX.kaeru.abc) });
+    eq(p.steps.length, Math.ceil(8 / per), `kaeru per-step=${per}: ceil(8 / ${per}) steps`);
+    eq(p.steps.map((s) => s.len), p.steps.map((s) => +(s.measures.length * 4 * kq).toFixed(6)), `kaeru per-step=${per}: each step lasts its measures' beats ÷ tempo`);
+  }
+  const k2 = SC.plan(FX.kaeru.abcMap, 'measure', { per: 2, bar: 4 });
+  eq(k2.steps.map((s) => s.measures), [[0, 1], [2, 3], [4, 5], [6, 7]], 'kaeru per-step=2: measures 1–2, 3–4, 5–6, 7–8');
+  const k3 = SC.plan(FX.kaeru.abcMap, 'measure', { per: 3, bar: 4 });
+  eq(k3.steps.map((s) => s.measures), [[0, 1, 2], [3, 4, 5], [6, 7]], 'kaeru per-step=3: the remainder (2 measures) is its own step at the end');
+  eq(k3.steps[2].len, +(8 * kq).toFixed(6), '… lasting its own 8 beats');
+  const e4 = SC.events(k2, 4);
+  eq(e4.map((e) => e.pitch).join(' '), 'C4 C4 D4 D4 E4 E4 F4 F4 E4 D4 C4', 'kaeru per-step=2 step 4: measures 7 and 8 sound together');
+  eq(e4.map((e) => e.t), [0, 1, 2, 3, 4, 5, 6, 7].map((i) => +(i * 30 / 104).toFixed(6)).concat([4, 5, 6].map((b) => +(b * kq).toFixed(6))), '… each note at its t from the step\'s start (measure 8 from 4 beats)');
+  ok(e4.every((e, i) => i === 0 || e.t > e4[i - 1].t), '… in order');
+  ok(k2.notes.every((x) => k2.at[x.i] < k2.steps[k2.stepOf[x.i] - 1].len), 'every note starts inside its step');
+  const r2 = SC.plan(FX.rhythm.abcMap, 'measure', { per: 2, bar: 2 }), rq = 60 / 88;
+  eq(r2.steps.map((s) => s.len), [4, 4, 4].map((b) => +(b * rq).toFixed(6)), 'rhythm per-step=2: 3 steps of 4 beats at 88 (2.727 s)');
+  eq(SC.events(r2, 3).map((e) => [e.t, e.dur]), [[0, +(3 * rq).toFixed(6)]], 'rhythm per-step=2 step 3: the tied note sounds through the step, the rest is silent');
+  // default: per 1 and no bar is the old by="measure"
+  const k1 = SC.plan(FX.kaeru.abcMap, 'measure'), k1b = SC.plan(FX.kaeru.abcMap, 'measure', { per: 1, bar: 4 });
+  eq([k1b.steps.map((s) => [s.notes, s.len]), k1b.at], [k1.steps.map((s) => [s.notes, s.len]), k1.at], 'per-step=1 with M:4/4 = the default: one measure a step');
+  eq(SC.plan(FX.kaeru.abcMap, 'note', { per: 2, bar: 4 }).steps.length, 33, 'by="note": per does nothing (one note a step)');
+  // a pickup: a first measure shorter than the bar (3/4, one quarter before the first full bar)
+  const pk = map([N({ measure: 0, pitch: ['G4'] }),
+    N({ measure: 1, pitch: ['C5'], dur: 2 }), N({ measure: 1, pitch: ['E5'], beat: 2 }),
+    N({ measure: 2, pitch: ['D5'], dur: 3 }),
+    N({ measure: 3, pitch: ['C5'], dur: 3 })], 120);
+  const p1 = SC.plan(pk, 'measure', { per: 1, bar: 3 });
+  ok(p1.pickup, 'a 1-beat first measure in 3/4 is a pickup');
+  eq(p1.steps.map((s) => [s.measures, s.len]), [[[0, 1], 2], [[2], 1.5], [[3], 1.5]], 'the pickup goes with the next measure\'s step (1 + 3 beats at 120 = 2 s)');
+  eq(SC.events(p1, 1).map((e) => [e.pitch, e.t]), [['G4', 0], ['C5', 0.5], ['E5', 1.5]], '… its notes keep their t: the first full measure starts after the pickup\'s beat');
+  const p2 = SC.plan(pk, 'measure', { per: 2, bar: 3 });
+  eq(p2.steps.map((s) => s.measures), [[0, 1, 2], [3]], 'per-step=2: the pickup and 2 full measures, then the remainder');
+  eq(SC.plan(pk, 'measure', { per: 1 }).steps.length, 4, 'without M: (no bar) there is no pickup: every measure is a step');
+  eq(SC.plan(pk, 'measure', { per: 1, bar: 1 }).pickup, false, 'a first measure as long as the bar is not a pickup');
+  eq(SC.plan(map([N({}), N({ beat: 1 })]), 'measure', { per: 1, bar: 4 }).steps.length, 1, 'a piece of one short measure is not a pickup (nothing to merge into)');
+  // the element's plan(): attributes read as base reads them (type number: +value), problems collected for ctx.report("attr")
+  const Cls = partClass(fs.readFileSync(path.join(ROOT, 'components', 'score', 'index.js'), 'utf8'), 'score/index.js');
+  eq(Cls.props['per-step'].default, 1, 'per-step defaults to 1');
+  ok(typeof Cls.props['per-step'].doc === 'string' && Cls.props['per-step'].doc.length > 0, 'per-step has a doc');
+  const elPlan = (fx, attrs) => {
+    const a = { by: 'note', names: 'none', 'per-step': 1 };
+    for (const [k, v] of Object.entries(attrs)) a[k] = Cls.props[k].type === 'number' ? +v : v;
+    const el = Object.create(Cls.prototype);
+    Object.defineProperty(el, 'props', { value: a });
+    Object.defineProperty(el, 'data', { value: fx });
+    el.getAttribute = (k) => (k in attrs ? attrs[k] : null);
+    return el.plan();
+  };
+  for (const bad of ['0', '-1', '1.5', 'two', '']) {
+    const p = elPlan(FX.kaeru, { by: 'measure', 'per-step': bad });
+    eq([p.steps.length, p.attrNotes], [8, [`[score] per-step="${bad}" is not a whole number of 1 or more (1 is used)`]], `per-step="${bad}" is reported (attr) and 1 is used`);
+  }
+  const g2 = elPlan(FX.kaeru, { by: 'measure', 'per-step': '2' });
+  eq([g2.steps.length, g2.attrNotes, g2.steps.map((s) => s.len)], [4, [], Array(4).fill(+(8 * kq).toFixed(6))], 'the element: per-step="2" by="measure" gives 4 steps of 2 measures, nothing reported');
+  const gn = elPlan(FX.kaeru, { 'per-step': '2' });
+  eq([gn.steps.length, gn.attrNotes], [33, ['[score] per-step="2" works with by="measure" only (by="note" shows one note a step)']], 'per-step with by="note" is reported and does nothing');
+  eq([elPlan(FX.kaeru, {}).steps.length, elPlan(FX.kaeru, {}).attrNotes, elPlan(FX.rhythm, { by: 'measure' }).steps.length], [33, [], 6], 'no per-step: the steps are as before');
+}
 
 // ---- 4. events ----
 const d = SC.plan(FX.doremi.abcMap, 'note');

@@ -214,7 +214,8 @@ return class extends base.MotionElement {
     pl.notes.forEach(function(n){ report(n[0], n[1]); });
     this.classList.add("plot"); this.style.display = "block";
     var ja = this.ja = /^ja\b/i.test(ctx.lang);
-    var est = function(s, size){ return [...String(s).replace(/[*_^]/g, "")].reduce(function(a, c){ return a + (/[\u0000-ɏ]/.test(c) ? 0.56 : 1); }, 0) * size; };
+    // 字の幅（base の textWidth：テーマの字で測った幅。mtext の *_^ は数えない）
+    var est = function(s, size){ return D.textWidth(s, size, {font: self, mark: true}); };
     var colorOf = function(c, i){ return /^(term|emph|muted|accent2|fg|series-[1-4])$/.test(c || "") ? "var(--" + c + ")" : null; };
     var two = pl.ser.length > 1, dots = pl.kind === "dots", bins = pl.bins;
     pl.ser.forEach(function(s, i){ s.col = colorOf(s.tone) || (two ? "var(--series-" + (i + 1) + ")" : "var(--term)"); });

@@ -50,7 +50,8 @@ function labelAt(a, b, f, off){
 function fmt0(s, c){ return String(s).replace("{c}", c); }
 // まとめの段階で、すべての道の木を窓なしで描く段の間の下限（px）。窓の段の間の下限（読める大きさ）は WIN_GAP
 var SUM_GAP = 20, WIN_GAP = 24;
-function textW(s, fs){ return [...String(s)].reduce(function(a, ch){ return a + (/[\u0000-ɏ]/.test(ch) ? 0.6 : 1); }, 0) * fs; }
+// 字の幅（base の textWidth：font の要素の字で測った幅）
+function textW(s, fs, font){ return base.textWidth(s, fs, {font: font}); }
 
 return class extends base.MotionElement {
   static partName = "codetree";   // the registry name (define meta name), for report prefixes
@@ -285,7 +286,7 @@ return class extends base.MotionElement {
       var g = D2.el("g", {opacity: 0, "data-mark": MK + "-cw-" + (i + 1)}, root);
       var a = bx0 + t.start * cs + 4, b = bx0 + t.end * cs - 4;
       D2.el("path", {d: "M" + a + ",48v8H" + b + "v-8", fill: "none", stroke: "var(--fg)", "stroke-width": 2}, g);
-      var s = t.kind === "eol" ? "EOL" : Lb[t.color] + " " + t.run, w = t.kind === "eol" ? textW(s, 24) : 20 + 6 + textW(s, 24), x = Math.max((a + b) / 2 - w / 2, bRight + 12);
+      var s = t.kind === "eol" ? "EOL" : Lb[t.color] + " " + t.run, w = t.kind === "eol" ? textW(s, 24, self) : 20 + 6 + textW(s, 24, self), x = Math.max((a + b) / 2 - w / 2, bRight + 12);
       bRight = x + w;
       if (t.kind !== "eol") swatch(g, x, 64, t.color, 18);
       var tx = D2.el("text", {x: t.kind === "eol" ? x : x + 26, y: 82, "font-size": 24, fill: "var(--fg)"}, g);
@@ -552,7 +553,7 @@ return class extends base.MotionElement {
       var s = Lb[o.r.color] + " " + (parts.length > 1 ? parts.join(" ＋ ") + " ＝ " + parts.reduce(function(a, b){ return a + b; }, 0) : String(full ? parts[0] : len));
       var a = S.x0 + o.r.start * S.sc, b = a + len * S.sc;
       o.br.setAttribute("d", "M" + (a + 1) + "," + (G.scanY + 34) + "v6H" + Math.max(a + 2, b - 1) + "v-6");
-      var w = 26 + textW(s, 24), x = Math.max((a + b) / 2 - w / 2, right + 16, S.x0);
+      var w = 26 + textW(s, 24, self), x = Math.max((a + b) / 2 - w / 2, right + 16, S.x0);
       x = Math.min(x, self.W - w);
       right = x + w;
       o.sw.setAttribute("x", x.toFixed(2));

@@ -5,12 +5,17 @@
 // 1 系列 = 1 段階（書いた順。系列の step で変えられ、同じ step の系列は一緒に引く）。f は x の式（Math の関数と N(x,平均,標準偏差) が使える）、pts は点列
 // 2.0（Egatari spec §6.1 の部品）：base の MotionElement・el・mtext・prog・previewOpacity、plot の Plot、expr の compile を使い、
 // プレイヤーのグローバルは使わない（1.x は式の評価器 egatari-expr を写して持っていた）。破線の mask の id は
-// curves-2-0-1-<n>m<系列>：このパーツの名前と版に、このパーツだけの数え（1.x は mc<n>m<系列> で、DECK.Plot の数えを進めていた）
+// curves-2-0-2-<n>m<系列>：このパーツの名前と版に、このパーツだけの数え（1.x は mc<n>m<系列> で、DECK.Plot の数えを進めていた）
 egatariParts.define({name: "curves", version: "2.0.2", requires: {base: "1.1.0", expr: "1.0.0", plot: "1.0.1"}, element: "m-curves"}, function(deps){
 "use strict";
 var base = deps.base, plot = deps.plot, expr = deps.expr;
-var ID = "curves-2-0-1-";   // name and version of this part, dots replaced (spec §6.1 Identifiers)
+var ID = "curves-2-0-2-";   // name and version of this part, dots replaced (spec §6.1 Identifiers)
 var count = 0;              // this part's own counter for its ids (deterministic: the order of mounting)
+// 線の名前（26px）の下付き・上付きの分の高さ（px）。base 1.1.0 で mtext の下付き・上付きは 24px 以上になり、下付きの字の下端は基線から
+// 添字の 0.75 倍まで、上付きの字の上端は 1.4 倍まで届く（Source Sans 3 で測った値。BIZ UDPGothic ではそれぞれ 0.5 倍と 1.2 倍）。
+// 字の下の余白（字の 0.12 倍）・上の高さ（0.88 倍）を超える分。記法がなければ 0
+function subX(s, fs){ var ss = Math.max(24, Math.round(fs * 0.75)); return /_./.test(s) ? Math.max(0, 0.75 * ss - 0.12 * fs) : 0; }
+function supX(s, fs){ var ss = Math.max(24, Math.round(fs * 0.75)); return /\^./.test(s) ? Math.max(0, 1.4 * ss - 0.88 * fs) : 0; }
 return class extends base.MotionElement {
   static partName = "curves";   // the registry name (define meta name), for report prefixes
   // データの形（kit/shape.js）：線の配列。軸（xr yr xt yt xl yl）は属性に書く（JSON の中ではない）
@@ -98,30 +103,33 @@ return class extends base.MotionElement {
       if (an === "below" && ly0 > y1 - 4) ly0 = end[1] - 14;   // 下に入らなければ上へ
       it.lx = end[0] + (anchor === "end" ? -8 : anchor === "start" ? 10 : 0) + (s.dx || 0);
       it.ly = (s.ly !== undefined ? p.y(s.ly) : ly0) + (s.dy || 0);
-      // 字の幅の見積もり（記法の * _ ^ を除く。全角 26px、半角 15px）
-      var w = 0; String(s.label || "").replace(/[*_^]/g, "").split("").forEach(function(ch){ w += ch.charCodeAt(0) > 255 ? 26 : 15; });
+      // 字の幅の見積もり（26px。base の textWidth：テーマの字で測った幅。記法の * _ ^ を除く）
+      var w = D.textWidth(s.label || "", 26, {font: self, mark: true});
       it.x0 = anchor === "end" ? it.lx - w : anchor === "middle" ? it.lx - w / 2 : it.lx; it.x1 = it.x0 + w;
       it.anchor = anchor; it.col = col; it.label = s.label || "";
       return it;
     });
     // 名前どうしが重ならないように、横に重なる名前を下へずらす。先に描く高さ（上は 26、下は横軸の 6 px 上）に収めてから離し、
-    // 下に収まらなければ下から上へ押し戻す（目盛りの数字にかからない）
+    // 下に収まらなければ下から上へ押し戻す（目盛りの数字にかからない）。上付きのある名前は上端を、下付きのある名前は下端を
+    // その分だけ内に、上の名前の下付き・下の名前の上付きの分だけ間を広げる（記法がなければ今までと同じ）
     var min = 32, lo = 26, hi = y1 - 6, ov = function(u, v){ return u.x0 < v.x1 && v.x0 < u.x1; };
+    var loOf = function(it){ return lo + supX(it.label, 26); }, hiOf = function(it){ return hi - subX(it.label, 26); };
+    var gap = function(u, v){ return min + subX(u.label, 26) + supX(v.label, 26); };   // u が上、v が下
     var g = self.items.filter(function(it){ return it.label; });
-    g.forEach(function(it){ it.ly = Math.min(hi, Math.max(lo, it.ly)); });
+    g.forEach(function(it){ it.ly = Math.min(hiOf(it), Math.max(loOf(it), it.ly)); });
     g.sort(function(u, v){ return u.ly - v.ly; });
     g.forEach(function(it, j){
       for (var q = 0; q < j; q++){
         var o = g[q];
-        if (ov(it, o) && it.ly - o.ly < min) it.ly = o.ly + min;
+        if (ov(it, o) && it.ly - o.ly < gap(o, it)) it.ly = o.ly + gap(o, it);
       }
     });
     for (var j = g.length - 1; j >= 0; j--){
       var it = g[j];
-      it.ly = Math.min(hi, it.ly);
-      for (var q = j + 1; q < g.length; q++) if (ov(it, g[q]) && g[q].ly - it.ly < min) it.ly = g[q].ly - min;
+      it.ly = Math.min(hiOf(it), it.ly);
+      for (var q = j + 1; q < g.length; q++) if (ov(it, g[q]) && g[q].ly - it.ly < gap(it, g[q])) it.ly = g[q].ly - gap(it, g[q]);
     }
-    g.forEach(function(it){ it.ly = Math.max(lo, it.ly); });
+    g.forEach(function(it){ it.ly = Math.max(loOf(it), it.ly); });
     this.items.forEach(function(it){
       it.lab = D.mtext(p.svg, it.lx, it.ly, it.label, {"text-anchor": it.anchor, fill: it.col, "font-size": 26, "font-weight": 700, opacity: 0});
     });

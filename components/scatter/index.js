@@ -70,7 +70,8 @@ return class extends base.MotionElement {
     var P = this.props, D = base, self = this, pl = this.plan();
     this.variant = base.variant(this);
     this.classList.add("plot"); this.style.display = "block";
-    var est = function(s, size){ return [...String(s).replace(/[*_^]/g, "")].reduce(function(a, c){ return a + (/[\u0000-ɏ]/.test(c) ? 0.56 : 1); }, 0) * size; };
+    // 字の幅（base の textWidth：テーマの字で測った幅。mtext の *_^ は数えない）
+    var est = function(s, size){ return D.textWidth(s, size, {font: self, mark: true}); };
     var colorOf = function(c, i){
       if (!c) return "var(--series-" + (i % 4 + 1) + ")";
       return /^(term|emph|muted|accent2|fg|series-[1-4])$/.test(c) ? "var(--" + c + ")" : "var(--series-" + (i % 4 + 1) + ")";

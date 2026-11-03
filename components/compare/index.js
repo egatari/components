@@ -59,16 +59,17 @@ return class extends base.MotionElement {
     var hasDiff = this.hasDiff(), hasDiffCol = rows.some(function(r){ return r.diff !== undefined && r.diff !== ""; });
     this.ja = /^ja\b/i.test(ctx.lang);
     var diffHead = P["diff-label"] || (this.ja ? "違い" : "Difference");
-    // 字の幅の見積もり（和文 1 字 = 1 字幅、英数字 0.6、空白 0.33。太字は 1.04 倍）
-    var est = function(s, fs, bold){ return [...String(s)].reduce(function(a, c){ return a + (c === " " ? 0.33 : /[\u0000-ɏ]/.test(c) ? 0.6 : 1); }, 0) * fs * (bold ? 1.04 : 1); };
-    // 折り返し：英数字の語はまとめ、行頭に来てはいけない字（、。）」など）の前では折らない
+    // 字の幅の見積もり（base の textWidth：テーマの字で測った幅。mtext で書くので *_^ は数えない。太字は 1.04 倍）
+    var est = function(s, fs, bold){ return D.textWidth(s, fs, {font: self, mark: true}) * (bold ? 1.04 : 1); };
+    // 折り返し：英数字の語はまとめ、行頭に来てはいけない字（、。）」など）の前では折らない。幅は 0.5 px まで超えてよい
+    // （列の幅はいちばん長い名前の見積もりで決まり、字ごとの和はその見積もりと浮動小数点の誤差だけ違うことがある）
     var wrap = function(s, maxW, fs, bold){
       var out = [], over = false;
       String(s === undefined ? "" : s).split("\n").forEach(function(par){
         var toks = par.match(/[A-Za-z0-9.,%+\-−:\/'’]+|\s+|[^]/gu) || [""], line = "", w = 0;
         toks.forEach(function(tk){
           var tw = est(tk, fs, bold), sp = /^\s+$/.test(tk);
-          if (line && w + tw > maxW && !sp && !/^[、。，．）」』！？ー々ゃゅょっャュョッぁぃぅぇぉ〜]/.test(tk)){ out.push(line.trim()); line = ""; w = 0; }
+          if (line && w + tw > maxW + 0.5 && !sp && !/^[、。，．）」』！？ー々ゃゅょっャュョッぁぃぅぇぉ〜]/.test(tk)){ out.push(line.trim()); line = ""; w = 0; }
           if (sp && !line) return;
           line += tk; w += tw;
         });

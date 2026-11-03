@@ -5,6 +5,7 @@ The part's own versions (Egatari spec §6.1). Releases of the whole library are 
 ## 2.0.2 (components 2.2.0)
 
 - Requires base 1.1.0 (sub- and superscripts at least 24px, a measured text-width estimate).
+- Fix: legend, caption and chip widths use base's measured textWidth in the deck's font (0.6 em before, with a second, wider 0.72 em pass for the legend, which is gone: the legend is placed once with 4 px of room). In a small element the 南西諸島 caption or the legend can now fit where it was dropped before.
 
 ## 2.0.1 (components 2.1.2)
 

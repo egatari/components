@@ -130,7 +130,7 @@ var CSS = [
   "m-kobun .kb-pop td.on{background:var(--emph-tint);color:var(--emph);font-weight:700}",
   "@media print{m-kobun .kb-pop{display:none!important}}",
 ].join("\n");
-var CSS_ID = "kobun-2-0-1-css";   // the style element this part writes, named with its name and version (spec §6.1 Identifiers)
+var CSS_ID = "kobun-2-0-2-css";   // the style element this part writes, named with its name and version (spec §6.1 Identifiers)
 return class extends base.MotionElement {
   static partName = "kobun";   // the registry name (define meta name), for report prefixes
   static testing = {parse: parse, AUX: AUX, FORMS: FORMS, auxOf: auxOf, posOf: posOf};   // for tools/test-kokugo.mjs only (no part reads it)

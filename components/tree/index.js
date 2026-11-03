@@ -24,6 +24,19 @@ egatariParts.define({name: "tree", version: "2.0.2", requires: {base: "1.1.0", "
 var base = deps.base, MR = deps["markup-reader"];
 // 形の要素ごとに、書き直すと形が作り直される属性（render の終わりで使う）
 var SHAPE_GEOM = {rect: "width", circle: "r", ellipse: "rx", path: "d", line: "x1", polyline: "points", polygon: "points"};
+// 複数行の名前の行の位置（1 行目からの下がり、px）と、上下に足す余白。base 1.1.0 で mtext の下付き・上付きは 24px 以上になり、
+// 行の間 lh（字の 1.25 倍）では上の行の下付きと下の行の上付きが重なる。下付きの字の下端は基線から添字の 0.75 倍まで、上付きの字の
+// 上端は添字の 1.4 倍まで（Source Sans 3 で測った値。BIZ UDPGothic ではそれぞれ 0.5 倍と 1.2 倍）。上の行に下付き（_）があれば
+// その下端から字の下の余白（字の 0.12 倍）を引いた分、下の行に上付き（^）があればその上端から字の上の高さ（0.88 倍）を引いた分だけ
+// 行の間を広げる。top・bottom は 1 行目の上付き・最後の行の下付きの分（添字がなければどれも 0 で、行は lh ずつ）
+function subX(s, fs){ var ss = Math.max(24, Math.round(fs * 0.75)); return /_./.test(s) ? Math.max(0, 0.75 * ss - 0.12 * fs) : 0; }
+function supX(s, fs){ var ss = Math.max(24, Math.round(fs * 0.75)); return /\^./.test(s) ? Math.max(0, 1.4 * ss - 0.88 * fs) : 0; }
+function lineYs(lines, lh, fs){
+  var y = [0];
+  for (var j = 1; j < lines.length; j++) y.push(y[j - 1] + lh + subX(lines[j - 1], fs) + supX(lines[j], fs));
+  y.top = supX(lines[0], fs); y.bottom = subX(lines[lines.length - 1], fs);
+  return y;
+}
 var Part = class extends base.MotionElement {
   static partName = "tree";   // the registry name (define meta name), for report prefixes
   // 組み立てのときに描く欄（spec §6.2）。式の意味は字（tex）でも持つので、KaTeX の出力は HTML だけ
@@ -106,9 +119,8 @@ var Part = class extends base.MotionElement {
     var W = this.clientWidth, H = this.clientHeight, right = P.orient === "right";
     var svg = D.el("svg", {viewBox: "0 0 " + W + " " + H, width: W, height: H, "aria-hidden": "true", style: "display:block;overflow:visible"}, this);
     var root = D.el("g", {}, svg), gL = D.el("g", {}, root), gE = D.el("g", {}, root), gN = D.el("g", {}, root);
-    // 字の幅の見積もり（和文 1 字 = 1 字幅、ほかは 0.6 字幅。*斜体* などの記号は数えない）
-    var plain = function(s){ return String(s).replace(/\*/g, "").replace(/[_^](.)/g, "$1"); };
-    var est = function(s){ return [...plain(s)].reduce(function(a, ch){ return a + (/[\u0000-ɏ]/.test(ch) ? 0.6 : 1); }, 0); };
+    // 字の幅の見積もり（字の大きさ 1 あたり。base の textWidth：テーマの字で測った幅。*斜体* などの記号は数えない）
+    var est = function(s){ return D.textWidth(s, 1, {font: self, mark: true}); };
     var texEst = function(s){ return Math.max(1, String(s).replace(/\\[a-zA-Z]+/g, "x").replace(/[{}^_\\ ]/g, "").length) * 0.62; };
     var NS = 24, NLH = 30;   // 注（note）の字の大きさと行の高さ
     var levels = 0;
@@ -147,7 +159,9 @@ var Part = class extends base.MotionElement {
         if (wrapOn && !n.tex && lines.length === 1){ var w2 = wrap2(lines[0]); if (w2) lines = w2; }
         var tw = n.tex ? texEst(n.tex) * s : Math.max.apply(null, lines.map(est)) * s;
         o.lines = lines;
-        o.w = Math.max(s * 2.4, tw + s * 1.3); o.h = (n.tex ? s * 1.5 : lines.length * s * 1.25) + s * 0.75;
+        var ys0 = n.tex ? null : lineYs(lines, s * 1.25, s);
+        o.w = Math.max(s * 2.4, tw + s * 1.3);
+        o.h = (n.tex ? s * 1.5 : ys0[lines.length - 1] + s * 1.25 + ys0.top + ys0.bottom) + s * 0.75;
         o.notes = n.note ? String(n.note).split("\n") : [];
         o.nw = o.notes.length ? Math.max.apply(null, o.notes.map(est)) * NS : 0; o.nh = o.notes.length ? o.notes.length * NLH + 4 : 0;
         o.fb = right ? o.h + o.nh : Math.max(o.w, o.nw);
@@ -262,8 +276,8 @@ var Part = class extends base.MotionElement {
       D.el("rect", {class: "box", x: o.x.toFixed(1), y: o.y.toFixed(1), width: o.w.toFixed(1), height: o.h.toFixed(1), rx: 10, fill: c[1], stroke: c[0], "stroke-width": n.tone === "emph" ? 3 : 2.2}, o.g);
       if (n.tex) MR.texFrame(o.g, o.cx, o.cy + s * 0.36, n, "tex", {size: s, anchor: "middle", color: c[2], w: o.w, h: o.h}, sk).firstChild.style.verticalAlign = "top";
       else {
-        var lh = s * 1.25, y0 = o.cy - (o.lines.length - 1) * lh / 2 + s * 0.36;
-        o.lines.forEach(function(t, j){ D.mtext(o.g, o.cx, y0 + j * lh, t, {"text-anchor": "middle", "font-size": s, fill: c[2]}); });
+        var ys = lineYs(o.lines, s * 1.25, s), y0 = o.cy - ys[ys.length - 1] / 2 + s * 0.36 + (ys.top - ys.bottom) / 2;
+        o.lines.forEach(function(t, j){ D.mtext(o.g, o.cx, y0 + ys[j], t, {"text-anchor": "middle", "font-size": s, fill: c[2]}); });
       }
       o.notes.forEach(function(t, j){
         var ny = o.y + o.h + 4 + NLH * j + NS * 0.95;

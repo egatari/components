@@ -139,7 +139,8 @@ return class extends base.MotionElement {
     this.classList.add("plot"); this.style.display = "block";
     var ja = this.ja = /^ja\b/i.test(ctx.lang), hor = P.orient !== "v";
     if (P.orient !== "h" && P.orient !== "v") ctx.report("attr", '[boxplot] orient="' + P.orient + '" is not h or v (h is used)');
-    var est = function(s, size){ return [...String(s)].reduce(function(a, c){ return a + (/[\u0000-ɏ]/.test(c) ? 0.56 : 1); }, 0) * size; };
+    // 字の幅（base の textWidth：テーマの字で測った幅。名前も値も mtext で書く）
+    var est = function(s, size){ return base.textWidth(s, size, {font: self, mark: true}); };
     var toneOf = function(c){ return /^(term|emph|muted|accent2|fg|series-[1-4])$/.test(c || "") ? "var(--" + c + ")" : null; };
     var W = this.clientWidth, H = this.clientHeight, G = pl.groups, steps = pl.build === "steps", st = pl.st;
     var N = ja ? {min: "最小値", q1: "第1四分位数", med: "中央値", q3: "第3四分位数", max: "最大値", out: "外れ値"}

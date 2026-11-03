@@ -94,7 +94,7 @@ const all = migratedNames(ROOT).filter((n) => !only || only.has(n));
 const fixed = (n) => metas[n] && metas[n].version !== '2.0.0';
 const names = all.filter((n) => inBaseline(n) && !fixed(n)), fresh = all.filter((n) => !inBaseline(n));
 const later = all.filter((n) => inBaseline(n) && fixed(n));
-ok(names.length > 0, `migrated element parts: ${names.join(', ') || 'none'} (baseline ${BASELINE}, Studio ${pinLabel()})`);
+ok(names.length > 0 || later.length > 0, `migrated element parts compared: ${names.join(', ') || 'none (every one fixed after 2.0.0)'} (baseline ${BASELINE}, Studio ${pinLabel()})`);
 if (fresh.length) console.log(`--   new in 2.x, not in ${BASELINE} (nothing to compare): ${fresh.join(', ')}`);
 if (later.length) console.log(`--   fixed after 2.0.0, identity held at v2.0.0 (not compared): ${later.map((n) => `${n}@${metas[n].version}`).join(', ')}`);
 

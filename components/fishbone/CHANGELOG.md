@@ -5,6 +5,7 @@ The part's own versions (Egatari spec §6.1). Releases of the whole library are 
 ## 2.0.2 (components 2.2.0)
 
 - Requires base 1.1.0 (sub- and superscripts at least 24px, a measured text-width estimate) and markup-reader 1.0.1.
+- Fix: box and row-label widths use base's measured textWidth in the deck's font (digits and Latin were 0.6 em, so a label with numbers or English could run out of its box).
 
 ## 2.0.1 (components 2.1.2)
 

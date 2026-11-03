@@ -20,7 +20,7 @@ props: layout, arrows, nums, hilite, per-step, stagger, dur
 - `tone`：番号の丸とアイコンの色（`term`（既定）・`emph`・`accent2`・`series-1..4`）
 - `layout="grid"`：2 段（4 枚までは 2×2、5〜6 枚は 3×2）。横に広いカードは 番号・アイコン・見出しを 1 行に並べる
 - `arrows`：カードの間に順の矢印（grid では 1→2→3→4 の Z の順）。`hilite="last"` か `hilite="3"`：そのカードを `--emph` の枠と地で強調
-- 見せ方（`variant`、[共通の決まり](../../docs/conventions.ja.md) §1.7）：`rise`（下から、既定）・`fade`（その場で）・`draw`（枠と矢印を描いてから中身）
+- 見せ方（`variant`、[共通の決まり](../../docs/conventions.ja.md) §1）：`rise`（下から、既定）・`fade`（その場で）・`draw`（枠と矢印を描いてから中身）
 
 アイコンの名前（よく使うもの）：
 

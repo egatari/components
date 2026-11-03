@@ -84,11 +84,11 @@ return class extends base.MotionElement {
     if (ya.lo) D.mtext(ax, cx, y1 + 32, ya.lo, {"text-anchor": "middle", "font-size": 24});
     // 点の名前の置き場所（既定は右。anchor で left / above / below）。
     // 名前が軸の線を横切るなら、丸の反対の側 → 上 → 下の順に置き直す（点の始めの位置と to の位置の両方で確かめる）。
-    // 象限の名前を置いたあとは、その名前にかかる置き場所も避ける。幅は字数から見積もる（和文 1 字 = 1 字幅、ほかは 0.58 字幅）
-    var est = function(s, z, k){ return [...String(s || "")].reduce(function(a, ch){ return a + (/[\u0000-\u024f]/.test(ch) ? k : 1); }, 0) * z; };
+    // 象限の名前を置いたあとは、その名前にかかる置き場所も避ける。幅は字から見積もる（base の textWidth：テーマの字で測った幅。mtext の *_^ は数えない）
+    var est = function(s, z){ return D.textWidth(s || "", z, {font: self, mark: true}); };
     var meet = function(a, b, gp){ return a[0] < b[2] + gp && a[2] > b[0] - gp && a[1] < b[3] + gp && a[3] > b[1] - gp; };
     var items = this.plan().map(function(o){
-      var it = o.it, me = !!it.self, r = it.r || (me ? 14 : 11), off = r + 10, w = est(it.label, P.size, 0.58);
+      var it = o.it, me = !!it.self, r = it.r || (me ? 14 : 11), off = r + 10, w = est(it.label, P.size);
       var place = function(an){ return an === "left" ? [-off, 9, "end"] : an === "above" ? [0, -off - 4, "middle"] : an === "below" ? [0, off + 22, "middle"] : [off, 9, "start"]; };
       var boxAt = function(an, px, py){
         var lp = place(an), lx = px + lp[0], ly = py + lp[1], a0 = lp[2] === "start" ? lx : lp[2] === "end" ? lx - w : lx - w / 2;
@@ -111,12 +111,12 @@ return class extends base.MotionElement {
     // 象限の名前：隅（外側の角）に置く。点や点の名前、軸の言葉にかかるなら、同じ象限の残りの 3 つの隅を順に試す。
     // どこもかかるなら外側の角に置き、点の名前のほうを動かす（上の pick）。動かせなければ知らせる（layout）
     var axisBoxes = [];
-    if (xa0.lo) axisBoxes.push([x0 + 4, cy + 34 - 24 * 0.88, x0 + 4 + est(xa0.lo, 24, 0.6), cy + 34 + 24 * 0.22]);
-    if (xa0.hi) axisBoxes.push([x1 - 4 - est(xa0.hi, 24, 0.6), cy + 34 - 24 * 0.88, x1 - 4, cy + 34 + 24 * 0.22]);
+    if (xa0.lo) axisBoxes.push([x0 + 4, cy + 34 - 24 * 0.88, x0 + 4 + est(xa0.lo, 24), cy + 34 + 24 * 0.22]);
+    if (xa0.hi) axisBoxes.push([x1 - 4 - est(xa0.hi, 24), cy + 34 - 24 * 0.88, x1 - 4, cy + 34 + 24 * 0.22]);
     var names = [];
     ["tr", "tl", "bl", "br"].forEach(function(key){
       if (!q[key]) return;
-      var c = corner[key], top = key[0] === "t", right = key[1] === "r", w = est(q[key], 26, 0.6);
+      var c = corner[key], top = key[0] === "t", right = key[1] === "r", w = est(q[key], 26);
       var ins = [c[0] + 16, c[0] + c[2] - 16], ys = top ? [y0 + 34, cy - 16] : [y1 - 16, cy + 42];
       var cand = [[right ? ins[1] : ins[0], ys[0], right ? "end" : "start"], [right ? ins[0] : ins[1], ys[0], right ? "start" : "end"],
                   [right ? ins[1] : ins[0], ys[1], right ? "end" : "start"], [right ? ins[0] : ins[1], ys[1], right ? "start" : "end"]];

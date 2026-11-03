@@ -135,7 +135,7 @@ return class extends base.MotionElement {
     // 置き場所は最後の段階の形（今の線・灰色の線・観測の印）で決め、その線が灰色で見えている間だけ出す
     var last = this.updates, G = this.props.ghosts, fs = 24, nk = null;
     keys.forEach(function(key){ if (nk === null && key.replace(/[*_^]/g, "") === "n") nk = key; });
-    var wOf = function(str){ var w = 0; String(str).replace(/[*_^]/g, "").split("").forEach(function(ch){ w += ch.charCodeAt(0) > 255 ? fs : fs * 0.6; }); return w; };
+    var wOf = function(str){ return D.textWidth(str, fs, {font: self, mark: true}); };   // base の textWidth（記法の * _ ^ を除く）
     var shown = [];
     for (var i = Math.max(0, last - G); i < last; i++) shown.push(i);
     if (shown.length > 4) shown = [shown[0], shown[shown.length - 1]];

@@ -15,7 +15,7 @@
 egatariParts.define({name: "timer", version: "2.0.3", requires: {base: "1.1.0"}, element: "m-timer"}, function(deps){
 "use strict";
 var base = deps.base;
-var CSS_ID = "timer-2-0-2-css";   // the style element this part writes, named with its name and version (spec §6.1 Identifiers)
+var CSS_ID = "timer-2-0-3-css";   // the style element this part writes, named with its name and version (spec §6.1 Identifiers)
 var JA = {ready: "準備の確認", total: "合計", remaining: "残り", done: "時間", start: "準備ができたら　→ キーでスタート", next: "終了　→ キーで次へ", end: "終了",
           min: "分", sec: "秒", plus: "＋1 分", minus: "−1 分"};
 var EN = {ready: "Ready?", total: "Total", remaining: "Remaining", done: "Time's up", start: "When ready, press → to start", next: "Time's up. Press → for the next", end: "Time's up",
@@ -107,7 +107,8 @@ return class extends base.MotionElement {
     var LW = this.LW = W * 0.525, RX = W * 0.576;
     var svg = this.svg = D.el("svg", {viewBox: "0 0 " + W + " " + H, width: W, height: H, style: "display:block;overflow:visible"});
     this.insertBefore(svg, this.say);
-    var est = this.est = function(s, z){ return [...String(s)].reduce(function(a, c){ return a + (/[\u0000-ɏ]/.test(c) ? 0.56 : 1); }, 0) * z; };
+    // 字の幅（base の textWidth：テーマの字で測った幅）
+    var est = this.est = function(s, z){ return D.textWidth(s, z, {font: self}); };
     // 題（長ければ 24 px まで小さく）と説明（2 行まで。幅で折り返す）
     var fit = function(s, max, z, what){
       var y = z; while (y > 24 && est(s, y) > max) y--;

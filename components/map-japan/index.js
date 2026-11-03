@@ -78,8 +78,8 @@ var LCC = (function(P){
   return function(lon, lat){ var q = F / Math.pow(f(lat * r), n), a = n * (lon - P.lon0) * r; return [P.k * q * Math.sin(a), -P.k * (F - q * Math.cos(a))]; };
 })(MAP.proj);
 var TONES = /^(term|emph|muted|accent2|fg|series-[1-4])$/;
-// 字の幅の見積もり（m-pie と同じ。字の読み込みを待たない）
-function est(s, size){ return [...String(s)].reduce(function(a, c){ return a + (/[\u0000-ɏ]/.test(c) ? 0.6 : 1); }, 0) * size; }
+// 字の幅の見積もり（字の読み込みを待たない。base の textWidth：font の要素の字で測った幅）
+function est(s, size, font){ return base.textWidth(s, size, {font: font}); }
 function inRing(x, y, r){
   var c = false;
   for (var i = 0, j = r.length - 1; i < r.length; j = i++){
@@ -224,14 +224,14 @@ return class extends base.MotionElement {
       legendRows = classes.map(function(b, j){
         return j < classes.length - 1 ? self.fmt(b) + "〜" + self.fmt(classes[j + 1]) + " 未満" : self.fmt(b) + " 以上";
       });
-      legendW = Math.max(title ? est(title, LS) : 0, 40 + Math.max.apply(null, legendRows.map(function(t){ return est(t, LS); })));
+      legendW = Math.max(title ? est(title, LS, self) : 0, 40 + Math.max.apply(null, legendRows.map(function(t){ return est(t, LS, self); })));
       legendH = (legendRows.length + (title ? 1 : 0)) * 36;
     }
     this.legendTitle = title;
     // ---- 縮尺と位置。layout="inset" では、地図の高さいっぱいの本図の左に南西諸島、右に凡例と小笠原の枠を並べる（beside）。
     // 要素が小さくてそれでは本図が小さくなるときは、本図の空いた隅（左上・右下の海）に枠を置く（corner）
     var GAP = 20, PADI = 10, PADR = 6, CAPL = 30;
-    var capW = function(c){ return Math.max.apply(null, c.map(function(t){ return est(t, 24); }).concat([0])); };
+    var capW = function(c){ return Math.max.apply(null, c.map(function(t){ return est(t, 24, self); }).concat([0])); };
     var capsOf = function(s, k){ return Math.abs(k - 1) < 0.05 ? [s.name] : [s.name, "（縮尺は本図と異なる）"]; };
     // 並べ方（凡例の幅 legendW・高さ legendH を受け取る。0 なら凡例なし）。小さい要素でも縮尺は 0 未満にしない
     var layout = function(legendW, legendH){
@@ -288,13 +288,12 @@ return class extends base.MotionElement {
       }
       return {M: M, frames: frames, legendXY: legendXY, sc: sc, ox: ox, oy: oy, mode: mode};
     };
-    // 凡例の幅は字の幅の見積もり（数字 0.6 字）で並べる。実際の数字はそれより広いことがあるので、広めの見積もり（0.72 字）で
-    // 要素の右からはみ出すなら、その幅で並べ直す。それでも入らない（凡例が要素より高い、本図の幅が 120 px 未満になる）なら凡例は描かない
+    // 凡例の幅は字の幅の見積もり（base の textWidth）で並べる。凡例の右に 4 px の余白をとって要素の右からはみ出すなら、
+    // その幅で並べ直す。それでも入らない（凡例が要素より高い、本図の幅が 120 px 未満になる）なら凡例は描かない
     var small = H < 360 || W < 340, dropped = this.dropped = [];
     var lay0 = layout(legendW, legendH);
     if (legendW){
-      var wide = function(s, size){ return [...String(s)].reduce(function(a, c){ return a + (/[\u0000-ɏ]/.test(c) ? 0.72 : 1); }, 0) * size; };
-      var legendWc = Math.max(title ? wide(title, LS) : 0, 40 + Math.max.apply(null, legendRows.map(function(t){ return wide(t, LS); }))) + 4;
+      var legendWc = legendW + 4;
       if (legendH > H || W - legendWc - GAP < 120){ legendW = legendH = 0; lay0 = layout(0, 0); dropped.push("the legend"); }
       else if (lay0.legendXY && lay0.legendXY[0] + legendWc > W){ legendW = legendWc; lay0 = layout(legendW, legendH); }
     }
@@ -425,7 +424,7 @@ return class extends base.MotionElement {
       return false;
     };
     // 字の札（地の色の角丸の箱に --fg の字）。w, h は札の大きさ
-    var chipSize = function(t, size){ return {w: est(t, size) + 10, h: size + 8}; };
+    var chipSize = function(t, size){ return {w: est(t, size, self) + 10, h: size + 8}; };
     var chip = function(parent, b, t, size, weight){
       var g = D.el("g", {opacity: 0}, parent);
       D.el("rect", {x: b.x.toFixed(1), y: b.y.toFixed(1), width: Math.max(0, b.w).toFixed(1), height: Math.max(0, b.h).toFixed(1), rx: 6, fill: "var(--bg)"}, g);

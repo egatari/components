@@ -113,7 +113,8 @@ var KB = (function(){
 })();
 
 var TONES = /^(term|emph|muted|accent2|fg|series-[1-4])$/;
-var est = function(s, size){ return [...String(s)].reduce(function(a, c){ return a + (c === " " ? 0.3 : /[\u0000-ɏ]/.test(c) ? 0.6 : 1); }, 0) * size; };
+// 字の幅（base の textWidth：font の要素の字で測った幅）
+var est = function(s, size, font){ return base.textWidth(s, size, {font: font}); };
 return class extends base.MotionElement {
   static partName = "keyboard";   // the registry name (define meta name), for report prefixes
   static variants = ["light", "press", "rise"];
@@ -191,7 +192,7 @@ return class extends base.MotionElement {
     pl.steps.forEach(function(s){ s.keys.forEach(function(k){ if (!k.white && names !== "none") bl[k.midi + "|" + k.acc] = k; }); });
     var blist = Object.keys(bl).map(function(id){
       var k = bl[id], key = kb.all.filter(function(q){ return q.midi === k.midi; })[0], s = KB.label(k, names);
-      return {id: id, k: k, s: s, cx: x0 + key.cx * unitW, w: est(s, BFS)};
+      return {id: id, k: k, s: s, cx: x0 + key.cx * unitW, w: est(s, BFS, self)};
     }).sort(function(a, b){ return a.cx - b.cx || a.id.localeCompare(b.id); });
     var rowsEnd = [-1e9, -1e9], nRows = 0;
     blist.forEach(function(b){
@@ -205,7 +206,7 @@ return class extends base.MotionElement {
     if (cumLabs) pl.steps.forEach(function(s, j){
       if (!s.o.label) return;
       var xs = s.keys.map(function(k){ var key = kb.all.filter(function(q){ return q.midi === k.midi; })[0]; return x0 + (key.white ? key.x + 0.5 : key.cx) * unitW; });
-      var w = est(s.o.label, LFS), cx = (Math.min.apply(null, xs) + Math.max.apply(null, xs)) / 2;
+      var w = est(s.o.label, LFS, self), cx = (Math.min.apply(null, xs) + Math.max.apply(null, xs)) / 2;
       cx = Math.max(w / 2 + 2, Math.min(W - w / 2 - 2, cx));
       var row = 0;
       while (cumLabs.some(function(o){ return o.row === row && Math.abs(o.cx - cx) < (o.w + w) / 2 + 16; })) row++;
@@ -257,7 +258,7 @@ return class extends base.MotionElement {
       D.el("rect", {x: (o.cx - o.w / 2).toFixed(1), y: (y + 6).toFixed(1), width: o.w.toFixed(1), height: 4, rx: 2, fill: "var(--" + o.tone + ")"}, g);
       return {j: o.j, g: g, tx: tx};
     });
-    pl.steps.forEach(function(s, j){ if (s.o.label && est(s.o.label, LFS) > W) ctx.report("size", "[keyboard] steps[" + j + "] label is wider than the element; shorten it"); });
+    pl.steps.forEach(function(s, j){ if (s.o.label && est(s.o.label, LFS, self) > W) ctx.report("size", "[keyboard] steps[" + j + "] label is wider than the element; shorten it"); });
     if (rise) Object.keys(K).forEach(function(m){ K[m].lit.setAttribute("data-y", K[m].y); });
   }
   // 最後の形を 1 文で（読み上げの名前）：「鍵盤：ド・ミ・ソ（Ⅰ）」。cumulative なら全部の段階を順に、そうでなければ最後の段階

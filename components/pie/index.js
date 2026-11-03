@@ -53,7 +53,8 @@ return class extends base.MotionElement {
     this.style.display = "block"; this.style.position = "relative";
     var W = this.clientWidth, H = this.clientHeight, TAU = Math.PI * 2;
     var svg = D.el("svg", {viewBox: "0 0 " + W + " " + H, width: W, height: H, "aria-hidden": "true", style: "display:block;overflow:visible"}, this);
-    var est = function(s, size){ return [...String(s).replace(/[*_^]/g, "")].reduce(function(a, c){ return a + (/[\u0000-ɏ]/.test(c) ? 0.56 : 1); }, 0) * size; };
+    // 字の幅（base の textWidth：テーマの字で測った幅。mtext の *_^ は数えない）
+    var est = function(s, size){ return D.textWidth(s, size, {font: self, mark: true}); };
     var total = pl.reduce(function(a, o){ return a + Math.max(0, +o.s.value); }, 0);
     if (!(total > 0)) throw new Error("slices: the values add up to 0 (write positive numbers)");
     pl.forEach(function(o){ if (+o.s.value < 0) ctx.report("data", "[pie] the slice \"" + (o.s.label || o.i) + "\" has a negative value (drawn as 0)"); });

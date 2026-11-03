@@ -12,7 +12,8 @@
 egatariParts.define({name: "tape", version: "2.0.2", requires: {base: "1.1.0"}, element: "m-tape"}, function(deps){
 "use strict";
 var base = deps.base;
-var est = function(s, size){ return [...String(s)].reduce(function(a, c){ return a + (c === " " ? 0.3 : /[\u0000-ɏ]/.test(c) ? 0.56 : 1); }, 0) * size; };
+// 字の幅（base の textWidth：font の要素の字で測った幅。字は mtext で書くので *_^ は数えない）
+var est = function(s, size, font){ return base.textWidth(s, size, {font: font, mark: true}); };
 var TONES = /^(term|emph|muted|accent2|fg|series-[1-4])$/;
 var UNK = ["?", "□"];
 return class extends base.MotionElement {
@@ -87,7 +88,7 @@ return class extends base.MotionElement {
     return (line ? (ja ? "線分図" : "Line diagram") : (ja ? "テープ図" : "Tape diagram")) + (ja ? "：" : ": ") + out.join(sep);
   }
   mount(ctx){
-    var P = this.props, D = base, pl = this.plan();
+    var P = this.props, D = base, self = this, pl = this.plan();
     this.variant = base.variant(this);
     pl.notes.forEach(function(n){ ctx.report("data", n); });
     var line = P.kind === "line";
@@ -102,9 +103,9 @@ return class extends base.MotionElement {
     var items = this.items = [];
     var add = function(el, o){ o.el = el; items.push(o); return el; };
     var FS = 24, ROW = 34, BR = 16, BLV = BR + 6 + ROW + 6;
-    var rows = pl.rows, labW = Math.max.apply(null, [0].concat(rows.map(function(r){ return r.o.label ? est(r.o.label, 26) : 0; })));
+    var rows = pl.rows, labW = Math.max.apply(null, [0].concat(rows.map(function(r){ return r.o.label ? est(r.o.label, 26, self) : 0; })));
     // 倍の矢印は行の左の端（どの行もそろう）を結ぶ。名前はその左に
-    var tW = pl.times.length ? Math.max.apply(null, pl.times.map(function(x){ return x.o.label ? est(x.o.label, 26) + 14 : 0; })) + 52 : 0;
+    var tW = pl.times.length ? Math.max.apply(null, pl.times.map(function(x){ return x.o.label ? est(x.o.label, 26, self) + 14 : 0; })) + 52 : 0;
     var x0 = (labW ? labW + 28 : 8) + tW, labX = tW ? labW + 8 : x0 - 18;   // 矢印があれば行の名前は左の列に
     var mR = 10;
     var maxT = Math.max.apply(null, rows.map(function(r){ return r.o.segs.reduce(function(a, s){ return a + s.v; }, 0); }));
@@ -112,8 +113,8 @@ return class extends base.MotionElement {
     // 区切りの中身（□ の枠・?・名前）と幅
     var content = function(s){
       var parts = [];
-      if (s.unknown !== undefined) parts.push(s.unknown === "□" ? {box: true, w: 30} : {t: "?", w: est("?", 28), q: true});
-      if (s.label) parts.push({t: s.label, w: est(s.label, FS)});
+      if (s.unknown !== undefined) parts.push(s.unknown === "□" ? {box: true, w: 30} : {t: "?", w: est("?", 28, self), q: true});
+      if (s.label) parts.push({t: s.label, w: est(s.label, FS, self)});
       return {parts: parts, w: parts.reduce(function(a, p){ return a + p.w; }, 0) + 8 * Math.max(0, parts.length - 1)};
     };
     // 行ごとの寸法

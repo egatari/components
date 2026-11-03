@@ -11,8 +11,8 @@ egatariParts.define({name: "cards", version: "2.0.2", requires: {base: "1.1.0", 
 "use strict";
 var base = deps.base, icons = deps.icons;
 var TONES = /^(term|emph|accent2|series-[1-4])$/;
-// 字の幅の見積もり（和文 1 字 = 1 字幅、ほかは 0.6 字幅）
-function est(s){ return [...String(s)].reduce(function(a, ch){ return a + (/[\u0000-ɏ]/.test(ch) ? 0.6 : 1); }, 0); }
+// 字の幅の見積もり（字の大きさ 1 あたり。base の textWidth：font の要素の字で測った幅。mtext で書くので *_^ は数えない）
+function est(s, font){ return base.textWidth(s, 1, {font: font, mark: true}); }
 // 折ってよい所：空白・読点の後ろ、平仮名の後ろで平仮名でない字の前、欧文と和文の境（数と単位の間は除く）。行の頭に置かない字（小さい仮名・長音・句読点・閉じ括弧）の前では折らない
 var HEADLESS = /[ぁぃぅぇぉっゃゅょゎァィゥェォッャュョヮー、。，．・）」』】〕！？!?,.)]/, HIRA = /[ぁ-ゖ]/, LATIN = /[\u0000-ɏ]/;
 function breaks(ch){
@@ -26,13 +26,13 @@ function breaks(ch){
   }
   return ok;
 }
-// s を幅 w（字の大きさ size）の行に折る。行の数が max を超えれば最後の行を … で切る。{lines, cut}
-function wrap(s, w, size, max){
+// s を幅 w（字の大きさ size、字は要素 font のもの）の行に折る。行の数が max を超えれば最後の行を … で切る。{lines, cut}
+function wrap(s, w, size, max, font){
   var out = [], paras = String(s).split("\n"), cut = false;
   paras.forEach(function(p){
     var ch = [...p], ok = breaks(ch), start = 0, last = -1;
     for (var i = 0; i <= ch.length; i++){
-      if (i > start && est(ch.slice(start, i).join("")) * size > w){
+      if (i > start && est(ch.slice(start, i).join(""), font) * size > w){
         // 入らない：最後の折ってよい所で折る（なければ字の所で。行の頭に置かない字は前の行に残す）
         var at = last > start ? last : i - 1;
         if (at <= start) at = start + 1;
@@ -49,7 +49,7 @@ function wrap(s, w, size, max){
   if (out.length > max){
     cut = true; out = out.slice(0, max);
     var l = [...out[max - 1]];
-    while (l.length && est(l.join("") + "…") * size > w) l.pop();
+    while (l.length && est(l.join("") + "…", font) * size > w) l.pop();
     out[max - 1] = l.join("").replace(/[、。 ]$/, "") + "…";
   }
   return {lines: out, cut: cut};
@@ -128,7 +128,7 @@ return class extends base.MotionElement {
         var lineH = Math.max(bd, isz * 0.8);
         if (badge){ self.badge(body, hx + bd / 2, cy + lineH / 2, badge, tone); hx += bd + 14; }
         if (c.icon){ self.icon(body, c.icon, hx, cy + lineH / 2 - isz * 0.4, isz * 0.8, tone, missing); hx += isz * 0.8 + 14; }
-        var tw = wrap(c.title, x + cw - pad - hx, tsz, 2);
+        var tw = wrap(c.title, x + cw - pad - hx, tsz, 2, self);
         tw.lines.forEach(function(s, j){ D.mtext(body, hx, cy + lineH / 2 + tsz * 0.36 + (j - (tw.lines.length - 1) / 2) * (tsz + 6), s, {"font-size": tsz, "font-weight": 700}); });
         if (tw.cut) unfit.push(i + 1 + " (title)");
         cy += Math.max(lineH, tw.lines.length * (tsz + 6)) + 16;
@@ -137,14 +137,14 @@ return class extends base.MotionElement {
         if (badge) self.badge(body, x + pad + bd / 2, y + pad + bd / 2, badge, tone);
         if (c.icon){ self.icon(body, c.icon, x + cw / 2 - isz / 2, cy, isz, tone, missing); cy += isz + 14; }
         else if (badge) cy += bd + 8;
-        var tw2 = wrap(c.title, textW, tsz, 2);
+        var tw2 = wrap(c.title, textW, tsz, 2, self);
         tw2.lines.forEach(function(s){ cy += tsz; D.mtext(body, x + cw / 2, cy, s, {"text-anchor": "middle", "font-size": tsz, "font-weight": 700}); cy += 6; });
         if (tw2.cut) unfit.push(i + 1 + " (title)");
         cy += 12;
       }
       if (c.text){
         var room = Math.max(0, Math.floor((y + ch - pad - cy + (lh - xsz)) / lh));
-        var tx = wrap(c.text, textW, xsz, Math.max(1, room));
+        var tx = wrap(c.text, textW, xsz, Math.max(1, room), self);
         var center = !wide && tx.lines.length === 1;
         tx.lines.forEach(function(s, j){ D.mtext(body, center ? x + cw / 2 : x + pad, cy + xsz + j * lh, s, center ? {"text-anchor": "middle", "font-size": xsz} : {"font-size": xsz}); });
         if (tx.cut || room < 1) unfit.push(String(i + 1));

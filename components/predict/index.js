@@ -18,7 +18,7 @@
 egatariParts.define({name: "predict", version: "2.0.3", requires: {base: "1.1.0"}, element: "m-predict"}, function(deps){
 "use strict";
 var base = deps.base;
-var CSS_ID = "predict-2-0-2-css";   // the style element this part writes, named with its name and version (spec §6.1 Identifiers)
+var CSS_ID = "predict-2-0-3-css";   // the style element this part writes, named with its name and version (spec §6.1 Identifiers)
 var CSS = [
   "m-predict .pd-say{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}",
   "m-predict .pd-pick{position:absolute;background:transparent;border:0;border-radius:10px;cursor:pointer;padding:0;margin:0}",
@@ -112,14 +112,15 @@ return class extends base.MotionElement {
       this.svg.remove();
       this.rows.forEach(function(r){ if (r.pick) r.pick.remove(); if (r.ctl) r.ctl.remove(); });
     }
-    var est = function(s, size){ return [...String(s)].reduce(function(a, c){ return a + (/[\u0000-ɏ]/.test(c) ? 0.56 : 1); }, 0) * size; };
+    // 字の幅（base の textWidth：テーマの字で測った幅。mk：mtext で書く字で、*_^ は数えない）
+    var est = function(s, size, mk){ return D.textWidth(s, size, {font: self, mark: !!mk}); };
     // 縦：問い・行・目盛り・注（と予想の当たり外れ）
     var qh = d.question ? 54 : 0, nh = d.note || inter ? 50 : 0, tb = P.ticks ? 40 : 8;
     var rh = Math.min(88, (H - qh - nh - tb) / n);
     if (inter && rh < 54) ctx.report("size", "[predict] rows are " + rh.toFixed(0) + " px high; the −1/+1 buttons need 54 (make the element taller or use fewer choices)");
     // 横：予想の印・選択肢の名前・棒・数と「正解」・操作
     var mk = inter ? 40 : 0, LS = 26;
-    var lw = Math.min(W * 0.34, Math.max.apply(null, ch.map(function(c){ return est(c.label, LS); })) + 16);
+    var lw = Math.min(W * 0.34, Math.max.apply(null, ch.map(function(c){ return est(c.label, LS, true); })) + 16);
     var cw = inter ? 232 : 0;
     var valW = est("9999" + P.unit, 26) + 12, okW = est("✓ 正解", 26) + 16;
     // 棒の軸の長さ：選択肢の名前・数・「正解」・操作の残り。BARMIN px より短ければ知らせ、その長さは残す（負の長さで棒が消え、目盛りが重ならないように）
@@ -130,14 +131,14 @@ return class extends base.MotionElement {
     var G = this.g;
     var svg = this.svg = D.el("svg", {viewBox: "0 0 " + W + " " + H, width: W, height: H, style: "display:block;overflow:visible"});
     this.insertBefore(svg, this.say);
-    var fitText = function(el, s, max, size, what){
+    var fitText = function(el, s, max, size, what, mk){
       var z = size;
-      while (z > 24 && est(s, z) > max) z--;
-      if (est(s, z) > max) ctx.report("size", "[predict] the " + what + " does not fit (" + Math.ceil(est(s, z) - max) + " px too wide at 24 px); shorten it");
+      while (z > 24 && est(s, z, mk) > max) z--;
+      if (est(s, z, mk) > max) ctx.report("size", "[predict] the " + what + " does not fit (" + Math.ceil(est(s, z, mk) - max) + " px too wide at 24 px); shorten it");
       el.setAttribute("font-size", z);
       return el;
     };
-    if (d.question) fitText(D.mtext(svg, 0, 36, d.question, {"font-size": 30, "font-weight": 700}), d.question, W - 8, 30, "question");
+    if (d.question) fitText(D.mtext(svg, 0, 36, d.question, {"font-size": 30, "font-weight": 700}), d.question, W - 8, 30, "question", true);
     // 答えの枠（行の後ろ）
     this.frame = D.el("rect", {x: 2, y: 0, width: Math.max(0, W - cw - 12), height: rh - 8, rx: 10, fill: "none", stroke: "var(--emph)", "stroke-width": 3, opacity: 0}, svg);
     this.frameLen = 2 * (W - cw - 12 + rh - 8);
@@ -156,7 +157,7 @@ return class extends base.MotionElement {
         mark: inter ? D.el("circle", {cx: 16, cy: cy, r: 11, fill: "none", stroke: "var(--term)", "stroke-width": 2.5, "class": "pd-mark"}, svg) : null,
         dot: inter ? D.el("circle", {cx: 16, cy: cy, r: 6, fill: "var(--term)", opacity: 0, "class": "pd-mark"}, svg) : null,
         bar: D.el("rect", {x: G.x0, y: (cy - bw / 2).toFixed(1), height: bw.toFixed(1), rx: 3, fill: col, opacity: 0}, svg),
-        label: fitText(D.mtext(svg, mk + lw, cy + 9, c.label, {"text-anchor": "end", "font-size": LS}), c.label, lw - 8, LS, "label " + JSON.stringify(c.label)),
+        label: fitText(D.mtext(svg, mk + lw, cy + 9, c.label, {"text-anchor": "end", "font-size": LS}), c.label, lw - 8, LS, "label " + JSON.stringify(c.label), true),
         val: D.el("text", {"font-size": 26, "font-weight": 700, y: (cy + 9).toFixed(1), opacity: 0, style: "font-variant-numeric:tabular-nums"}, svg)};
       if (i === d.answer) r.ok = D.el("text", {"font-size": 26, "font-weight": 700, y: (cy + 9).toFixed(1), fill: "var(--emph)", opacity: 0}, svg);
       if (r.ok) r.ok.textContent = "✓ 正解";
@@ -339,7 +340,7 @@ return class extends base.MotionElement {
     this.liveEl.setAttribute("opacity", live && k >= 1 ? 1 : 0);
     // 答えを開いた段階に入ったら知らせる（入力の知らせは set・choose が後から書く）
     if (this._sayK !== k && !this.video){ this._sayK = k; this.say.textContent = k >= a ? "答え：" + dd.choices[dd.answer].label + (this.noteText ? "。" + this.noteText : "") : ""; }
-    function est(s, size){ return [...String(s)].reduce(function(a, c){ return a + (/[\u0000-ɏ]/.test(c) ? 0.56 : 1); }, 0) * size; }
+    function est(s, size){ return D.textWidth(s, size, {font: self}); }
     function nice(v){ var e = Math.pow(10, Math.floor(Math.log10(v))), x = v / e;
       return [1, 1.2, 1.5, 2, 2.5, 3, 4, 5, 6, 8, 10].filter(function(s){ return s >= x - 1e-9; })[0] * e; }
     function up(v){ var e = Math.pow(10, Math.floor(Math.log10(v))); return Math.round([1, 2, 5, 10, 20].filter(function(s){ return s * e > v + 1e-9; })[0] * e); }

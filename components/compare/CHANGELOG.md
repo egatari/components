@@ -5,6 +5,7 @@ The part's own versions (Egatari spec §6.1). Releases of the whole library are 
 ## 2.0.2 (components 2.2.0)
 
 - Requires base 1.1.0 (sub- and superscripts at least 24px, a measured text-width estimate).
+- Fix: cell texts wrap by base's measured textWidth in the deck's font (digits and Latin were 0.6 em, so a cell with numbers or English could overflow its column). Bold text keeps its 1.04 factor. A line may exceed its width by 0.5 px before it wraps, so the longest label no longer breaks off its last character (結果が届くま／で) through rounding.
 
 ## 2.0.1 (components 2.1.2)
 
