@@ -6,7 +6,7 @@ summary: 2.0 の要素のパーツが使う土台（基底のクラス MotionEle
 requires: shape@1.0.0
 ---
 
-**2.0 alpha (branch `c2-base`; not for lessons).** A library part (Egatari spec §6.1): it defines no element. Element parts
+A library part (Egatari spec §6.1): it defines no element. Element parts
 of components 2.0 require it as `requires: {base: "1.1.0"}` and receive what its factory returns:
 
 ```js

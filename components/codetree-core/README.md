@@ -5,7 +5,7 @@ kind: library
 summary: 符号表から符号の木を作り、2 値の系列を復号する（ファクシミリの MH 符号：白と黒のランを交互に読む）。m-codetree が使う。教材の作者が直接は書かない
 ---
 
-**2.0 alpha (branch `c2-base`; not for lessons).** A library part (Egatari spec §6.1): it defines no element and requires
+A library part (Egatari spec §6.1): it defines no element and requires
 nothing. `m-codetree` 2.0.0 requires it as `{"codetree-core": "1.0.0"}`. Pure functions (no DOM):
 
 ```js

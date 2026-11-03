@@ -5,7 +5,7 @@ kind: library
 summary: 漢文の読み取り（白文・返り点・送り仮名・振り仮名）と訓読の順・書き下し文の計算。m-kanbun が使う。教材の作者が直接は書かない
 ---
 
-**2.0 alpha (branch `c2-base`; not for lessons).** A library part (Egatari spec §6.1): it defines no element and requires
+A library part (Egatari spec §6.1): it defines no element and requires
 nothing. `m-kanbun` 2.0.0 requires it as `{"kanbun-core": "1.0.0"}`. Pure functions on strings and arrays (no DOM):
 
 ```js

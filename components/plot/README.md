@@ -6,7 +6,7 @@ summary: 2.0 のパーツが使う座標軸つきの図（軸・目盛り・軸�
 requires: base@1.1.0
 ---
 
-**2.0 alpha (branch `c2-base`; not for lessons).** A library part (Egatari spec §6.1). Parts that draw on axes (today
+A library part (Egatari spec §6.1). Parts that draw on axes (today
 `m-boxplot`, `m-curves`, `m-hist`, `m-scatter`, `m-seq`, `m-sweep` through `DECK.Plot`) require it as
 `requires: {base: "1.1.0", plot: "1.0.1"}` and receive `{Plot}`:
 

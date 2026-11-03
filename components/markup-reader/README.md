@@ -6,7 +6,7 @@ summary: 組み立てのときに描いた結果（KaTeX の HTML・MathML、abc
 requires: base@1.1.0
 ---
 
-**2.0 alpha (branch `c2-a3a`; not for lessons).** A library part (Egatari spec §6.1). Parts that show build-time rendered
+A library part (Egatari spec §6.1). Parts that show build-time rendered
 output (spec §6.2) insert it only through this reader: today the six parts with `tex` fields (`m-collect`, `m-cycle`,
 `m-fishbone`, `m-flow`, `m-timeline`, `m-tree`). `m-score` (abcjs SVG) reads only `LIST` (its svg entries) and keeps its
 own tree reader, which its step plan uses without a DOM; the list is the same one. They require it as

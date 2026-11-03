@@ -5,7 +5,7 @@ kind: library
 summary: m-heatmap の計算（行ごとの割合、色の範囲と混ぜる割合、セルの字の色と縁、名前の間引きとセルの大きさ、段階）。教材の作者が直接は書かない
 ---
 
-**2.0 alpha (branch `c2-base`; not for lessons).** A library part (Egatari spec §6.1): it defines no element.
+A library part (Egatari spec §6.1): it defines no element.
 `m-heatmap` 2.0.0 requires it as `requires: {"heatmap-core": "1.0.0"}`; `tools/test-heatmap.mjs` tests it without a
 browser. It requires nothing, touches no DOM and keeps no state. Moved from m-heatmap 1.13.0, where it was the class's
 `static calc`, unchanged except that `layout`'s `notes` no longer start with `m-heatmap: ` (m-heatmap reports them with its

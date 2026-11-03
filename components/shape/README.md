@@ -5,7 +5,7 @@ kind: library
 summary: 2.0 のパーツのデータの形（static shape）を確かめる小さな検査器。base が使う。教材の作者が直接は書かない
 ---
 
-**2.0 alpha (branch `c2-base`; not for lessons).** A library part (Egatari spec §6.1 "Data shapes": a part checks its own
+A library part (Egatari spec §6.1 "Data shapes": a part checks its own
 data against its declared shape and reports a mismatch with `ctx.report`; players do not validate component data). It
 requires nothing and touches no DOM; `base` requires it, and `base.MotionElement` uses it before mount.
 
