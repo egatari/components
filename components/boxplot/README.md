@@ -18,7 +18,6 @@ props: orient, xr, yr, xt, yt, xf, yf, xl, yl, method, outliers, dots, build, un
 - `outliers="on"`：1.5×四分位範囲の外を外れ値の点に
 - `dots="on"`：値の点を並べる
 - 群が 1 つの steps では、並べた値の行も出る
-- 群の `label`の `*…*` は斜体、`_` `^` は次の 1 字を下付き・上付き（記号のままなら全角 ＿ ＾ ＊）
 
 <!-- llm: omit -->
 作る人向けの注

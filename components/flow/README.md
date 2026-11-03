@@ -16,7 +16,6 @@ props: fade, draw, size, pulse-dur, pulse-n, label-gap
 
 - node：`id` `label`（`\n` で改行）または `tex`（KaTeX）、`step`、`tone`（`term` / `emph` / `muted`）、`at`（段階の中の開始秒）、`shape:"diamond"`（判断）
 - edge：`from` `to` `step`（既定は両端の箱の遅いほう）、`label`、`tone`、`dash`、`offset`（名前と線の距離）、`at`、`loop`（前の箱へ外側を回って戻る辺。回る側は `"left"` `"right"` `"top"` `"bottom"`、`true` なら両端が縦に並ぶとき右・横に並ぶとき下）
-- 箱と辺の名前の `*…*` は斜体、`_` `^` は次の 1 字を下付き・上付き（記号のままなら全角 ＿ ＾ ＊）、式は `tex`
 - 色：線と線の名前は `--fg`（`tone` があればその色）。`muted` の箱は枠が `--muted`、地が `--bg`、字は `--fg`
 - 箱は薄く拡大しながら現れ、矢印は同じ段階の箱が出てから引く
 

@@ -18,7 +18,6 @@ props: xr, yr, xt, yt, xf, yf, xl, yl, unit, digits, polygon, relative, cumulati
 - `polygon` `relative` `cumulative`：`"on"`
 - `marks="mean,median,mode"`：代表値の線
 - `build="values"`：値を 1 つずつ積む。`"bins"`：階級を 1 つずつ
-- 組の `label`の `*…*` は斜体、`_` `^` は次の 1 字を下付き・上付き（記号のままなら全角 ＿ ＾ ＊）
 
 <!-- llm: omit -->
 作る人向けの注

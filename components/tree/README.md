@@ -16,7 +16,6 @@ props: orient, by, link, size, fade, draw
 子の JSON：`{"nodes": [...], "edges": [...]}`（`edges` は省いてよい）。
 
 - node：`id`、`label`（`\n` で改行）か `tex`（KaTeX）、`parent`（親の `id`。`parent` のない節（根）はちょうど 1 つ）、`note`（箱の**下**に小さな一言、`--muted`）、`tone`（`term`（既定）・`emph`・`muted`・`accent2`・`series-1..4`）、`step`、`at`（段階の中の開始秒）
-- 名前・`note`・`branch` の `*…*` は斜体、`_` `^` は次の 1 字を下付き・上付き（記号のままなら全角 ＿ ＾ ＊）、式は `tex`
 - 子は配列の順に並ぶ。親は子の並びの中央に置く
 - edge：親子のほかのつながり（`from` `to` `label` `tone` `dash` `step`）。破線で矢印つき、木の外側（`down` は下、`right` は右）へふくらむ。同じ深さの節どうしに向く。段階は既定で両端の遅いほう
 - 子の `branch`：線の字（確率など）。`path`：根からの `id` の道を順に強調（`pathStep` で一度に。`pathNote`：末尾の一言）

@@ -21,7 +21,6 @@ props: unit, digits, scale, layout, dur, count
 - `layout="bottom"`（既定）は円の下端をそろえ、`layout="center"` は同心にする
 - 色は外の 2 つが `--term`、内の円が `--emph`（`tone` で変えられる：`term`・`emph`・`muted`・`accent2`・`series-1..4`。ほかの値は `term`）
 - `dur`：1 つの円が縮んで現れる秒数（既定 0.9）。数字はそのあと 0.35 秒で出る
-- `key`・`basis`の `*…*` は斜体、`_` `^` は次の 1 字を下付き・上付き（記号のままなら全角 ＿ ＾ ＊）
 - 値の数字は円が縮みきってから出す。`count="true"` なら縮みに合わせて数え上げる
 
 見本は `demo.html`（報告書の市場、面積に比例させた例）。数値はすべて架空。

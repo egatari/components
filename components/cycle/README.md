@@ -22,7 +22,6 @@ PDCA、水の循環、細胞周期、学習のサイクルなど、同じ順で�
   - `tone: emph` の箱は、地が `--emph-tint`、枠と字が `--emph`
 - `edges`：ほかのつながり（`from` `to` は段階の `id`、`label` `tone` `dash` `step`）。箱の縁から縁への破線の矢印
 - 矢印の色は `--muted`、3 px（`edges` も `tone` がなければ `--muted`）
-- `label`・`note` の `*…*` は斜体、`_` `^` は次の 1 字を下付き・上付き（記号のままなら全角 ＿ ＾ ＊）、式は `tex`
 
 並べ方：
 
