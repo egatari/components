@@ -2,6 +2,8 @@
 //   1. tools/icons-import.mjs --check: the block, names.txt and the notice agree with the pinned version; no brand-* name
 //   2. its build (subset by name, spec §6.2) is the value its factory returns; the manifest repeats it
 //   3. a lesson naming chart-bar-popular and user keeps those (and the "_notice"), not chart-bar; the subset is small
+//   3b. the word files (<lang>.json, #160): en.json from Tabler's tags; ja.json the core icons, each a known name with
+//      distinct words; a wrong version, an unknown name or repeated words are refused
 //   4. in a browser through the registry shim, with the subset code: svg() draws each path of the data with stroke
 //      currentColor, 2 units, round caps and joins, aria-hidden, scaled to size; "+" and "*" paths are filled; an unknown
 //      name draws the dashed placeholder and calls `missing` once (with the closest carried names for a typo); the value is frozen
@@ -13,6 +15,7 @@ import { execFileSync } from 'node:child_process';
 import { ROOT, studio } from './studio.mjs';
 import { c2Bundle, partDeclarations } from './parts.mjs';
 import { produce, blockOf } from './subset-produce.mjs';
+import { wordErrors, PIN } from './icons-import.mjs';
 
 let fails = 0;
 const ok = (cond, msg) => { console.log((cond ? 'ok   ' : 'FAIL ') + msg); if (!cond) fails++; };
@@ -37,6 +40,14 @@ const r = produce(full, [LESSON]);
 const kept = Object.keys(JSON.parse(blockOf(r.code, 'icons').json));
 ok(kept[0] === '_notice' && kept.includes('chart-bar-popular') && kept.includes('user') && !kept.includes('chart-bar') && r.keys === '' && r.names.includes('chart-bar-popular') && !r.names.includes('no-such-icon'),
   `the lesson keeps ${JSON.stringify(r.names)} and the _notice, not chart-bar; keys ""`);
+// 3b
+const words = (l) => JSON.parse(fs.readFileSync(path.join(ROOT, 'components', 'icons', l + '.json'), 'utf8'));
+const en = words('en'), ja = words('ja'), jaN = Object.keys(ja).filter((k) => !k.startsWith('_'));
+ok(Object.keys(en).length > 4000 && en['chart-bar'].includes('statistics'), `en.json: ${Object.keys(en).length - 2} icons with Tabler's tags`);
+ok(jaN.length >= 300 && ['chart-bar', 'user', 'school', 'coin'].every((n) => jaN.includes(n)) && jaN.every((n) => ja[n].length >= 3 && ja[n].length <= 6), `ja.json: ${jaN.length} core icons, 3–6 words each`);
+const bad = wordErrors('ja.json', { _tabler: '0.0.1', _lang: 'ja', 'chart-bar': ['棒', '棒'], 'no-such-icon': ['x'] }, names, PIN.version);
+ok(bad.length === 3 && /_tabler/.test(bad[0]) && bad.some((e) => /chart-bar: words/.test(e)) && bad.some((e) => /no-such-icon/.test(e)), `a wrong version, repeated words and an unknown name are refused (${bad.length})`);
+
 const kb = (n) => (n / 1024).toFixed(1) + ' KB';
 console.log(`     sizes: full ${kb(Buffer.byteLength(full))}, this lesson ${kb(Buffer.byteLength(r.code))}`);
 ok(Buffer.byteLength(r.code) < 12 * 1024, 'the subset part is under 12 KB');
