@@ -293,7 +293,7 @@ document.addEventListener("DOMContentLoaded", function(){
 <section class="slide">
   <h2>m-codetree（変わった、v2.2.0）</h2>
   <div class="body">
-    <p>符号の木で 2 値の系列を 1 語ずつ復号する（MH 符号）。ランは画素の升目に伸びる</p>
+    <p>ハフマン木で 2 値の系列を 1 語ずつ復号する（MH 符号）。ランは画素の升目に伸びる</p>
     <ul>
       <li>伝えたいこと：階層・分類・手順・工程</li>
       <li>見せ方：1 種類</li>
@@ -303,9 +303,9 @@ document.addEventListener("DOMContentLoaded", function(){
 </section>
 
 <section id="g-codetree-1" class="slide noconcl">
-  <h2>MH 符号を符号の木で復号する</h2>
+  <h2>MH 符号をハフマン木で復号する</h2>
   <div class="body">
-    <m-codetree aria-label="MH 符号の木で 11011011111 を復号する図" style="height:530px">
+    <m-codetree aria-label="MH 符号のハフマン木で 11011011111 を復号する図" style="height:530px">
       <script type="application/json">{
         "bits": "11011011111",
         "table": [
@@ -410,7 +410,7 @@ document.addEventListener("DOMContentLoaded", function(){
 <section id="g-codetree-2" class="slide noconcl">
   <h2>長い黒の符号（12 ビット）を読む</h2>
   <div class="body">
-    <m-codetree aria-label="MH 符号の木で、白 3・黒 30・白 2 を復号する図（黒 30 は 12 ビット）" style="height:530px">
+    <m-codetree aria-label="MH 符号のハフマン木で、白 3・黒 30・白 2 を復号する図（黒 30 は 12 ビット）" style="height:530px">
       <script type="application/json">{
         "bits": "1000 000001101000 0111",
         "table": [

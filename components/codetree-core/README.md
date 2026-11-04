@@ -2,7 +2,7 @@
 name: codetree-core
 version: 1.0.0
 kind: library
-summary: 符号表から符号の木を作り、2 値の系列を復号する（ファクシミリの MH 符号：白と黒のランを交互に読む）。m-codetree が使う。教材の作者が直接は書かない
+summary: 符号表からハフマン木を作り、2 値の系列を復号する（ファクシミリの MH 符号：白と黒のランを交互に読む）。m-codetree が使う。教材の作者が直接は書かない
 ---
 
 A library part (Egatari spec §6.1): it defines no element and requires
