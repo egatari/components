@@ -2,6 +2,10 @@
 
 The part's own versions (Egatari spec §6.1). Releases of the whole library are in the repository's CHANGELOG.md.
 
+## 2.0.3 (components 2.3.0)
+
+- The element's text equivalent (aria-label, shown by print and screen readers) says ハフマン木 / Huffman tree, matching the display name (#168).
+
 ## 2.0.2 (components 2.2.0)
 
 - Requires base 1.1.0 (sub- and superscripts at least 24px, a measured text-width estimate).

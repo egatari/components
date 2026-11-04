@@ -1,4 +1,4 @@
-// m-codetree：符号の木で 2 値の系列を復号する（ファクシミリの MH 符号：白と黒のランを交互に読む）
+// m-codetree：ハフマン木で 2 値の系列を復号する（ファクシミリの MH 符号：白と黒のランを交互に読む）
 // <m-codetree style="height:530px"><script type="application/json">
 //   {"table": [{"run": 2, "white": "0111", "black": "11"}, {"run": 64, "white": "11011", "black": "0000001111"}, …],
 //    "bits": "11011011111"}
@@ -23,7 +23,7 @@
 // 復号の規則は codetree-core（試験は tools/test-codetree.mjs）
 // 2.0（Egatari spec §6.1 の部品）：base の MotionElement・el・prog・lerp・previewOpacity と、表・木・復号の codetree-core を使い、
 // プレイヤーのグローバルは使わない
-egatariParts.define({name: "codetree", version: "2.0.2", requires: {base: "1.1.0", "codetree-core": "1.0.0"}, element: "m-codetree"}, function(deps){
+egatariParts.define({name: "codetree", version: "2.0.3", requires: {base: "1.1.0", "codetree-core": "1.0.0"}, element: "m-codetree"}, function(deps){
 "use strict";
 var base = deps.base;
 var D = base;
@@ -256,8 +256,8 @@ return class extends base.MotionElement {
       var end = !er ? Lb.done : fmt0(Lb[er.kind], "").replace("{n}", er.pos + 1);
       // 長い系列は初めの 12 語と語の数（1 文に収める）
       if (toks.length > 12) toks = toks.slice(0, 12).concat([ja ? "…（全 " + toks.length + " 語）" : "… (" + toks.length + " codewords)"]);
-      this.setAttribute("aria-label", !dec.bits ? (ja ? "符号の木" : "Code tree") :
-        (ja ? "符号の木で " + dec.bits + " を復号：" : "Decoding " + dec.bits + " with the code tree: ") + toks.join(ja ? "、" : ", ") + (ja ? "（" + end + "）" : " (" + end + ")"));
+      this.setAttribute("aria-label", !dec.bits ? (ja ? "ハフマン木" : "Huffman tree") :
+        (ja ? "ハフマン木で " + dec.bits + " を復号：" : "Decoding " + dec.bits + " with the Huffman tree: ") + toks.join(ja ? "、" : ", ") + (ja ? "（" + end + "）" : " (" + end + ")"));
     }
     var root = D2.el("g", {transform: "translate(4 0)"}, svg);
     this.lay = [];
