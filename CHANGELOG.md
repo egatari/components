@@ -8,6 +8,22 @@ Versions follow [README.md § Releases and versions](README.md#releases-and-vers
 
 - `m-compare` `by="row"`; an "outside every set" region for `m-venn`; planned-vs-actual bars for `m-timeline`
 
+## 2.3.0 - 2026-11-05
+
+No drawing changes: lessons look the same on 2.3.0. Studio's AI instruction pack changes by one README sentence (`m-predict`, +15 B; eval A clean, no eval B needed).
+
+### Added
+
+- `icons`: search words per language (#160), `components/icons/<lang>.json` — `{"_tabler": <version>, "_lang": <lang>, "<name>": [words, most common first]}`, the same shape for every language. `en.json` is Tabler's tags for all 4,808 icons, written by `tools/icons-import.mjs`; `ja.json` gives 441 core icons 3–6 Japanese words each (drafted with an LLM, checked by the owner). They are not in `index.js`: lesson subsets, the part's identity and the instruction pack do not change, and `icons` stays 1.0.0. The editor reads them to find an icon by a word. `icons-import --check` refuses a wrong Tabler version, an unknown name or repeated words.
+
+### Changed
+
+- `m-codetree` 2.0.3: its text equivalent (print, screen readers) says ハフマン木 / Huffman tree, matching the display name since 2.2.0 (#168). The README summaries of `m-codetree` and `codetree-core` and the demo say ハフマン木 too.
+
+### Documentation
+
+- `m-predict` README: 学ぶ人 → 学習者 (Studio's glossary).
+
 ## 2.2.0 - 2026-11-03
 
 Changes what Studio's AI instruction pack carries (released after the standards side's eval B). Every part has a new version: lessons pinned to earlier releases keep their drawing; **rebuilding a lesson on 2.2.0 can change its layout** (measured text widths, larger sub- and superscripts).
