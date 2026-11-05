@@ -4,6 +4,10 @@ Versions follow [README.md § Releases and versions](README.md#releases-and-vers
 
 ## Unreleased
 
+### Added
+
+- `m-particles` 2.0.0 (planned components 2.4.0, science): states of matter with fixed particle count and size, and chemical reactions with persistent atom identities, equations, conservation counts and reported invalid data.
+
 ### Later (candidates, not in this release)
 
 - `m-compare` `by="row"`; an "outside every set" region for `m-venn`; planned-vs-actual bars for `m-timeline`
