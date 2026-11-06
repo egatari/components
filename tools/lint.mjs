@@ -75,6 +75,38 @@ export function frontmatter(text) {
   return o;
 }
 
+// README.en.md (English docs, a companion of README.md that changes without a version bump): its frontmatter carries the
+// translated pack-visible text only: summary, steps and props, a map {prop: English doc} as indented "  name: doc" lines
+export function frontmatterEn(text) {
+  const m = text.replace(/\r\n?/g, '\n').match(/^---\n([\s\S]*?)\n---/);
+  if (!m) return null;
+  const o = {};
+  let map = null;
+  for (const line of m[1].split('\n')) {
+    const sub = line.match(/^ {2}([\w-]+):\s*(.*)$/), x = line.match(/^([\w-]+):\s*(.*)$/);
+    if (sub && map) map[sub[1]] = sub[2].trim();
+    else if (x) { map = null; if (x[2].trim() === '') o[x[1]] = map = {}; else o[x[1]] = x[2].trim(); }
+  }
+  return o;
+}
+// The English README beside an element part's README.md: the translated fields, and the same llm: omit blocks
+export function lintEn(name, dir, f, rtext) {
+  const file = path.join(dir, 'README.en.md'), at = `components/${name}/README.en.md`, errs = [];
+  if (!fs.existsSync(file)) return errs;
+  const etext = fs.readFileSync(file, 'utf8'), e = frontmatterEn(etext);
+  errs.push(...llmBlocks(etext, at));
+  if (!e) return [...errs, `${at}: no frontmatter`];
+  for (const k of Object.keys(e)) if (!['summary', 'steps', 'props'].includes(k)) errs.push(`${at}: ${k} is not a translated field (summary, steps, props); names and structure stay in README.md`);
+  for (const k of ['summary', 'steps']) if (!e[k] || typeof e[k] !== 'string') errs.push(`${at}: no ${k}`);
+  const want = list(f.props), got = e.props && typeof e.props === 'object' ? Object.keys(e.props) : [];
+  if (want.join() !== got.join()) errs.push(`${at}: props (${got.join(', ') || 'none'}) are not README.md's props in order (${want.join(', ')})`);
+  for (const k of got) if (!e.props[k]) errs.push(`${at}: props.${k} has no text`);
+  const blocks = (t) => (t.match(/<!-- llm: omit -->/g) || []).length;
+  if (blocks(etext) !== blocks(rtext)) errs.push(`${at}: ${blocks(etext)} llm: omit blocks, README.md has ${blocks(rtext)}`);
+  if (/[\u3040-\u30ff\u4e00-\u9fff]/.test(etext.replace(/<!-- llm: omit -->[\s\S]*?<!-- llm: end -->/g, '').replace(/`[^`]*`/g, ''))) errs.push(`${at}: Japanese text outside code and llm: omit blocks`);
+  return errs;
+}
+
 // A 2.0 part (one that calls egatariParts.define, spec §6.1): its meta, and no DECK, import or require
 // (a data block's JSON, spec §6.2, is data: its strings, such as the icon name app-window, are not code)
 const strip = (js) => js.replace(/\/\*@egatari-block [a-z][a-z0-9-]*\*\/[\s\S]*?\/\*@egatari-block-end\*\//g, '{}').replace(/\/\*[\s\S]*?\*\//g, '').replace(/(^|[^:"'\\])\/\/.*$/gm, '$1');
@@ -249,6 +281,7 @@ export function lint(root, warns = []) {
     const rtext = fs.readFileSync(readme, 'utf8'), f = frontmatter(rtext);
     errs.push(...llmBlocks(rtext, `components/${name}/README.md`));
     if (!f) { errs.push(`components/${name}/README.md: no frontmatter`); continue; }
+    errs.push(...lintEn(name, dir, f, rtext));
     for (const k of ['name', 'version', 'series', 'tier', 'summary', 'steps', 'props']) if (!(k in f)) errs.push(`components/${name}/README.md: frontmatter has no ${k}`);
     if ('tier' in f && !TIERS.includes(f.tier)) errs.push(`components/${name}/README.md: tier ${f.tier} is not one of ${TIERS.join(', ')}`);
     if (f.tier === 'specialized' && !SETS.includes(f.set)) errs.push(`components/${name}/README.md: a specialized part needs set: one of ${SETS.join(', ')}${'set' in f ? ` (not ${f.set})` : ''}`);
