@@ -11,7 +11,7 @@
 // 2.0（Egatari spec §6.1 の部品）：base の MotionElement・el・mtext・prog・variant・previewOpacity、plot の Plot、
 // 四分位数は boxplot-core（1.x の static stats）を使い、プレイヤーのグローバルは使わない。書き方やデータの知らせ
 // （1.x の console.warn）は mount で ctx.report に。言語は ctx.lang（mount で読む）
-egatariParts.define({name: "boxplot", version: "2.0.2", requires: {base: "1.1.0", "boxplot-core": "1.0.0", plot: "1.0.1"}, element: "m-boxplot"}, function(deps){
+egatariParts.define({name: "boxplot", version: "2.0.3", requires: {base: "1.1.0", "boxplot-core": "1.0.0", plot: "1.1.0"}, element: "m-boxplot"}, function(deps){
 "use strict";
 var base = deps.base, plot = deps.plot;
 // ---- 四分位数（boxplot-core。tools/test-stats.mjs が試す） ----
@@ -369,7 +369,7 @@ return class extends base.MotionElement {
       // 値を囲む枠（位置が x.5 なら前後の 2 つを、x.25 などなら挟む 2 つを）
       var frame = function(i, col, s2){
         var a2 = Math.floor(i + 1e-9), b2 = Math.ceil(i - 1e-9), x1 = row.x0 + a2 * row.cw + 3, x2 = row.x0 + (b2 + 1) * row.cw - 3;
-        add2(D.el("rect", {x: x1.toFixed(1), y: row.top + 2, width: (x2 - x1).toFixed(1), height: row.h - 4, rx: 8, fill: "none", stroke: col, "stroke-width": 3, opacity: 0}, gR), {st: s2, at: 0, len: dur * 0.6, kind: "box"});
+        add2(D.el("rect", {x: x1.toFixed(1), y: row.top + 2, width: Math.max(0, x2 - x1).toFixed(1), height: Math.max(0, row.h - 4), rx: 8, fill: "none", stroke: col, "stroke-width": 3, opacity: 0}, gR), {st: s2, at: 0, len: dur * 0.6, kind: "box"});
       };
       frame(q.imed, "var(--emph)", st.med);
       frame(q.iq1, "var(--accent2)", st.q); frame(q.iq3, "var(--accent2)", st.q);

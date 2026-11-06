@@ -2,6 +2,12 @@
 
 The part's own versions (Egatari spec §6.1). Releases of the whole library are in the repository's CHANGELOG.md.
 
+## 2.1.0 (components 2.4.1)
+
+- `point`: a dot on the curve at a fixed `u`, with a label whose `{y}` shows the current value; it follows the curve as the parameter changes. A value outside `yr` hides it and is reported.
+- `at`: start seconds per change (values − 1, increasing). With it, every change plays in step 1 at its second (for music or narration); `cues(1)` returns them. Overlapping changes are reported.
+- `size`: text size (≥ 24 px) for ticks, axis titles, line names and the point label; margins follow. Requires plot 1.1.0.
+
 ## 2.0.2 (components 2.2.0)
 
 - Requires base 1.1.0 (sub- and superscripts at least 24px, a measured text-width estimate) and plot 1.0.1.

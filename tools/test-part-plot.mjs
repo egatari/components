@@ -3,7 +3,7 @@
 // ticks, a box given by id) the drawn SVG is the same markup (outerHTML, with the clip number written as #), and the
 // returned object agrees: W, H, m, x(v), y(v), clip, d(f, a, b, n), poly(pts). The clip paths are numbered by each copy's own
 // counter from 1, as DECK.Plot numbers them.
-// Two deliberate deviations: the sub/superscript size of base 1.1.0's mtext, and plot's clip ids carry its name and version (plot-1-0-1-clip3 where
+// Two deliberate deviations: the sub/superscript size of base 1.1.0's mtext, and plot's clip ids carry its name and version (plot-1-1-0-clip3 where
 // DECK.Plot writes clip3; spec §6.1 Identifiers). Every id and url(#…) plot writes must have exactly that prefix; with the
 // prefix removed, the markup must equal DECK.Plot's.
 //   node tools/test-part-plot.mjs [work dir]

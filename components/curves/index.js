@@ -6,7 +6,7 @@
 // 2.0（Egatari spec §6.1 の部品）：base の MotionElement・el・mtext・prog・previewOpacity、plot の Plot、expr の compile を使い、
 // プレイヤーのグローバルは使わない（1.x は式の評価器 egatari-expr を写して持っていた）。破線の mask の id は
 // curves-2-0-2-<n>m<系列>：このパーツの名前と版に、このパーツだけの数え（1.x は mc<n>m<系列> で、DECK.Plot の数えを進めていた）
-egatariParts.define({name: "curves", version: "2.0.2", requires: {base: "1.1.0", expr: "1.0.0", plot: "1.0.1"}, element: "m-curves"}, function(deps){
+egatariParts.define({name: "curves", version: "2.1.0", requires: {base: "1.1.0", expr: "1.0.0", plot: "1.1.0"}, element: "m-curves"}, function(deps){
 "use strict";
 var base = deps.base, plot = deps.plot, expr = deps.expr;
 var ID = "curves-2-0-2-";   // name and version of this part, dots replaced (spec §6.1 Identifiers)
@@ -38,6 +38,7 @@ return class extends base.MotionElement {
     n:   {type: "number", default: 300, doc: "f を描く分割数"},
     dur: {type: "number", default: 1.0, doc: "1 本を引く秒数"},
     lw:  {type: "number", default: 3.5, doc: "線の太さ"},
+    size: {type: "number", default: 0, doc: "目盛り・軸の名前・線の名前の字の大きさ（px、24 以上。0 = 既定）"},
   };
   // 系列 i の段階：step（書いてあれば）、なければ i + 1。段階の数はその最大（step がなければ系列の数で、今までと同じ）
   stepOf(s, i){ return s && s.step !== undefined ? s.step : i + 1; }
@@ -50,7 +51,10 @@ return class extends base.MotionElement {
   mount(ctx){
     var P = this.props, D = base, self = this, S = this.data || [];
     this.classList.add("plot"); this.style.display = "block";
-    var p = this.p = plot.Plot(this, {xr: P.xr, yr: P.yr, xt: P.xt, yt: P.yt, xf: P.xf, yf: P.yf, xl: P.xl, yl: P.yl, m: {l: 86, r: 24, t: 24, b: 64}});
+    // size：字の大きさ（24 未満は 24 にして知らせる）。0 なら 2.0 と同じ大きさと余白
+    var SZ = P.size > 0 ? Math.max(24, P.size) : 0, K = SZ ? SZ / 26 : 1, F = SZ || 26;
+    if (P.size > 0 && P.size < 24) ctx.report("attr", "[curves] size " + P.size + " is under 24 px; 24 is used");
+    var p = this.p = plot.Plot(this, {xr: P.xr, yr: P.yr, xt: P.xt, yt: P.yt, xf: P.xf, yf: P.yf, xl: P.xl, yl: P.yl, fs: SZ || undefined, m: {l: Math.round(86 * K), r: 24, t: Math.round(24 * K), b: Math.round(64 * K)}});
     var uid = ID + (++count), defs = D.el("defs", {}, p.svg);
     var N = function(x, m, s){ return Math.exp(-0.5 * Math.pow((x - m) / s, 2)) / (s * Math.sqrt(2 * Math.PI)); };
     var x0 = p.m.l, x1 = p.W - p.m.r, y0 = p.m.t, y1 = p.H - p.m.b;
@@ -99,12 +103,12 @@ return class extends base.MotionElement {
       // start / middle / end は古い書き方（text-anchor そのもの）で、今までどおり
       var an = {top: "above", bottom: "below"}[s.anchor] || s.anchor;   // top / bottom は above / below の別名
       var side = {right: "start", left: "end", above: "middle", below: "middle"}, anchor = side[an] || an || (end[0] > x1 - 160 ? "end" : "start");
-      var ly0 = an === "above" ? end[1] - 14 : an === "below" ? end[1] + 32 : end[1] - 12;
-      if (an === "below" && ly0 > y1 - 4) ly0 = end[1] - 14;   // 下に入らなければ上へ
+      var ly0 = an === "above" ? end[1] - Math.round(14 * K) : an === "below" ? end[1] + Math.round(32 * K) : end[1] - Math.round(12 * K);
+      if (an === "below" && ly0 > y1 - 4) ly0 = end[1] - Math.round(14 * K);   // 下に入らなければ上へ
       it.lx = end[0] + (anchor === "end" ? -8 : anchor === "start" ? 10 : 0) + (s.dx || 0);
       it.ly = (s.ly !== undefined ? p.y(s.ly) : ly0) + (s.dy || 0);
       // 字の幅の見積もり（26px。base の textWidth：テーマの字で測った幅。記法の * _ ^ を除く）
-      var w = D.textWidth(s.label || "", 26, {font: self, mark: true});
+      var w = D.textWidth(s.label || "", F, {font: self, mark: true});
       it.x0 = anchor === "end" ? it.lx - w : anchor === "middle" ? it.lx - w / 2 : it.lx; it.x1 = it.x0 + w;
       it.anchor = anchor; it.col = col; it.label = s.label || "";
       return it;
@@ -112,9 +116,9 @@ return class extends base.MotionElement {
     // 名前どうしが重ならないように、横に重なる名前を下へずらす。先に描く高さ（上は 26、下は横軸の 6 px 上）に収めてから離し、
     // 下に収まらなければ下から上へ押し戻す（目盛りの数字にかからない）。上付きのある名前は上端を、下付きのある名前は下端を
     // その分だけ内に、上の名前の下付き・下の名前の上付きの分だけ間を広げる（記法がなければ今までと同じ）
-    var min = 32, lo = 26, hi = y1 - 6, ov = function(u, v){ return u.x0 < v.x1 && v.x0 < u.x1; };
-    var loOf = function(it){ return lo + supX(it.label, 26); }, hiOf = function(it){ return hi - subX(it.label, 26); };
-    var gap = function(u, v){ return min + subX(u.label, 26) + supX(v.label, 26); };   // u が上、v が下
+    var min = Math.round(32 * K), lo = F, hi = y1 - 6, ov = function(u, v){ return u.x0 < v.x1 && v.x0 < u.x1; };
+    var loOf = function(it){ return lo + supX(it.label, F); }, hiOf = function(it){ return hi - subX(it.label, F); };
+    var gap = function(u, v){ return min + subX(u.label, F) + supX(v.label, F); };   // u が上、v が下
     var g = self.items.filter(function(it){ return it.label; });
     g.forEach(function(it){ it.ly = Math.min(hiOf(it), Math.max(loOf(it), it.ly)); });
     g.sort(function(u, v){ return u.ly - v.ly; });
@@ -131,7 +135,7 @@ return class extends base.MotionElement {
     }
     g.forEach(function(it){ it.ly = Math.max(loOf(it), it.ly); });
     this.items.forEach(function(it){
-      it.lab = D.mtext(p.svg, it.lx, it.ly, it.label, {"text-anchor": it.anchor, fill: it.col, "font-size": 26, "font-weight": 700, opacity: 0});
+      it.lab = D.mtext(p.svg, it.lx, it.ly, it.label, {"text-anchor": it.anchor, fill: it.col, "font-size": F, "font-weight": 700, opacity: 0});
     });
     // tone：テーマの色の名前か var(--…)。知らない名前は既定の色（series-1..4 の順）にして知らせる
     function colorOf(c, i){
