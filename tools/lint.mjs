@@ -23,7 +23,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { partMeta, EXACT, dependencyOrder, partDeclarations } from './parts.mjs';
+import { partMeta, EXACT, dependencyOrder, partDeclarations, partClass } from './parts.mjs';
 import { subsetCode } from './subset-produce.mjs';
 
 export const NAME_RE = /^[a-z][a-z0-9-]{0,63}$/;
@@ -89,14 +89,34 @@ export function frontmatterEn(text) {
   }
   return o;
 }
-// The English README beside an element part's README.md: the translated fields, and the same llm: omit blocks
-export function lintEn(name, dir, f, rtext) {
+// The pack-visible text a translation replaces, in paste units (UTF-16 code units, LF line ends): the README body outside
+// llm: omit blocks and without the lines Studio drops (demo.html, examples/, tools/, the skill), summary, steps, the prop
+// docs and the data example. Studio's gen:check compares the assembled entries exactly; this is the cheap pre-check
+const packBody = (t) => t.replace(/\r\n?/g, '\n').replace(/^---\n[\s\S]*?\n---\n/, '').replace(/<!-- llm: omit -->[\s\S]*?<!-- llm: end -->/g, '')
+  .split('\n').filter((l) => !/demo\.html|examples\/|tools\/|motion-components/.test(l)).join('\n').trim();
+export function packUnits({ body, summary, steps, docs, example }) {
+  return packBody(body).length + (summary || '').length + (steps || '').length + docs.join('').length + (example === undefined ? 0 : JSON.stringify(example).length);
+}
+// The same JSON structure: the same keys, array lengths, numbers, booleans and nulls; strings may differ (translated labels)
+export function sameShape(a, b) {
+  if (typeof a === 'string' || typeof b === 'string') return typeof a === typeof b;
+  if (Array.isArray(a) || Array.isArray(b)) return Array.isArray(a) && Array.isArray(b) && a.length === b.length && a.every((x, i) => sameShape(x, b[i]));
+  if (a && typeof a === 'object' && b && typeof b === 'object') {
+    const ka = Object.keys(a), kb = Object.keys(b);
+    return ka.length === kb.length && ka.every((k, i) => k === kb[i] && sameShape(a[k], b[k]));
+  }
+  return a === b;
+}
+// The English README beside an element part's README.md: the translated fields (summary, steps, props, example), the same
+// llm: omit blocks, no Japanese outside code and omit blocks, an example of the same structure as static shape.example,
+// and no more pack-visible text than the Japanese (paste units)
+export function lintEn(name, dir, f, rtext, js) {
   const file = path.join(dir, 'README.en.md'), at = `components/${name}/README.en.md`, errs = [];
   if (!fs.existsSync(file)) return errs;
   const etext = fs.readFileSync(file, 'utf8'), e = frontmatterEn(etext);
   errs.push(...llmBlocks(etext, at));
   if (!e) return [...errs, `${at}: no frontmatter`];
-  for (const k of Object.keys(e)) if (!['summary', 'steps', 'props'].includes(k)) errs.push(`${at}: ${k} is not a translated field (summary, steps, props); names and structure stay in README.md`);
+  for (const k of Object.keys(e)) if (!['summary', 'steps', 'props', 'example'].includes(k)) errs.push(`${at}: ${k} is not a translated field (summary, steps, props, example); names and structure stay in README.md`);
   for (const k of ['summary', 'steps']) if (!e[k] || typeof e[k] !== 'string') errs.push(`${at}: no ${k}`);
   const want = list(f.props), got = e.props && typeof e.props === 'object' ? Object.keys(e.props) : [];
   if (want.join() !== got.join()) errs.push(`${at}: props (${got.join(', ') || 'none'}) are not README.md's props in order (${want.join(', ')})`);
@@ -104,6 +124,18 @@ export function lintEn(name, dir, f, rtext) {
   const blocks = (t) => (t.match(/<!-- llm: omit -->/g) || []).length;
   if (blocks(etext) !== blocks(rtext)) errs.push(`${at}: ${blocks(etext)} llm: omit blocks, README.md has ${blocks(rtext)}`);
   if (/[\u3040-\u30ff\u4e00-\u9fff]/.test(etext.replace(/<!-- llm: omit -->[\s\S]*?<!-- llm: end -->/g, '').replace(/`[^`]*`/g, ''))) errs.push(`${at}: Japanese text outside code and llm: omit blocks`);
+  let cls = null;
+  try { cls = partClass(js, `${name}/index.js`); } catch (err) { errs.push(`${at}: index.js could not be read (${err.message})`); }
+  const shape = cls && cls.shape, props = (cls && cls.props) || {};
+  let ex;
+  if ('example' in e) {
+    try { ex = JSON.parse(e.example); } catch (err) { errs.push(`${at}: example is not one line of JSON (${err.message})`); }
+    if (ex !== undefined && !(shape && 'example' in shape)) errs.push(`${at}: example, but index.js has no static shape.example`);
+    else if (ex !== undefined && !sameShape(shape.example, ex)) errs.push(`${at}: example differs from static shape.example in keys, lengths or values (only strings may be translated)`);
+  } else if (shape && typeof shape.example === 'object' && /[\u3040-\u30ff\u4e00-\u9fff]/.test(JSON.stringify(shape.example))) errs.push(`${at}: no example (static shape.example has Japanese labels)`);
+  const ja = packUnits({ body: rtext, summary: f.summary, steps: f.steps, docs: Object.values(props).map((p) => (p && p.doc) || ''), example: shape ? shape.example : undefined });
+  const en = packUnits({ body: etext, summary: e.summary, steps: e.steps, docs: Object.values(e.props || {}), example: ex !== undefined ? ex : shape ? shape.example : undefined });
+  if (en > ja) errs.push(`${at}: ${en} paste units of pack-visible text, more than README.md's ${ja}; tighten the English`);
   return errs;
 }
 
@@ -281,7 +313,7 @@ export function lint(root, warns = []) {
     const rtext = fs.readFileSync(readme, 'utf8'), f = frontmatter(rtext);
     errs.push(...llmBlocks(rtext, `components/${name}/README.md`));
     if (!f) { errs.push(`components/${name}/README.md: no frontmatter`); continue; }
-    errs.push(...lintEn(name, dir, f, rtext));
+    errs.push(...lintEn(name, dir, f, rtext, js));
     for (const k of ['name', 'version', 'series', 'tier', 'summary', 'steps', 'props']) if (!(k in f)) errs.push(`components/${name}/README.md: frontmatter has no ${k}`);
     if ('tier' in f && !TIERS.includes(f.tier)) errs.push(`components/${name}/README.md: tier ${f.tier} is not one of ${TIERS.join(', ')}`);
     if (f.tier === 'specialized' && !SETS.includes(f.set)) errs.push(`components/${name}/README.md: a specialized part needs set: one of ${SETS.join(', ')}${'set' in f ? ` (not ${f.set})` : ''}`);
