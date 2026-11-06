@@ -1,5 +1,5 @@
 ---
-summary: Cards (number, icon, title, text) in a row or two rows, by step; arrows show order, a frame highlights
+summary: Icon cards in a row or 2 rows, by step; arrows for order
 steps: largest card step (default 1 card = 1 step)
 props:
   layout: row, or grid (2×2; 3×2 for 5–6)
