@@ -12,6 +12,19 @@ Versions follow [README.md § Releases and versions](README.md#releases-and-vers
 
 - `m-compare` `by="row"`; an "outside every set" region for `m-venn`; planned-vs-actual bars for `m-timeline`
 
+## 2.4.0 - 2026-11-07
+
+A new part, `m-particles`. Studio's AI instruction pack adds it to the science set (released after the standards side's eval A and B: B 12/12 final on free and paid, every reaction balanced). No other part changes.
+
+### Added
+
+- `m-particles` 2.0.0 (粒子のモデル / Particle model; set science, #154 part A).
+  - `mode="state"`: a fixed number of particles moves between solid, liquid and gas arrangements. Static motion marks keep a still frame readable.
+  - `mode="reaction"`: reactant molecules come apart into atoms, which regroup into product molecules. The final state shows the equation and per-element counts.
+  - Formulas are element symbols with counts. Atom conservation is checked: unbalanced data is reported, never fixed.
+  - Molecule shapes come from a per-molecule `shape` or a small default table (CO2 linear, H2O bent, NH3, CH4).
+  - `preview = "none"`, like `m-orbit`.
+
 ## 2.3.0 - 2026-11-05
 
 No drawing changes: lessons look the same on 2.3.0. Studio's AI instruction pack changes by one README sentence (`m-predict`, +15 B; eval A clean, no eval B needed).
