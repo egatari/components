@@ -61,11 +61,47 @@ document.addEventListener("DOMContentLoaded", function(){
 <div id="stage">
 
 <section class="slide">
-  <h2>部品の一覧（38 個、153 枚）</h2>
+  <h2>部品の一覧（39 個、158 枚）</h2>
   <div class="body">
     <p>部品ごとに、説明の 1 枚と見本のスライドが続く。→ で段階を進める。</p>
-    <p>m-codetree（変わった）　m-bars　m-boxplot　m-cards　m-collect　m-compare　m-curves　m-cycle　m-fishbone　m-flow　m-gendai　m-heatmap　m-hissan　m-hist　m-kakijun　m-kanbun　m-keyboard　m-kobun　m-kpi　m-map-japan　m-map-world　m-market　m-menu　m-numberline　m-orbit　m-pie　m-predict　m-quad　m-scatter　m-score　m-seq　m-sweep　m-syntax　m-tape　m-timeline　m-timer　m-tree　m-venn</p>
+    <p>m-particles（新しい）　m-codetree（変わった）　m-bars　m-boxplot　m-cards　m-collect　m-compare　m-curves　m-cycle　m-fishbone　m-flow　m-gendai　m-heatmap　m-hissan　m-hist　m-kakijun　m-kanbun　m-keyboard　m-kobun　m-kpi　m-map-japan　m-map-world　m-market　m-menu　m-numberline　m-orbit　m-pie　m-predict　m-quad　m-scatter　m-score　m-seq　m-sweep　m-syntax　m-tape　m-timeline　m-timer　m-tree　m-venn</p>
   </div>
+</section>
+
+<section class="slide">
+  <h2>m-particles（新しい、v2.3.0）</h2>
+  <div class="body">
+    <p>状態変化の粒子の並び方と間隔、化学変化で保存される原子の数を見せる</p>
+    <ul>
+      <li>伝えたいこと：仕組みをモデルで見る・手順・工程・比べる（量・特徴）</li>
+      <li>見せ方：1 種類</li>
+      <li>系列：数理・統計　見本のスライド：4 枚</li>
+    </ul>
+  </div>
+</section>
+
+<section id="g-particles-1" class="slide">
+  <h2>水の状態変化</h2>
+  <div class="body"><m-particles style="height:440px"><script type="application/json">{"substance":"水"}</script></m-particles></div>
+  <div class="concl"><span>粒子の数と大きさは同じ。並び方と間隔が変わる</span></div>
+</section>
+
+<section id="g-particles-2" class="slide">
+  <h2>水素の燃焼</h2>
+  <div class="body"><m-particles mode="reaction" style="height:440px"><script type="application/json">{"reactants":[{"formula":"H2","n":2},{"formula":"O2","n":1}],"products":[{"formula":"H2O","n":2}]}</script></m-particles></div>
+  <div class="concl"><span>水素と酸素から水ができても、原子の数は変わらない</span></div>
+</section>
+
+<section id="g-particles-3" class="slide">
+  <h2>鉄と硫黄の化合</h2>
+  <div class="body"><m-particles mode="reaction" style="height:440px"><script type="application/json">{"reactants":[{"formula":"Fe","n":1},{"formula":"S","n":1}],"products":[{"formula":"FeS","n":1}]}</script></m-particles></div>
+  <div class="concl"><span>鉄と硫黄の原子が結び付き、硫化鉄ができる</span></div>
+</section>
+
+<section id="g-particles-4" class="slide">
+  <h2>炭素の燃焼</h2>
+  <div class="body"><m-particles mode="reaction" style="height:440px"><script type="application/json">{"reactants":[{"formula":"C","n":1},{"formula":"O2","n":1}],"products":[{"formula":"CO2","n":1}]}</script></m-particles></div>
+  <div class="concl"><span>炭素と酸素から二酸化炭素ができる</span></div>
 </section>
 
 <section class="slide">
