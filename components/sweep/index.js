@@ -5,7 +5,7 @@
 // i 番目の変化を at[i] 秒から始める。point='{"u": 9.8, "label": "平均待ち {y} 日"}' は u の所の曲線の上の点（値の変化について動く）
 // 2.0（Egatari spec §6.1 の部品）：base の MotionElement・el・mtext・prog・lerp・previewOpacity、plot の Plot、expr の compile を使い、
 // プレイヤーのグローバルは使わない（1.x は式の評価器 egatari-expr を写して持っていた）
-egatariParts.define({name: "sweep", version: "2.1.0", requires: {base: "1.1.0", expr: "1.0.0", plot: "1.1.0"}, element: "m-sweep"}, function(deps){
+egatariParts.define({name: "sweep", version: "2.1.1", requires: {base: "1.1.0", expr: "1.0.0", plot: "1.1.1"}, element: "m-sweep"}, function(deps){
 "use strict";
 var base = deps.base, plot = deps.plot, expr = deps.expr;
 // 関数 f を [a, b] で n 分割した点列（px）。有限でない値（NaN・±Infinity）の点は null
@@ -32,9 +32,10 @@ function segHitsBox(s, r){
   }
   return true;
 }
-// 灰色の線の名前の置き場所：その線の上に、線の点を中心にして置く（字は背景色の縁取りで線を切るので、どの線の名前か読める）。
-// bd（字を置ける範囲）の中で、置いた字（boxes）に重ならず、ほかの線（lines：点列の配列。cl の中だけ描かれる）にかかる数が最も少なく、
-// 自分の線が字の高さの中に収まり（平らな所）、ほかの線から離れている所（40 px まで）。w は字の幅の見積もり、fs は字の大きさ。置けなければ null
+// 灰色の線の名前の置き場所：その線のすぐ上か下に、どの線（自分の線も）にもかからないように置く（線の上に字を重ねない）。
+// 候補は自分の線の描かれている点ごとに、字の箱を点の上・下（6 px 離す）、点を中心・左端・右端にした 6 通り。
+// bd（字を置ける範囲）の中で、置いた字（boxes）に重ならず、線にかかる数が最も少なく（1 本 1000）、自分の線に近く、
+// ほかの線から離れている所（40 px まで）。w は字の幅の見積もり、fs は字の大きさ。置けなければ null
 function placeOn(own, w, fs, lines, boxes, bd, cl){
   var best = null, bc = Infinity;
   var hits = function(L, r){
@@ -43,28 +44,28 @@ function placeOn(own, w, fs, lines, boxes, bd, cl){
     for (var i = 1; i < L.length; i++) if (L[i - 1] && L[i] && segHitsBox([L[i - 1], L[i]], q)) return true;
     return false;
   };
+  var near = function(L, r){
+    var g = 40;
+    L.forEach(function(z){ if (z && z[0] >= cl[0] && z[0] <= cl[2] && z[1] >= cl[1] && z[1] <= cl[3]) g = Math.min(g, Math.hypot(Math.max(r[0] - z[0], 0, z[0] - r[2]), Math.max(r[1] - z[1], 0, z[1] - r[3]))); });
+    return g;
+  };
   for (var j = 0; j < own.length; j += 3){
     var q = own[j];
     if (!q || q[0] < cl[0] || q[0] > cl[2] || q[1] < cl[1] || q[1] > cl[3]) continue;   // 描かれている点だけ
-    // 横軸や上の端に沿う線では、字を範囲の中へ上下にずらす（線のすぐ上・下になる）
-    var y = q[1] + fs * 0.33;
-    y = Math.max(bd[1] + fs * 0.88, Math.min(bd[3] - fs * 0.22, y));
-    var r = [q[0] - w / 2, y - fs * 0.88, q[0] + w / 2, y + fs * 0.22];
-    if (r[0] < bd[0] || r[2] > bd[2]) continue;
-    if (boxes.some(function(b){ return r[0] < b[2] + 6 && b[0] < r[2] + 6 && r[1] < b[3] + 4 && b[1] < r[3] + 4; })) continue;
-    // ほかの線にかかれば 1 本につき 1000。自分の線が字の幅の間に字の高さより大きく上下すれば 300
-    var c = 0, r3 = [r[0] - 3, r[1] - 3, r[2] + 3, r[3] + 3], gap = 40, lo = Infinity, hi = -Infinity;
-    own.forEach(function(z){ if (z && z[0] >= r[0] && z[0] <= r[2]){ lo = Math.min(lo, z[1]); hi = Math.max(hi, z[1]); } });
-    if (hi - lo > fs * 0.9) c += 300;
-    lines.forEach(function(L){
-      if (L === own) return;
-      if (hits(L, r3)){ c += 1000; return; }
-      L.forEach(function(z){
-        if (z && z[0] >= cl[0] && z[0] <= cl[2] && z[1] >= cl[1] && z[1] <= cl[3]) gap = Math.min(gap, Math.hypot(Math.max(r[0] - z[0], 0, z[0] - r[2]), Math.max(r[1] - z[1], 0, z[1] - r[3])));
+    [-1, 1].forEach(function(side){
+      [0.5, 0, 1].forEach(function(f){
+        // side −1：箱の下の端が点の 6 px 上。+1：箱の上の端が点の 6 px 下。f：点が箱の横の何割の所か
+        var y = side < 0 ? q[1] - 6 - fs * 0.22 : q[1] + 6 + fs * 0.88, x0 = q[0] - w * f;
+        var r = [x0, y - fs * 0.88, x0 + w, y + fs * 0.22];
+        if (r[0] < bd[0] || r[2] > bd[2] || r[1] < bd[1] || r[3] > bd[3]) return;
+        if (boxes.some(function(b){ return r[0] < b[2] + 6 && b[0] < r[2] + 6 && r[1] < b[3] + 4 && b[1] < r[3] + 4; })) return;
+        var c = 0, r3 = [r[0] - 3, r[1] - 3, r[2] + 3, r[3] + 3], gap = 40;
+        lines.forEach(function(L){ if (hits(L, r3)) c += 1000; else if (L !== own) gap = Math.min(gap, near(L, r)); });
+        if (hits(own, r3) && lines.indexOf(own) < 0) c += 1000;
+        c += 40 - gap + (f === 0.5 ? 0 : 2);
+        if (c < bc){ bc = c; best = {x: x0 + w / 2, y: y, box: r, hits: Math.floor(c / 1000)}; }
       });
     });
-    c += 40 - gap + (hi - lo) / fs;
-    if (c < bc){ bc = c; best = {x: q[0], y: y, box: r}; }
   }
   return best;
 }
@@ -146,6 +147,7 @@ return class extends base.MotionElement {
     shown.forEach(function(i){
       var str = P.param + " = " + V[i].toFixed(P.digits), at = placeOn(pts[i], wOf(str), fs, lines, boxes, bd, cl);
       if (!at){ ctx.report("layout", "[sweep] no free place for the name of the grey line " + JSON.stringify(str) + " (not drawn)"); return; }
+      if (at.hits) ctx.report("layout", "[sweep] the name of the grey line " + JSON.stringify(str) + " crosses a line (no free place beside it); give the element more room or a shorter param");
       boxes.push(at.box);
       self.glabs.push({i: i, el: D.mtext(p.svg, +at.x.toFixed(1), +at.y.toFixed(1), str, {"text-anchor": "middle", fill: "var(--muted)", stroke: "var(--bg)", "stroke-width": 6, "paint-order": "stroke", "font-size": fs, opacity: 0})});
     });

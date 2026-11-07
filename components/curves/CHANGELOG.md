@@ -2,6 +2,10 @@
 
 The part's own versions (Egatari spec §6.1). Releases of the whole library are in the repository's CHANGELOG.md.
 
+## 2.1.1 (components 2.4.2)
+
+- Requires plot 1.1.1: the y-axis title no longer overlaps wide tick labels such as 1000 or 50000 (it moves left of them, widening the margin if needed).
+
 ## 2.1.0 (components 2.4.1)
 
 - `size`: text size (≥ 24 px) for ticks, axis titles and line names; margins and label spacing follow. Requires plot 1.1.0.
