@@ -13,6 +13,7 @@ props:
   n: samples
   dur: draw seconds
   lw: line width
+  size: text px (≥ 24; 0 = default)
 example: [{"label": "Demand D", "f": "10 - x"}, {"label": "Supply S", "f": "2 + x"}, {"label": "Equilibrium", "pts": [[4, 0], [4, 6]], "dash": true}]
 ---
 
