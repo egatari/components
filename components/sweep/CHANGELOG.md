@@ -5,6 +5,7 @@ The part's own versions (Egatari spec §6.1). Releases of the whole library are 
 ## 2.1.1 (components 2.4.2)
 
 - Requires plot 1.1.1: the y-axis title no longer overlaps wide tick labels such as 1000 or 50000 (it moves left of them, widening the margin if needed).
+- Grey-line names sit just above or below a line, never on one (the owner asked for labels off lines); a name that cannot avoid every line is reported (layout).
 
 ## 2.1.0 (components 2.4.1)
 
