@@ -61,6 +61,10 @@ for (const name of USERS) {
   // a 2.x baseline part is served like the current one (tools/parts.mjs c2Bundle: the registry shim and the parts it requires),
   // with the baseline's own code in place of the current part's; a 1.x baseline part stands alone
   const curPart = fs.readFileSync(path.join(ROOT, 'components', name, 'index.js'), 'utf8');
+  // a library the baseline part required may have moved on (plot 1.0.1 → 1.1.0 in 2.4.1, with the same drawing without the new
+  // option): the bundle carries only the current libraries, so the baseline part is given the current part's requires
+  const reqOf = (js) => (js.match(/requires:\s*\{[^}]*\}/) || [''])[0];
+  if (partMeta(oldJs) && reqOf(oldJs) && reqOf(oldJs) !== reqOf(curPart)) oldJs = oldJs.replace(reqOf(oldJs), reqOf(curPart));
   if (partMeta(oldJs) && cur.split(curPart).length === 2) oldJs = cur.split(curPart).join(oldJs);
   const shots = {};
   const mask = MASKED_IN[name] && older(base.slice(1), MASKED_IN[name].since) ? MASKED_IN[name] : null;
