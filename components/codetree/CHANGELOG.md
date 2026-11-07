@@ -2,6 +2,10 @@
 
 The part's own versions (Egatari spec §6.1). Releases of the whole library are in the repository's CHANGELOG.md.
 
+## 2.0.4 (components 2.4.1)
+
+- On a short element the tree window shows fewer levels (down to 2) so that levels are at least 40 px apart and the 0/1 labels stay off the edges (was 24 px, crowded at about 380 px high).
+
 ## 2.0.3 (components 2.3.0)
 
 - The element's text equivalent (aria-label, shown by print and screen readers) says ハフマン木 / Huffman tree, matching the display name (#168).
