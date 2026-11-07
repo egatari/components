@@ -12,6 +12,15 @@ Versions follow [README.md § Releases and versions](README.md#releases-and-vers
 
 - `m-compare` `by="row"`; an "outside every set" region for `m-venn`; planned-vs-actual bars for `m-timeline`
 
+## 2.4.3 - 2026-11-07
+
+English docs for the standard parts. No part version changes and no drawing changes; Studio's Japanese instruction packs are unchanged. Released after the standards side's en eval B (free and paid, 18/18 final).
+
+### Added
+
+- `README.en.md` for the 16 standard parts (bars, cards, compare, curves, cycle, fishbone, flow, kpi, menu, pie, predict, quad, scatter, timeline, tree, venn): the translated pack-visible text only (summary, steps, a props map, an English data example) and the same `llm: omit` blocks. They change without a version bump. Studio (v0.6.7) reads them for English instruction packs, so English lessons no longer see Japanese part docs (fishbone and tree keep one Japanese data-shape note until their next version).
+- `tools/lint.mjs` checks every `README.en.md`: translated fields only; props exactly README.md's, in order; an `example` with the same structure as `static shape.example` (only strings may differ); the same number of omit blocks; no Japanese outside code and omit blocks; and pack-visible English no longer (in UTF-16 units) than the Japanese. Studio's gen:check holds the exact per-part gate.
+
 ## 2.4.2 - 2026-11-07
 
 Layout fixes; Studio's AI instruction pack is unchanged (eval A clean). Lessons pinned to earlier releases keep their drawing.
