@@ -42,8 +42,8 @@ try {
   page.on('console', (m) => { if (m.type() === 'error') errors.push(m.text()); });
   await page.goto(S.browser.fileUrl(out) + '?mode=video');
   await page.waitForFunction(() => window.DECK && DECK.ready, null, { timeout: 15000 });
-  const r = await page.evaluate((PREFIX) => {
-    const P = EGATARI_PARTS_SHIM.get('plot', '1.1.0').Plot, host = document.getElementById('host');
+  const r = await page.evaluate(([PREFIX, PV]) => {
+    const P = EGATARI_PARTS_SHIM.get('plot', PV).Plot, host = document.getElementById('host');
     const n0 = P.n;
     const OPTS = [
       { xr: [0, 10], yr: [0, 1] },
@@ -86,8 +86,8 @@ try {
     // the raw clipPath id (kept for the id checks below) is compared after normalising, in svg and clip
     const cmp = (x) => JSON.stringify(x.map(({ id, ...rest }) => rest));
     return { n: a.length, same: cmp(a) === cmp(b), firstDiff: a.findIndex((x, i) => cmp([x]) !== cmp([b[i]])), a0: a[1], b0: b[1],
-      ids: [b[0].id, b[1].id, b[b.length - 1].id], n0, n1: P.n, deckIds: [a[0].id, a[a.length - 1].id], d0, frozenPlot: Object.isFrozen(EGATARI_PARTS_SHIM.get('plot', '1.1.0')), prefixed, unprefixed };
-  }, PREFIX);
+      ids: [b[0].id, b[1].id, b[b.length - 1].id], n0, n1: P.n, deckIds: [a[0].id, a[a.length - 1].id], d0, frozenPlot: Object.isFrozen(EGATARI_PARTS_SHIM.get('plot', PV)), prefixed, unprefixed };
+  }, [PREFIX, partMeta(read('components/plot/index.js')).version]);
   console.log(`(reference: ${pinLabel()} kit/deck.js DECK.Plot)`);
   ok(errors.length === 0, 'no exception or console error' + (errors.length ? ': ' + errors[0] : ''));
   ok(r.same, `Plot ≡ DECK.Plot: the same SVG markup and returned values on ${r.n} boxes × options` + (r.same ? '' : `\n     first difference at ${r.firstDiff}:\n     DECK ${JSON.stringify(r.a0).slice(0, 600)}\n     plot ${JSON.stringify(r.b0).slice(0, 600)}`));

@@ -26,7 +26,7 @@ function Plot(box, o){
   // 入らなければ左の余白を広げる（かからなければ 1.1.0 と同じ位置）
   if (o.yl && !o.noY){
     var tw = 0; (o.yt || []).forEach(function(v){ tw = Math.max(tw, textWidth(fmt(v, o.yf), tf, {font: box})); });
-    var right = m.l - gY - tw - 8;   // 名前（-90° 回して、基線が x）の右の端（字の下がり 0.22 字ぶん）がここまで
+    var right = m.l - gY - tw - 4;   // 名前（-90° 回して、基線が x）の右の端（字の下がり 0.22 字ぶん）がここまで
     if (yX + tf * 0.22 > right){
       yX = Math.round(right - tf * 0.22);
       if (yX - tf * 0.9 < 2){ var add = Math.ceil(2 - (yX - tf * 0.9)); m = {l: m.l + add, r: m.r, t: m.t, b: m.b}; yX += add; }

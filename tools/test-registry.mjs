@@ -152,10 +152,10 @@ function sandbox() {
     run(js, `components/${n}/index.js`);
     ok(S.status(`${n}@${m.version}`) === 'ok', `${n}@${m.version} defines without failure in dependency order`);
   }
-  const base = S.get('base', '1.1.0');
+  const base = S.get('base', '1.1.0'), PLOT_V = partMeta(read('components/plot/index.js')).version;   // plot's current version
   ok(base && Object.keys(base).join() === 'MotionElement,el,lerp,prog,clamp,mtext,textWidth,variant,previewOpacity', 'base returns exactly {MotionElement, el, lerp, prog, clamp, mtext, textWidth, variant, previewOpacity}');
-  ok(['shape', 'base', 'plot', 'expr'].every((n) => Object.isFrozen(S.get(n, n === 'plot' ? '1.1.0' : '1.0.0'))), 'every library part\'s value is frozen by the registry');
-  ok(Object.keys(S.get('shape', '1.0.0')).join() === 'check,describe,gotOf,typeOf,dataLike,near,brief' && Object.keys(S.get('plot', '1.1.0')).join() === 'Plot', 'shape returns DECK.shape\'s members, plot returns {Plot}');
+  ok(['shape', 'base', 'plot', 'expr'].every((n) => Object.isFrozen(S.get(n, n === 'plot' ? PLOT_V : '1.0.0'))), 'every library part\'s value is frozen by the registry');
+  ok(Object.keys(S.get('shape', '1.0.0')).join() === 'check,describe,gotOf,typeOf,dataLike,near,brief' && Object.keys(S.get('plot', PLOT_V)).join() === 'Plot', 'shape returns DECK.shape\'s members, plot returns {Plot}');
   const ex = S.get('expr', '1.0.0');
   const ref = vm.createContext({ Math, Object, Array, SyntaxError, Error, Number, String });
   vm.runInContext(read('tools/expr.js') + '\nthis.EXPR = EXPR;', ref);
