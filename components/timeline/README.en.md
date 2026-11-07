@@ -1,5 +1,5 @@
 ---
-summary: Timeline: events one at a time on a time axis; periods as bands, overlaps stacked; end exclusive ("1912" = start of 1912)
+summary: Timeline; events one by one; periods as bands, overlaps stacked; end exclusive ("1912" = start of 1912)
 steps: event count (default 1 per step in time order; per-step n each; node step wins)
 props:
   orient: h or v
@@ -13,7 +13,7 @@ props:
 example: {"nodes": [{"id": "a", "label": "Meiji Restoration", "when": "1868", "whenLabel": "Meiji 1"}, {"id": "b", "label": "Constitution", "when": "1889", "note": "Feb 11"}, {"id": "c", "label": "Sino-Japanese War", "when": "1894", "end": "1895", "tone": "emph"}]}
 ---
 
-History, overlapping lives, schedules. No coordinates; just content and times ([conventions](../../docs/conventions.ja.md) §2).
+History, lives, schedules. No coordinates; content and times only.
 
 Child JSON: `{"nodes": [...], "edges": [...]}` (`edges` optional).
 
@@ -36,7 +36,6 @@ Layout:
 - Events (no `end` or `lane`): axis dot plus date-and-name box, alternating sides (`v`: left/right); 2 rows when crowded
 - With periods: round ticks; event boxes all above the axis
 - Steps: time order, periods and events together; the axis comes with the first
-- Axis `--muted` 5 px; lane dividers `--line`; links and `edges` `--muted` 3 px
 - `variant`: `fade` (default), `draw` (lines first, bands drawn), `grow` (boxes grow, bands stretch); same steps and end
 - Lecture view (`ctx.preview`): later items faint
 - `cues(k)`: start times of 2nd+ items in a step (for `{cue}`)
@@ -50,6 +49,7 @@ Notes
 - No fit: names shrink from `size` by 2px to 24px, then `ctx.report("size", …)`
 - No `Date` (leap years computed); months and days as positions in the year
 - Band names sit in the band's `g`
+- Axis `--muted` 5 px; lane dividers `--line`; links and `edges` `--muted` 3 px
 - Motion: boxes and bands move ≤ 12 px from the axis side, within `fade` time (conventions §1.2)
 <!-- llm: end -->
 
