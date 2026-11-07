@@ -12,6 +12,25 @@ Versions follow [README.md § Releases and versions](README.md#releases-and-vers
 
 - `m-compare` `by="row"`; an "outside every set" region for `m-venn`; planned-vs-actual bars for `m-timeline`
 
+## 2.4.1 - 2026-11-07
+
+New attributes for `m-sweep` and `m-curves`, and fixes. Lessons pinned to earlier releases keep their drawing. Studio's AI instruction pack grows by the new attribute docs (m-sweep +561 B, m-curves +99 B); eval A clean, eval B 12/12 final.
+
+### Added
+
+- `m-sweep` 2.1.0:
+  - `point`: a dot on the curve at a fixed `u`, labelled with the current value (`{y}`); it follows the curve as the parameter changes.
+  - `at`: start seconds per change; with it, every change plays in step 1 (for music or narration).
+  - `size`: text size (≥ 24 px).
+- `m-curves` 2.1.0: `size` (text size ≥ 24 px; margins follow).
+- `plot` 1.1.0: the option `fs` (tick and axis-title size). Without it the drawing is the same as 1.0.1.
+
+### Fixed
+
+- `m-hist` and `m-boxplot` 2.0.3: an element with no room (e.g. 0 px high) still reports `size`, but no longer draws negative heights, which caused console errors in the quality check. `plot` clamps its clip too.
+- `m-codetree` 2.0.4: on a short element, the tree window shows fewer levels (down to 2), so levels stay ≥ 40 px apart and the 0/1 labels stay off the edges.
+- `m-scatter` and `m-seq` 2.0.3 require plot 1.1.0. Their drawing does not change.
+
 ## 2.4.0 - 2026-11-07
 
 A new part, `m-particles`. Studio's AI instruction pack adds it to the science set (released after the standards side's eval A and B: B 12/12 final on free and paid, every reaction balanced). No other part changes.
