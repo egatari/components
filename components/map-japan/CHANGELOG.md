@@ -2,6 +2,10 @@
 
 The part's own versions (Egatari spec §6.1). Releases of the whole library are in the repository's CHANGELOG.md.
 
+## 2.0.3 (components 2.4.4)
+
+- In an English lesson (ctx.lang not ja) the built-in names are English: Takeshima, Senkaku Islands, Okinotorishima, Minamitorishima, Chichijima, Iwo To, and the inset captions Nansei Islands / Ogasawara Islands (different scale). The Japanese names overflowed their label boxes in the English font. Japanese lessons draw the same as before.
+
 ## 2.0.2 (components 2.2.0)
 
 - Requires base 1.1.0 (sub- and superscripts at least 24px, a measured text-width estimate).
