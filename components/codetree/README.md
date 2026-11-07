@@ -1,6 +1,6 @@
 ---
 name: m-codetree
-version: 2.0.3
+version: 2.0.4
 series: info
 tier: extra
 display: ハフマン木 / Huffman tree

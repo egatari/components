@@ -23,7 +23,7 @@
 // 復号の規則は codetree-core（試験は tools/test-codetree.mjs）
 // 2.0（Egatari spec §6.1 の部品）：base の MotionElement・el・prog・lerp・previewOpacity と、表・木・復号の codetree-core を使い、
 // プレイヤーのグローバルは使わない
-egatariParts.define({name: "codetree", version: "2.0.3", requires: {base: "1.1.0", "codetree-core": "1.0.0"}, element: "m-codetree"}, function(deps){
+egatariParts.define({name: "codetree", version: "2.0.4", requires: {base: "1.1.0", "codetree-core": "1.0.0"}, element: "m-codetree"}, function(deps){
 "use strict";
 var base = deps.base;
 var D = base;
@@ -49,7 +49,7 @@ function labelAt(a, b, f, off){
 }
 function fmt0(s, c){ return String(s).replace("{c}", c); }
 // まとめの段階で、すべての道の木を窓なしで描く段の間の下限（px）。窓の段の間の下限（読める大きさ）は WIN_GAP
-var SUM_GAP = 20, WIN_GAP = 24;
+var SUM_GAP = 20, WIN_GAP = 40;   // 窓の段の間は 0・1 の字（24 px）が枝の線にかからない広さ
 // 字の幅（base の textWidth：font の要素の字で測った幅）
 function textW(s, fs, font){ return base.textWidth(s, fs, {font: font}); }
 
@@ -199,7 +199,7 @@ return class extends base.MotionElement {
     // たどる点を追って窓を下へ流す（窓の上は「ここまで」の行）。段の位置は y0 + (lv − cam) × gap（cam は render が (k, t) から決める）
     L.follow = follow;
     if (!L.follow){ L.y0 = G.treeTop; L.win = L.maxLv; L.gap = Math.min(78, avail / L.maxLv); }
-    else { L.y0 = G.treeTop + 44; var av2 = G.treeBottom - 44 - L.y0; L.win = nwin || Math.max(3, Math.floor(av2 / 56)); L.gap = av2 / L.win; }
+    else { L.y0 = G.treeTop + 44; var av2 = G.treeBottom - 44 - L.y0; L.win = nwin || Math.max(2, Math.floor(av2 / 56)); L.gap = av2 / L.win; }
     L.camMax = Math.max(0, L.maxLv - L.win);
     var gap = L.gap;
     Object.keys(L.nodes).forEach(function(id){ var o = L.nodes[id]; o.y = L.y0 + o.lv * gap; });
