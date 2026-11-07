@@ -2,6 +2,11 @@
 
 The part's own versions (Egatari spec §6.1). Releases of the whole library are in the repository's CHANGELOG.md.
 
+## 2.0.3 (components 2.4.4)
+
+- Declares static glyphs (built-in names, captions and figures, including the English names), so a built lesson keeps those characters when it subsets its fonts. Without them, built-in names such as Takeshima were drawn in a fallback font and overflowed their label boxes.
+- In an English lesson, name and value chips are as tall as the English font's text box (Source Sans 3: 1.43 em) with the baseline set inside it. They were 32 px for 24 px text, and the quality check reported the text 3 px outside (svgTextBox). Japanese lessons draw the same as before.
+
 ## 2.0.2 (components 2.2.0)
 
 - Requires base 1.1.0 (sub- and superscripts at least 24px, a measured text-width estimate).
