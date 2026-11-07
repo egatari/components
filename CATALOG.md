@@ -81,7 +81,7 @@ Components 2.0 (alpha, not for lessons yet): parts other parts require (Egatari 
 | [`icons`](components/icons/README.md) | 1.0.0 | 名前で引く線のアイコン（Tabler Icons outline 3.49.0、MIT、4,808 個。brand-* と塗りのアイコンは入れない）。教材の作者が直接は書かない | — |
 | [`kanbun-core`](components/kanbun-core/README.md) | 1.0.0 | 漢文の読み取り（白文・返り点・送り仮名・振り仮名）と訓読の順・書き下し文の計算。m-kanbun が使う。教材の作者が直接は書かない | — |
 | [`markup-reader`](components/markup-reader/README.md) | 1.0.1 | 組み立てのときに描いた結果（KaTeX の HTML・MathML、abcjs の SVG）を、決まった要素と属性だけで読んで置く。教材の作者が直接は書かない | base@1.1.0 |
-| [`plot`](components/plot/README.md) | 1.1.0 | 2.0 のパーツが使う座標軸つきの図（軸・目盛り・軸の名前・切り抜き）。教材の作者が直接は書かない | base@1.1.0 |
+| [`plot`](components/plot/README.md) | 1.1.1 | 2.0 のパーツが使う座標軸つきの図（軸・目盛り・軸の名前・切り抜き）。教材の作者が直接は書かない | base@1.1.0 |
 | [`shape`](components/shape/README.md) | 1.0.0 | 2.0 のパーツのデータの形（static shape）を確かめる小さな検査器。base が使う。教材の作者が直接は書かない | — |
 
 ## By purpose / 伝えたいことから

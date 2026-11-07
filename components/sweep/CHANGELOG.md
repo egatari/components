@@ -2,6 +2,10 @@
 
 The part's own versions (Egatari spec §6.1). Releases of the whole library are in the repository's CHANGELOG.md.
 
+## 2.1.1 (components 2.4.2)
+
+- Requires plot 1.1.1: the y-axis title no longer overlaps wide tick labels such as 1000 or 50000 (it moves left of them, widening the margin if needed).
+
 ## 2.1.0 (components 2.4.1)
 
 - `point`: a dot on the curve at a fixed `u`, with a label whose `{y}` shows the current value; it follows the curve as the parameter changes. A value outside `yr` hides it and is reported.

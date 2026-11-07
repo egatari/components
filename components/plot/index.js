@@ -1,7 +1,7 @@
 // plot 1.0.0: axes for figures of Egatari components 2.0 (a library part, Egatari spec §6.1). It requires base (el, mtext)
 // and returns {Plot}: Plot(box, o) draws the axes into box (an element or its id) and returns
 // {svg, W, H, m, x(v), y(v), clip, d(f, a, b, n), poly(pts)}. Plot.n counts the clip paths of this copy; their ids are
-// prefixed with this part's name and version (plot-1-1-0-clip1, plot-1-1-0-clip2, …), so that they are unique across parts
+// prefixed with this part's name and version (plot-1-1-1-clip1, plot-1-1-1-clip2, …), so that they are unique across parts
 // and part versions in one file and deterministic (spec §6.1 Identifiers: a counter, no randomness, no timing). This is the
 // one deliberate difference from DECK.Plot, whose ids are clip1, clip2, … (CHANGELOG; tools/test-part-plot.mjs allows it).
 //
@@ -9,10 +9,10 @@
 // 03eaf0607598b993eb020f8e619caa53526bc771, DECK.Plot there), MIT License, Copyright (c) 2026 Gendo Kumoi, the same owner
 // and licence as this repository; el and mtext come from base instead of deck.js's closure.
 // tools/test-part-plot.mjs compares it with the pinned Studio's DECK.Plot.
-egatariParts.define({name: "plot", version: "1.1.0", requires: {base: "1.1.0"}}, function(deps){
+egatariParts.define({name: "plot", version: "1.1.1", requires: {base: "1.1.0"}}, function(deps){
 "use strict";
-var el = deps.base.el, mtext = deps.base.mtext;
-var ID = "plot-1-1-0-";   // name and version of this part, dots replaced (spec §6.1 Identifiers)
+var el = deps.base.el, mtext = deps.base.mtext, textWidth = deps.base.textWidth;
+var ID = "plot-1-1-1-";   // name and version of this part, dots replaced (spec §6.1 Identifiers)
 
 // 座標軸つきの図（キットの Plot。色はテーマの変数）
 // o = {xr:[min,max], yr:[min,max], xt:[目盛り], yt:[目盛り], xf:小数桁, yf:小数桁, xl:"横軸名", xl2:"横軸の補足", yl:"縦軸名", noY:true, m:{l,r,t,b},
@@ -20,6 +20,18 @@ var ID = "plot-1-1-0-";   // name and version of this part, dots replaced (spec 
 function Plot(box, o){
   if (typeof box === "string") box = document.getElementById(box);
   var W = box.clientWidth, H = box.clientHeight, m = o.m || {l: 86, r: 20, t: 16, b: 64};
+  var fs = o.fs > 0 ? o.fs : 0, gY = fs ? Math.round(fs * 0.45) : 10, yX = fs ? Math.round(fs * 0.85) : 22, tf = fs || 24;
+  var fmt = function(v, f){ return (f !== undefined ? v.toFixed(f) : String(v)).replace("-", "−"); };
+  // 縦軸の名前は目盛りの数字の外に：いちばん幅の広い目盛りの字（テーマの字で測る）にかかるなら、名前をその左へ出し、
+  // 入らなければ左の余白を広げる（かからなければ 1.1.0 と同じ位置）
+  if (o.yl && !o.noY){
+    var tw = 0; (o.yt || []).forEach(function(v){ tw = Math.max(tw, textWidth(fmt(v, o.yf), tf, {font: box})); });
+    var right = m.l - gY - tw - 8;   // 名前（-90° 回して、基線が x）の右の端（字の下がり 0.22 字ぶん）がここまで
+    if (yX + tf * 0.22 > right){
+      yX = Math.round(right - tf * 0.22);
+      if (yX - tf * 0.9 < 2){ var add = Math.ceil(2 - (yX - tf * 0.9)); m = {l: m.l + add, r: m.r, t: m.t, b: m.b}; yX += add; }
+    }
+  }
   var svg = el("svg", {viewBox: "0 0 " + W + " " + H, class: "plotsvg"}, box);
   var p = {svg: svg, W: W, H: H, m: m,
     x: function(v){ return m.l + (v - o.xr[0]) / (o.xr[1] - o.xr[0]) * (W - m.l - m.r); },
@@ -29,14 +41,13 @@ function Plot(box, o){
   // 要素が狭すぎても負の大きさは書かない（部品は "size" で知らせる）
   el("rect", {x: m.l, y: m.t - 4, width: Math.max(0, W - m.l - m.r), height: Math.max(0, H - m.t - m.b + 4)}, cp);
   p.clip = "url(#" + cid + ")";
-  var fs = o.fs > 0 ? o.fs : 0, ax = el("g", {class: "axes"}, svg);
+  var ax = el("g", {class: "axes"}, svg);
   // 字の位置：1.0 の値（30・8・38・22）は mtext の既定の 24 px のとき。fs があれば字をその大きさにし、位置を比で広げる
   var T = function(a){ if (fs) a["font-size"] = fs; return a; };
-  var dX = fs ? 6 + fs : 30, dY = fs ? Math.round(fs * 0.31) : 8, dL = fs ? Math.round(fs * 1.46) : 38, yX = fs ? Math.round(fs * 0.85) : 22, gY = fs ? Math.round(fs * 0.45) : 10;
+  var dX = fs ? 6 + fs : 30, dY = fs ? Math.round(fs * 0.31) : 8, dL = fs ? Math.round(fs * 1.46) : 38;
   var K = "var(--fg)";
   el("line", {x1: m.l, y1: H - m.b, x2: W - m.r, y2: H - m.b, stroke: K, "stroke-width": 1.5}, ax);
   if (!o.noY) el("line", {x1: m.l, y1: m.t, x2: m.l, y2: H - m.b, stroke: K, "stroke-width": 1.5}, ax);
-  var fmt = function(v, f){ return (f !== undefined ? v.toFixed(f) : String(v)).replace("-", "−"); };
   (o.xt || []).forEach(function(v){
     el("line", {x1: p.x(v), y1: H - m.b, x2: p.x(v), y2: H - m.b + 6, stroke: K, "stroke-width": 1.5}, ax);
     mtext(ax, p.x(v), H - m.b + dX, fmt(v, o.xf), T({"text-anchor": "middle"}));

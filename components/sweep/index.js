@@ -5,7 +5,7 @@
 // i 番目の変化を at[i] 秒から始める。point='{"u": 9.8, "label": "平均待ち {y} 日"}' は u の所の曲線の上の点（値の変化について動く）
 // 2.0（Egatari spec §6.1 の部品）：base の MotionElement・el・mtext・prog・lerp・previewOpacity、plot の Plot、expr の compile を使い、
 // プレイヤーのグローバルは使わない（1.x は式の評価器 egatari-expr を写して持っていた）
-egatariParts.define({name: "sweep", version: "2.1.0", requires: {base: "1.1.0", expr: "1.0.0", plot: "1.1.0"}, element: "m-sweep"}, function(deps){
+egatariParts.define({name: "sweep", version: "2.1.1", requires: {base: "1.1.0", expr: "1.0.0", plot: "1.1.1"}, element: "m-sweep"}, function(deps){
 "use strict";
 var base = deps.base, plot = deps.plot, expr = deps.expr;
 // 関数 f を [a, b] で n 分割した点列（px）。有限でない値（NaN・±Infinity）の点は null

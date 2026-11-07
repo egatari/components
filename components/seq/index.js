@@ -6,7 +6,7 @@
 // steps[0] は始めの状態（段階 0）。steps[1..] が 1 回ずつの更新。1 段階に per-step 回の更新を、等しい時間枠で順に動かす。
 // 今の分布は濃く、前の分布は薄い線で残す。右の欄に readout の数値（桁をそろえる）。mark は今回の観測の位置
 // 2.0（Egatari spec §6.1 の部品）：base の MotionElement・el・mtext・prog・lerp・previewOpacity と plot の Plot を使い、プレイヤーのグローバルは使わない
-egatariParts.define({name: "seq", version: "2.0.3", requires: {base: "1.1.0", plot: "1.1.0"}, element: "m-seq"}, function(deps){
+egatariParts.define({name: "seq", version: "2.0.4", requires: {base: "1.1.0", plot: "1.1.1"}, element: "m-seq"}, function(deps){
 "use strict";
 var base = deps.base, plot = deps.plot;
 // 点列の d。null の所で線を切り、次の有限な点から M で引き直す（plot の p.d と同じ字。切れ目がなければ同じ d）

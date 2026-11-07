@@ -10,7 +10,7 @@
 // 2.0（Egatari spec §6.1 の部品）：base の MotionElement・el・mtext・prog・lerp・variant・previewOpacity と plot の Plot を使い、
 // プレイヤーのグローバルは使わない。名前の置き場がない・傾向の線が軸の外・上の名前が図より広い、は ctx.report で知らせる
 // （1.x は console.warn）
-egatariParts.define({name: "scatter", version: "2.0.3", requires: {base: "1.1.0", plot: "1.1.0"}, element: "m-scatter"}, function(deps){
+egatariParts.define({name: "scatter", version: "2.0.4", requires: {base: "1.1.0", plot: "1.1.1"}, element: "m-scatter"}, function(deps){
 "use strict";
 var base = deps.base, plot = deps.plot;
 return class extends base.MotionElement {
