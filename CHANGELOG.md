@@ -12,6 +12,15 @@ Versions follow [README.md § Releases and versions](README.md#releases-and-vers
 
 - `m-compare` `by="row"`; an "outside every set" region for `m-venn`; planned-vs-actual bars for `m-timeline`
 
+## 2.4.2 - 2026-11-07
+
+Layout fixes; Studio's AI instruction pack is unchanged (eval A clean). Lessons pinned to earlier releases keep their drawing.
+
+### Fixed
+
+- `plot` 1.1.1: the y-axis title no longer overlaps wide tick labels such as 1000 or 50000. When it would, it moves left of the widest label (measured in the theme fonts) and the left margin grows if needed; otherwise it stays where it was. `m-boxplot`, `m-hist`, `m-scatter`, `m-seq` 2.0.4 and `m-curves` 2.1.1 require it.
+- `m-sweep` 2.1.1: grey-line names sit just above or below a line, never on one; a name that cannot avoid every line is reported (`layout`). Also requires plot 1.1.1.
+
 ## 2.4.1 - 2026-11-07
 
 New attributes for `m-sweep` and `m-curves`, and fixes. Lessons pinned to earlier releases keep their drawing. Studio's AI instruction pack grows by the new attribute docs (m-sweep +561 B, m-curves +99 B); eval A clean, eval B 12/12 final.
