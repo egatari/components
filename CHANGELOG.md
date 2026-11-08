@@ -12,6 +12,16 @@ Versions follow [README.md § Releases and versions](README.md#releases-and-vers
 
 - `m-compare` `by="row"`; an "outside every set" region for `m-venn`; planned-vs-actual bars for `m-timeline`
 
+## 2.4.4 - 2026-11-08
+
+Maps in English lessons. Studio's AI instruction pack is unchanged; Japanese lessons draw the same as before (eval A clean; the en-maps-population topic's six saved replies went from 1–4 svgTextBox findings each to 0).
+
+### Fixed
+
+- `m-map-japan` 2.0.3: in a lesson whose language is not Japanese, the built-in names are English, after MOFA and GSI usage: Takeshima, Senkaku Islands, Okinotorishima, Minamitorishima, Chichijima, Iwo To, and the inset captions Nansei Islands / Ogasawara Islands with "(different scale)".
+- `m-map-japan` and `m-map-world` 2.0.3: in such a lesson, name and value chips are as tall as the English font's text box (Source Sans 3: 1.43 em), with the baseline inside it. They were 32 px for 24 px text, and the quality check reported the text 3 px outside.
+- Both declare `static glyphs` (their built-in names, Japanese and English, and figures), so a built lesson keeps those characters when it subsets its fonts.
+
 ## 2.4.3 - 2026-11-07
 
 English docs for the standard parts. No part version changes and no drawing changes; Studio's Japanese instruction packs are unchanged. Released after the standards side's en eval B (free and paid, 18/18 final).
