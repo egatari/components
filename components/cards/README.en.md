@@ -12,7 +12,7 @@ props:
 example: {"cards": [{"icon": "user", "title": "Listen", "text": "Hear the problem"}, {"icon": "bulb", "title": "Think", "text": "Find 3 ideas"}, {"icon": "rocket", "title": "Try", "text": "Build small, show"}]}
 ---
 
-3–4 short equal points or a 2×2: try cards over bullets. Steps, long or unequal items: bullets.
+3–4 short equal points or a 2×2: try cards over bullets; short steps: cards with arrows. Long or unequal items: bullets.
 
 Child JSON: `{"cards": [{"n", "icon", "title", "text", "step", "tone"}, …]}` (2–6 cards).
 
