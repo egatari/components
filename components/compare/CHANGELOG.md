@@ -2,10 +2,6 @@
 
 The part's own versions (Egatari spec §6.1). Releases of the whole library are in the repository's CHANGELOG.md.
 
-## 2.0.3 (components 2.5.0)
-
-- Spare height is balanced, not filled: rows grow by up to one text line each and the rest centres the table vertically (owner, 11/8).
-
 ## 2.0.2 (components 2.2.0)
 
 - Requires base 1.1.0 (sub- and superscripts at least 24px, a measured text-width estimate).
