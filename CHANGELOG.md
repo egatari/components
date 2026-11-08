@@ -12,6 +12,18 @@ Versions follow [README.md § Releases and versions](README.md#releases-and-vers
 
 - `m-compare` `by="row"`; an "outside every set" region for `m-venn`; planned-vs-actual bars for `m-timeline`
 
+## 2.5.0 - 2026-11-08
+
+Balanced cards, card guidance, and English map readouts (owner, 2026-11-08). Released after the standards side's eval A (34/0) and eval B (12/12 final; cards not overused; English map legends). Lessons pinned to earlier releases keep their drawing; a rebuilt lesson whose m-cards leave spare height looks different (card frames stay where they were).
+
+### Changed
+
+- `m-cards` 2.0.3: in spare height, each card's content (icon, title, text) sits in the vertical middle of the card; the frames and the number circle do not move.
+- `m-cards` README: "同じ重さの短い要点が 3〜4 個なら、箇条書きよりカード（アイコン付き）を検討する。事例の 2×2 にも。短い手順は arrows で順を示す。長い文や重さの違う項目は箇条書きのまま。" (and the same in README.en.md).
+- `m-map-japan` 2.0.4: in a lesson whose language is not Japanese, prefecture and region names (MLIT/GSI romanisation: Hokkaido … Okinawa; Hokkaido, Tohoku, Kanto, Chubu, Kinki, Chugoku, Shikoku, Kyushu), the legend ("200 to under 500", "500 and over"), the readable summary and the default aria-label are English (WCAG 3.1.2). Data keys are unchanged; Japanese lessons draw the same.
+- `m-fishbone` and `m-tree` 2.0.3: `static shape.note` is `{en, ja}`, so English instruction packs carry no Japanese for them.
+- `m-compare` stays top-aligned (unchanged; the owner chose not to centre tables in spare height).
+
 ## 2.4.4 - 2026-11-08
 
 Maps in English lessons. Studio's AI instruction pack is unchanged; Japanese lessons draw the same as before (eval A clean; the en-maps-population topic's six saved replies went from 1–4 svgTextBox findings each to 0).
