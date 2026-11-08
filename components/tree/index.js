@@ -19,7 +19,7 @@
 // 式（tex）は組み立てのときに KaTeX で描く（spec §6.2）：build.fields の nodes[].tex を作り手が描いて texHtml を足し、
 // この部品は markup-reader で決まった要素と属性だけを読んで置く（再生のときに KaTeX は動かない）。描いた結果がなければ tex を字のまま出して知らせる。
 // 入らないときは ctx.report("size", "[tree] …") で知らせる（1.x の console.warn の代わり）
-egatariParts.define({name: "tree", version: "2.0.2", requires: {base: "1.1.0", "markup-reader": "1.0.1"}, element: "m-tree"}, function(deps){
+egatariParts.define({name: "tree", version: "2.0.3", requires: {base: "1.1.0", "markup-reader": "1.0.1"}, element: "m-tree"}, function(deps){
 "use strict";
 var base = deps.base, MR = deps["markup-reader"];
 // 形の要素ごとに、書き直すと形が作り直される属性（render の終わりで使う）
@@ -53,7 +53,7 @@ var Part = class extends base.MotionElement {
         step: {type: "integer"}, at: {type: "number"}}}},
       path: {type: "array", minItems: 2, items: {type: ["string", "integer"]}}, pathStep: {type: "integer"}, pathNote: {type: "string"}, renderers: {type: "object"}}},
     example: {nodes: [{id: "r", label: "動物"}, {id: "a", label: "脊椎動物", parent: "r"}, {id: "b", label: "無脊椎動物", parent: "r"}]},
-    note: "parent のない節（根）はちょうど 1 つ",
+    note: {en: "exactly one node without parent (the root)", ja: "parent のない節（根）はちょうど 1 つ"},
   };
   static props = {
     orient: {type: "string", default: "down", doc: "down（上から下、既定）か right（左から右）"},
