@@ -7,7 +7,7 @@
 // 説明は和文を文節の切れ目らしい所（平仮名の後ろで平仮名でない字の前、読点・空白の後ろ）で折り返し、入らなければ … で切って ctx.report
 // 見せ方（docs/conventions.md §1）：rise（下から、既定）・fade（その場で）・draw（枠と矢印を描いてから中身）。段階の数・長さ・最後の中身はどれも同じ
 // 2.0（Egatari spec §6.1 の部品）：base の MotionElement・el・mtext・prog・clamp・variant・previewOpacity と icons の svg を使い、プレイヤーのグローバルは使わない
-egatariParts.define({name: "cards", version: "2.0.2", requires: {base: "1.1.0", icons: "1.0.0"}, element: "m-cards"}, function(deps){
+egatariParts.define({name: "cards", version: "2.0.3", requires: {base: "1.1.0", icons: "1.0.0"}, element: "m-cards"}, function(deps){
 "use strict";
 var base = deps.base, icons = deps.icons;
 var TONES = /^(term|emph|accent2|series-[1-4])$/;
@@ -122,7 +122,7 @@ return class extends base.MotionElement {
       var frame = D.el("rect", {x: x + 1, y: y + 1, width: cw - 2, height: ch - 2, rx: 14, fill: hi ? "var(--emph-tint)" : "var(--term-tint)", stroke: hi ? "var(--emph)" : "var(--line)", "stroke-width": hi ? 4 : 2}, g);
       var body = D.el("g", {}, g);
       var badge = c.n !== undefined ? String(c.n) : P.nums ? String(i + 1) : "";
-      var cy = y + pad, textW = cw - 2 * pad, hx = x + pad;
+      var cy = y + pad, textW = cw - 2 * pad, hx = x + pad, corner = null;
       if (wide){
         // 1 行目：番号・アイコン・見出し（左から）
         var lineH = Math.max(bd, isz * 0.8);
@@ -134,7 +134,8 @@ return class extends base.MotionElement {
         cy += Math.max(lineH, tw.lines.length * (tsz + 6)) + 16;
       } else {
         // 縦：番号は左上、アイコンは上の真ん中、その下に見出し（真ん中）
-        if (badge) self.badge(body, x + pad + bd / 2, y + pad + bd / 2, badge, tone);
+        corner = badge ? D.el("g", {}, body) : null;   // 番号は左上の角に固定（中身を縦の真ん中へ寄せても動かない）
+        if (badge) self.badge(corner, x + pad + bd / 2, y + pad + bd / 2, badge, tone);
         if (c.icon){ self.icon(body, c.icon, x + cw / 2 - isz / 2, cy, isz, tone, missing); cy += isz + 14; }
         else if (badge) cy += bd + 8;
         var tw2 = wrap(c.title, textW, tsz, 2, self);
@@ -142,12 +143,20 @@ return class extends base.MotionElement {
         if (tw2.cut) unfit.push(i + 1 + " (title)");
         cy += 12;
       }
+      var end = cy - 12;
       if (c.text){
         var room = Math.max(0, Math.floor((y + ch - pad - cy + (lh - xsz)) / lh));
         var tx = wrap(c.text, textW, xsz, Math.max(1, room), self);
         var center = !wide && tx.lines.length === 1;
         tx.lines.forEach(function(s, j){ D.mtext(body, center ? x + cw / 2 : x + pad, cy + xsz + j * lh, s, center ? {"text-anchor": "middle", "font-size": xsz} : {"font-size": xsz}); });
         if (tx.cut || room < 1) unfit.push(String(i + 1));
+        end = cy + xsz + (tx.lines.length - 1) * lh + 8;
+      }
+      // 高さが余るカード：中身（アイコン・見出し・説明）を縦の真ん中へ。上の余白は pad のまま、余りの半分だけ下げる（2.5.0）
+      var spare = y + ch - pad - end;
+      if (spare > 2){
+        body.setAttribute("transform", "translate(0 " + (spare / 2).toFixed(1) + ")");
+        if (!wide && corner) corner.setAttribute("transform", "translate(0 " + (-spare / 2).toFixed(1) + ")");
       }
       // 前のカードからの矢印（この カードと一緒に出る）
       var arrow = null;

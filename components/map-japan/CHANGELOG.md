@@ -2,6 +2,10 @@
 
 The part's own versions (Egatari spec §6.1). Releases of the whole library are in the repository's CHANGELOG.md.
 
+## 2.0.4 (components 2.5.0)
+
+- In an English lesson the prefecture and region names, the legend ("200 to under 500", "500 and over"), the readable summary and the default aria-label are English (MLIT/GSI romanisation: Hokkaido … Okinawa; Hokkaido, Tohoku, Kanto, Chubu, Kinki, Chugoku, Shikoku, Kyushu), so assistive technology reads the lesson's language (WCAG 3.1.2). Data keys are unchanged. Japanese lessons draw the same.
+
 ## 2.0.3 (components 2.4.4)
 
 - In an English lesson (ctx.lang not ja) the built-in names are English: Takeshima, Senkaku Islands, Okinotorishima, Minamitorishima, Chichijima, Iwo To, and the inset captions Nansei Islands / Ogasawara Islands (different scale). The Japanese names overflowed their label boxes in the English font. Japanese lessons draw the same as before.

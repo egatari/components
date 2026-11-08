@@ -16,7 +16,7 @@
 // 式（tex）は組み立てのときに KaTeX で描く（spec §6.2）：build.fields の effect.tex・nodes[].tex を作り手が描いて texHtml を足し、
 // この部品は markup-reader で決まった要素と属性だけを読んで置く（再生のときに KaTeX は動かない）。描いた結果がなければ tex を字のまま出して知らせる。
 // 入らないときは ctx.report("size", "[fishbone] …") で知らせる（1.x の console.warn の代わり）
-egatariParts.define({name: "fishbone", version: "2.0.2", requires: {base: "1.1.0", "markup-reader": "1.0.1"}, element: "m-fishbone"}, function(deps){
+egatariParts.define({name: "fishbone", version: "2.0.3", requires: {base: "1.1.0", "markup-reader": "1.0.1"}, element: "m-fishbone"}, function(deps){
 "use strict";
 var base = deps.base, MR = deps["markup-reader"];
 var Part = class extends base.MotionElement {
@@ -36,7 +36,7 @@ var Part = class extends base.MotionElement {
         step: {type: "integer"}, at: {type: "number"}}}},
       renderers: {type: "object"}}},
     example: {effect: {label: "配送の遅れ"}, nodes: [{id: "p", label: "人"}, {id: "p1", label: "人手が足りない", parent: "p"}, {id: "m", label: "機械"}, {id: "m1", label: "車の故障", parent: "m"}]},
-    note: "parent のない節が大骨（分類）、その子が原因、孫が細かい原因（3 段まで）",
+    note: {en: "nodes without parent are main bones (categories); their children are causes, grandchildren finer causes (3 levels max)", ja: "parent のない節が大骨（分類）、その子が原因、孫が細かい原因（3 段まで）"},
   };
   static props = {
     order: {type: "string", default: "causes-first", doc: "段階の順：causes-first（大骨 1 本ずつ、最後に頭、既定）か effect-first（頭と背骨が先）"},

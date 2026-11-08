@@ -10,7 +10,7 @@
 // reveal（列の中を上の行から 1 行ずつ）。どれも動く距離（16 px）と長さ（dur）は同じで、段階の数・長さ・最後の中身は変わらない
 // 2.0（Egatari spec §6.1 の部品）：base の MotionElement・el・mtext・prog・lerp・variant・previewOpacity を使い、プレイヤーのグローバルは使わない。
 // 違いの列の既定の見出しの言語は ctx.lang（mount で読む）。収まらない表は ctx.report で知らせる（1.x の console.warn の代わり）
-egatariParts.define({name: "compare", version: "2.0.2", requires: {base: "1.1.0"}, element: "m-compare"}, function(deps){
+egatariParts.define({name: "compare", version: "2.0.3", requires: {base: "1.1.0"}, element: "m-compare"}, function(deps){
 "use strict";
 var base = deps.base;
 return class extends base.MotionElement {
@@ -105,11 +105,12 @@ return class extends base.MotionElement {
       if (L.ok) break;
     }
     if (!L.ok) ctx.report("size", "[compare] the table does not fit in " + W + "×" + H + " px even at 24 px (shorten the texts or make the element taller)");
-    // 余った高さは行に分ける（1 行につき字の行の高さまで。表は上にそろえる）
+    // 余った高さは行に分ける（1 行につき字の行の高さまで。字は行の中で縦の真ん中）。それでも余れば表ごと縦の真ん中へ（2.5.0：埋め尽くさず、釣り合いよく）
     var extra = Math.max(0, Math.min((H - L.tot) / Math.max(1, rows.length), L.lh));
     var ys = [], y = L.hh;
     L.cells.forEach(function(c){ c.h += extra; ys.push(y); y += c.h; });
-    var tableH = y;
+    var tableH = y, off = Math.max(0, Math.floor((H - tableH) / 2));
+    if (off) svg.setAttribute("viewBox", "0 " + (-off) + " " + W + " " + H);
     var x = 0, colX = {};
     if (L.lw){ colX.label = x; x += L.lw + gap; }
     colX.sides = sides.map(function(){ var x0 = x; x += L.cw + gap; return x0; });
