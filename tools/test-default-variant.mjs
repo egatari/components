@@ -35,7 +35,8 @@ const shotsRoot = path.resolve(process.argv[2] || fs.mkdtempSync(path.join(os.tm
 const S = await studio();
 const b = await S.browser.launch(LAUNCH);
 let fail = 0, n = 0;
-const CHANGED_IN = { 'map-japan': '1.8.0' };
+// m-compare 2.5.0 (owner, 2026-11-08): spare height centres the table (balance, not fill), so a lesson that left spare height moves
+const CHANGED_IN = { 'map-japan': '1.8.0', compare: '2.5.0' };
 const MASKED_IN = { predict: { since: '1.10.0', css: 'm-predict .pd-ctl{visibility:hidden!important}' } };
 const older = (a, b) => { const x = a.split('.').map(Number), y = b.split('.').map(Number); for (let i = 0; i < 3; i++) if (x[i] !== y[i]) return x[i] < y[i]; return false; };
 const ALL_CHANGED_IN = '2.2.0';
