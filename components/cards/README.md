@@ -10,7 +10,7 @@ variants: rise, fade, draw
 props: layout, arrows, nums, hilite, per-step, stagger, dur
 ---
 
-手順（聞く → まとめる → 返す）、要点の 3〜4 つ、事例の 2×2 の札などを、アイコン付きのカードで見せる。
+同じ重さの短い要点が 3〜4 個なら、箇条書きよりカード（アイコン付き）を検討する。事例の 2×2 にも。手順・長い文・重さの違う項目は箇条書きのまま。
 
 子の JSON：`{"cards": [{"n", "icon", "title", "text", "step", "tone"}, …]}`（2〜6 枚）。
 

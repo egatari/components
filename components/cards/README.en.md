@@ -12,15 +12,14 @@ props:
 example: {"cards": [{"icon": "user", "title": "Listen", "text": "Hear the problem"}, {"icon": "bulb", "title": "Think", "text": "Find 3 ideas"}, {"icon": "rocket", "title": "Try", "text": "Build small, show"}]}
 ---
 
-Steps, 3–4 key points, or a 2×2 of cases, as icon cards.
+3–4 short equal points or a 2×2: try cards over bullets. Steps, long or unequal items: bullets.
 
 Child JSON: `{"cards": [{"n", "icon", "title", "text", "step", "tone"}, …]}` (2–6 cards).
 
-- `title`: required, ≤ 2 lines. `text`: wraps; cut with … and reported if too long
-- `icon`: Tabler outline name (list below); unknown = dashed box, reported
+- `title`: required, ≤ 2 lines. `text`: wraps; overflow cut with …, reported
+- `icon`: Tabler name (below); unknown = dashed box, reported
 - `n`: circle text (`"A"`, `"1"`); `nums` numbers the rest 1, 2, 3 …
 - `tone`: circle and icon colour (`term`, `emph`, `accent2`, `series-1..4`)
-- `layout="grid"`: wide cards put number, icon, title on one line
 - `arrows`; `hilite="last"` or `"3"`: `--emph` frame and fill
 - `variant`: `rise` (default), `fade`, `draw`
 
