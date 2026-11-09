@@ -61,11 +61,65 @@ document.addEventListener("DOMContentLoaded", function(){
 <div id="stage">
 
 <section class="slide">
-  <h2>部品の一覧（41 個、169 枚）</h2>
+  <h2>部品の一覧（44 個、175 枚）</h2>
   <div class="body">
     <p>部品ごとに、説明の 1 枚と見本のスライドが続く。→ で段階を進める。</p>
-    <p>m-mapping（新しい）　m-sampling（新しい）　m-curves（変わった）　m-orbit（変わった）　m-bars　m-boxplot　m-cards　m-codetree　m-collect　m-compare　m-cycle　m-fishbone　m-flow　m-gendai　m-heatmap　m-hissan　m-hist　m-kakijun　m-kanbun　m-keyboard　m-kobun　m-kpi　m-map-japan　m-map-world　m-market　m-menu　m-numberline　m-particles　m-pie　m-predict　m-quad　m-scatter　m-score　m-seq　m-sweep　m-syntax　m-tape　m-timeline　m-timer　m-tree　m-venn</p>
+    <p>m-balance（新しい）　m-ci（新しい）　m-folds（新しい）　m-mapping（新しい）　m-sampling（新しい）　m-curves（変わった）　m-orbit（変わった）　m-bars　m-boxplot　m-cards　m-codetree　m-collect　m-compare　m-cycle　m-fishbone　m-flow　m-gendai　m-heatmap　m-hissan　m-hist　m-kakijun　m-kanbun　m-keyboard　m-kobun　m-kpi　m-map-japan　m-map-world　m-market　m-menu　m-numberline　m-particles　m-pie　m-predict　m-quad　m-scatter　m-score　m-seq　m-sweep　m-syntax　m-tape　m-timeline　m-timer　m-tree　m-venn</p>
   </div>
+</section>
+
+<section class="slide">
+  <h2>m-balance（新しい、v2.5.1）</h2>
+  <div class="body">
+    <p>確率の重りを置き、支点が期待値でつり合う様子を示す</p>
+    <ul>
+      <li>伝えたいこと：仕組みをモデルで見る</li>
+      <li>見せ方：1 種類</li>
+      <li>系列：数理・統計　見本のスライド：1 枚</li>
+    </ul>
+  </div>
+</section>
+
+<section id="g-balance-1" class="slide">
+  <h2>期待値でつり合う（架空データ）</h2>
+  <div class="body"><m-balance style="height:440px"><script type="application/json">{"values":[0,1,2,3],"probs":[0.1,0.3,0.4,0.2],"name":"X"}</script></m-balance></div>
+  <div class="concl"><span>架空の分布。確率を重りとすると期待値が支点になる</span></div>
+</section>
+
+<section class="slide">
+  <h2>m-ci（新しい、v2.5.1）</h2>
+  <div class="body">
+    <p>正規標本の区間を重ね、母平均を含む割合で信頼水準を説明する</p>
+    <ul>
+      <li>伝えたいこと：仕組みをモデルで見る・ばらつき</li>
+      <li>見せ方：1 種類</li>
+      <li>系列：数理・統計　見本のスライド：1 枚</li>
+    </ul>
+  </div>
+</section>
+
+<section id="g-ci-1" class="slide">
+  <h2>95 % の区間を繰り返す（シミュレーション）</h2>
+  <div class="body"><m-ci style="height:440px"><script type="application/json">{"mu":50,"sigma":10,"n":25,"reps":40,"level":0.95,"seed":2}</script></m-ci></div>
+  <div class="concl"><span>架空の標本。95 % は繰り返した区間が μ を含む割合</span></div>
+</section>
+
+<section class="slide">
+  <h2>m-folds（新しい、v2.5.1）</h2>
+  <div class="body">
+    <p>検証用の区画を順に替え、各分割の誤差と平均を示す</p>
+    <ul>
+      <li>伝えたいこと：仕組みをモデルで見る・比べる（量・特徴）</li>
+      <li>見せ方：1 種類</li>
+      <li>系列：数理・統計　見本のスライド：1 枚</li>
+    </ul>
+  </div>
+</section>
+
+<section id="g-folds-1" class="slide">
+  <h2>検証する区画を替える（架空データ）</h2>
+  <div class="body"><m-folds style="height:440px"><script type="application/json">{"k":5,"errors":[0.21,0.18,0.25,0.19,0.22],"labels":["1","2","3","4","5"]}</script></m-folds></div>
+  <div class="concl"><span>架空の誤差。すべての区画を 1 回ずつ検証する</span></div>
 </section>
 
 <section class="slide">
