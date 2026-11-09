@@ -77,6 +77,10 @@ ok(invalidAttrs.reports.filter((r) => r.code === 'attr').length === 4 && invalid
 const die = {outcomes: Array.from({length: 6}, (_, i) => ({label: String(i + 1), x: (i + 1) % 2 === 0 ? 1 : 0}))};
 ok(make({...die, fractions: false}).reports.length === 0, 'six-outcome example fits when individual probabilities are hidden');
 ok(make(die, {}, {clientHeight: 610}).reports.length === 0, 'six two-line outcomes fit with sufficient height');
+const colourBalls = make({outcomes: [{label: '赤青', x: 1}, {label: 'red-red', x: 2, balls: ['red', 'Red']}], picture: 'balls'});
+ok(colourBalls.reports.length === 0 && /--obj-red/.test(colourBalls.el.svg.outerHTML) && /--obj-blue/.test(colourBalls.el.svg.outerHTML), 'balls map Japanese and English colour names to --obj-* with fallbacks');
+const oddBall = make({outcomes: [{label: '赤', x: 1}, {label: 'x', x: 0, balls: ['teal']}], picture: 'balls'});
+ok(oddBall.reports.some((r) => r.code === 'data' && /cannot draw x/.test(r.msg)), 'an unknown colour name is reported, not guessed');
 ok(make(die, {}, {clientWidth: 1100, clientHeight: 160}).reports.some((r) => r.code === 'size'), 'insufficient height is reported');
 ok(make(coin, {}, {clientWidth: 300}).reports.some((r) => r.code === 'size'), 'insufficient width is reported');
 const twelve = {outcomes: Array.from({length: 12}, (_, i) => ({label: String(i), x: i}))};

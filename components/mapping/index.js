@@ -9,6 +9,14 @@ var TEXT = {
 
 // 結果の絵（picture）：数えられる形で結果を描く。dots・grapes は x 個の丸（0〜15）、dice は label の目（1〜6）、coins は label の表・裏（H・T）の並び。
 // 描けないときは null（字のカードに戻す）。返す値は {w, h, draw(parent, x0, cy)}
+// 物の色（形式 §8.4）：11 の基本色。日本語・英語の名前（1 字の日本語も）から --obj-* へ。テーマになければ同じ色の値で
+var OBJ = {white: "#ffffff", black: "#222222", red: "#d62728", green: "#2ca02c", yellow: "#f2c12e", blue: "#1f77b4", brown: "#8c564b", purple: "#9467bd", pink: "#e377c2", orange: "#ff7f0e", gray: "#7f7f7f"};
+var OBJ_NAME = {"白": "white", "黒": "black", "赤": "red", "緑": "green", "黄": "yellow", "青": "blue", "茶": "brown", "紫": "purple", "桃": "pink", "橙": "orange", "灰": "gray",
+  "白色": "white", "黒色": "black", "赤色": "red", "緑色": "green", "黄色": "yellow", "青色": "blue", "茶色": "brown", "紫色": "purple", "桃色": "pink", "橙色": "orange", "灰色": "gray", "ピンク": "pink", "オレンジ": "orange", "グレー": "gray", "grey": "gray"};
+function objColor(name){
+  var k = String(name).trim(), en = OBJ[k.toLowerCase()] ? k.toLowerCase() : OBJ_NAME[k] || OBJ_NAME[k.toLowerCase()];
+  return en && OBJ[en] ? "var(--obj-" + en + ", " + OBJ[en] + ")" : null;
+}
 function pictureOf(kind, o){
   var n = o.x, R = 7, G = 3;
   var circle = function(par, cx, cy, filled, r){ base.el("circle", {cx: cx.toFixed(1), cy: cy.toFixed(1), r: r || R, fill: filled ? "var(--fg)" : "var(--bg)", stroke: "var(--fg)", "stroke-width": 1.5}, par); };
@@ -46,15 +54,16 @@ function pictureOf(kind, o){
     var Rc = 13, wC = seq.length * (2 * Rc + 6) - 6;
     return {w: wC, h: 2 * Rc, draw: function(par, x0, cy){ seq.forEach(function(ch, i){ circle(par, x0 + Rc + i * (2 * Rc + 6), cy, ch === "裏" || ch === "T", Rc); }); }};
   }
-  // balls：label の 1 字が 1 個の玉。赤・R は --emph、青・B は --term、白・W は地の色、黒・K は --fg で塗る（既定のテーマで赤と青）。
-  // ほかの字は描けない（字のカードに戻して知らせる）
+  // balls：玉の色は物の色（形式 §8.4 Object colours、--obj-*。テーマになければ同じ色の字の値）。色は中身そのものなので、
+  // 名前を玉の横に必ず書く（label。色だけに頼らない）。玉の並びは outcome の balls（色の名前の列、日本語か英語）か、
+  // なければ label の 1 字ずつ（赤・青 …）。知らない名前は描かずに知らせる
   if (kind === "balls"){
-    var FILL = {"赤": "var(--emph)", "R": "var(--emph)", "青": "var(--term)", "B": "var(--term)", "白": "var(--bg)", "W": "var(--bg)", "黒": "var(--fg)", "K": "var(--fg)"};
-    var bs = String(o.label).split("").filter(function(ch){ return /\S/.test(ch); });
-    if (!bs.length || bs.length > 6 || bs.some(function(ch){ return !FILL[ch]; })) return null;
-    var Rb = 13, wB = bs.length * (2 * Rb + 6) - 6;
-    return {w: wB, h: 2 * Rb, draw: function(par, x0, cy){ bs.forEach(function(ch, i){
-      base.el("circle", {cx: (x0 + Rb + i * (2 * Rb + 6)).toFixed(1), cy: cy.toFixed(1), r: Rb, fill: FILL[ch], stroke: "var(--fg)", "stroke-width": 1.5}, par);
+    var names = Array.isArray(o.balls) ? o.balls.map(String) : String(o.label).split("").filter(function(ch){ return /\S/.test(ch); });
+    var cols = names.map(objColor);
+    if (!names.length || names.length > 6 || cols.some(function(c){ return !c; })) return null;
+    var Rb = 13, wB = names.length * (2 * Rb + 6) - 6;
+    return {w: wB, h: 2 * Rb, draw: function(par, x0, cy){ cols.forEach(function(c, i){
+      base.el("circle", {cx: (x0 + Rb + i * (2 * Rb + 6)).toFixed(1), cy: cy.toFixed(1), r: Rb, fill: c, stroke: "var(--fg)", "stroke-width": 1.5}, par);
     }); }};
   }
   return null;
@@ -76,7 +85,7 @@ return class extends base.MotionElement {
   static shape = {
     schema: {type: "object", additionalProperties: false, required: ["outcomes"], properties: {
       outcomes: {type: "array", minItems: 2, maxItems: 12, items: {type: "object", additionalProperties: false, required: ["label", "x"], properties: {
-        label: {type: "string"}, x: {type: "number"}, p: {type: "number"}
+        label: {type: "string"}, x: {type: "number"}, p: {type: "number"}, balls: {type: "array", items: {type: "string"}, maxItems: 6}
       }}},
       name: {type: "string"}, unit: {type: "string"}, fractions: {type: "boolean"}, picture: {enum: ["dots", "dice", "coins", "grapes", "balls"]}
     }},
@@ -92,7 +101,7 @@ return class extends base.MotionElement {
     if (this._plan) return this._plan;
     var d = this.data, given = d.outcomes.filter(function(o){ return o.p !== undefined; }).length;
     var p = {name: d.name === undefined ? "X" : d.name, unit: d.unit || "", notes: [], groups: []};
-    p.outcomes = d.outcomes.map(function(o){ return {label: o.label, x: o.x, p: given ? (o.p === undefined ? 0 : o.p) : 1 / d.outcomes.length}; });
+    p.outcomes = d.outcomes.map(function(o){ return {label: o.label, x: o.x, balls: o.balls, p: given ? (o.p === undefined ? 0 : o.p) : 1 / d.outcomes.length}; });
     p.total = p.outcomes.reduce(function(s, o){ return s + o.p; }, 0);
     p.validTotal = Math.abs(p.total - 1) <= 1e-9;
     if (given && given !== d.outcomes.length) p.notes.push("mixed p: missing probabilities are treated as 0");
@@ -161,9 +170,10 @@ return class extends base.MotionElement {
     // 結果の絵（picture）。描けない結果があれば知らせて、その結果は字だけ
     var kind = (this.data || {}).picture, badPic = [];
     var pics = p.outcomes.map(function(o){ if (!kind) return null; var q = pictureOf(kind, o); if (!q) badPic.push(o.label); return q; });
-    if (badPic.length) ctx.report("data", "[mapping] picture=\"" + kind + "\" cannot draw " + badPic.join(", ") + " (" + {dots: "x must be an integer 0–15", grapes: "x must be an integer 0–15", dice: "label must be a die face 1–6", coins: "label must be 1–6 of 表/裏 or H/T", balls: "label must be 1–6 of 赤/青/白/黒 (or R/B/W/K)"}[kind] + "); shown as text");
+    if (badPic.length) ctx.report("data", "[mapping] picture=\"" + kind + "\" cannot draw " + badPic.join(", ") + " (" + {dots: "x must be an integer 0–15", grapes: "x must be an integer 0–15", dice: "label must be a die face 1–6", coins: "label must be 1–6 of 表/裏 or H/T", balls: "1–6 balls named by colour (赤・青 … or red, blue …; see --obj-* in spec §8.4)"}[kind] + "); shown as text");
     // coins・balls は丸の中に字を書くので、名前は並べない
-    var labelOf = function(o, i){ return (kind === "coins" || kind === "balls") && pics[i] ? "" : o.label; };
+    // coins は絵だけ（見出しに ◯表 ●裏）。balls は色の名前を横に書く（色だけに頼らない。形式 §8.4）
+    var labelOf = function(o, i){ return kind === "coins" && pics[i] ? "" : o.label; };
     var picW = max(pics.map(function(q){ return q ? q.w : 0; })), picH = max(pics.map(function(q){ return q ? q.h : 0; }));
     var cw = Math.max(width(omega), max(p.outcomes.map(function(o, i){ var lw = labelOf(o, i) ? width(o.label) : 0; return (picW ? picW + (lw ? 12 : 0) : 0) + Math.max(lw, p.showP ? width(self.fmt(o.p), small) : 0); })) + 24);
     var vw = max(p.groups.map(function(g){ return width(self.value(g.x)); }));
