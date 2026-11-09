@@ -6,19 +6,19 @@
 <title>部品の一覧（見本）</title>
 <!-- tools/gallery.mjs が各部品の demo.html と README.md から作る。手で直さない。数値・会社はすべて架空か公の事実 -->
 <style>
-/* m-fishbone */
-.vcap{font-size:27px;color:var(--muted);text-align:center;margin-bottom:6px}
-/* m-tree */
-.vcap{font-size:27px;color:var(--muted);text-align:center;margin-bottom:6px}
 /* m-compare */
 .vlabel{font-size:27px;color:var(--muted);margin:0 0 6px}
 /* m-cycle */
 .vcap{font-size:27px;line-height:1.3;margin:0 0 6px;color:var(--muted)}
+/* m-fishbone */
+.vcap{font-size:27px;color:var(--muted);text-align:center;margin-bottom:6px}
 /* m-timeline */
 .vcap{font-size:27px;line-height:1.3;margin:0 0 6px;color:var(--muted)}
 /* m-timer */
 /* 1 枚目は Studio の部品の一覧の見本の絵（本文の枠で撮る）にもなる。時計の 0 が枠の左端に付いて切れて見えないよう、少し内側に置く */
 .slide:first-of-type .body{padding:0 10px}
+/* m-tree */
+.vcap{font-size:27px;color:var(--muted);text-align:center;margin-bottom:6px}
 /* m-venn */
 .vlabel{font-size:27px;color:var(--muted);margin:0 0 6px}
 </style>
@@ -64,274 +64,12 @@ document.addEventListener("DOMContentLoaded", function(){
   <h2>部品の一覧（39 個、159 枚）</h2>
   <div class="body">
     <p>部品ごとに、説明の 1 枚と見本のスライドが続く。→ で段階を進める。</p>
-    <p>m-cards（変わった）　m-fishbone（変わった）　m-map-japan（変わった）　m-orbit（変わった）　m-tree（変わった）　m-bars　m-boxplot　m-codetree　m-collect　m-compare　m-curves　m-cycle　m-flow　m-gendai　m-heatmap　m-hissan　m-hist　m-kakijun　m-kanbun　m-keyboard　m-kobun　m-kpi　m-map-world　m-market　m-menu　m-numberline　m-particles　m-pie　m-predict　m-quad　m-scatter　m-score　m-seq　m-sweep　m-syntax　m-tape　m-timeline　m-timer　m-venn</p>
+    <p>m-orbit（変わった）　m-bars　m-boxplot　m-cards　m-codetree　m-collect　m-compare　m-curves　m-cycle　m-fishbone　m-flow　m-gendai　m-heatmap　m-hissan　m-hist　m-kakijun　m-kanbun　m-keyboard　m-kobun　m-kpi　m-map-japan　m-map-world　m-market　m-menu　m-numberline　m-particles　m-pie　m-predict　m-quad　m-scatter　m-score　m-seq　m-sweep　m-syntax　m-tape　m-timeline　m-timer　m-tree　m-venn</p>
   </div>
 </section>
 
 <section class="slide">
-  <h2>m-cards（変わった、v2.5.0）</h2>
-  <div class="body">
-    <p>カード（番号の丸・アイコン・見出し・説明）を横一列か 2 段に並べ、段階ごとに出す。矢印で順を、枠の色で強調を見せる</p>
-    <ul>
-      <li>伝えたいこと：手順・工程・まとめる・分ける</li>
-      <li>見せ方：rise・fade・draw</li>
-      <li>系列：標準パーツ　見本のスライド：3 枚</li>
-    </ul>
-  </div>
-</section>
-
-<section id="g-cards-1" class="slide">
-  <h2>新しい窓口の進め方（架空の会社）</h2>
-  <div class="body">
-    <m-cards arrows nums style="height:330px">
-      <script type="application/json">{
-        "cards": [
-          {"icon": "messages", "title": "聞く", "text": "店に来た人の困りごとを 5 分で聞き取る"},
-          {"icon": "clipboard-list", "title": "まとめる", "text": "聞いたことを 1 枚の紙にまとめる"},
-          {"icon": "users", "title": "相談する", "text": "週に 1 回、担当の 3 人で話し合う"},
-          {"icon": "circle-check", "title": "返す", "text": "1 週間以内に答えを返す"}
-        ]
-      }</script>
-    </m-cards>
-  </div>
-  <div class="concl"><span>→ 聞いてから答えるまでを 1 週間に</span></div>
-</section>
-
-<section id="g-cards-2" class="slide">
-  <h2>4 つの店の工夫（架空）</h2>
-  <div class="body">
-    <m-cards layout="grid" hilite="4" style="height:420px">
-      <script type="application/json">{
-        "cards": [
-          {"n": "A", "icon": "building-store", "title": "駅前店", "text": "朝の 30 分だけ、受け取り専用の列を作った"},
-          {"n": "B", "icon": "calendar-event", "title": "川沿い店", "text": "予約の日を前の日に電話で知らせるようにした"},
-          {"n": "C", "icon": "map-pin", "title": "山の手店", "text": "店の場所の地図を、紙で配るのをやめて看板にした"},
-          {"n": "D", "icon": "chart-bar", "title": "港町店", "text": "待ち時間を毎日数えて、壁に貼り出した。来た人の 8 割が「待ちが短くなった」と答えた", "tone": "emph"}
-        ]
-      }</script>
-    </m-cards>
-  </div>
-  <div class="concl"><span>→ 数えて見せた店で、待ちが短くなったと感じる人がいちばん多い</span></div>
-</section>
-
-<section id="g-cards-3" class="slide">
-  <h2>まとめて出す（per-step="0"、見せ方 draw）</h2>
-  <div class="body">
-    <m-cards per-step="0" variant="draw" hilite="last" style="height:300px">
-      <script type="application/json">{
-        "cards": [
-          {"icon": "leaf", "title": "材料", "text": "地元の野菜を使う"},
-          {"icon": "truck", "title": "運ぶ", "text": "朝に届けて、その日のうちに売る"},
-          {"icon": "heart", "title": "残さない", "text": "売れ残りは翌日の総菜に"}
-        ]
-      }</script>
-    </m-cards>
-  </div>
-</section>
-
-<section class="slide">
-  <h2>m-fishbone（変わった、v2.5.0）</h2>
-  <div class="body">
-    <p>原因と結果の図（特性要因図・フィッシュボーン図）を、大骨 1 本ずつ組み立て、最後に結果（頭）を出す。座標は書かず、配置は部品が決める</p>
-    <ul>
-      <li>伝えたいこと：原因と結果</li>
-      <li>見せ方：fade・draw・grow</li>
-      <li>系列：標準パーツ　見本のスライド：3 枚</li>
-    </ul>
-  </div>
-</section>
-
-<section id="g-fishbone-1" class="slide">
-  <h2>配送の遅れの原因（架空）</h2>
-  <div class="body">
-    <m-fishbone aria-label="配送の遅れの特性要因図" style="height:440px">
-      <script type="application/json">{
-        "effect": {"label": "配送の遅れ", "note": "1 日 12 件"},
-        "nodes": [
-          {"id": "p", "label": "人"},
-          {"id": "p1", "label": "人手が足りない", "parent": "p"},
-          {"id": "p11", "label": "繁忙期の採用が遅い", "parent": "p1"},
-          {"id": "p2", "label": "道に慣れていない", "parent": "p"},
-          {"id": "m", "label": "機械"},
-          {"id": "m1", "label": "車の故障が多い", "parent": "m"},
-          {"id": "m2", "label": "端末の反応が遅い", "parent": "m"},
-          {"id": "h", "label": "方法"},
-          {"id": "h1", "label": "積み込みの順が悪い", "parent": "h", "tone": "emph"},
-          {"id": "h2", "label": "経路を手で決めている", "parent": "h"},
-          {"id": "z", "label": "材料"},
-          {"id": "z1", "label": "伝票の記入漏れ", "parent": "z"},
-          {"id": "z2", "label": "箱の大きさがばらばら", "parent": "z"}
-        ]
-      }</script>
-    </m-fishbone>
-  </div>
-  <div class="concl"><span>→ 人・機械・方法・材料（4M）に分けて原因を洗い出す</span></div>
-</section>
-
-<section id="g-fishbone-2" class="slide">
-  <h2>植物が育たないのはなぜ（order="effect-first"）</h2>
-  <div class="body">
-    <m-fishbone order="effect-first" aria-label="植物が育たない原因" style="height:440px">
-      <script type="application/json">{
-        "effect": {"label": "植物が\n育たない"},
-        "nodes": [
-          {"id": "l", "label": "光"},
-          {"id": "l1", "label": "日当たりが悪い", "parent": "l"},
-          {"id": "l2", "label": "光の当たる時間が短い", "parent": "l"},
-          {"id": "w", "label": "水"},
-          {"id": "w1", "label": "水が足りない", "parent": "w"},
-          {"id": "w2", "label": "水のやりすぎ", "parent": "w"},
-          {"id": "w21", "label": "根が腐る", "parent": "w2"},
-          {"id": "s", "label": "土"},
-          {"id": "s1", "label": "肥料が足りない", "parent": "s"},
-          {"id": "s2", "label": "水はけが悪い", "parent": "s"},
-          {"id": "t", "label": "温度"},
-          {"id": "t1", "label": "気温が低い", "parent": "t", "note": "15 ℃ 未満"},
-          {"id": "t2", "label": "昼と夜の差が大きい", "parent": "t"}
-        ]
-      }</script>
-    </m-fishbone>
-  </div>
-  <div class="concl"><span>→ 結果を先に置き、光・水・土・温度の順に原因を足す</span></div>
-</section>
-
-<section id="g-fishbone-3" class="slide">
-  <h2>見せ方の種類（variant）</h2>
-  <div class="body">
-    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:28px">
-      <div><div class="vcap">箱と字、それから線（fade、既定）</div>
-      <m-fishbone variant="fade" aria-label="遅刻の原因（fade）" style="height:340px">
-        <script type="application/json">{"effect": {"label": "遅刻"}, "nodes": [{"id": "a", "label": "自分"}, {"id": "a1", "label": "寝坊", "parent": "a"}, {"id": "a2", "label": "準備が遅い", "parent": "a"}, {"id": "b", "label": "交通"}, {"id": "b1", "label": "電車の遅れ", "parent": "b"}, {"id": "b2", "label": "道の混雑", "parent": "b"}]}</script>
-      </m-fishbone></div>
-      <div><div class="vcap">線を引いてから箱と字（draw）</div>
-      <m-fishbone variant="draw" aria-label="遅刻の原因（draw）" style="height:340px">
-        <script type="application/json">{"effect": {"label": "遅刻"}, "nodes": [{"id": "a", "label": "自分"}, {"id": "a1", "label": "寝坊", "parent": "a"}, {"id": "a2", "label": "準備が遅い", "parent": "a"}, {"id": "b", "label": "交通"}, {"id": "b1", "label": "電車の遅れ", "parent": "b"}, {"id": "b2", "label": "道の混雑", "parent": "b"}]}</script>
-      </m-fishbone></div>
-      <div><div class="vcap">背骨の側から伸びる（grow）</div>
-      <m-fishbone variant="grow" aria-label="遅刻の原因（grow）" style="height:340px">
-        <script type="application/json">{"effect": {"label": "遅刻"}, "nodes": [{"id": "a", "label": "自分"}, {"id": "a1", "label": "寝坊", "parent": "a"}, {"id": "a2", "label": "準備が遅い", "parent": "a"}, {"id": "b", "label": "交通"}, {"id": "b1", "label": "電車の遅れ", "parent": "b"}, {"id": "b2", "label": "道の混雑", "parent": "b"}]}</script>
-      </m-fishbone></div>
-    </div>
-  </div>
-  <div class="concl"><span>→ 書かなければ最初の見せ方（fade）になる</span></div>
-</section>
-
-<section class="slide">
-  <h2>m-map-japan（変わった、v2.5.0）</h2>
-  <div class="body">
-    <p>日本の 47 都道府県の地図。地域の強調、統計の塗り分け、点、矢印、経度・緯度の重ね描きを段階ごとに出す</p>
-    <ul>
-      <li>伝えたいこと：場所・地図</li>
-      <li>見せ方：fade・sweep・draw</li>
-      <li>系列：地図（社会）　見本のスライド：5 枚</li>
-    </ul>
-  </div>
-</section>
-
-<section id="g-map-japan-1" class="slide">
-  <h2>日本の八地方区分</h2>
-  <div class="body">
-    <m-map-japan aria-label="八地方区分の地図" style="height:440px">
-      <script type="application/json">{
-        "regions": [
-          {"group": "hokkaido", "tone": "series-1", "step": 1},
-          {"group": "tohoku", "tone": "series-2", "step": 2},
-          {"group": "kanto", "tone": "series-3", "step": 3},
-          {"group": "chubu", "tone": "series-1", "step": 4},
-          {"group": "kinki", "tone": "series-4", "step": 5},
-          {"group": "chugoku", "tone": "series-2", "step": 6},
-          {"group": "shikoku", "tone": "series-3", "step": 7},
-          {"group": "kyushu", "tone": "series-1", "step": 8}
-        ]
-      }</script>
-    </m-map-japan>
-  </div>
-  <div class="concl"><span>→ 北から順に 8 つの地方に分ける</span></div>
-</section>
-
-<section id="g-map-japan-2" class="slide">
-  <h2>都道府県の人口（2020 年、国勢調査速報）</h2>
-  <div class="body">
-    <m-map-japan aria-label="都道府県別の人口の塗り分け" legend="人口" unit="万人" islands="all" style="height:440px">
-      <script type="application/json">{
-        "classes": [0, 100, 200, 500],
-        "values": {"01": 523, "02": 124, "03": 121, "04": 230, "05": 96, "06": 107, "07": 183, "08": 287, "09": 193, "10": 194,
-          "11": 735, "12": 629, "13": 1406, "14": 924, "15": 220, "16": 104, "17": 113, "18": 77, "19": 81, "20": 205,
-          "21": 198, "22": 364, "23": 755, "24": 177, "25": 141, "26": 258, "27": 884, "28": 547, "29": 133, "30": 92,
-          "31": 55, "32": 67, "33": 189, "34": 280, "35": 134, "36": 72, "37": 95, "38": 134, "39": 69, "40": 514,
-          "41": 81, "42": 131, "43": 174, "44": 112, "45": 107, "46": 159, "47": 147}
-      }</script>
-    </m-map-japan>
-  </div>
-  <div class="concl"><span>→ 500 万人以上の 9 都道府県は大都市のまわり</span></div>
-</section>
-
-<section id="g-map-japan-3" class="slide">
-  <h2>北前船の西廻り航路（江戸時代）</h2>
-  <div class="body">
-    <m-map-japan aria-label="北前船の航路" labels="none" style="height:440px">
-      <script type="application/json">{
-        "points": [
-          {"lon": 135.43, "lat": 34.65, "label": "大坂", "anchor": "below", "step": 1},
-          {"lon": 130.94, "lat": 33.96, "label": "下関", "anchor": "left", "step": 2},
-          {"lon": 139.84, "lat": 38.91, "label": "酒田", "anchor": "right", "step": 3},
-          {"lon": 140.10, "lat": 41.43, "label": "松前", "anchor": "left", "step": 4}
-        ],
-        "flows": [
-          {"from": [135.43, 34.65], "to": [130.94, 33.96], "step": 2,
-           "via": [[135.15, 34.5], [134.9, 34.6], [134.5, 34.42], [134.0, 34.41], [133.4, 34.18], [133.08, 34.08], [132.9, 34.15], [132.72, 34.08], [132.52, 33.8], [132.1, 33.62], [131.7, 33.84], [131.3, 33.85]]},
-          {"from": [130.94, 33.96], "to": [139.84, 38.91], "label": "日本海", "labelAt": [134.6, 38.4], "step": 3,
-           "via": [[130.5, 34.35], [130.85, 35.0], [131.5, 35.45], [132.4, 35.9], [133.2, 36.6], [134.3, 36.25], [135.3, 36.35], [136.2, 37.0], [136.45, 37.75], [137.4, 38.0], [138.0, 38.55], [138.8, 38.8], [139.4, 39.0]]},
-          {"from": [139.84, 38.91], "to": [140.10, 41.43], "step": 4,
-           "via": [[139.75, 39.4], [139.5, 40.0], [139.75, 40.6], [139.95, 41.2]]}
-        ]
-      }</script>
-    </m-map-japan>
-  </div>
-  <div class="concl"><span>→ 大坂から瀬戸内海・日本海を通って北へ</span></div>
-</section>
-
-<section id="g-map-japan-4" class="slide">
-  <h2>日本の範囲（本当の位置）</h2>
-  <!-- 東西南北の端：国土地理院「日本の東西南北端点の経度緯度」（https://www.gsi.go.jp/KOKUJYOHO/center.htm、2026-10-25 取得）。
-       東端 南鳥島 153°59′12″E・24°16′59″N、西端 与那国島 122°55′57″E・24°27′05″N、
-       南端 沖ノ鳥島 136°04′11″E・20°25′31″N、北端 択捉島 148°45′08″E・45°33′26″N（度に直して小数 4 桁に丸めた） -->
-  <div class="body">
-    <m-map-japan aria-label="日本の範囲と東西南北の端" layout="true" labels="none" style="height:440px">
-      <script type="application/json">{
-        "points": [
-          {"lon": 148.7522, "lat": 45.5572, "label": "択捉島（北端）", "step": 1},
-          {"lon": 153.9867, "lat": 24.2831, "label": "南鳥島（東端）", "step": 2},
-          {"lon": 136.0697, "lat": 20.4253, "label": "沖ノ鳥島（南端）", "step": 3},
-          {"lon": 122.9325, "lat": 24.4514, "label": "与那国島（西端）", "step": 4}
-        ]
-      }</script>
-    </m-map-japan>
-  </div>
-  <div class="concl"><span>→ 東西は経度で約 31°、南北は緯度で約 25° に広がる</span></div>
-</section>
-
-<section id="g-map-japan-5" class="slide">
-  <h2>見せ方の種類（variant）</h2>
-  <div class="body">
-    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:0 28px;text-align:center;font-size:27px">
-      <div>フェード（fade、既定）</div><div>西から順に（sweep）</div><div>輪郭から（draw）</div>
-      <m-map-japan variant="fade" labels="none" style="height:380px">
-        <script type="application/json">{"regions": [{"group": "kinki", "tone": "term"}, {"group": "kyushu", "tone": "emph"}, {"id": "01", "tone": "accent2"}]}</script>
-      </m-map-japan>
-      <m-map-japan variant="sweep" labels="none" style="height:380px">
-        <script type="application/json">{"regions": [{"group": "kinki", "tone": "term"}, {"group": "kyushu", "tone": "emph"}, {"id": "01", "tone": "accent2"}]}</script>
-      </m-map-japan>
-      <m-map-japan variant="draw" labels="none" style="height:380px">
-        <script type="application/json">{"regions": [{"group": "kinki", "tone": "term"}, {"group": "kyushu", "tone": "emph"}, {"id": "01", "tone": "accent2"}]}</script>
-      </m-map-japan>
-    </div>
-  </div>
-  <div class="concl"><span>→ 書かなければ最初の見せ方（fade）になる</span></div>
-</section>
-
-<section class="slide">
-  <h2>m-orbit（変わった、v2.5.0）</h2>
+  <h2>m-orbit（変わった、v2.5.1）</h2>
   <div class="body">
     <p>月の満ち欠け（金星の満ち欠け）。北極の上から見た図と地球から見た形を並べ、月を位置から位置へ動かす。形は位置から計算する</p>
     <ul>
@@ -370,113 +108,6 @@ document.addEventListener("DOMContentLoaded", function(){
     </m-orbit>
   </div>
   <div class="concl"><span>→ 地球に近いほど大きく見え、細く欠ける</span></div>
-</section>
-
-<section class="slide">
-  <h2>m-tree（変わった、v2.5.0）</h2>
-  <div class="body">
-    <p>階層・分類の木（組織図、生物の分類など）を、根から 1 段ずつ組み立てる。座標は書かず、配置は部品が決める</p>
-    <ul>
-      <li>伝えたいこと：階層・分類</li>
-      <li>見せ方：fade・draw・grow</li>
-      <li>系列：標準パーツ　見本のスライド：4 枚</li>
-    </ul>
-  </div>
-</section>
-
-<section id="g-tree-1" class="slide">
-  <h2>会社の組織（架空）</h2>
-  <div class="body">
-    <m-tree aria-label="架空の会社の組織図" style="height:440px">
-      <script type="application/json">{
-        "nodes": [
-          {"id": "ceo", "label": "社長", "tone": "emph"},
-          {"id": "s", "label": "営業本部", "parent": "ceo"},
-          {"id": "d", "label": "開発本部", "parent": "ceo"},
-          {"id": "a", "label": "管理本部", "parent": "ceo"},
-          {"id": "s1", "label": "国内営業部", "parent": "s"},
-          {"id": "s2", "label": "海外営業部", "parent": "s"},
-          {"id": "d1", "label": "製品開発部", "parent": "d"},
-          {"id": "d2", "label": "品質保証部", "parent": "d"},
-          {"id": "a1", "label": "人事部", "parent": "a"},
-          {"id": "a2", "label": "経理部", "parent": "a"},
-          {"id": "d11", "label": "設計課", "parent": "d1"},
-          {"id": "d12", "label": "試作課", "parent": "d1"},
-          {"id": "d13", "label": "試験課", "parent": "d1", "note": "2026 年に新設"}
-        ]
-      }</script>
-    </m-tree>
-  </div>
-  <div class="concl"><span>→ 上から 1 段ずつ：本部、部、課</span></div>
-</section>
-
-<section id="g-tree-2" class="slide">
-  <h2>動物の分け方（orient="right"）</h2>
-  <div class="body">
-    <m-tree orient="right" aria-label="動物の分類" style="height:440px">
-      <script type="application/json">{
-        "nodes": [
-          {"id": "an", "label": "動物"},
-          {"id": "v", "label": "脊椎動物", "parent": "an", "note": "背骨がある"},
-          {"id": "i", "label": "無脊椎動物", "parent": "an", "note": "背骨がない", "tone": "muted"},
-          {"id": "f", "label": "魚類", "parent": "v"},
-          {"id": "am", "label": "両生類", "parent": "v"},
-          {"id": "r", "label": "は虫類", "parent": "v"},
-          {"id": "b", "label": "鳥類", "parent": "v"},
-          {"id": "m", "label": "哺乳類", "parent": "v", "tone": "emph"},
-          {"id": "ar", "label": "節足動物", "parent": "i", "tone": "muted"},
-          {"id": "mo", "label": "軟体動物", "parent": "i", "tone": "muted"}
-        ],
-        "edges": [
-          {"from": "r", "to": "b", "label": "近い仲間", "step": 4}
-        ]
-      }</script>
-    </m-tree>
-  </div>
-  <div class="concl"><span>→ 背骨の有無で分け、脊椎動物をさらに 5 つに分ける</span></div>
-</section>
-
-<section id="g-tree-3" class="slide">
-  <h2>見せ方の種類（variant）</h2>
-  <div class="body">
-    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:28px">
-      <div><div class="vcap">箱、それから線（fade、既定）</div>
-      <m-tree variant="fade" aria-label="植物の分類（fade）" style="height:330px">
-        <script type="application/json">{"nodes": [{"id": "p", "label": "植物"}, {"id": "s", "label": "種子植物", "parent": "p"}, {"id": "f", "label": "胞子植物", "parent": "p"}, {"id": "a", "label": "被子植物", "parent": "s"}, {"id": "g", "label": "裸子植物", "parent": "s"}]}</script>
-      </m-tree></div>
-      <div><div class="vcap">線を引いてから箱（draw）</div>
-      <m-tree variant="draw" aria-label="植物の分類（draw）" style="height:330px">
-        <script type="application/json">{"nodes": [{"id": "p", "label": "植物"}, {"id": "s", "label": "種子植物", "parent": "p"}, {"id": "f", "label": "胞子植物", "parent": "p"}, {"id": "a", "label": "被子植物", "parent": "s"}, {"id": "g", "label": "裸子植物", "parent": "s"}]}</script>
-      </m-tree></div>
-      <div><div class="vcap">親の側から大きくなる（grow）</div>
-      <m-tree variant="grow" aria-label="植物の分類（grow）" style="height:330px">
-        <script type="application/json">{"nodes": [{"id": "p", "label": "植物"}, {"id": "s", "label": "種子植物", "parent": "p"}, {"id": "f", "label": "胞子植物", "parent": "p"}, {"id": "a", "label": "被子植物", "parent": "s"}, {"id": "g", "label": "裸子植物", "parent": "s"}]}</script>
-      </m-tree></div>
-    </div>
-  </div>
-  <div class="concl"><span>→ 書かなければ最初の見せ方（fade）になる</span></div>
-</section>
-
-<section id="g-tree-4" class="slide">
-  <h2>確率の木：雨の日に遅れる確率（架空の値）</h2>
-  <div class="body">
-    <m-tree orient="right" aria-label="天気と遅刻の確率の木（架空の値）" style="height:440px">
-      <script type="application/json">{
-        "nodes": [
-          {"id": "s", "label": "出発"},
-          {"id": "r", "label": "雨", "parent": "s", "branch": "0.3"},
-          {"id": "f", "label": "晴れ", "parent": "s", "branch": "0.7"},
-          {"id": "rl", "label": "遅れる", "parent": "r", "branch": "0.4"},
-          {"id": "ro", "label": "間に合う", "parent": "r", "branch": "0.6"},
-          {"id": "fl", "label": "遅れる", "parent": "f", "branch": "0.1"},
-          {"id": "fo", "label": "間に合う", "parent": "f", "branch": "0.9"}
-        ],
-        "path": ["s", "r", "rl"],
-        "pathNote": "0.3 × 0.4 = 0.12"
-      }</script>
-    </m-tree>
-  </div>
-  <div class="concl"><span>→ 道に沿って枝の確率をかける：雨で遅れる確率は 0.12</span></div>
 </section>
 
 <section class="slide">
@@ -638,6 +269,67 @@ document.addEventListener("DOMContentLoaded", function(){
     </div>
   </div>
   <div class="concl"><span>→ 書かなければ最初の見せ方（fade）になる。値は架空</span></div>
+</section>
+
+<section class="slide">
+  <h2>m-cards</h2>
+  <div class="body">
+    <p>カード（番号の丸・アイコン・見出し・説明）を横一列か 2 段に並べ、段階ごとに出す。矢印で順を、枠の色で強調を見せる</p>
+    <ul>
+      <li>伝えたいこと：手順・工程・まとめる・分ける</li>
+      <li>見せ方：rise・fade・draw</li>
+      <li>系列：標準パーツ　見本のスライド：3 枚</li>
+    </ul>
+  </div>
+</section>
+
+<section id="g-cards-1" class="slide">
+  <h2>新しい窓口の進め方（架空の会社）</h2>
+  <div class="body">
+    <m-cards arrows nums style="height:330px">
+      <script type="application/json">{
+        "cards": [
+          {"icon": "messages", "title": "聞く", "text": "店に来た人の困りごとを 5 分で聞き取る"},
+          {"icon": "clipboard-list", "title": "まとめる", "text": "聞いたことを 1 枚の紙にまとめる"},
+          {"icon": "users", "title": "相談する", "text": "週に 1 回、担当の 3 人で話し合う"},
+          {"icon": "circle-check", "title": "返す", "text": "1 週間以内に答えを返す"}
+        ]
+      }</script>
+    </m-cards>
+  </div>
+  <div class="concl"><span>→ 聞いてから答えるまでを 1 週間に</span></div>
+</section>
+
+<section id="g-cards-2" class="slide">
+  <h2>4 つの店の工夫（架空）</h2>
+  <div class="body">
+    <m-cards layout="grid" hilite="4" style="height:420px">
+      <script type="application/json">{
+        "cards": [
+          {"n": "A", "icon": "building-store", "title": "駅前店", "text": "朝の 30 分だけ、受け取り専用の列を作った"},
+          {"n": "B", "icon": "calendar-event", "title": "川沿い店", "text": "予約の日を前の日に電話で知らせるようにした"},
+          {"n": "C", "icon": "map-pin", "title": "山の手店", "text": "店の場所の地図を、紙で配るのをやめて看板にした"},
+          {"n": "D", "icon": "chart-bar", "title": "港町店", "text": "待ち時間を毎日数えて、壁に貼り出した。来た人の 8 割が「待ちが短くなった」と答えた", "tone": "emph"}
+        ]
+      }</script>
+    </m-cards>
+  </div>
+  <div class="concl"><span>→ 数えて見せた店で、待ちが短くなったと感じる人がいちばん多い</span></div>
+</section>
+
+<section id="g-cards-3" class="slide">
+  <h2>まとめて出す（per-step="0"、見せ方 draw）</h2>
+  <div class="body">
+    <m-cards per-step="0" variant="draw" hilite="last" style="height:300px">
+      <script type="application/json">{
+        "cards": [
+          {"icon": "leaf", "title": "材料", "text": "地元の野菜を使う"},
+          {"icon": "truck", "title": "運ぶ", "text": "朝に届けて、その日のうちに売る"},
+          {"icon": "heart", "title": "残さない", "text": "売れ残りは翌日の総菜に"}
+        ]
+      }</script>
+    </m-cards>
+  </div>
 </section>
 
 <section class="slide">
@@ -1092,6 +784,93 @@ document.addEventListener("DOMContentLoaded", function(){
         <m-cycle variant="grow" style="height:360px">
           <script type="application/json">{"nodes": [{"label": "計画"}, {"label": "実行"}, {"label": "評価"}, {"label": "改善"}]}</script>
         </m-cycle></div>
+    </div>
+  </div>
+  <div class="concl"><span>→ 書かなければ最初の見せ方（fade）になる</span></div>
+</section>
+
+<section class="slide">
+  <h2>m-fishbone</h2>
+  <div class="body">
+    <p>原因と結果の図（特性要因図・フィッシュボーン図）を、大骨 1 本ずつ組み立て、最後に結果（頭）を出す。座標は書かず、配置は部品が決める</p>
+    <ul>
+      <li>伝えたいこと：原因と結果</li>
+      <li>見せ方：fade・draw・grow</li>
+      <li>系列：標準パーツ　見本のスライド：3 枚</li>
+    </ul>
+  </div>
+</section>
+
+<section id="g-fishbone-1" class="slide">
+  <h2>配送の遅れの原因（架空）</h2>
+  <div class="body">
+    <m-fishbone aria-label="配送の遅れの特性要因図" style="height:440px">
+      <script type="application/json">{
+        "effect": {"label": "配送の遅れ", "note": "1 日 12 件"},
+        "nodes": [
+          {"id": "p", "label": "人"},
+          {"id": "p1", "label": "人手が足りない", "parent": "p"},
+          {"id": "p11", "label": "繁忙期の採用が遅い", "parent": "p1"},
+          {"id": "p2", "label": "道に慣れていない", "parent": "p"},
+          {"id": "m", "label": "機械"},
+          {"id": "m1", "label": "車の故障が多い", "parent": "m"},
+          {"id": "m2", "label": "端末の反応が遅い", "parent": "m"},
+          {"id": "h", "label": "方法"},
+          {"id": "h1", "label": "積み込みの順が悪い", "parent": "h", "tone": "emph"},
+          {"id": "h2", "label": "経路を手で決めている", "parent": "h"},
+          {"id": "z", "label": "材料"},
+          {"id": "z1", "label": "伝票の記入漏れ", "parent": "z"},
+          {"id": "z2", "label": "箱の大きさがばらばら", "parent": "z"}
+        ]
+      }</script>
+    </m-fishbone>
+  </div>
+  <div class="concl"><span>→ 人・機械・方法・材料（4M）に分けて原因を洗い出す</span></div>
+</section>
+
+<section id="g-fishbone-2" class="slide">
+  <h2>植物が育たないのはなぜ（order="effect-first"）</h2>
+  <div class="body">
+    <m-fishbone order="effect-first" aria-label="植物が育たない原因" style="height:440px">
+      <script type="application/json">{
+        "effect": {"label": "植物が\n育たない"},
+        "nodes": [
+          {"id": "l", "label": "光"},
+          {"id": "l1", "label": "日当たりが悪い", "parent": "l"},
+          {"id": "l2", "label": "光の当たる時間が短い", "parent": "l"},
+          {"id": "w", "label": "水"},
+          {"id": "w1", "label": "水が足りない", "parent": "w"},
+          {"id": "w2", "label": "水のやりすぎ", "parent": "w"},
+          {"id": "w21", "label": "根が腐る", "parent": "w2"},
+          {"id": "s", "label": "土"},
+          {"id": "s1", "label": "肥料が足りない", "parent": "s"},
+          {"id": "s2", "label": "水はけが悪い", "parent": "s"},
+          {"id": "t", "label": "温度"},
+          {"id": "t1", "label": "気温が低い", "parent": "t", "note": "15 ℃ 未満"},
+          {"id": "t2", "label": "昼と夜の差が大きい", "parent": "t"}
+        ]
+      }</script>
+    </m-fishbone>
+  </div>
+  <div class="concl"><span>→ 結果を先に置き、光・水・土・温度の順に原因を足す</span></div>
+</section>
+
+<section id="g-fishbone-3" class="slide">
+  <h2>見せ方の種類（variant）</h2>
+  <div class="body">
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:28px">
+      <div><div class="vcap">箱と字、それから線（fade、既定）</div>
+      <m-fishbone variant="fade" aria-label="遅刻の原因（fade）" style="height:340px">
+        <script type="application/json">{"effect": {"label": "遅刻"}, "nodes": [{"id": "a", "label": "自分"}, {"id": "a1", "label": "寝坊", "parent": "a"}, {"id": "a2", "label": "準備が遅い", "parent": "a"}, {"id": "b", "label": "交通"}, {"id": "b1", "label": "電車の遅れ", "parent": "b"}, {"id": "b2", "label": "道の混雑", "parent": "b"}]}</script>
+      </m-fishbone></div>
+      <div><div class="vcap">線を引いてから箱と字（draw）</div>
+      <m-fishbone variant="draw" aria-label="遅刻の原因（draw）" style="height:340px">
+        <script type="application/json">{"effect": {"label": "遅刻"}, "nodes": [{"id": "a", "label": "自分"}, {"id": "a1", "label": "寝坊", "parent": "a"}, {"id": "a2", "label": "準備が遅い", "parent": "a"}, {"id": "b", "label": "交通"}, {"id": "b1", "label": "電車の遅れ", "parent": "b"}, {"id": "b2", "label": "道の混雑", "parent": "b"}]}</script>
+      </m-fishbone></div>
+      <div><div class="vcap">背骨の側から伸びる（grow）</div>
+      <m-fishbone variant="grow" aria-label="遅刻の原因（grow）" style="height:340px">
+        <script type="application/json">{"effect": {"label": "遅刻"}, "nodes": [{"id": "a", "label": "自分"}, {"id": "a1", "label": "寝坊", "parent": "a"}, {"id": "a2", "label": "準備が遅い", "parent": "a"}, {"id": "b", "label": "交通"}, {"id": "b1", "label": "電車の遅れ", "parent": "b"}, {"id": "b2", "label": "道の混雑", "parent": "b"}]}</script>
+      </m-fishbone></div>
     </div>
   </div>
   <div class="concl"><span>→ 書かなければ最初の見せ方（fade）になる</span></div>
@@ -1593,6 +1372,120 @@ document.addEventListener("DOMContentLoaded", function(){
     </div>
   </div>
   <div class="concl"><span>→ 書かなければ最初の見せ方（count）になる。数字は架空</span></div>
+</section>
+
+<section class="slide">
+  <h2>m-map-japan</h2>
+  <div class="body">
+    <p>日本の 47 都道府県の地図。地域の強調、統計の塗り分け、点、矢印、経度・緯度の重ね描きを段階ごとに出す</p>
+    <ul>
+      <li>伝えたいこと：場所・地図</li>
+      <li>見せ方：fade・sweep・draw</li>
+      <li>系列：地図（社会）　見本のスライド：5 枚</li>
+    </ul>
+  </div>
+</section>
+
+<section id="g-map-japan-1" class="slide">
+  <h2>日本の八地方区分</h2>
+  <div class="body">
+    <m-map-japan aria-label="八地方区分の地図" style="height:440px">
+      <script type="application/json">{
+        "regions": [
+          {"group": "hokkaido", "tone": "series-1", "step": 1},
+          {"group": "tohoku", "tone": "series-2", "step": 2},
+          {"group": "kanto", "tone": "series-3", "step": 3},
+          {"group": "chubu", "tone": "series-1", "step": 4},
+          {"group": "kinki", "tone": "series-4", "step": 5},
+          {"group": "chugoku", "tone": "series-2", "step": 6},
+          {"group": "shikoku", "tone": "series-3", "step": 7},
+          {"group": "kyushu", "tone": "series-1", "step": 8}
+        ]
+      }</script>
+    </m-map-japan>
+  </div>
+  <div class="concl"><span>→ 北から順に 8 つの地方に分ける</span></div>
+</section>
+
+<section id="g-map-japan-2" class="slide">
+  <h2>都道府県の人口（2020 年、国勢調査速報）</h2>
+  <div class="body">
+    <m-map-japan aria-label="都道府県別の人口の塗り分け" legend="人口" unit="万人" islands="all" style="height:440px">
+      <script type="application/json">{
+        "classes": [0, 100, 200, 500],
+        "values": {"01": 523, "02": 124, "03": 121, "04": 230, "05": 96, "06": 107, "07": 183, "08": 287, "09": 193, "10": 194,
+          "11": 735, "12": 629, "13": 1406, "14": 924, "15": 220, "16": 104, "17": 113, "18": 77, "19": 81, "20": 205,
+          "21": 198, "22": 364, "23": 755, "24": 177, "25": 141, "26": 258, "27": 884, "28": 547, "29": 133, "30": 92,
+          "31": 55, "32": 67, "33": 189, "34": 280, "35": 134, "36": 72, "37": 95, "38": 134, "39": 69, "40": 514,
+          "41": 81, "42": 131, "43": 174, "44": 112, "45": 107, "46": 159, "47": 147}
+      }</script>
+    </m-map-japan>
+  </div>
+  <div class="concl"><span>→ 500 万人以上の 9 都道府県は大都市のまわり</span></div>
+</section>
+
+<section id="g-map-japan-3" class="slide">
+  <h2>北前船の西廻り航路（江戸時代）</h2>
+  <div class="body">
+    <m-map-japan aria-label="北前船の航路" labels="none" style="height:440px">
+      <script type="application/json">{
+        "points": [
+          {"lon": 135.43, "lat": 34.65, "label": "大坂", "anchor": "below", "step": 1},
+          {"lon": 130.94, "lat": 33.96, "label": "下関", "anchor": "left", "step": 2},
+          {"lon": 139.84, "lat": 38.91, "label": "酒田", "anchor": "right", "step": 3},
+          {"lon": 140.10, "lat": 41.43, "label": "松前", "anchor": "left", "step": 4}
+        ],
+        "flows": [
+          {"from": [135.43, 34.65], "to": [130.94, 33.96], "step": 2,
+           "via": [[135.15, 34.5], [134.9, 34.6], [134.5, 34.42], [134.0, 34.41], [133.4, 34.18], [133.08, 34.08], [132.9, 34.15], [132.72, 34.08], [132.52, 33.8], [132.1, 33.62], [131.7, 33.84], [131.3, 33.85]]},
+          {"from": [130.94, 33.96], "to": [139.84, 38.91], "label": "日本海", "labelAt": [134.6, 38.4], "step": 3,
+           "via": [[130.5, 34.35], [130.85, 35.0], [131.5, 35.45], [132.4, 35.9], [133.2, 36.6], [134.3, 36.25], [135.3, 36.35], [136.2, 37.0], [136.45, 37.75], [137.4, 38.0], [138.0, 38.55], [138.8, 38.8], [139.4, 39.0]]},
+          {"from": [139.84, 38.91], "to": [140.10, 41.43], "step": 4,
+           "via": [[139.75, 39.4], [139.5, 40.0], [139.75, 40.6], [139.95, 41.2]]}
+        ]
+      }</script>
+    </m-map-japan>
+  </div>
+  <div class="concl"><span>→ 大坂から瀬戸内海・日本海を通って北へ</span></div>
+</section>
+
+<section id="g-map-japan-4" class="slide">
+  <h2>日本の範囲（本当の位置）</h2>
+  <!-- 東西南北の端：国土地理院「日本の東西南北端点の経度緯度」（https://www.gsi.go.jp/KOKUJYOHO/center.htm、2026-10-25 取得）。
+       東端 南鳥島 153°59′12″E・24°16′59″N、西端 与那国島 122°55′57″E・24°27′05″N、
+       南端 沖ノ鳥島 136°04′11″E・20°25′31″N、北端 択捉島 148°45′08″E・45°33′26″N（度に直して小数 4 桁に丸めた） -->
+  <div class="body">
+    <m-map-japan aria-label="日本の範囲と東西南北の端" layout="true" labels="none" style="height:440px">
+      <script type="application/json">{
+        "points": [
+          {"lon": 148.7522, "lat": 45.5572, "label": "択捉島（北端）", "step": 1},
+          {"lon": 153.9867, "lat": 24.2831, "label": "南鳥島（東端）", "step": 2},
+          {"lon": 136.0697, "lat": 20.4253, "label": "沖ノ鳥島（南端）", "step": 3},
+          {"lon": 122.9325, "lat": 24.4514, "label": "与那国島（西端）", "step": 4}
+        ]
+      }</script>
+    </m-map-japan>
+  </div>
+  <div class="concl"><span>→ 東西は経度で約 31°、南北は緯度で約 25° に広がる</span></div>
+</section>
+
+<section id="g-map-japan-5" class="slide">
+  <h2>見せ方の種類（variant）</h2>
+  <div class="body">
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:0 28px;text-align:center;font-size:27px">
+      <div>フェード（fade、既定）</div><div>西から順に（sweep）</div><div>輪郭から（draw）</div>
+      <m-map-japan variant="fade" labels="none" style="height:380px">
+        <script type="application/json">{"regions": [{"group": "kinki", "tone": "term"}, {"group": "kyushu", "tone": "emph"}, {"id": "01", "tone": "accent2"}]}</script>
+      </m-map-japan>
+      <m-map-japan variant="sweep" labels="none" style="height:380px">
+        <script type="application/json">{"regions": [{"group": "kinki", "tone": "term"}, {"group": "kyushu", "tone": "emph"}, {"id": "01", "tone": "accent2"}]}</script>
+      </m-map-japan>
+      <m-map-japan variant="draw" labels="none" style="height:380px">
+        <script type="application/json">{"regions": [{"group": "kinki", "tone": "term"}, {"group": "kyushu", "tone": "emph"}, {"id": "01", "tone": "accent2"}]}</script>
+      </m-map-japan>
+    </div>
+  </div>
+  <div class="concl"><span>→ 書かなければ最初の見せ方（fade）になる</span></div>
 </section>
 
 <section class="slide">
@@ -2479,6 +2372,113 @@ document.addEventListener("DOMContentLoaded", function(){
       }</script>
     </m-timer>
   </div>
+</section>
+
+<section class="slide">
+  <h2>m-tree</h2>
+  <div class="body">
+    <p>階層・分類の木（組織図、生物の分類など）を、根から 1 段ずつ組み立てる。座標は書かず、配置は部品が決める</p>
+    <ul>
+      <li>伝えたいこと：階層・分類</li>
+      <li>見せ方：fade・draw・grow</li>
+      <li>系列：標準パーツ　見本のスライド：4 枚</li>
+    </ul>
+  </div>
+</section>
+
+<section id="g-tree-1" class="slide">
+  <h2>会社の組織（架空）</h2>
+  <div class="body">
+    <m-tree aria-label="架空の会社の組織図" style="height:440px">
+      <script type="application/json">{
+        "nodes": [
+          {"id": "ceo", "label": "社長", "tone": "emph"},
+          {"id": "s", "label": "営業本部", "parent": "ceo"},
+          {"id": "d", "label": "開発本部", "parent": "ceo"},
+          {"id": "a", "label": "管理本部", "parent": "ceo"},
+          {"id": "s1", "label": "国内営業部", "parent": "s"},
+          {"id": "s2", "label": "海外営業部", "parent": "s"},
+          {"id": "d1", "label": "製品開発部", "parent": "d"},
+          {"id": "d2", "label": "品質保証部", "parent": "d"},
+          {"id": "a1", "label": "人事部", "parent": "a"},
+          {"id": "a2", "label": "経理部", "parent": "a"},
+          {"id": "d11", "label": "設計課", "parent": "d1"},
+          {"id": "d12", "label": "試作課", "parent": "d1"},
+          {"id": "d13", "label": "試験課", "parent": "d1", "note": "2026 年に新設"}
+        ]
+      }</script>
+    </m-tree>
+  </div>
+  <div class="concl"><span>→ 上から 1 段ずつ：本部、部、課</span></div>
+</section>
+
+<section id="g-tree-2" class="slide">
+  <h2>動物の分け方（orient="right"）</h2>
+  <div class="body">
+    <m-tree orient="right" aria-label="動物の分類" style="height:440px">
+      <script type="application/json">{
+        "nodes": [
+          {"id": "an", "label": "動物"},
+          {"id": "v", "label": "脊椎動物", "parent": "an", "note": "背骨がある"},
+          {"id": "i", "label": "無脊椎動物", "parent": "an", "note": "背骨がない", "tone": "muted"},
+          {"id": "f", "label": "魚類", "parent": "v"},
+          {"id": "am", "label": "両生類", "parent": "v"},
+          {"id": "r", "label": "は虫類", "parent": "v"},
+          {"id": "b", "label": "鳥類", "parent": "v"},
+          {"id": "m", "label": "哺乳類", "parent": "v", "tone": "emph"},
+          {"id": "ar", "label": "節足動物", "parent": "i", "tone": "muted"},
+          {"id": "mo", "label": "軟体動物", "parent": "i", "tone": "muted"}
+        ],
+        "edges": [
+          {"from": "r", "to": "b", "label": "近い仲間", "step": 4}
+        ]
+      }</script>
+    </m-tree>
+  </div>
+  <div class="concl"><span>→ 背骨の有無で分け、脊椎動物をさらに 5 つに分ける</span></div>
+</section>
+
+<section id="g-tree-3" class="slide">
+  <h2>見せ方の種類（variant）</h2>
+  <div class="body">
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:28px">
+      <div><div class="vcap">箱、それから線（fade、既定）</div>
+      <m-tree variant="fade" aria-label="植物の分類（fade）" style="height:330px">
+        <script type="application/json">{"nodes": [{"id": "p", "label": "植物"}, {"id": "s", "label": "種子植物", "parent": "p"}, {"id": "f", "label": "胞子植物", "parent": "p"}, {"id": "a", "label": "被子植物", "parent": "s"}, {"id": "g", "label": "裸子植物", "parent": "s"}]}</script>
+      </m-tree></div>
+      <div><div class="vcap">線を引いてから箱（draw）</div>
+      <m-tree variant="draw" aria-label="植物の分類（draw）" style="height:330px">
+        <script type="application/json">{"nodes": [{"id": "p", "label": "植物"}, {"id": "s", "label": "種子植物", "parent": "p"}, {"id": "f", "label": "胞子植物", "parent": "p"}, {"id": "a", "label": "被子植物", "parent": "s"}, {"id": "g", "label": "裸子植物", "parent": "s"}]}</script>
+      </m-tree></div>
+      <div><div class="vcap">親の側から大きくなる（grow）</div>
+      <m-tree variant="grow" aria-label="植物の分類（grow）" style="height:330px">
+        <script type="application/json">{"nodes": [{"id": "p", "label": "植物"}, {"id": "s", "label": "種子植物", "parent": "p"}, {"id": "f", "label": "胞子植物", "parent": "p"}, {"id": "a", "label": "被子植物", "parent": "s"}, {"id": "g", "label": "裸子植物", "parent": "s"}]}</script>
+      </m-tree></div>
+    </div>
+  </div>
+  <div class="concl"><span>→ 書かなければ最初の見せ方（fade）になる</span></div>
+</section>
+
+<section id="g-tree-4" class="slide">
+  <h2>確率の木：雨の日に遅れる確率（架空の値）</h2>
+  <div class="body">
+    <m-tree orient="right" aria-label="天気と遅刻の確率の木（架空の値）" style="height:440px">
+      <script type="application/json">{
+        "nodes": [
+          {"id": "s", "label": "出発"},
+          {"id": "r", "label": "雨", "parent": "s", "branch": "0.3"},
+          {"id": "f", "label": "晴れ", "parent": "s", "branch": "0.7"},
+          {"id": "rl", "label": "遅れる", "parent": "r", "branch": "0.4"},
+          {"id": "ro", "label": "間に合う", "parent": "r", "branch": "0.6"},
+          {"id": "fl", "label": "遅れる", "parent": "f", "branch": "0.1"},
+          {"id": "fo", "label": "間に合う", "parent": "f", "branch": "0.9"}
+        ],
+        "path": ["s", "r", "rl"],
+        "pathNote": "0.3 × 0.4 = 0.12"
+      }</script>
+    </m-tree>
+  </div>
+  <div class="concl"><span>→ 道に沿って枝の確率をかける：雨で遅れる確率は 0.12</span></div>
 </section>
 
 <section class="slide">

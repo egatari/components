@@ -12,6 +12,16 @@ Versions follow [README.md § Releases and versions](README.md#releases-and-vers
 
 - `m-compare` `by="row"`; an "outside every set" region for `m-venn`; planned-vs-actual bars for `m-timeline`
 
+## 2.5.1 - 2026-11-09
+
+The theme role `--lit` in m-orbit, and a clearer rule for map classes. Released after the standards side's eval A (34/0) and the en-maps-population topic (6/6 final, no class errors). The AI instruction pack is 14 paste units shorter in the en maps set.
+
+### Changed
+
+- `m-orbit` 2.0.4: the lit side of the Moon and Venus and the sun disc are filled with the theme's `--lit` (light and what it lights; spec §8.4) and outlined; a theme without it gets the colours as before (`--accent2` mixed with the background). The sun disc's thin `--muted` outline is the only visible change until themes ship `--lit`.
+- `m-map-japan` README: `classes` are lower bounds; the first must be at or below the smallest value, or leave `classes` out for quartiles. The flows `value` widths moved into the omit block to keep the pack short.
+- `tools/lint.mjs`: the English size pre-check keeps 3 % in hand (it reads 2–3 % low against Studio's gate).
+
 ## 2.5.0 - 2026-11-08
 
 Balanced cards, card guidance, and English map readouts (owner, 2026-11-08). Released after the standards side's eval A (34/0) and eval B (12/12 final; cards not overused; English map legends). Lessons pinned to earlier releases keep their drawing; a rebuilt lesson whose m-cards leave spare height looks different (card frames stay where they were).
