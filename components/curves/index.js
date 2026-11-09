@@ -6,7 +6,7 @@
 // 2.0（Egatari spec §6.1 の部品）：base の MotionElement・el・mtext・prog・previewOpacity、plot の Plot、expr の compile を使い、
 // プレイヤーのグローバルは使わない（1.x は式の評価器 egatari-expr を写して持っていた）。破線の mask の id は
 // curves-2-0-2-<n>m<系列>：このパーツの名前と版に、このパーツだけの数え（1.x は mc<n>m<系列> で、DECK.Plot の数えを進めていた）
-egatariParts.define({name: "curves", version: "2.1.1", requires: {base: "1.1.0", expr: "1.0.0", plot: "1.1.1"}, element: "m-curves"}, function(deps){
+egatariParts.define({name: "curves", version: "2.2.0", requires: {base: "1.1.0", expr: "1.0.0", plot: "1.1.1"}, element: "m-curves"}, function(deps){
 "use strict";
 var base = deps.base, plot = deps.plot, expr = deps.expr;
 var ID = "curves-2-0-2-";   // name and version of this part, dots replaced (spec §6.1 Identifiers)
@@ -24,6 +24,7 @@ return class extends base.MotionElement {
       properties: {label: {type: "string"}, f: {type: "string"}, pts: {type: "array", items: {type: "array", items: {type: "number"}, minItems: 2, maxItems: 2}},
         tone: {type: "string"}, step: {type: "integer"}, labelAt: {type: "number"},
         color: {type: "string"}, dash: {type: "boolean"}, xr: {type: "array", items: {type: "number"}, minItems: 2, maxItems: 2},
+        area: {type: "array"}, areaLabel: {type: ["string", "array"]},
         at: {type: "number"}, anchor: {enum: ["right", "left", "above", "below", "top", "bottom", "start", "middle", "end"]}, dx: {type: "number"}, dy: {type: "number"}, ly: {type: "number"}}}},
     example: [{label: "需要 D", f: "10 - x"}, {label: "供給 S", f: "2 + x"}, {label: "均衡", pts: [[4, 0], [4, 6]], dash: true}],
     // よくある書き違い（指示の部品の一覧に書く）
@@ -88,6 +89,34 @@ return class extends base.MotionElement {
       } else {
         it.path = D.el("path", {d: d, fill: "none", stroke: col, "stroke-width": P.lw, "clip-path": p.clip, pathLength: 1, "stroke-dasharray": "1 2", "stroke-linejoin": "round"}, p.svg);
         it.draw = it.path;
+      }
+      // 面積（area：[a, b] か [[a, b], …]。null は軸の端）：線と横軸（y = 0、範囲の外なら下の端）のあいだを、その区間だけ薄く塗る。
+      // 棄却域・p 値・信頼区間・確率など。線が引き終わってから出る（名前と同じ時に）。areaLabel は区間ごとに中に書く（字の列なら区間の順に）
+      if (s.area !== undefined){
+        var A = Array.isArray(s.area) && s.area.length && Array.isArray(s.area[0]) ? s.area : [s.area];
+        var yb = p.y(Math.max(Math.min(P.yr[0], P.yr[1]), Math.min(Math.max(P.yr[0], P.yr[1]), 0))), ad = "", segs = [];
+        A.forEach(function(r){
+          if (!Array.isArray(r) || r.length !== 2 || r.some(function(v){ return v !== null && !(typeof v === "number" && isFinite(v)); })){ ctx.report("data", "[curves] series " + i + ": area " + JSON.stringify(r) + " is not [from, to] (numbers, or null for the edge)"); return; }
+          var la = p.x(r[0] === null ? P.xr[0] : r[0]), lb = p.x(r[1] === null ? P.xr[1] : r[1]);
+          if (la > lb){ var tt = la; la = lb; lb = tt; }
+          var seg = pts.filter(function(q){ return isFinite(q[0]) && isFinite(q[1]) && q[0] >= la - 0.01 && q[0] <= lb + 0.01; });
+          if (seg.length < 2){ ctx.report("data", "[curves] series " + i + ": area " + JSON.stringify(r) + " has no part of the line in it"); return; }
+          ad += "M" + seg[0][0].toFixed(1) + "," + yb.toFixed(1) + seg.map(function(q){ return "L" + q[0].toFixed(1) + "," + q[1].toFixed(1); }).join("") + "L" + seg[seg.length - 1][0].toFixed(1) + "," + yb.toFixed(1) + "Z";
+          segs.push({w: seg[seg.length - 1][0] - seg[0][0], seg: seg});
+        });
+        if (ad){
+          it.area = D.el("path", {d: ad, fill: col, "fill-opacity": 0.28, stroke: "none", "clip-path": p.clip, opacity: 0}, p.svg);
+          p.svg.insertBefore(it.area, s.dash ? it.path.parentNode : it.path);   // 線の下に
+          // 区間の名前：区間の真ん中の上（線より上、字の高さぶん離す）。細い区間でも読めるように線の上に置き、背景色で縁取る
+          it.areaLabs = [];
+          segs.forEach(function(o, j){
+            var t = Array.isArray(s.areaLabel) ? s.areaLabel[j] : s.areaLabel;
+            if (!t) return;
+            var mid = o.seg[Math.floor(o.seg.length / 2)], top = Math.min.apply(null, o.seg.map(function(q){ return q[1]; }));
+            var tx = Math.max(x0 + 4, Math.min(x1 - 4, mid[0])), ty = Math.max(y0 + F, top - 10);
+            it.areaLabs.push(D.mtext(p.svg, tx, ty, t, {"text-anchor": "middle", fill: col, stroke: "var(--bg)", "stroke-width": 6, "paint-order": "stroke", "font-size": F, "font-weight": 700, opacity: 0}));
+          });
+        }
       }
       // 名前の位置：labelAt（横軸の値）の点、なければ描画範囲の中の最後の点。at は labelAt の古い名前（labelAt がないときだけ）
       var inside = pts.filter(function(q){ return q[0] >= x0 - .5 && q[0] <= x1 + .5 && q[1] >= y0 - .5 && q[1] <= y1 + .5; });
@@ -157,6 +186,8 @@ return class extends base.MotionElement {
         it.draw.setAttribute("stroke-dashoffset", (0).toFixed(4));
         it.path.setAttribute("opacity", PV);
         it.lab.setAttribute("opacity", PV.toFixed(3));
+        if (it.area) it.area.setAttribute("opacity", PV.toFixed(3));
+        (it.areaLabs || []).forEach(function(e){ e.setAttribute("opacity", PV.toFixed(3)); });
         return;
       }
       var pd = it.step < k ? 1 : it.step === k ? base.prog(t, 0, dur) : 0;
@@ -164,6 +195,8 @@ return class extends base.MotionElement {
       it.draw.setAttribute("stroke-dashoffset", (1 - pd).toFixed(4));
       it.path.setAttribute("opacity", pd > 0 ? 1 : 0);
       it.lab.setAttribute("opacity", pl.toFixed(3));
+      if (it.area) it.area.setAttribute("opacity", pl.toFixed(3));
+      (it.areaLabs || []).forEach(function(e){ e.setAttribute("opacity", pl.toFixed(3)); });
     });
   }
 };

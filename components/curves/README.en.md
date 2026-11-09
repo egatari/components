@@ -28,6 +28,7 @@ Series: a JSON array in a child script. One series = one step; same `step` = tog
 | `pts` | points `[[x, y], …]` |
 | `tone` | `term` `emph` `accent2` `muted` `fg` `series-1..4` |
 | `dash` | dashed |
+| `area` / `areaLabel` | shade to the x-axis over `[a, b]` or `[[a, b], …]` (null = edge); label per span |
 | `labelAt` / `anchor` / `dx` / `dy` / `ly` | name at x = `labelAt` (default: end); `anchor` `right` `left` `above` `below`; `ly` = y |
 
 `f` is arithmetic, not code: numbers, `x`, `Math` functions/constants (`sin(x)`, `PI`; no `random`), `N(x, mean, sd)`, `+ - * / % **`, comparisons, `&& || !`, `? :`. Powers: `**`. An unreadable `f` shows a card.
