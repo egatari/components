@@ -79,6 +79,9 @@ ok(make({...die, fractions: false}).reports.length === 0, 'six-outcome example f
 ok(make(die, {}, {clientHeight: 610}).reports.length === 0, 'six two-line outcomes fit with sufficient height');
 const colourBalls = make({outcomes: [{label: '赤青', x: 1}, {label: 'red-red', x: 2, balls: ['red', 'Red']}], picture: 'balls'});
 ok(colourBalls.reports.length === 0 && /--obj-red/.test(colourBalls.el.svg.outerHTML) && /--obj-blue/.test(colourBalls.el.svg.outerHTML), 'balls map Japanese and English colour names to --obj-* with fallbacks');
+const compound = make({outcomes: [{label: '黄緑', x: 1}, {label: '赤', x: 0}], picture: 'balls'});
+ok(compound.reports.some((r) => r.code === 'data' && /cannot draw 黄緑/.test(r.msg) && /balls array/.test(r.msg)), 'a compound colour word in the label (黄緑) is not split; it asks for a balls array');
+ok(make({outcomes: [{label: '茶色', x: 1}, {label: '赤', x: 0}], picture: 'balls'}).reports.some((r) => /cannot draw 茶色/.test(r.msg)), 'a colour word with 色 is not split either');
 const oddBall = make({outcomes: [{label: '赤', x: 1}, {label: 'x', x: 0, balls: ['teal']}], picture: 'balls'});
 ok(oddBall.reports.some((r) => r.code === 'data' && /cannot draw x/.test(r.msg)), 'an unknown colour name is reported, not guessed');
 ok(make(die, {}, {clientWidth: 1100, clientHeight: 160}).reports.some((r) => r.code === 'size'), 'insufficient height is reported');

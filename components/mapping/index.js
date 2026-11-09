@@ -58,7 +58,13 @@ function pictureOf(kind, o){
   // 名前を玉の横に必ず書く（label。色だけに頼らない）。玉の並びは outcome の balls（色の名前の列、日本語か英語）か、
   // なければ label の 1 字ずつ（赤・青 …）。知らない名前は描かずに知らせる
   if (kind === "balls"){
+    // label を 1 字ずつ読むのは、どの字も 1 字の色（白黒赤緑黄青茶紫桃橙灰）で、隣り合う 2 字が合わせた色（黄緑・青緑・赤紫・青紫・赤茶）に
+    // ならないときだけ。「黄緑」「水色」「茶色」などは推し量らずに描かず、balls の列で書くよう知らせる
     var names = Array.isArray(o.balls) ? o.balls.map(String) : String(o.label).split("").filter(function(ch){ return /\S/.test(ch); });
+    if (!Array.isArray(o.balls)){
+      if (names.some(function(ch){ return "白黒赤緑黄青茶紫桃橙灰".indexOf(ch) < 0; })) return null;
+      for (var q = 1; q < names.length; q++) if (["黄緑", "青緑", "赤紫", "青紫", "赤茶"].indexOf(names[q - 1] + names[q]) >= 0) return null;
+    }
     var cols = names.map(objColor);
     if (!names.length || names.length > 6 || cols.some(function(c){ return !c; })) return null;
     var Rb = 13, wB = names.length * (2 * Rb + 6) - 6;
@@ -170,7 +176,7 @@ return class extends base.MotionElement {
     // 結果の絵（picture）。描けない結果があれば知らせて、その結果は字だけ
     var kind = (this.data || {}).picture, badPic = [];
     var pics = p.outcomes.map(function(o){ if (!kind) return null; var q = pictureOf(kind, o); if (!q) badPic.push(o.label); return q; });
-    if (badPic.length) ctx.report("data", "[mapping] picture=\"" + kind + "\" cannot draw " + badPic.join(", ") + " (" + {dots: "x must be an integer 0–15", grapes: "x must be an integer 0–15", dice: "label must be a die face 1–6", coins: "label must be 1–6 of 表/裏 or H/T", balls: "1–6 balls named by colour (赤・青 … or red, blue …; see --obj-* in spec §8.4)"}[kind] + "); shown as text");
+    if (badPic.length) ctx.report("data", "[mapping] picture=\"" + kind + "\" cannot draw " + badPic.join(", ") + " (" + {dots: "x must be an integer 0–15", grapes: "x must be an integer 0–15", dice: "label must be a die face 1–6", coins: "label must be 1–6 of 表/裏 or H/T", balls: "1–6 balls named by colour: single-kanji colours in the label (赤青), or a balls array such as [\"黄緑\", \"青\"] for compound or other names (see --obj-* in spec §8.4)"}[kind] + "); shown as text");
     // coins・balls は丸の中に字を書くので、名前は並べない
     // coins は絵だけ（見出しに ◯表 ●裏）。balls は色の名前を横に書く（色だけに頼らない。形式 §8.4）
     var labelOf = function(o, i){ return kind === "coins" && pics[i] ? "" : o.label; };
