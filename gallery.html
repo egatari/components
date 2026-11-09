@@ -64,7 +64,7 @@ document.addEventListener("DOMContentLoaded", function(){
   <h2>部品の一覧（39 個、159 枚）</h2>
   <div class="body">
     <p>部品ごとに、説明の 1 枚と見本のスライドが続く。→ で段階を進める。</p>
-    <p>m-cards（変わった）　m-fishbone（変わった）　m-map-japan（変わった）　m-tree（変わった）　m-bars　m-boxplot　m-codetree　m-collect　m-compare　m-curves　m-cycle　m-flow　m-gendai　m-heatmap　m-hissan　m-hist　m-kakijun　m-kanbun　m-keyboard　m-kobun　m-kpi　m-map-world　m-market　m-menu　m-numberline　m-orbit　m-particles　m-pie　m-predict　m-quad　m-scatter　m-score　m-seq　m-sweep　m-syntax　m-tape　m-timeline　m-timer　m-venn</p>
+    <p>m-cards（変わった）　m-fishbone（変わった）　m-map-japan（変わった）　m-orbit（変わった）　m-tree（変わった）　m-bars　m-boxplot　m-codetree　m-collect　m-compare　m-curves　m-cycle　m-flow　m-gendai　m-heatmap　m-hissan　m-hist　m-kakijun　m-kanbun　m-keyboard　m-kobun　m-kpi　m-map-world　m-market　m-menu　m-numberline　m-particles　m-pie　m-predict　m-quad　m-scatter　m-score　m-seq　m-sweep　m-syntax　m-tape　m-timeline　m-timer　m-venn</p>
   </div>
 </section>
 
@@ -328,6 +328,48 @@ document.addEventListener("DOMContentLoaded", function(){
     </div>
   </div>
   <div class="concl"><span>→ 書かなければ最初の見せ方（fade）になる</span></div>
+</section>
+
+<section class="slide">
+  <h2>m-orbit（変わった、v2.5.0）</h2>
+  <div class="body">
+    <p>月の満ち欠け（金星の満ち欠け）。北極の上から見た図と地球から見た形を並べ、月を位置から位置へ動かす。形は位置から計算する</p>
+    <ul>
+      <li>伝えたいこと：仕組みをモデルで見る・循環</li>
+      <li>見せ方：1 種類</li>
+      <li>系列：数理・統計　見本のスライド：3 枚</li>
+    </ul>
+  </div>
+</section>
+
+<section id="g-orbit-1" class="slide">
+  <h2>月の満ち欠け</h2>
+  <div class="body">
+    <m-orbit style="height:440px">
+      <script type="application/json">{}</script>
+    </m-orbit>
+  </div>
+  <div class="concl"><span>→ 月の光っている半分はいつも太陽の側。地球から見える部分が変わる</span></div>
+</section>
+
+<section id="g-orbit-2" class="slide">
+  <h2>日食と月食</h2>
+  <div class="body">
+    <m-orbit style="height:440px">
+      <script type="application/json">{"visit": [4, 0], "eclipse": true}</script>
+    </m-orbit>
+  </div>
+  <div class="concl"><span>→ 太陽・月・地球が一直線に並ぶと、影ができる</span></div>
+</section>
+
+<section id="g-orbit-3" class="slide">
+  <h2>金星の満ち欠け</h2>
+  <div class="body">
+    <m-orbit mode="venus" style="height:440px">
+      <script type="application/json">{"start": 2, "visit": [3, 5, 6]}</script>
+    </m-orbit>
+  </div>
+  <div class="concl"><span>→ 地球に近いほど大きく見え、細く欠ける</span></div>
 </section>
 
 <section class="slide">
@@ -1791,48 +1833,6 @@ document.addEventListener("DOMContentLoaded", function(){
     </div>
   </div>
   <div class="concl"><span>→ 重なる部分が解：−1 &lt; <i>x</i> ≦ 3（左はフェード、右は線を引く）</span></div>
-</section>
-
-<section class="slide">
-  <h2>m-orbit</h2>
-  <div class="body">
-    <p>月の満ち欠け（金星の満ち欠け）。北極の上から見た図と地球から見た形を並べ、月を位置から位置へ動かす。形は位置から計算する</p>
-    <ul>
-      <li>伝えたいこと：仕組みをモデルで見る・循環</li>
-      <li>見せ方：1 種類</li>
-      <li>系列：数理・統計　見本のスライド：3 枚</li>
-    </ul>
-  </div>
-</section>
-
-<section id="g-orbit-1" class="slide">
-  <h2>月の満ち欠け</h2>
-  <div class="body">
-    <m-orbit style="height:440px">
-      <script type="application/json">{}</script>
-    </m-orbit>
-  </div>
-  <div class="concl"><span>→ 月の光っている半分はいつも太陽の側。地球から見える部分が変わる</span></div>
-</section>
-
-<section id="g-orbit-2" class="slide">
-  <h2>日食と月食</h2>
-  <div class="body">
-    <m-orbit style="height:440px">
-      <script type="application/json">{"visit": [4, 0], "eclipse": true}</script>
-    </m-orbit>
-  </div>
-  <div class="concl"><span>→ 太陽・月・地球が一直線に並ぶと、影ができる</span></div>
-</section>
-
-<section id="g-orbit-3" class="slide">
-  <h2>金星の満ち欠け</h2>
-  <div class="body">
-    <m-orbit mode="venus" style="height:440px">
-      <script type="application/json">{"start": 2, "visit": [3, 5, 6]}</script>
-    </m-orbit>
-  </div>
-  <div class="concl"><span>→ 地球に近いほど大きく見え、細く欠ける</span></div>
 </section>
 
 <section class="slide">

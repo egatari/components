@@ -15,9 +15,9 @@ data-credit: 地図データ：Natural Earth（パブリックドメイン）を
 地理・歴史の授業で場所を示すときに使う。子の JSON（どれも `step` `at` `tone` を持てる）：
 
 - `regions`：`id`（`"01"`〜`"47"`）か `group`（`hokkaido` `tohoku` `kanto` `chubu` `kinki` `chugoku` `shikoku` `kyushu`）。`label`
-- `values`：`{"13": 1406, …}` と `classes`（階級の下限、既定は 4 階級、5 つまで）で塗り分け。凡例に階級を書く。塗り分けの段階は `valuesStep`（既定 1。`values` は `step` を持てない）
+- `values`：`{"13": 1406, …}` と `classes`（階級の下限。最初はいちばん小さい値以下に。書かなければ四分位で 4 階級。5 つまで）で塗り分け。凡例に階級を書く。塗り分けの段階は `valuesStep`（既定 1。`values` は `step` を持てない）
 - `points`：`lon` `lat`（または `code` で県庁の位置）、`label`、`anchor`
-- `flows`：`from` `to`（番号か `[経度, 緯度]`）の矢印。`via`（通る点 `[[経度, 緯度], …]`。海の道は沖に）、`label` `labelAt` `value`（数。線の太さが値で変わる：いちばん大きい値で 10 px、0 で 3 px、ないと 4 px）
+- `flows`：`from` `to`（番号か `[経度, 緯度]`）の矢印。`via`（通る点 `[[経度, 緯度], …]`。海の道は沖に）、`label` `labelAt` `value`（数。線が値で太くなる）
 - `shapes`：`polygon` か `line`（`[[経度, 緯度], …]`）。`label` `dash`
 
 `labels`：`focus`（既定）・`all`・`none`。`show="value"` で入る地域に値を書く（既定は書かない）。
@@ -27,6 +27,8 @@ data-credit: 地図データ：Natural Earth（パブリックドメイン）を
 地図データ：Natural Earth（パブリックドメイン）を加工。
 
 <!-- llm: omit -->
+- `flows` の `value` の太さ：いちばん大きい値で 10 px、0 で 3 px、ないと 4 px
+
 注意
 
 - 領土は日本政府の立場のとおり：北方領土（国後・択捉・色丹・歯舞）は北海道、竹島は島根県、尖閣諸島は沖縄県（docs/map-design.md §4.5）。データに固定した性質で、授業ごとに切り替えることはできない
