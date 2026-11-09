@@ -15,17 +15,14 @@ For introductory probability. Left: Ω; centre: values; right: distribution. Chi
 - `p`: optional. All omitted: `1/n`. Mixed: report `data`, missing = 0. Sum outside 1±1e-9 or p outside 0–1: report, retain values. No normalization.
 - `name`: X; `unit`: suffix, default empty. Literal labels.
 - `fractions`: defaults true for equal probabilities. Reduced fractions: denominator ≤10000, error ≤1e-9; otherwise `digits` decimals. Invalid totals stay unrounded.
+- `picture`: draw outcomes: `dots`/`grapes` (x items, 0–15), `dice` (label face 1–6), `coins`, `balls` (one per label character)
 
-Probabilities below chips when `p` supplied or fractions on. Colours cycle series-1..4 by ascending value. Bar scale includes 0–1; extends for invalid data.
+Equal probabilities: shown once in the title. Colours cycle series-1..4 by ascending value. Bar scale includes 0–1; extends for invalid data.
 
-`dur` defaults to 1s; step 2 lasts `dur + (n−1) × stagger`. `stagger`: 0.15s. `digits`: 2. `size`: 0 means 26px; otherwise ≥24. Auxiliary text ≥24px.
-
-Use 1184×440px for four outcomes. Six fit with no `p` and `fractions: false`; otherwise allow ≥600px or split. Two-line rows need ≈84px; twelve need more height. Rows ≥40px. Tight space or close values report `size`; retain the proportional axis.
-
-Element `lang`, then `ctx.lang`. Accessible name: mappings, distribution, total. Author `aria-label` retained. Horizontal diagram.
+About 1184×440px for 4 outcomes; rows ≥40px; tight space reports `size`.
 
 <!-- llm: omit -->
-Fictional grapes: four equiprobable bunches. 180g/200g → B (X=0), 220g/240g → A (X=1). Explain numeric grade codes in the lesson.
+Fictional grapes: X = berries per bunch.
 
 Keep enough height for probabilities below chip labels.
 <!-- llm: end -->

@@ -6,6 +6,53 @@ var TEXT = {
   ja: {outcomes: "起こりうる結果", values: function(n){ return n + " の値"; }, count: function(n){ return n + " 通り"; }, total: "確率の合計 ", variable: "確率変数 ", each: function(t){ return "どれも " + t; }},
   en: {outcomes: "Outcomes", values: function(n){ return "Value of " + n; }, count: function(n){ return n + (n === 1 ? " outcome" : " outcomes"); }, total: "Total ", variable: "Random variable ", each: function(t){ return "each " + t; }}
 };
+
+// 結果の絵（picture）：数えられる形で結果を描く。dots・grapes は x 個の丸（0〜15）、dice は label の目（1〜6）、coins は label の表・裏（H・T）の並び。
+// 描けないときは null（字のカードに戻す）。返す値は {w, h, draw(parent, x0, cy)}
+function pictureOf(kind, o, colors){
+  var n = o.x, R = 7, G = 3;
+  var circle = function(par, cx, cy, filled, r){ base.el("circle", {cx: cx.toFixed(1), cy: cy.toFixed(1), r: r || R, fill: filled ? "var(--fg)" : "var(--bg)", stroke: "var(--fg)", "stroke-width": 1.5}, par); };
+  if (kind === "dots" || kind === "grapes"){
+    if (!(Number.isInteger(n) && n >= 0 && n <= 15)) return null;
+    if (kind === "dots"){
+      var per = n > 8 ? Math.ceil(n / 2) : n, rows = n > 8 ? 2 : 1, w = Math.max(1, per) * (2 * R + G) - G;
+      return {w: w, h: rows * (2 * R + G) - G, draw: function(par, x0, cy){ for (var i = 0; i < n; i++){ var r = Math.floor(i / per), c = i % per; circle(par, x0 + R + c * (2 * R + G), cy - (rows - 1) * (R + G / 2) + r * (2 * R + G), true); } }};
+    }
+    // ぶどう：逆三角形の房（上の段が k 粒、1 段ごとに 1 粒へる。k は k(k+1)/2 ≥ n の最小）。上に軸
+    R = 10;   // 房の粒は数えやすい大きさに
+    var kk = 1; while (kk * (kk + 1) / 2 < n) kk++;
+    var rowsG = [], left = n; for (var k = kk; k >= 1 && left > 0; k--){ var m = Math.min(k, left); rowsG.push(m); left -= m; }
+    var wG = Math.max(1, kk) * (2 * R + 1), hG = 10 + rowsG.length * (2 * R - 1);
+    return {w: wG, h: hG, draw: function(par, x0, cy){
+      var top = cy - hG / 2 + 10, mid = x0 + wG / 2;
+      base.el("path", {d: "M" + mid.toFixed(1) + "," + (top - 1).toFixed(1) + "l0,-8m0,4l7,-3", fill: "none", stroke: "var(--fg)", "stroke-width": 2, "stroke-linecap": "round"}, par);
+      rowsG.forEach(function(m, r){ for (var c = 0; c < m; c++) circle(par, mid + (c - (m - 1) / 2) * (2 * R + 1), top + R + r * (2 * R - 1), true); });
+    }};
+  }
+  // dice：結果の目（label の数字 1〜6。X とは別でよい：「5 以上なら 1」など）
+  if (kind === "dice"){
+    n = /^\s*[1-6]\s*$/.test(String(o.label)) ? +o.label : NaN;
+    if (!(Number.isInteger(n) && n >= 1 && n <= 6)) return null;
+    var S = 40, P = {1: [[0, 0]], 2: [[-1, -1], [1, 1]], 3: [[-1, -1], [0, 0], [1, 1]], 4: [[-1, -1], [1, -1], [-1, 1], [1, 1]], 5: [[-1, -1], [1, -1], [0, 0], [-1, 1], [1, 1]], 6: [[-1, -1], [1, -1], [-1, 0], [1, 0], [-1, 1], [1, 1]]}[n];
+    return {w: S, h: S, draw: function(par, x0, cy){
+      base.el("rect", {x: x0, y: (cy - S / 2).toFixed(1), width: S, height: S, rx: 6, fill: "var(--bg)", stroke: "var(--fg)", "stroke-width": 2}, par);
+      P.forEach(function(q){ circle(par, x0 + S / 2 + q[0] * 11, cy + q[1] * 11, true, 4); });
+    }};
+  }
+  // balls・coins：label の 1 字が 1 個（玉の色「赤」「白」、硬貨の「表」「裏」・H・T）。字を丸の中に書く（色はテーマの色なので、意味は字で伝える）。
+  // 字の種類ごとに丸の縁を --series-1..4（全体で出てきた順）。取り出した玉・投げた硬貨の並び
+  if (kind === "balls" || kind === "coins"){
+    var cs = String(o.label).split("").filter(function(ch){ return /\S/.test(ch); });
+    if (!cs.length || cs.length > 6 || (kind === "coins" && cs.some(function(ch){ return !/[表裏HT]/.test(ch); }))) return null;
+    var Rb = 17, wB = cs.length * (2 * Rb + 6) - 6;
+    return {w: wB, h: 2 * Rb, draw: function(par, x0, cy){ cs.forEach(function(ch, i){
+      var cx = x0 + Rb + i * (2 * Rb + 6), tone = "var(--series-" + (colors.indexOf(ch) % 4 + 1) + ")";
+      base.el("circle", {cx: cx.toFixed(1), cy: cy.toFixed(1), r: Rb, fill: "var(--bg)", stroke: tone, "stroke-width": 3}, par);
+      base.el("text", {x: cx.toFixed(1), y: (cy + 8.5).toFixed(1), "text-anchor": "middle", "font-size": 24, fill: "var(--fg)"}, par).textContent = ch;
+    }); }};
+  }
+  return null;
+}
 function set(e, a, v){ v = String(v); if (e.getAttribute(a) !== v) e.setAttribute(a, v); }
 function gcd(a, b){ while (b){ var r = a % b; a = b; b = r; } return a; }
 // Only use a fraction when it represents the supplied value to the sum tolerance.
@@ -25,7 +72,7 @@ return class extends base.MotionElement {
       outcomes: {type: "array", minItems: 2, maxItems: 12, items: {type: "object", additionalProperties: false, required: ["label", "x"], properties: {
         label: {type: "string"}, x: {type: "number"}, p: {type: "number"}
       }}},
-      name: {type: "string"}, unit: {type: "string"}, fractions: {type: "boolean"}
+      name: {type: "string"}, unit: {type: "string"}, fractions: {type: "boolean"}, picture: {enum: ["dots", "dice", "coins", "grapes", "balls"]}
     }},
     example: {outcomes: [{label: "表表", x: 2}, {label: "表裏", x: 1}, {label: "裏表", x: 1}, {label: "裏裏", x: 0}], name: "X", unit: "", fractions: true}
   };
@@ -100,7 +147,15 @@ return class extends base.MotionElement {
     var max = function(a){ return Math.max.apply(null, a.concat([0])); };
     var omega = "Ω  " + this.T.outcomes + (p.equal ? "（" + this.T.each(this.fmt(p.outcomes[0].p)) + "）" : "");
     if (p.equal && this.T === TEXT.en) omega = "Ω  " + this.T.outcomes + " (" + this.T.each(this.fmt(p.outcomes[0].p)) + ")";
-    var cw = Math.max(width(omega), max(p.outcomes.map(function(o){ return Math.max(width(o.label), p.showP ? width(self.fmt(o.p), small) : 0); })) + 24);
+    // 結果の絵（picture）。描けない結果があれば知らせて、その結果は字だけ
+    var kind = (this.data || {}).picture, badPic = [];
+    var colors = []; p.outcomes.forEach(function(o){ String(o.label).split("").forEach(function(ch){ if (/\S/.test(ch) && colors.indexOf(ch) < 0) colors.push(ch); }); });
+    var pics = p.outcomes.map(function(o){ if (!kind) return null; var q = pictureOf(kind, o, colors); if (!q) badPic.push(o.label); return q; });
+    if (badPic.length) ctx.report("data", "[mapping] picture=\"" + kind + "\" cannot draw " + badPic.join(", ") + " (" + {dots: "x must be an integer 0–15", grapes: "x must be an integer 0–15", dice: "label must be a die face 1–6", coins: "label must be 1–6 of 表/裏 or H/T", balls: "label must be 1–6 characters, one per ball"}[kind] + "); shown as text");
+    // coins・balls は丸の中に字を書くので、名前は並べない
+    var labelOf = function(o, i){ return (kind === "coins" || kind === "balls") && pics[i] ? "" : o.label; };
+    var picW = max(pics.map(function(q){ return q ? q.w : 0; })), picH = max(pics.map(function(q){ return q ? q.h : 0; }));
+    var cw = Math.max(width(omega), max(p.outcomes.map(function(o, i){ var lw = labelOf(o, i) ? width(o.label) : 0; return (picW ? picW + (lw ? 12 : 0) : 0) + Math.max(lw, p.showP ? width(self.fmt(o.p), small) : 0); })) + 24);
     var vw = max(p.groups.map(function(g){ return width(self.value(g.x)); }));
     var sw = max(p.groups.map(function(g){ return Math.max(width(self.T.count(g.count), small), width("= " + self.fmt(g.p), small)); }));
     var bw = vw + sw + 44, bx = Math.max(cw + 160, W * 0.43), barX = bx + bw + 30;
@@ -109,7 +164,7 @@ return class extends base.MotionElement {
     var barW = Math.max(0, W - barX - negativePad - probW - 24);
     // Source Sans 3's SVG text box extends 1.024em above and 0.4em below the baseline.
     // Reserve those full boxes, a 4px line gap and space inside/outside the chip frame.
-    var rowMin = p.showP ? (fs + small) * 1.43 + 12 : Math.max(40, fs * 1.43 + 12);
+    var rowMin = Math.max(p.showP ? (fs + small) * 1.43 + 12 : Math.max(40, fs * 1.43 + 12), picH + 16);
     var boxH = Math.max(40, (fs + small) * 1.43 + 12), top = fs * 1.43 + 16, bottom = H - fs * 1.43 - 8;
     var row = Math.max(rowMin, (bottom - top) / p.outcomes.length);
     if (bottom - top < p.outcomes.length * rowMin || barW < 100 || width(this.T.values(p.name)) > bw || width("P(" + p.name + " = x)") > barW + probW || width(this.totalText()) > W - barX){
@@ -149,12 +204,15 @@ return class extends base.MotionElement {
       self.bars.push({bar: bar, label: label, zero: zero, end: end});
     });
     p.outcomes.forEach(function(o, i){
-      var y = top + row * (i + 0.5), g = p.groups[o.group];
+      var y = top + row * (i + 0.5), g = p.groups[o.group];   // y：行の真ん中
       var chip = base.el("g", {}, self.outcomeLayer);
       var frame = base.el("rect", {class: "box", x: 8, y: y - rowMin / 2 + 2, width: cw - 8, height: rowMin - 4, rx: 10, fill: "none", stroke: "var(--term)", "stroke-width": 2}, chip);
-      var labelY = p.showP ? y - rowMin / 2 + 4 + fs * 1.024 : y + fs * 0.312;
-      self.label(chip, cw / 2 + 4, labelY, o.label, fs, "middle");
-      if (p.showP) self.label(chip, cw / 2 + 4, labelY + fs * 0.4 + small * 1.024 + 4, self.fmt(o.p), small, "middle");
+      var labelY = p.showP ? y - (fs + small) * 0.715 - 2 + fs * 1.024 : y + fs * 0.312, pic = pics[i], lab = labelOf(o, i);
+      // 絵があれば左に絵、右に名前（と確率）。なければ真ん中に名前
+      var tx = pic ? 20 + picW + 12 : cw / 2 + 4, anchor = pic ? "start" : "middle";
+      if (pic) pic.draw(chip, 20 + (picW - pic.w) / 2, y);
+      if (lab) self.label(chip, tx, labelY, lab, fs, anchor);
+      if (p.showP) self.label(chip, tx, (lab ? labelY + fs * 0.4 + small * 1.024 + 4 : y + small * 0.312), self.fmt(o.p), small, anchor);
       self.chips.push({frame: frame, tone: g.tone});
       var path = base.el("path", {fill: "none", stroke: "var(--muted)", "stroke-width": 2, pathLength: 1, "stroke-dasharray": "1", opacity: 0}, self.svg);
       var head = base.el("path", {fill: "none", stroke: "var(--muted)", "stroke-width": 2, opacity: 0}, self.svg);
