@@ -9,7 +9,7 @@ var TEXT = {
 
 // 結果の絵（picture）：数えられる形で結果を描く。dots・grapes は x 個の丸（0〜15）、dice は label の目（1〜6）、coins は label の表・裏（H・T）の並び。
 // 描けないときは null（字のカードに戻す）。返す値は {w, h, draw(parent, x0, cy)}
-function pictureOf(kind, o, colors){
+function pictureOf(kind, o){
   var n = o.x, R = 7, G = 3;
   var circle = function(par, cx, cy, filled, r){ base.el("circle", {cx: cx.toFixed(1), cy: cy.toFixed(1), r: r || R, fill: filled ? "var(--fg)" : "var(--bg)", stroke: "var(--fg)", "stroke-width": 1.5}, par); };
   if (kind === "dots" || kind === "grapes"){
@@ -40,14 +40,14 @@ function pictureOf(kind, o, colors){
     }};
   }
   // balls・coins：label の 1 字が 1 個（玉の色「赤」「白」、硬貨の「表」「裏」・H・T）。字を丸の中に書く（色はテーマの色なので、意味は字で伝える）。
-  // 字の種類ごとに丸の縁を --series-1..4（全体で出てきた順）。取り出した玉・投げた硬貨の並び
+  // 縁は --fg 1 色（色の名前の字と違う色の縁は混乱のもとなので、色で区別しない）。取り出した玉・投げた硬貨の並び
   if (kind === "balls" || kind === "coins"){
     var cs = String(o.label).split("").filter(function(ch){ return /\S/.test(ch); });
     if (!cs.length || cs.length > 6 || (kind === "coins" && cs.some(function(ch){ return !/[表裏HT]/.test(ch); }))) return null;
     var Rb = 17, wB = cs.length * (2 * Rb + 6) - 6;
     return {w: wB, h: 2 * Rb, draw: function(par, x0, cy){ cs.forEach(function(ch, i){
-      var cx = x0 + Rb + i * (2 * Rb + 6), tone = "var(--series-" + (colors.indexOf(ch) % 4 + 1) + ")";
-      base.el("circle", {cx: cx.toFixed(1), cy: cy.toFixed(1), r: Rb, fill: "var(--bg)", stroke: tone, "stroke-width": 3}, par);
+      var cx = x0 + Rb + i * (2 * Rb + 6);
+      base.el("circle", {cx: cx.toFixed(1), cy: cy.toFixed(1), r: Rb, fill: "var(--bg)", stroke: "var(--fg)", "stroke-width": 2}, par);
       base.el("text", {x: cx.toFixed(1), y: (cy + 8.5).toFixed(1), "text-anchor": "middle", "font-size": 24, fill: "var(--fg)"}, par).textContent = ch;
     }); }};
   }
@@ -149,8 +149,7 @@ return class extends base.MotionElement {
     if (p.equal && this.T === TEXT.en) omega = "Ω  " + this.T.outcomes + " (" + this.T.each(this.fmt(p.outcomes[0].p)) + ")";
     // 結果の絵（picture）。描けない結果があれば知らせて、その結果は字だけ
     var kind = (this.data || {}).picture, badPic = [];
-    var colors = []; p.outcomes.forEach(function(o){ String(o.label).split("").forEach(function(ch){ if (/\S/.test(ch) && colors.indexOf(ch) < 0) colors.push(ch); }); });
-    var pics = p.outcomes.map(function(o){ if (!kind) return null; var q = pictureOf(kind, o, colors); if (!q) badPic.push(o.label); return q; });
+    var pics = p.outcomes.map(function(o){ if (!kind) return null; var q = pictureOf(kind, o); if (!q) badPic.push(o.label); return q; });
     if (badPic.length) ctx.report("data", "[mapping] picture=\"" + kind + "\" cannot draw " + badPic.join(", ") + " (" + {dots: "x must be an integer 0–15", grapes: "x must be an integer 0–15", dice: "label must be a die face 1–6", coins: "label must be 1–6 of 表/裏 or H/T", balls: "label must be 1–6 characters, one per ball"}[kind] + "); shown as text");
     // coins・balls は丸の中に字を書くので、名前は並べない
     var labelOf = function(o, i){ return (kind === "coins" || kind === "balls") && pics[i] ? "" : o.label; };
