@@ -15,7 +15,7 @@ For introductory probability. Left: Ω; centre: values; right: distribution. Chi
 - `p`: optional. All omitted: `1/n`. Mixed: report `data`, missing = 0. Sum outside 1±1e-9 or p outside 0–1: report, retain values. No normalization.
 - `name`: X; `unit`: suffix, default empty. Literal labels.
 - `fractions`: defaults true for equal probabilities. Reduced fractions: denominator ≤10000, error ≤1e-9; otherwise `digits` decimals. Invalid totals stay unrounded.
-- `picture`: draw outcomes: `dots`/`grapes` (x items, 0–15), `dice` (label face 1–6), `coins`, `balls` (one per label character)
+- `picture`: draw outcomes: `dots`/`grapes` (x items, 0–15), `dice` (label face 1–6), `coins` (◯ heads, ● tails), `balls` (one per character: `赤` `青` `白` `黒` or R B W K)
 
 Equal probabilities: shown once in the title. Colours cycle series-1..4 by ascending value. Bar scale includes 0–1; extends for invalid data.
 

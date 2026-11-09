@@ -39,16 +39,22 @@ function pictureOf(kind, o){
       P.forEach(function(q){ circle(par, x0 + S / 2 + q[0] * 11, cy + q[1] * 11, true, 4); });
     }};
   }
-  // balls・coins：label の 1 字が 1 個（玉の色「赤」「白」、硬貨の「表」「裏」・H・T）。字を丸の中に書く（色はテーマの色なので、意味は字で伝える）。
-  // 縁は --fg 1 色（色の名前の字と違う色の縁は混乱のもとなので、色で区別しない）。取り出した玉・投げた硬貨の並び
-  if (kind === "balls" || kind === "coins"){
-    var cs = String(o.label).split("").filter(function(ch){ return /\S/.test(ch); });
-    if (!cs.length || cs.length > 6 || (kind === "coins" && cs.some(function(ch){ return !/[表裏HT]/.test(ch); }))) return null;
-    var Rb = 17, wB = cs.length * (2 * Rb + 6) - 6;
-    return {w: wB, h: 2 * Rb, draw: function(par, x0, cy){ cs.forEach(function(ch, i){
-      var cx = x0 + Rb + i * (2 * Rb + 6);
-      base.el("circle", {cx: cx.toFixed(1), cy: cy.toFixed(1), r: Rb, fill: "var(--bg)", stroke: "var(--fg)", "stroke-width": 2}, par);
-      base.el("text", {x: cx.toFixed(1), y: (cy + 8.5).toFixed(1), "text-anchor": "middle", "font-size": 24, fill: "var(--fg)"}, par).textContent = ch;
+  // coins：表 = ◯（白）、裏 = ●（塗り）。見出しに「◯ 表・● 裏」と書く
+  if (kind === "coins"){
+    var seq = String(o.label).split("").filter(function(ch){ return /\S/.test(ch); });
+    if (!seq.length || seq.length > 6 || seq.some(function(ch){ return !/[表裏HT]/.test(ch); })) return null;
+    var Rc = 13, wC = seq.length * (2 * Rc + 6) - 6;
+    return {w: wC, h: 2 * Rc, draw: function(par, x0, cy){ seq.forEach(function(ch, i){ circle(par, x0 + Rc + i * (2 * Rc + 6), cy, ch === "裏" || ch === "T", Rc); }); }};
+  }
+  // balls：label の 1 字が 1 個の玉。赤・R は --emph、青・B は --term、白・W は地の色、黒・K は --fg で塗る（既定のテーマで赤と青）。
+  // ほかの字は描けない（字のカードに戻して知らせる）
+  if (kind === "balls"){
+    var FILL = {"赤": "var(--emph)", "R": "var(--emph)", "青": "var(--term)", "B": "var(--term)", "白": "var(--bg)", "W": "var(--bg)", "黒": "var(--fg)", "K": "var(--fg)"};
+    var bs = String(o.label).split("").filter(function(ch){ return /\S/.test(ch); });
+    if (!bs.length || bs.length > 6 || bs.some(function(ch){ return !FILL[ch]; })) return null;
+    var Rb = 13, wB = bs.length * (2 * Rb + 6) - 6;
+    return {w: wB, h: 2 * Rb, draw: function(par, x0, cy){ bs.forEach(function(ch, i){
+      base.el("circle", {cx: (x0 + Rb + i * (2 * Rb + 6)).toFixed(1), cy: cy.toFixed(1), r: Rb, fill: FILL[ch], stroke: "var(--fg)", "stroke-width": 1.5}, par);
     }); }};
   }
   return null;
@@ -147,10 +153,15 @@ return class extends base.MotionElement {
     var max = function(a){ return Math.max.apply(null, a.concat([0])); };
     var omega = "Ω  " + this.T.outcomes + (p.equal ? "（" + this.T.each(this.fmt(p.outcomes[0].p)) + "）" : "");
     if (p.equal && this.T === TEXT.en) omega = "Ω  " + this.T.outcomes + " (" + this.T.each(this.fmt(p.outcomes[0].p)) + ")";
+    var kind0 = (this.data || {}).picture;
+    if (kind0 === "coins"){
+      var each = p.equal ? this.fmt(p.outcomes[0].p) : "";
+      omega = this.T === TEXT.en ? "Ω (" + (each ? "each " + each + "; " : "") + "◯ H ● T)" : "Ω（" + (each ? "どれも " + each + "・" : "") + "◯表 ●裏）";
+    }
     // 結果の絵（picture）。描けない結果があれば知らせて、その結果は字だけ
     var kind = (this.data || {}).picture, badPic = [];
     var pics = p.outcomes.map(function(o){ if (!kind) return null; var q = pictureOf(kind, o); if (!q) badPic.push(o.label); return q; });
-    if (badPic.length) ctx.report("data", "[mapping] picture=\"" + kind + "\" cannot draw " + badPic.join(", ") + " (" + {dots: "x must be an integer 0–15", grapes: "x must be an integer 0–15", dice: "label must be a die face 1–6", coins: "label must be 1–6 of 表/裏 or H/T", balls: "label must be 1–6 characters, one per ball"}[kind] + "); shown as text");
+    if (badPic.length) ctx.report("data", "[mapping] picture=\"" + kind + "\" cannot draw " + badPic.join(", ") + " (" + {dots: "x must be an integer 0–15", grapes: "x must be an integer 0–15", dice: "label must be a die face 1–6", coins: "label must be 1–6 of 表/裏 or H/T", balls: "label must be 1–6 of 赤/青/白/黒 (or R/B/W/K)"}[kind] + "); shown as text");
     // coins・balls は丸の中に字を書くので、名前は並べない
     var labelOf = function(o, i){ return (kind === "coins" || kind === "balls") && pics[i] ? "" : o.label; };
     var picW = max(pics.map(function(q){ return q ? q.w : 0; })), picH = max(pics.map(function(q){ return q ? q.h : 0; }));
