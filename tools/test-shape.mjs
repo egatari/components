@@ -38,6 +38,7 @@ const WRONG = {
   'm-timeline': '<script type="application/json">{"nodes": [{"label": "明治維新", "when": true}]}</script>',
   'm-cycle': '<script type="application/json">{"stages": [{"label": "計画"}, {"label": "実行"}]}</script>',
   'm-particles': '<script type="application/json">{"states": "solid"}</script>',
+  'm-sampling': '<script type="application/json">{"values": [1, "2"], "n": 2}</script>',
   'm-mapping': '<script type="application/json">{"outcomes": [{"label": "表", "x": "1"}, {"label": "裏", "x": 0}]}</script>',
   'm-orbit': '<script type="application/json">{"positions": "8"}</script>',
   'm-map-japan': '<script type="application/json">{"regions": [{"code": "13", "tone": "emph"}]}</script>',

@@ -61,10 +61,10 @@ document.addEventListener("DOMContentLoaded", function(){
 <div id="stage">
 
 <section class="slide">
-  <h2>部品の一覧（40 個、165 枚）</h2>
+  <h2>部品の一覧（41 個、169 枚）</h2>
   <div class="body">
     <p>部品ごとに、説明の 1 枚と見本のスライドが続く。→ で段階を進める。</p>
-    <p>m-mapping（新しい）　m-curves（変わった）　m-orbit（変わった）　m-bars　m-boxplot　m-cards　m-codetree　m-collect　m-compare　m-cycle　m-fishbone　m-flow　m-gendai　m-heatmap　m-hissan　m-hist　m-kakijun　m-kanbun　m-keyboard　m-kobun　m-kpi　m-map-japan　m-map-world　m-market　m-menu　m-numberline　m-particles　m-pie　m-predict　m-quad　m-scatter　m-score　m-seq　m-sweep　m-syntax　m-tape　m-timeline　m-timer　m-tree　m-venn</p>
+    <p>m-mapping（新しい）　m-sampling（新しい）　m-curves（変わった）　m-orbit（変わった）　m-bars　m-boxplot　m-cards　m-codetree　m-collect　m-compare　m-cycle　m-fishbone　m-flow　m-gendai　m-heatmap　m-hissan　m-hist　m-kakijun　m-kanbun　m-keyboard　m-kobun　m-kpi　m-map-japan　m-map-world　m-market　m-menu　m-numberline　m-particles　m-pie　m-predict　m-quad　m-scatter　m-score　m-seq　m-sweep　m-syntax　m-tape　m-timeline　m-timer　m-tree　m-venn</p>
   </div>
 </section>
 
@@ -102,6 +102,36 @@ document.addEventListener("DOMContentLoaded", function(){
   <h2>袋から玉を 2 個取り出す（戻さない）</h2>
   <div class="body"><m-mapping style="height:440px"><script type="application/json">{"outcomes":[{"label":"赤赤","x":2},{"label":"赤青","x":1},{"label":"青赤","x":1}],"name":"X","picture":"balls"}</script></m-mapping></div>
   <div class="concl"><span>赤 2 個・青 1 個から 2 個。X は赤の数</span></div>
+</section>
+
+<section class="slide">
+  <h2>m-sampling（新しい、v2.5.1）</h2>
+  <div class="body">
+    <p>母集団から標本を取り、比率・平均の標本分布を積む</p>
+    <ul>
+      <li>伝えたいこと：仕組みをモデルで見る・ばらつき</li>
+      <li>見せ方：1 種類</li>
+      <li>系列：数理・統計　見本のスライド：3 枚</li>
+    </ul>
+  </div>
+</section>
+
+<section id="g-sampling-1" class="slide">
+  <h2>玉を戻さずに 4 個取る（シミュレーション）</h2>
+  <div class="body"><m-sampling style="height:440px"><script type="application/json">{"balls":{"赤":3,"青":2},"of":"赤","n":4,"replace":false,"repeat":40,"seed":1}</script></m-sampling></div>
+  <div class="concl"><span>赤 3・青 2 の架空の袋。点は 1 回の標本比率</span></div>
+</section>
+
+<section id="g-sampling-2" class="slide">
+  <h2>玉を戻して 4 個取る（シミュレーション）</h2>
+  <div class="body"><m-sampling style="height:440px"><script type="application/json">{"balls":{"赤":3,"青":2},"of":"赤","n":4,"replace":true,"repeat":40,"seed":1}</script></m-sampling></div>
+  <div class="concl"><span>同じ架空の袋。戻さない場合と分布の広がりを比べる</span></div>
+</section>
+
+<section id="g-sampling-3" class="slide">
+  <h2>さいころ 2 回の平均（シミュレーション）</h2>
+  <div class="body"><m-sampling style="height:440px"><script type="application/json">{"values":[1,2,3,4,5,6],"n":2,"replace":true,"repeat":40,"seed":3}</script></m-sampling></div>
+  <div class="concl"><span>架空の試行。標本平均の点を積んで分布を作る</span></div>
 </section>
 
 <section class="slide">

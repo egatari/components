@@ -6,6 +6,7 @@ Versions follow [README.md § Releases and versions](README.md#releases-and-vers
 
 ### Added
 
+- `m-sampling` 2.0.0 (planned components 2.6.0, stats): seeded samples with or without replacement, proportions/means and an accumulating sampling distribution; Japanese/English text, accessible final state and size reports.
 - `m-mapping` 2.0.0 (planned components 2.6.0, stats): outcomes mapped to numerical values, grouped counts/probabilities and distribution bars; reported probability errors, Japanese/English text and accessible final state.
 - `m-particles` 2.0.0 (planned components 2.4.0, science): states of matter with fixed particle count and size, and chemical reactions with persistent atom identities, equations, conservation counts and reported invalid data.
 
