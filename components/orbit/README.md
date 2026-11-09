@@ -1,6 +1,6 @@
 ---
 name: m-orbit
-version: 2.0.3
+version: 2.0.4
 series: academic
 tier: specialized
 set: science
@@ -41,6 +41,7 @@ props: mode, hemisphere, sun, earth, moon, observer, size, dur
 見本は `demo.html`（月の 1 周、日食と月食、金星）。
 
 <!-- llm: omit -->
+- 光っている面と太陽はテーマの `--lit`（光とそれが照らすもの。形式 §8.4）で塗り、縁を付ける。テーマが持たなければ `--accent2` を地に混ぜた今までの色
 注意
 
 - 光っている側：見る人の左（上から見て反時計回り）が東。太陽が天体の西にあれば右が光る。南半球は左右を入れ替える

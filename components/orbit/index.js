@@ -11,7 +11,7 @@
 // 字は部品の中の表から授業の言語（ctx.lang）で選ぶ。データの labels・notes で位置ごとに上書きできる（null は表のまま、"" は字なし）。
 // eclipse（月だけ）：新月と満月の位置で、太陽・月・地球がそろったときの影（日食・月食）を描く。月の軌道の傾きは描かない（README）。
 // 2.0（Egatari spec §6.1 の部品）：base の MotionElement・el・prog・lerp だけを使い、プレイヤーのグローバルは使わない。
-egatariParts.define({name: "orbit", version: "2.0.3", requires: {base: "1.1.0"}, element: "m-orbit"}, function(deps){
+egatariParts.define({name: "orbit", version: "2.0.4", requires: {base: "1.1.0"}, element: "m-orbit"}, function(deps){
 "use strict";
 var base = deps.base;
 var TAU = 2 * Math.PI;
@@ -39,8 +39,9 @@ var VENUS_R = 0.723;
 // 光っている面と影の面の色（テーマの色だけ）。明るい地（地が字より明るい）：明るい面は --accent2 を地に薄く混ぜ、影の面は字の色を
 // 地に混ぜた灰。暗い地：明るい面は --accent2 を字の色に混ぜ、影の面は字の色を地に少し混ぜる。どちらの地でも明るい面が影の面より明るい
 var FILLS = {
-  light: {lit: "color-mix(in srgb, var(--accent2) 22%, var(--bg))", dark: "color-mix(in srgb, var(--fg) 42%, var(--bg))", eclipse: "var(--muted)"},
-  dark:  {lit: "color-mix(in srgb, var(--accent2) 55%, var(--fg))", dark: "color-mix(in srgb, var(--fg) 22%, var(--bg))", eclipse: "color-mix(in srgb, var(--muted) 45%, var(--bg))"},
+  // 光っている面はテーマの --lit（光とそれが照らすもの。形式 §8.4）。テーマが持たなければ今までの色
+  light: {lit: "var(--lit, color-mix(in srgb, var(--accent2) 22%, var(--bg)))", dark: "color-mix(in srgb, var(--fg) 42%, var(--bg))", eclipse: "var(--muted)"},
+  dark:  {lit: "var(--lit, color-mix(in srgb, var(--accent2) 55%, var(--fg)))", dark: "color-mix(in srgb, var(--fg) 22%, var(--bg))", eclipse: "color-mix(in srgb, var(--muted) 45%, var(--bg))"},
 };
 var Part = class extends base.MotionElement {
   static partName = "orbit";
@@ -272,7 +273,7 @@ var Part = class extends base.MotionElement {
     } else {
       D.el("circle", {cx: X(0), cy: Y(0), r: L.R, fill: "none", stroke: "var(--muted)", "stroke-width": 2, "stroke-dasharray": "6 6"}, fig);
       D.el("circle", {cx: X(0), cy: Y(0), r: L.R * VENUS_R, fill: "none", stroke: "var(--muted)", "stroke-width": 2, "stroke-dasharray": "6 6"}, fig);
-      D.el("circle", {cx: X(0), cy: Y(0), r: L.sr, fill: "var(--accent2)"}, fig);
+      D.el("circle", {cx: X(0), cy: Y(0), r: L.sr, fill: "var(--lit, var(--accent2))", stroke: "var(--muted)", "stroke-width": 1.5}, fig);
     }
     // 影（食）。render が濃さを決める
     this.shadow = D.el("path", {d: "", fill: "var(--fg)", opacity: 0}, fig);
@@ -314,7 +315,7 @@ var Part = class extends base.MotionElement {
     }
     // 右：地球から見た形
     var view = D.el("g", {}, svg);
-    this.vSun = D.el("circle", {cx: L.dcx, cy: L.dcy, r: L.dr, fill: "var(--accent2)", opacity: 0}, view);
+    this.vSun = D.el("circle", {cx: L.dcx, cy: L.dcy, r: L.dr, fill: "var(--lit, var(--accent2))", stroke: "var(--muted)", "stroke-width": 1.5, opacity: 0}, view);
     this.vDark = D.el("circle", {cx: L.dcx, cy: L.dcy, r: L.dr, fill: this.F.dark}, view);
     this.vLit = D.el("path", {d: "", fill: this.F.lit}, view);
     this.vRim = D.el("circle", {cx: L.dcx, cy: L.dcy, r: L.dr, fill: "none", stroke: "var(--muted)", "stroke-width": 2}, view);

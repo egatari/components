@@ -135,7 +135,8 @@ export function lintEn(name, dir, f, rtext, js) {
   } else if (shape && typeof shape.example === 'object' && /[\u3040-\u30ff\u4e00-\u9fff]/.test(JSON.stringify(shape.example))) errs.push(`${at}: no example (static shape.example has Japanese labels)`);
   const ja = packUnits({ body: rtext, summary: f.summary, steps: f.steps, docs: Object.values(props).map((p) => (p && p.doc) || ''), example: shape ? shape.example : undefined });
   const en = packUnits({ body: etext, summary: e.summary, steps: e.steps, docs: Object.values(e.props || {}), example: ex !== undefined ? ex : shape ? shape.example : undefined });
-  if (en > ja) errs.push(`${at}: ${en} paste units of pack-visible text, more than README.md's ${ja}; tighten the English`);
+  // Studio's gate counts the assembled entry (table rows, the JSON line): this pre-check runs about 2–3 % low there, so it keeps 3 % in hand
+  if (en > ja * 0.97) errs.push(`${at}: ${en} paste units of pack-visible text, over 97 % of README.md's ${ja}; tighten the English (Studio's gate is en ≤ ja)`);
   return errs;
 }
 
