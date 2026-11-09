@@ -61,11 +61,41 @@ document.addEventListener("DOMContentLoaded", function(){
 <div id="stage">
 
 <section class="slide">
-  <h2>部品の一覧（39 個、160 枚）</h2>
+  <h2>部品の一覧（40 個、164 枚）</h2>
   <div class="body">
     <p>部品ごとに、説明の 1 枚と見本のスライドが続く。→ で段階を進める。</p>
-    <p>m-curves（変わった）　m-orbit（変わった）　m-bars　m-boxplot　m-cards　m-codetree　m-collect　m-compare　m-cycle　m-fishbone　m-flow　m-gendai　m-heatmap　m-hissan　m-hist　m-kakijun　m-kanbun　m-keyboard　m-kobun　m-kpi　m-map-japan　m-map-world　m-market　m-menu　m-numberline　m-particles　m-pie　m-predict　m-quad　m-scatter　m-score　m-seq　m-sweep　m-syntax　m-tape　m-timeline　m-timer　m-tree　m-venn</p>
+    <p>m-mapping（新しい）　m-curves（変わった）　m-orbit（変わった）　m-bars　m-boxplot　m-cards　m-codetree　m-collect　m-compare　m-cycle　m-fishbone　m-flow　m-gendai　m-heatmap　m-hissan　m-hist　m-kakijun　m-kanbun　m-keyboard　m-kobun　m-kpi　m-map-japan　m-map-world　m-market　m-menu　m-numberline　m-particles　m-pie　m-predict　m-quad　m-scatter　m-score　m-seq　m-sweep　m-syntax　m-tape　m-timeline　m-timer　m-tree　m-venn</p>
   </div>
+</section>
+
+<section class="slide">
+  <h2>m-mapping（新しい、v2.5.1）</h2>
+  <div class="body">
+    <p>実験の結果を数値へ対応させ、同じ値になる結果をまとめて確率分布を作る</p>
+    <ul>
+      <li>伝えたいこと：仕組みをモデルで見る・まとめる・分ける</li>
+      <li>見せ方：1 種類</li>
+      <li>系列：数理・統計　見本のスライド：3 枚</li>
+    </ul>
+  </div>
+</section>
+
+<section id="g-mapping-1" class="slide">
+  <h2>硬貨を 2 回投げる</h2>
+  <div class="body"><m-mapping style="height:440px"><script type="application/json">{"outcomes":[{"label":"表表","x":2},{"label":"表裏","x":1},{"label":"裏表","x":1},{"label":"裏裏","x":0}],"name":"X"}</script></m-mapping></div>
+  <div class="concl"><span>X は表の数。同じ値になる結果の確率を足す</span></div>
+</section>
+
+<section id="g-mapping-2" class="slide">
+  <h2>さいころ：偶数なら 1、奇数なら 0</h2>
+  <div class="body"><m-mapping style="height:440px"><script type="application/json">{"outcomes":[{"label":"1","x":0},{"label":"2","x":1},{"label":"3","x":0},{"label":"4","x":1},{"label":"5","x":0},{"label":"6","x":1}],"name":"X"}</script></m-mapping></div>
+  <div class="concl"><span>偶数・奇数は 3 通りずつ。確率はどちらも 1/2</span></div>
+</section>
+
+<section id="g-mapping-3" class="slide">
+  <h2>ぶどうの等級を数にする（架空）</h2>
+  <div class="body"><m-mapping style="height:440px"><script type="application/json">{"outcomes":[{"label":"180g","x":0},{"label":"200g","x":0},{"label":"220g","x":1},{"label":"240g","x":1}],"name":"X","fractions":true}</script></m-mapping></div>
+  <div class="concl"><span>4 房から等確率で選ぶ。X=0 は B、X=1 は A</span></div>
 </section>
 
 <section class="slide">

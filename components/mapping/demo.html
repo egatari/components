@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="ja" data-theme="default">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>m-mapping の見本</title>
+</head>
+<body>
+<div id="stage">
+<section class="slide">
+  <h2>硬貨を 2 回投げる</h2>
+  <div class="body"><m-mapping style="height:440px"><script type="application/json">{"outcomes":[{"label":"表表","x":2},{"label":"表裏","x":1},{"label":"裏表","x":1},{"label":"裏裏","x":0}],"name":"X"}</script></m-mapping></div>
+  <div class="concl"><span>X は表の数。同じ値になる結果の確率を足す</span></div>
+</section>
+<section class="slide">
+  <h2>さいころ：偶数なら 1、奇数なら 0</h2>
+  <div class="body"><m-mapping style="height:440px"><script type="application/json">{"outcomes":[{"label":"1","x":0},{"label":"2","x":1},{"label":"3","x":0},{"label":"4","x":1},{"label":"5","x":0},{"label":"6","x":1}],"name":"X"}</script></m-mapping></div>
+  <div class="concl"><span>偶数・奇数は 3 通りずつ。確率はどちらも 1/2</span></div>
+</section>
+<section class="slide">
+  <h2>ぶどうの等級を数にする（架空）</h2>
+  <div class="body"><m-mapping style="height:440px"><script type="application/json">{"outcomes":[{"label":"180g","x":0},{"label":"200g","x":0},{"label":"220g","x":1},{"label":"240g","x":1}],"name":"X","fractions":true}</script></m-mapping></div>
+  <div class="concl"><span>4 房から等確率で選ぶ。X=0 は B、X=1 は A</span></div>
+</section>
+</div>
+</body>
+</html>

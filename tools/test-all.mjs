@@ -130,6 +130,7 @@ const TESTS = [
   ['test-icons', ['tools/test-icons.mjs', path.join(tmp, 'icons')]],
   ['test-cards', ['tools/test-cards.mjs', path.join(tmp, 'cards')]],
   ['test-particles', ['tools/test-particles.mjs', path.join(tmp, 'particles')]],
+  ['test-mapping', ['tools/test-mapping.mjs', path.join(tmp, 'mapping')]],
   ['test-orbit', ['tools/test-orbit.mjs', path.join(tmp, 'orbit')]],
   ['test-kanbun-num', ['tools/test-kanbun-num.mjs', path.join(tmp, 'kanbun-num')]],
   ['test-kanbun-fit', ['tools/test-kanbun-fit.mjs', path.join(tmp, 'kanbun-fit')]],
