@@ -2,6 +2,10 @@
 
 The part's own versions (Egatari spec §6.1). Releases of the whole library are in the repository's CHANGELOG.md.
 
+## 2.2.0 (components 2.6.0)
+
+- area / areaLabel per series: shade between the line and the x-axis over [a, b] or several spans (null = the axis edge), for rejection regions, p-values and probabilities, with a label above each span. It appears with the line's name, under the line.
+
 ## 2.1.1 (components 2.4.2)
 
 - Requires plot 1.1.1: the y-axis title no longer overlaps wide tick labels such as 1000 or 50000 (it moves left of them, widening the margin if needed).

@@ -61,11 +61,219 @@ document.addEventListener("DOMContentLoaded", function(){
 <div id="stage">
 
 <section class="slide">
-  <h2>部品の一覧（39 個、159 枚）</h2>
+  <h2>部品の一覧（45 個、178 枚）</h2>
   <div class="body">
     <p>部品ごとに、説明の 1 枚と見本のスライドが続く。→ で段階を進める。</p>
-    <p>m-orbit（変わった）　m-bars　m-boxplot　m-cards　m-codetree　m-collect　m-compare　m-curves　m-cycle　m-fishbone　m-flow　m-gendai　m-heatmap　m-hissan　m-hist　m-kakijun　m-kanbun　m-keyboard　m-kobun　m-kpi　m-map-japan　m-map-world　m-market　m-menu　m-numberline　m-particles　m-pie　m-predict　m-quad　m-scatter　m-score　m-seq　m-sweep　m-syntax　m-tape　m-timeline　m-timer　m-tree　m-venn</p>
+    <p>m-balance（新しい）　m-ci（新しい）　m-code（新しい）　m-folds（新しい）　m-mapping（新しい）　m-sampling（新しい）　m-curves（変わった）　m-orbit（変わった）　m-bars　m-boxplot　m-cards　m-codetree　m-collect　m-compare　m-cycle　m-fishbone　m-flow　m-gendai　m-heatmap　m-hissan　m-hist　m-kakijun　m-kanbun　m-keyboard　m-kobun　m-kpi　m-map-japan　m-map-world　m-market　m-menu　m-numberline　m-particles　m-pie　m-predict　m-quad　m-scatter　m-score　m-seq　m-sweep　m-syntax　m-tape　m-timeline　m-timer　m-tree　m-venn</p>
   </div>
+</section>
+
+<section class="slide">
+  <h2>m-balance（新しい、v2.5.1）</h2>
+  <div class="body">
+    <p>確率の重りを置き、支点が期待値でつり合う様子を示す</p>
+    <ul>
+      <li>伝えたいこと：仕組みをモデルで見る</li>
+      <li>見せ方：1 種類</li>
+      <li>系列：数理・統計　見本のスライド：1 枚</li>
+    </ul>
+  </div>
+</section>
+
+<section id="g-balance-1" class="slide">
+  <h2>期待値でつり合う（架空データ）</h2>
+  <div class="body"><m-balance style="height:440px"><script type="application/json">{"values":[0,1,2,3],"probs":[0.1,0.3,0.4,0.2],"name":"X"}</script></m-balance></div>
+  <div class="concl"><span>架空の分布。確率を重りとすると期待値が支点になる</span></div>
+</section>
+
+<section class="slide">
+  <h2>m-ci（新しい、v2.5.1）</h2>
+  <div class="body">
+    <p>正規標本の区間を重ね、母平均を含む割合で信頼水準を説明する</p>
+    <ul>
+      <li>伝えたいこと：仕組みをモデルで見る・ばらつき</li>
+      <li>見せ方：1 種類</li>
+      <li>系列：数理・統計　見本のスライド：1 枚</li>
+    </ul>
+  </div>
+</section>
+
+<section id="g-ci-1" class="slide">
+  <h2>95 % の区間を繰り返す（シミュレーション）</h2>
+  <div class="body"><m-ci style="height:440px"><script type="application/json">{"mu":50,"sigma":10,"n":25,"reps":40,"level":0.95,"seed":2}</script></m-ci></div>
+  <div class="concl"><span>架空の標本。95 % は繰り返した区間が μ を含む割合</span></div>
+</section>
+
+<section class="slide">
+  <h2>m-code（新しい、v2.5.1）</h2>
+  <div class="body">
+    <p>短いコードを行ごとに説明し、最後に出力を見せる</p>
+    <ul>
+      <li>伝えたいこと：手順・工程・仕組みをモデルで見る</li>
+      <li>見せ方：1 種類</li>
+      <li>系列：数理・統計　見本のスライド：2 枚</li>
+    </ul>
+  </div>
+</section>
+
+<section id="g-code-1" class="slide">
+  <h2>店ごとの売上平均を計算する</h2>
+  <div class="body"><m-code style="height:440px"><script type="application/json">{"lang":"python","code":"import pandas as pd\ndf = pd.read_csv(\"sales.csv\")\ndf.groupby(\"store\")[\"sales\"].mean()","steps":[{"lines":[1],"note":"pandas を読み込む"},{"lines":[2],"note":"CSV を表として読む"},{"lines":[3],"note":"店ごとの平均"}],"output":"store\nA    120.5\nB     98.0"}</script></m-code></div>
+  <div class="concl"><span>架空の売上データ。店ごとにまとめてから平均を求める</span></div>
+</section>
+
+<section id="g-code-2" class="slide">
+  <h2>繰り返しで平均を求める</h2>
+  <div class="body"><m-code style="height:440px"><script type="application/json">{"lang":"python","code":"def mean(values):\n    total = 0\n    for value in values:\n        total += value\n    return total / len(values)\n\nprint(mean([2, 4, 6]))","steps":[{"lines":[1,2],"note":"関数を定義し、合計を 0 にする"},{"lines":[3,4],"note":"値を一つずつ合計する"},{"lines":[5,7],"note":"個数で割り、関数の結果を表示"}],"output":"4.0"}</script></m-code></div>
+  <div class="concl"><span>合計を個数で割ると平均になる</span></div>
+</section>
+
+<section class="slide">
+  <h2>m-folds（新しい、v2.5.1）</h2>
+  <div class="body">
+    <p>検証用の区画を順に替え、各分割の誤差と平均を示す</p>
+    <ul>
+      <li>伝えたいこと：仕組みをモデルで見る・比べる（量・特徴）</li>
+      <li>見せ方：1 種類</li>
+      <li>系列：数理・統計　見本のスライド：1 枚</li>
+    </ul>
+  </div>
+</section>
+
+<section id="g-folds-1" class="slide">
+  <h2>検証する区画を替える（架空データ）</h2>
+  <div class="body"><m-folds style="height:440px"><script type="application/json">{"k":5,"errors":[0.21,0.18,0.25,0.19,0.22],"labels":["1","2","3","4","5"]}</script></m-folds></div>
+  <div class="concl"><span>架空の誤差。すべての区画を 1 回ずつ検証する</span></div>
+</section>
+
+<section class="slide">
+  <h2>m-mapping（新しい、v2.5.1）</h2>
+  <div class="body">
+    <p>実験の結果を数値へ対応させ、同じ値になる結果をまとめて確率分布を作る</p>
+    <ul>
+      <li>伝えたいこと：仕組みをモデルで見る・まとめる・分ける</li>
+      <li>見せ方：1 種類</li>
+      <li>系列：数理・統計　見本のスライド：4 枚</li>
+    </ul>
+  </div>
+</section>
+
+<section id="g-mapping-1" class="slide">
+  <h2>硬貨を 2 回投げる</h2>
+  <div class="body"><m-mapping style="height:440px"><script type="application/json">{"outcomes":[{"label":"表表","x":2},{"label":"表裏","x":1},{"label":"裏表","x":1},{"label":"裏裏","x":0}],"picture":"coins","name":"X"}</script></m-mapping></div>
+  <div class="concl"><span>X は表の数。同じ値になる結果の確率を足す</span></div>
+</section>
+
+<section id="g-mapping-2" class="slide">
+  <h2>さいころ：5 以上なら当たり（X = 1）</h2>
+  <div class="body"><m-mapping style="height:440px"><script type="application/json">{"outcomes":[{"label":"1","x":0},{"label":"2","x":0},{"label":"3","x":0},{"label":"4","x":0},{"label":"5","x":1},{"label":"6","x":1}],"name":"X","picture":"dice"}</script></m-mapping></div>
+  <div class="concl"><span>当たりは 6 通りのうち 2 通り。P(X = 1) = 1/3</span></div>
+</section>
+
+<section id="g-mapping-3" class="slide">
+  <h2>ぶどうの粒の数を X にする（架空）</h2>
+  <div class="body"><m-mapping style="height:440px"><script type="application/json">{"outcomes":[{"label":"房 A","x":3},{"label":"房 B","x":5},{"label":"房 C","x":3},{"label":"房 D","x":4}],"name":"X","picture":"grapes"}</script></m-mapping></div>
+  <div class="concl"><span>粒の数を数えると X の値になる</span></div>
+</section>
+
+<section id="g-mapping-4" class="slide">
+  <h2>袋から玉を 2 個取り出す（戻さない）</h2>
+  <div class="body"><m-mapping style="height:440px"><script type="application/json">{"outcomes":[{"label":"赤赤","x":2},{"label":"赤青","x":1},{"label":"青赤","x":1}],"name":"X","picture":"balls"}</script></m-mapping></div>
+  <div class="concl"><span>赤 2 個・青 1 個から 2 個。X は赤の数</span></div>
+</section>
+
+<section class="slide">
+  <h2>m-sampling（新しい、v2.5.1）</h2>
+  <div class="body">
+    <p>母集団から標本を取り、比率・平均の標本分布を積む</p>
+    <ul>
+      <li>伝えたいこと：仕組みをモデルで見る・ばらつき</li>
+      <li>見せ方：1 種類</li>
+      <li>系列：数理・統計　見本のスライド：3 枚</li>
+    </ul>
+  </div>
+</section>
+
+<section id="g-sampling-1" class="slide">
+  <h2>玉を戻さずに 4 個取る（シミュレーション）</h2>
+  <div class="body"><m-sampling style="height:440px"><script type="application/json">{"balls":{"赤":3,"青":2},"of":"赤","n":4,"replace":false,"repeat":40,"seed":1}</script></m-sampling></div>
+  <div class="concl"><span>赤 3・青 2 の架空の袋。点は 1 回の標本比率</span></div>
+</section>
+
+<section id="g-sampling-2" class="slide">
+  <h2>玉を戻して 4 個取る（シミュレーション）</h2>
+  <div class="body"><m-sampling style="height:440px"><script type="application/json">{"balls":{"赤":3,"青":2},"of":"赤","n":4,"replace":true,"repeat":40,"seed":1}</script></m-sampling></div>
+  <div class="concl"><span>同じ架空の袋。戻さない場合と分布の広がりを比べる</span></div>
+</section>
+
+<section id="g-sampling-3" class="slide">
+  <h2>さいころ 2 回の平均（シミュレーション）</h2>
+  <div class="body"><m-sampling style="height:440px"><script type="application/json">{"values":[1,2,3,4,5,6],"n":2,"replace":true,"repeat":40,"seed":3}</script></m-sampling></div>
+  <div class="concl"><span>架空の試行。標本平均の点を積んで分布を作る</span></div>
+</section>
+
+<section class="slide">
+  <h2>m-curves（変わった、v2.5.1）</h2>
+  <div class="body">
+    <p>同じ座標軸に線を 1 本ずつ引く（線の名前は凡例でなく線の端に直接書く）</p>
+    <ul>
+      <li>伝えたいこと：時間での変化</li>
+      <li>見せ方：1 種類</li>
+      <li>系列：標準パーツ　見本のスライド：4 枚</li>
+    </ul>
+  </div>
+</section>
+
+<section id="g-curves-1" class="slide">
+  <h2>予測分布と代表値</h2>
+  <div class="body">
+    <m-curves xr="[0,4]" yr="[0,0.8]" xt="[0,1,2,3,4]" yt="[0,0.2,0.4,0.6,0.8]" yf="1" xl="需要 *y*" yl="密度" style="height:420px">
+      <script type="application/json" id="pred-data">[]</script>
+    </m-curves>
+  </div>
+  <div class="concl"><span>→ 右に裾が長いと，平均は中央値より右に来る</span></div>
+</section>
+
+<section id="g-curves-2" class="slide">
+  <h2>損失関数の形</h2>
+  <div class="body">
+    <m-curves xr="[-2,2]" yr="[0,4]" xt="[-2,-1,0,1,2]" yt="[0,1,2,3,4]" xl="誤差 *u* = *y* − *a*" yl="損失" style="height:420px">
+      <script type="application/json">[
+        {"label": "二乗 *u*^2", "f": "x*x", "labelAt": 1.6, "anchor": "left", "dx": -14},
+        {"label": "絶対値 |*u*|", "f": "abs(x)", "labelAt": -2, "anchor": "right", "ly": 1.1},
+        {"label": "分位点（*τ* = 0.9）", "f": "x >= 0 ? 0.9*x : -0.1*x", "labelAt": -2, "anchor": "right", "dy": -6}
+      ]</script>
+    </m-curves>
+  </div>
+  <div class="concl"><span>→ どの損失を使うかで，最適な決定 <i>a</i> が変わる</span></div>
+</section>
+
+<section id="g-curves-3" class="slide">
+  <h2>需要が増えると（架空の例）</h2>
+  <div class="body">
+    <m-curves xr="[0,10]" yr="[0,12]" xt="[0,2,4,6,8,10]" yt="[0,3,6,9,12]" xl="数量 *Q*" yl="価格 *P*" style="height:420px">
+      <script type="application/json">[
+        {"label": "需要 D", "f": "10 - x", "tone": "term", "step": 1, "labelAt": 1.5, "anchor": "below"},
+        {"label": "供給 S", "f": "2 + x", "tone": "accent2", "step": 1, "labelAt": 8.5, "anchor": "left"},
+        {"label": "増えた需要 D′", "f": "13 - x", "tone": "emph", "step": 2, "labelAt": 2, "anchor": "right"},
+        {"label": "均衡", "pts": [[4, 0], [4, 6]], "tone": "muted", "dash": true, "step": 3, "anchor": "left", "ly": 1},
+        {"label": "新しい均衡", "pts": [[5.5, 0], [5.5, 7.5]], "tone": "emph", "dash": true, "step": 3, "anchor": "right", "ly": 1}
+      ]</script>
+    </m-curves>
+  </div>
+  <div class="concl"><span>→ 需要が増えると，価格も取引量も上がる</span></div>
+</section>
+
+<section id="g-curves-4" class="slide">
+  <h2>両側検定の棄却域</h2>
+  <div class="body">
+    <m-curves xr="[-4,4]" yr="[0,0.45]" xt="[-1.96,0,1.96]" xf="2" yt="[0,0.2,0.4]" xl="検定統計量 *z*" style="height:400px">
+      <script type="application/json">[
+        {"label": "標準正規分布", "f": "N(x, 0, 1)", "labelAt": 1, "anchor": "right", "area": [[null, -1.96], [1.96, null]], "areaLabel": "2.5 %", "tone": "term"}
+      ]</script>
+    </m-curves>
+  </div>
+  <div class="concl"><span>→ 両端の 5 % に入れば帰無仮説を棄却する</span></div>
 </section>
 
 <section class="slide">
@@ -665,58 +873,6 @@ document.addEventListener("DOMContentLoaded", function(){
     </div>
   </div>
   <div class="concl"><span>→ 書かなければ最初の見せ方（fade）になる。数字は架空</span></div>
-</section>
-
-<section class="slide">
-  <h2>m-curves</h2>
-  <div class="body">
-    <p>同じ座標軸に線を 1 本ずつ引く（線の名前は凡例でなく線の端に直接書く）</p>
-    <ul>
-      <li>伝えたいこと：時間での変化</li>
-      <li>見せ方：1 種類</li>
-      <li>系列：標準パーツ　見本のスライド：3 枚</li>
-    </ul>
-  </div>
-</section>
-
-<section id="g-curves-1" class="slide">
-  <h2>予測分布と代表値</h2>
-  <div class="body">
-    <m-curves xr="[0,4]" yr="[0,0.8]" xt="[0,1,2,3,4]" yt="[0,0.2,0.4,0.6,0.8]" yf="1" xl="需要 *y*" yl="密度" style="height:420px">
-      <script type="application/json" id="pred-data">[]</script>
-    </m-curves>
-  </div>
-  <div class="concl"><span>→ 右に裾が長いと，平均は中央値より右に来る</span></div>
-</section>
-
-<section id="g-curves-2" class="slide">
-  <h2>損失関数の形</h2>
-  <div class="body">
-    <m-curves xr="[-2,2]" yr="[0,4]" xt="[-2,-1,0,1,2]" yt="[0,1,2,3,4]" xl="誤差 *u* = *y* − *a*" yl="損失" style="height:420px">
-      <script type="application/json">[
-        {"label": "二乗 *u*^2", "f": "x*x", "labelAt": 1.6, "anchor": "left", "dx": -14},
-        {"label": "絶対値 |*u*|", "f": "abs(x)", "labelAt": -2, "anchor": "right", "ly": 1.1},
-        {"label": "分位点（*τ* = 0.9）", "f": "x >= 0 ? 0.9*x : -0.1*x", "labelAt": -2, "anchor": "right", "dy": -6}
-      ]</script>
-    </m-curves>
-  </div>
-  <div class="concl"><span>→ どの損失を使うかで，最適な決定 <i>a</i> が変わる</span></div>
-</section>
-
-<section id="g-curves-3" class="slide">
-  <h2>需要が増えると（架空の例）</h2>
-  <div class="body">
-    <m-curves xr="[0,10]" yr="[0,12]" xt="[0,2,4,6,8,10]" yt="[0,3,6,9,12]" xl="数量 *Q*" yl="価格 *P*" style="height:420px">
-      <script type="application/json">[
-        {"label": "需要 D", "f": "10 - x", "tone": "term", "step": 1, "labelAt": 1.5, "anchor": "below"},
-        {"label": "供給 S", "f": "2 + x", "tone": "accent2", "step": 1, "labelAt": 8.5, "anchor": "left"},
-        {"label": "増えた需要 D′", "f": "13 - x", "tone": "emph", "step": 2, "labelAt": 2, "anchor": "right"},
-        {"label": "均衡", "pts": [[4, 0], [4, 6]], "tone": "muted", "dash": true, "step": 3, "anchor": "left", "ly": 1},
-        {"label": "新しい均衡", "pts": [[5.5, 0], [5.5, 7.5]], "tone": "emph", "dash": true, "step": 3, "anchor": "right", "ly": 1}
-      ]</script>
-    </m-curves>
-  </div>
-  <div class="concl"><span>→ 需要が増えると，価格も取引量も上がる</span></div>
 </section>
 
 <section class="slide">
