@@ -6,10 +6,10 @@ props:
   size: Text px
 ---
 
-Child JSON:
+JSON:
 - `k`: integer 2–10.
-- `errors`: optional k non-negative errors.
-- `labels`: optional k names (1–k).
+- `errors`: k errors (optional).
+- `labels`: k names (optional).
 
 <!-- llm: omit -->
 Equal blocks. Row i validates block i: emph tint + outline; training: term tint. Legend explains outline. Blocks ≥40px: T/V. Names once above. Errors/mean: 2 decimals. Final rule and mean below errors; omitted errors leave completed splits at k+1.

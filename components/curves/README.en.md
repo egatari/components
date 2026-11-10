@@ -17,7 +17,7 @@ props:
 example: [{"label": "Demand D", "f": "10 - x"}, {"label": "Supply S", "f": "2 + x"}, {"label": "Equilibrium", "pts": [[4, 0], [4, 6]], "dash": true}]
 ---
 
-One comparison at a time in one figure: mean, median, quantiles; losses one by one.
+One comparison at a time: mean, median, quantiles; losses.
 
 Series: a JSON array in a child script. One series = one step; same `step` = together.
 
@@ -28,12 +28,13 @@ Series: a JSON array in a child script. One series = one step; same `step` = tog
 | `pts` | points `[[x, y], …]` |
 | `tone` | `term` `emph` `accent2` `muted` `fg` `series-1..4` |
 | `dash` | dashed |
-| `area` / `areaLabel` | shade to the x-axis over `[a, b]` or `[[a, b], …]` (null = edge); label per span |
+| `area` / `areaLabel` | shaded span `[a, b]` (several; null = edge), labels |
 | `labelAt` / `anchor` / `dx` / `dy` / `ly` | name at x = `labelAt` (default: end); `anchor` `right` `left` `above` `below`; `ly` = y |
 
 `f` is arithmetic, not code: numbers, `x`, `Math` functions/constants (`sin(x)`, `PI`; no `random`), `N(x, mean, sd)`, `+ - * / % **`, comparisons, `&& || !`, `? :`. Powers: `**`. An unreadable `f` shows a card.
 
 <!-- llm: omit -->
+- `area`: shades to y = 0; several spans; rejection regions, p-values; `areaLabel` per span
 Older forms (still work; not described to the AI)
 
 - `color` = `tone`; `at` = `labelAt` (only without `labelAt`)
