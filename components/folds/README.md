@@ -4,7 +4,7 @@ display: 交差検証 / Cross-validation
 version: 2.0.0
 series: academic
 tier: specialized
-set: stats
+set: data
 summary: 検証用の区画を順に替え、各分割の誤差と平均を示す
 steps: 分割を 1 行ずつ→平均（k + 1 段階）
 purposes: model, compare
