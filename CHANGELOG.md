@@ -14,6 +14,11 @@ Versions follow [README.md § Releases and versions](README.md#releases-and-vers
 - `m-mapping` 2.0.0 (planned components 2.6.0, stats): outcomes mapped to numerical values, grouped counts/probabilities and distribution bars; reported probability errors, Japanese/English text and accessible final state.
 - `m-particles` 2.0.0 (planned components 2.4.0, science): states of matter with fixed particle count and size, and chemical reactions with persistent atom identities, equations, conservation counts and reported invalid data.
 
+### Fixed
+
+- Unreleased `m-code` 2.0.0: automatic beside/band notes, 34px code rows at 24px, compact numbered print notes and separate numeric fit reports; document width/height budgets for real Python lines.
+- Unreleased `m-folds` 2.0.0: drop block letters and shrink rows to 32px before reporting; document minimum height (316px for k=5 with errors) and report measured fit limits.
+
 ### Later (candidates, not in this release)
 
 - `m-compare` `by="row"`; an "outside every set" region for `m-venn`; planned-vs-actual bars for `m-timeline`

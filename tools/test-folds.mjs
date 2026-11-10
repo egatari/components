@@ -37,7 +37,19 @@ for (const lang of ['ja', 'en']) for (const size of [24, 26, 32]) {
   const r = make(data, {size}, {clientHeight: size === 32 ? 560 : 440}, lang);
   ok(r.reports.length === 0, lang + ' size ' + size + ' fits'); common(r.el, lang + ' size ' + size);
 }
+for (const k of [2, 5, 10]) for (const hasErrors of [false, true]) {
+  const sample = {k, ...(hasErrors ? {errors: Array(k).fill(.1)} : {})};
+  const minimum = Math.ceil(99.4 + k * 32 + (hasErrors ? 56.1 : 4));
+  const fits = make(sample, {}, {clientHeight: minimum});
+  ok(!fits.reports.length && fits.el.geometry.minHeight === minimum && fits.el.geometry.row >= 32 && !fits.el.geometry.letters && fits.el.rows.every((r) => !/[学検]/.test(r.g.textContent)), 'k=' + k + ' minimum ' + minimum + 'px, errors=' + hasErrors + ': 32px rows omit block letters, preserve legend');
+  const short = make(sample, {}, {clientHeight: minimum - 1});
+  ok(short.reports.some((r) => r.code === 'size' && r.msg.includes('k = ' + k + ' needs at least ' + minimum + ' px height') && r.msg.includes('element has ' + (minimum - 1) + ' px')), 'one pixel below minimum reports k, required height and actual height');
+}
+const compact = make(data, {}, {clientHeight: 340}, 'en');
+ok(!compact.reports.length && compact.el.geometry.row > 32 && compact.el.geometry.row < c.geometry.row && !compact.el.geometry.letters && compact.el.header.textContent.includes('outline'), '340px shrinks rows and drops letters before reporting; English legend still explains validation');
 const labels = make({...data, labels: Array(5).fill('A very long block name')});
-ok(labels.reports.some((r) => r.code === 'size'), 'long block labels report size');
+ok(labels.reports.some((r) => r.code === 'size' && /label 1 needs \d+ px; block fits \d+ px/.test(r.msg)), 'long block labels report their index and numeric width limits');
+const legend = make(data, {}, {clientWidth: 280});
+ok(legend.reports.some((r) => /legend needs \d+ px width; element has 280 px/.test(r.msg)), 'legend reports numeric required and actual width');
 ok(walk(c.svg).filter((e) => e.localName === 'rect').every((e) => +e.getAttribute('width') > 0), 'all blocks have positive widths');
 await finish();

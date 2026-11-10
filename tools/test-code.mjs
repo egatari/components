@@ -73,7 +73,7 @@ for (const outputPos of ['below', 'right', 'auto']) {
 const below = make({code: 'x = 1\n'.repeat(8) + 'print(x)', steps: [], output: '1'}, {}, {clientHeight: 800});
 ok(!below.el.geometry.right && !below.reports.length, 'auto uses below for longer program');
 const overflow = make({code: Array.from({length: 20}, () => 'x'.repeat(100)).join('\n'), steps: [], output: Array.from({length: 10}, () => 'output').join('\n')}, {outputPos: 'right'}, {clientHeight: 900});
-ok(overflow.reports.filter((r) => r.code === 'layout').length === 2 && overflow.el.numbers.length === 16 && texts(overflow.el.codeLayer).some((n) => n.textContent.includes('…')) && texts(overflow.el.outputLayer).some((n) => n.textContent.includes('…')), 'long code/output reported and cut to line and width limits with ellipses');
+ok(overflow.reports.filter((r) => r.code === 'layout').length === 3 && overflow.el.numbers.length === 16 && texts(overflow.el.codeLayer).some((n) => n.textContent.includes('…')) && texts(overflow.el.outputLayer).some((n) => n.textContent.includes('…')), 'line count, width and output report separately; visible text has ellipses');
 ok(overflow.el.children.find((n) => n.localName === 'pre').textContent.includes('x'.repeat(100)), 'truncation preserves full accessible program');
 range.render(range.steps, range.props.dur / 2);
 ok(+range.bands[1].getAttribute('opacity') > 0 && range.notes[0].labels[0].getAttribute('style').includes('--muted'), 'without output, the last note still highlights its lines during its step');
@@ -82,10 +82,67 @@ ok(range.bands.every((b) => b.getAttribute('opacity') === '0') && range.notes.ev
 const clippedHeight = make({code: 'x = 1\n'.repeat(15) + 'print(x)', steps: []});
 ok(clippedHeight.reports.some((r) => r.code === 'layout') && clippedHeight.el.numbers.length < 16 && texts(clippedHeight.el.codeLayer).some((n) => n.textContent.includes('…')), 'height truncation reports and marks the last visible line');
 const tiny = make(example, {}, {clientWidth: 80, clientHeight: 40}); tiny.el.render(5, Infinity);
-ok(tiny.reports.some((r) => r.code === 'size') && tiny.el.svg.children.length === 0, 'unusable box reports size without drawing overlapping panels');
+ok(tiny.reports.some((r) => r.code === 'size') && tiny.el.codeLayer.textContent.includes('…') && tiny.el.svg.getAttribute('style').includes('overflow:hidden'), 'unusable box reports size and retains a clipped ellipsis');
 const noRoom = make({code: 'pass', steps: Array.from({length: 10}, () => ({lines: [1], note: 'Note'}))});
-ok(noRoom.reports.some((r) => r.code === 'layout') && noRoom.el.notes.some((n) => !n.fits && !n.labels.length), 'notes out of room report and omit overflowing boxes');
+ok(!noRoom.reports.length && noRoom.el.noteLayout === 'band' && noRoom.el.notes.every((n) => n.labels.length), 'notes that cannot stack beside code switch to a compact band');
 ok(make(example, {}, {clientWidth: 280, clientHeight: 120}).reports.some((r) => r.code === 'size'), 'small box reports size');
+// Eval B: real Python lines, compact note bands and actionable, independent reports.
+const python = {
+  lang: 'python',
+  code: ['from sklearn.tree import DecisionTreeClassifier', 'from sklearn.model_selection import cross_val_score', 'X, y = load_data()', 'model = DecisionTreeClassifier(max_depth=3, random_state=0)', 'scores = cross_val_score(model, X, y, cv=5)', 'print(scores)', 'print(scores.mean())'].join('\n'),
+  steps: [{lines: [1, 2], note: '必要な道具を準備'}, {lines: [3, 4], note: '深さを決めて学習'}, {lines: [5, 7], note: '分割して精度を検証'}]
+};
+ok(python.code.split('\n')[3].length === 59, 'regression fixture has a 59-character line');
+for (const height of [380, 440]) {
+  const r = make(python, {}, {clientHeight: height});
+  ok(!r.reports.length && r.el.noteLayout === 'band' && r.el.numbers.length === 7 && r.el.geometry.row === 34, '59-character Python, 7 lines at ' + height + 'px fits the band without reports');
+  r.el.render(3, Infinity);
+  ok(r.el.notes.filter((n) => +n.g.getAttribute('opacity') > 0).length === 1 && r.el.notes[1].g.textContent.includes('3–4 行目') && +r.el.bands[1].getAttribute('opacity') === 1, 'band replaces earlier notes and retains line-range highlighting');
+  r.el.render(r.el.steps, Infinity);
+  ok(+r.el.finalNotes.getAttribute('opacity') === 1 && r.el.finalNotes.textContent.includes('1–2：必要') && r.el.finalNotes.textContent.includes('5–7：分割') && r.el.notes.every((n) => +n.g.getAttribute('opacity') === 0), 'print shows each note with its line range, in the band');
+}
+const bandEn = make({...python, steps: [{lines: [3, 4], note: 'Set the tree depth'}]}, {}, {}, 'en').el;
+bandEn.render(2, .3);
+ok(bandEn.notes[0].g.textContent.includes('lines 3–4'), 'English band has a line-range marker');
+const withOutput = {...python, output: '0.91\n0.92'};
+const outputBelow = make(withOutput, {outputPos: 'below'});
+ok(!outputBelow.el.geometry.right && outputBelow.reports.some((r) => /7 lines; this height fits 4.*520 px/.test(r.msg)), 'wide code places output below band and reports its full 520px height requirement');
+const lower = make(withOutput, {outputPos: 'below'}, {clientHeight: 380});
+ok(lower.reports.some((r) => /7 lines; this height fits 2.*520 px/.test(r.msg)), '380px with below output reports numeric line capacity and required height');
+const sixty = make({...python, code: Array(7).fill('x'.repeat(60)).join('\n')});
+ok(!sixty.reports.length && sixty.el.noteLayout === 'band' && !sixty.el.codeLayer.textContent.includes('…'), '60-character lines use the band width without truncation');
+const enoughBelow = make(withOutput, {outputPos: 'below'}, {clientHeight: 520});
+const besideOut = make(withOutput);
+ok(besideOut.el.geometry.right, 'a short output goes beside wide code when it fits the width');
+ok(!enoughBelow.reports.length && +enoughBelow.el.outputLayer.children[0].getAttribute('y') > enoughBelow.el.notes[0].top + enoughBelow.el.notes[0].height, 'wide Python and two-line output fit at the reported height; output follows band');
+const medium = {code: Array(9).fill('x'.repeat(45)).join('\n'), steps: [{lines: [3, 4], note: 'A short note'}], output: '1\n2'};
+const nine = make(medium);
+ok(!nine.reports.length && nine.el.noteLayout === 'band' && nine.el.geometry.right && nine.el.numbers.length === 9, '440px holds nine code lines, a note band and two-line output on the right');
+const wideOutput = make({code: 'x'.repeat(50), steps: Array.from({length: 4}, () => ({lines: [1], note: 'Short'})), output: 'x'.repeat(20)});
+ok(!wideOutput.reports.length && wideOutput.el.noteLayout === 'band' && wideOutput.el.geometry.right, 'band output uses available right-side width beyond 30% instead of truncating unnecessarily');
+const table = [[380, 7], [440, 9], [540, 12], [680, 16]];
+for (const [height, n] of table) {
+  const r = make({...medium, code: Array(n).fill('x'.repeat(45)).join('\n')}, {}, {clientHeight: height});
+  ok(!r.reports.length && r.el.numbers.length === n, 'documented height ' + height + 'px fits ' + n + ' band-mode lines with output right');
+}
+const sixteen = make({...medium, code: Array(16).fill('x'.repeat(45)).join('\n')});
+ok(sixteen.reports.some((r) => r.msg === '[code] 16 lines; this height fits 9 (give the element about 676 px, or show fewer lines)') && sixteen.el.numbers.length === 9, '16 lines at 440px report actual capacity and needed height');
+const wide = make({code: 'x'.repeat(90), steps: [{lines: [1], note: 'Short'}]});
+ok(wide.reports.length === 1 && /longest line is 90 characters; this width fits 77 at 24px/.test(wide.reports[0].msg) && wide.el.codeLayer.textContent.includes('…'), '90-character code reports numeric width capacity and remains drawn');
+const longNote = make({...python, steps: [{lines: [1], note: '長い説明'.repeat(50)}]});
+ok(longNote.reports.some((r) => /note 1 is too long for the band \(\d+ px of \d+\); shorten it to about \d+ characters/.test(r.msg)) && longNote.el.notes[0].g.textContent.endsWith('…'), 'long band note reports index, measured width, capacity and target length; draws ellipsis');
+const manyNotes = make({...python, steps: Array.from({length: 30}, (_, i) => ({lines: [1], note: '説明その' + i}))}, {}, {clientHeight: 380});
+manyNotes.el.render(manyNotes.el.steps, Infinity);
+ok(manyNotes.reports.some((r) => /30 final notes need \d+ px.*\d+ px available.*showing the last note/.test(r.msg)) && manyNotes.el.finalNotes.textContent.includes('1：説明その29') && !manyNotes.el.finalNotes.textContent.includes('説明その0'), 'final list overflow reports required band height and keeps only the last note');
+for (const el of [bandEn, nine.el, outputBelow.el, manyNotes.el]) {
+  let stable = true;
+  for (let k = 0; k <= el.steps; k++) for (const t of [0, .3, Infinity]) for (const preview of [false, true]) {
+    el.render(k, t, {preview}); const html = el.innerHTML;
+    el.render(el.steps, Infinity); el.render(0, 0); el.render(k, t, {preview});
+    stable &&= html === el.innerHTML && !/NaN|Infinity|undefined/.test(el.svg.outerHTML);
+  }
+  ok(stable, 'band layout is finite and deterministic through arbitrary seeks and preview');
+}
 const invalid = make(example, {dur: -1, size: 23, outputPos: 'left'});
 ok(invalid.reports.filter((r) => r.code === 'attr').length === 3 && invalid.el.props.dur === .6 && invalid.el.fs === 24, 'bad props report/default');
 for (const lang of ['python', 'r', 'shell', 'js', 'javascript', 'PYTHON']) {
