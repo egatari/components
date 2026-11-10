@@ -9,11 +9,12 @@ props:
 example: {"question": "Which falls first?", "choices": [{"label": "Heavy"}, {"label": "Light"}, {"label": "Same"}], "answer": 2, "counts": [14, 3, 9], "note": "No air: same"}
 ---
 
-Child JSON: `{"question", "choices": [{"label", "tone"?}], "answer": 0-based, "counts"?: [sample], "note"?: answer line}`
+Child JSON: `{"question", "choices": [{"label", "tone"?}], "answer": 0-based, "counts"?: [sample], "note"?: answer line, "labels"?: {"correct"?: mark text}}`
 
 - 2–6 choices. Video/print/start show `counts` (or 0)
 - Script uses `counts`; vote at `{note:hands up}` (parens get read)
 - `poll="p1"`: live poll totals
+- `labels.correct` (optional): mark text (default "✓ Correct")
 
 <!-- llm: omit -->
 Notes for authors of parts (check with dev)
@@ -29,4 +30,5 @@ Notes for authors of parts (check with dev)
 - `static interactive = true`, `static viewerInput = true` → manifest
 - Keys: `+` `-` `↑` `↓` (buttons also `←` `→`); no digit keys; Esc/Enter leave the field
 - No controls in video; hidden in print
+- UI text (mark, labels, announcements) follows ctx.lang (TEXT in index.js); `labels.correct` overrides the mark and its width estimate
 <!-- llm: end -->

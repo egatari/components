@@ -2,6 +2,11 @@
 
 The part's own versions (Egatari spec §6.1). Releases of the whole library are in the repository's CHANGELOG.md.
 
+## 2.1.0 (components 2.7.0)
+
+- Every built-in UI text (the correct mark, the live poll heading, the pick/count aria-labels, the −1/+1 aria-labels, the note's right/wrong prefix and the aria-live announcements) now follows `ctx.lang` (TEXT.ja / TEXT.en in index.js); only `ja` gets the Japanese text, anything else (including no `lang`) gets English. Question, choice labels and `note` stay the author's own text either way.
+- Added the optional child JSON field `labels.correct`, overriding the correct mark's text (default "✓ Correct"/「✓ 正解」); the mark's width estimate (okW) follows whichever string is drawn. Style id predict-2-1-0-css.
+
 ## 2.0.5 (components 2.6.2)
 
 - The answer-step doc is shorter in English (`2 or more (default 2); after the step-1 count`) so the English pack text is not longer than the Japanese (Studio's check); the Japanese says ステップ (the glossary term) instead of 段階.

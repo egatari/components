@@ -12,10 +12,10 @@
 // 2.0（Egatari spec §6.1 の部品）：base の MotionElement・el・prog を使い、プレイヤーのグローバルは使わない。
 //   延長を戻すのは ctx.entered だけ（1.x の deck:pos の代わりはない）。日本語かどうかは mount の ctx.lang、動画かどうかは ctx.mode。
 //   要素の大きさの問題は ctx.report("size", …)。印刷の前後は document.defaultView の beforeprint・afterprint
-egatariParts.define({name: "timer", version: "2.0.3", requires: {base: "1.1.0"}, element: "m-timer"}, function(deps){
+egatariParts.define({name: "timer", version: "2.0.4", requires: {base: "1.1.0"}, element: "m-timer"}, function(deps){
 "use strict";
 var base = deps.base;
-var CSS_ID = "timer-2-0-3-css";   // the style element this part writes, named with its name and version (spec §6.1 Identifiers)
+var CSS_ID = "timer-2-0-4-css";   // the style element this part writes, named with its name and version (spec §6.1 Identifiers)
 var JA = {ready: "準備の確認", total: "合計", remaining: "残り", done: "時間", start: "準備ができたら　→ キーでスタート", next: "終了　→ キーで次へ", end: "終了",
           min: "分", sec: "秒", plus: "＋1 分", minus: "−1 分"};
 var EN = {ready: "Ready?", total: "Total", remaining: "Remaining", done: "Time's up", start: "When ready, press → to start", next: "Time's up. Press → for the next", end: "Time's up",
@@ -261,7 +261,7 @@ return class extends base.MotionElement {
       r.tx.style.fill = done ? "var(--muted)" : "var(--fg)";
       r.tx.setAttribute("font-weight", cur ? "700" : "400");
     });
-    var s = !run ? "" : finished ? h.title + "：" + L.done : h.title;
+    var s = !run ? "" : finished ? h.title + (this.ja ? "：" : ": ") + L.done : h.title;
     if (this._said !== s && !this.video){ this._said = s; this.say.textContent = s; }
   }
 };

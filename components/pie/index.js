@@ -9,7 +9,7 @@
 // grow（中心から少し小さい大きさで現れて元の大きさに戻る）。段階の数・長さ・最後の中身は同じ
 // 2.0（Egatari spec §6.1 の部品）：base の MotionElement・el・mtext・prog・variant・previewOpacity を使い、プレイヤーのグローバルは使わない。
 // 負の値と、字が収まらないことは ctx.report で知らせる（1.x の console.warn の代わり）
-egatariParts.define({name: "pie", version: "2.0.2", requires: {base: "1.1.0"}, element: "m-pie"}, function(deps){
+egatariParts.define({name: "pie", version: "2.0.3", requires: {base: "1.1.0"}, element: "m-pie"}, function(deps){
 "use strict";
 var base = deps.base;
 return class extends base.MotionElement {
@@ -49,6 +49,7 @@ return class extends base.MotionElement {
   }
   mount(ctx){
     var P = this.props, D = base, self = this, pl = this.plan(), d = this.data || {};
+    var ja = /^ja\b/i.test(ctx.lang || "ja");
     this.variant = base.variant(this);
     this.style.display = "block"; this.style.position = "relative";
     var W = this.clientWidth, H = this.clientHeight, TAU = Math.PI * 2;
@@ -68,7 +69,7 @@ return class extends base.MotionElement {
     var sl = this.slices = pl.map(function(o, i){
       var v = Math.max(0, +o.s.value), a0 = acc / total * TAU; acc += v;
       var a1 = acc / total * TAU, pct = (fl[i] / sc).toFixed(pd) + "%", val = self.fmt(v);
-      var sub = show === "pct" ? pct : show === "value" ? val : show === "both" ? val + "（" + pct + "）" : "";
+      var sub = show === "pct" ? pct : show === "value" ? val : show === "both" ? val + (ja ? "（" + pct + "）" : " (" + pct + ")") : "";
       var lines = [];
       if (o.s.label) lines.push({t: o.s.label, size: 26, bold: true});
       if (sub) lines.push({t: sub, size: 24, bold: false});
@@ -131,7 +132,7 @@ return class extends base.MotionElement {
     // 読み上げ：最後の形（すべての切れ）を 1 文で。作者の aria-label があればそれを使う（上書きしない）
     if (this._aria === undefined) this._aria = this.getAttribute("aria-label");
     this.setAttribute("role", "img");
-    if (!this._aria) this.setAttribute("aria-label", this.summary(/^ja\b/i.test(ctx.lang || "ja"), sl, fl, sc, pd, show, total));
+    if (!this._aria) this.setAttribute("aria-label", this.summary(ja, sl, fl, sc, pd, show, total));
     // 1 切れずつ出すときは、全体の輪郭を初めから薄く見せる（どれだけのうちの 1 切れかが分かるように）
     if (pl.some(function(o){ return o.step > 1; })){
       D.el("circle", {cx: cx, cy: cy, r: R, fill: "none", stroke: "var(--line)", "stroke-width": 2}, svg);

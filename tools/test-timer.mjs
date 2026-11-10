@@ -60,7 +60,7 @@ try {
       DECK.seek(0, 0, Infinity); o.ready = __v(c);
       DECK.seek(0, 1, 30); o.t30 = __v(c);
       DECK.seek(0, 1, 31.2); o.t31 = __v(c).clock;
-      DECK.seek(0, 1, Infinity); o.end1 = __v(c);
+      DECK.seek(0, 1, Infinity); o.end1 = __v(c); o.say1 = c.say.textContent;
       DECK.seek(0, 3, Infinity); o.end3 = __v(c);
       o.listDone = c.rows.map((x) => x.tx.style.fill);
       o.buttons = document.querySelectorAll('m-timer button').length;
@@ -72,6 +72,7 @@ try {
     ok(r.t30.clock === '1:00' && r.t30.lab === '残り' && r.t30.foot === '', 't = 30 s of 90: 1:00 remaining');
     ok(r.t31 === '0:59', 't = 31.2 s: 0:59 (rounded up to the second)');
     ok(r.end1.clock === '0:00' && r.end1.lab === '時間' && /次へ/.test(r.end1.foot), 'final state of a phase: 0:00, 時間, → for the next');
+    ok(r.say1 === '① 付箋に書く：時間', 'ja: the finished announcement joins title and "done" with a full-width colon: ' + r.say1);
     ok(r.end3.foot === '終了', 'final state of the last phase: 終了');
     ok(r.listDone.slice(0, 2).every((f) => f === 'var(--muted)') && r.listDone[2] === 'var(--fg)', 'finished phases are --muted in the list (not transparent)');
     ok(r.ready.rows[0] === '1　1分30秒　付箋に書く' && r.ready.rows[1] === '2　15秒　島で読み上げる', 'Japanese list: 1分30秒, 15秒');
@@ -82,9 +83,10 @@ try {
   }
   {
     const { page } = await open(enOut);
-    const r = await page.evaluate(() => { const c = __c(0); DECK.seek(0, 0, Infinity); const a = __v(c); DECK.seek(0, 1, 10); const b = __v(c); DECK.seek(0, 1, Infinity); return { a, b, e: __v(c) }; });
+    const r = await page.evaluate(() => { const c = __c(0); DECK.seek(0, 0, Infinity); const a = __v(c); DECK.seek(0, 1, 10); const b = __v(c); DECK.seek(0, 1, Infinity); return { a, b, e: __v(c), say: c.say.textContent }; });
     ok(r.a.lab === 'Total' && /press → to start/.test(r.a.foot) && r.a.rows[0] === '1  1 min 30 s  付箋に書く', 'English deck: Total, press → to start, 1 min 30 s');
     ok(r.b.lab === 'Remaining' && r.e.lab === "Time's up", 'English deck: Remaining, Time\'s up');
+    ok(r.say === '① 付箋に書く: Time\'s up' && !r.say.includes('：'), 'English deck: the finished announcement joins title and "Time\'s up" with ": " (no full-width colon): ' + r.say);
     await page.close();
   }
 

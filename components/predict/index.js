@@ -15,10 +15,45 @@
 // 2.0（Egatari spec §6.1 の部品）：base の MotionElement・el・mtext・prog・variant を使い、プレイヤーのグローバルは使わない。
 //   見る人の入力を戻すのは ctx.entered だけ（1.x の deck:pos の代わりはない）。動画かどうかは mount の ctx.mode。
 //   要素の大きさの問題は ctx.report("size", …)。印刷の前後は document.defaultView の beforeprint・afterprint
-egatariParts.define({name: "predict", version: "2.0.5", requires: {base: "1.1.0"}, element: "m-predict"}, function(deps){
+egatariParts.define({name: "predict", version: "2.1.0", requires: {base: "1.1.0"}, element: "m-predict"}, function(deps){
 "use strict";
 var base = deps.base;
-var CSS_ID = "predict-2-0-3-css";   // the style element this part writes, named with its name and version (spec §6.1 Identifiers)
+// 表示の文字（ctx.lang、見る人の言語ではなく文書の言語）。correct は子の JSON の labels.correct で上書きできる
+var TEXT = {
+  ja: {
+    correct: "✓ 正解",
+    noteWrong: "予想ははずれ。", noteRight: "予想は当たり。",
+    liveResults: "投票の結果",
+    guessLabel: function(label){ return "予想：" + label; },
+    countGroup: function(label){ return label + "の数"; },
+    countField: function(label, unit){ return label + "の数" + (unit ? "（" + unit + "）" : ""); },
+    decrease: function(label){ return label + "：1 減らす"; },
+    increase: function(label){ return label + "：1 増やす"; },
+    countAnnounce: function(label, v, unit){ return label + "：" + v + unit; },
+    unpicked: "予想を外しました",
+    pickedRight: function(label){ return "当たり：" + label; },
+    pickedWrong: function(label){ return "はずれ。答えは " + label; },
+    myGuess: function(label){ return "あなたの予想：" + label; },
+    answerAnnounce: function(label, note){ return "答え：" + label + (note ? "。" + note : ""); },
+  },
+  en: {
+    correct: "✓ Correct",
+    noteWrong: "Wrong. ", noteRight: "Right! ",
+    liveResults: "Poll results",
+    guessLabel: function(label){ return "Guess: " + label; },
+    countGroup: function(label){ return label + " count"; },
+    countField: function(label, unit){ return label + " count" + (unit ? " (" + unit + ")" : ""); },
+    decrease: function(label){ return label + ": decrease by 1"; },
+    increase: function(label){ return label + ": increase by 1"; },
+    countAnnounce: function(label, v, unit){ return label + ": " + v + (unit ? " " + unit : ""); },
+    unpicked: "Guess cleared",
+    pickedRight: function(label){ return "Correct: " + label; },
+    pickedWrong: function(label){ return "Wrong. The answer is " + label; },
+    myGuess: function(label){ return "My guess: " + label; },
+    answerAnnounce: function(label, note){ return "Answer: " + label + (note ? ". " + note : ""); },
+  }
+};
+var CSS_ID = "predict-2-1-0-css";   // the style element this part writes, named with its name and version (spec §6.1 Identifiers)
 var CSS = [
   "m-predict .pd-say{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}",
   "m-predict .pd-pick{position:absolute;background:transparent;border:0;border-radius:10px;cursor:pointer;padding:0;margin:0}",
@@ -43,7 +78,8 @@ return class extends base.MotionElement {
         label: {type: "string"}, tone: {type: "string"}}}},
       answer: {type: "integer"},
       counts: {type: "array", items: {type: "integer"}},
-      note: {type: "string"}}},
+      note: {type: "string"},
+      labels: {type: "object", additionalProperties: false, properties: {correct: {type: "string"}}}}},
     example: {question: "重い球と軽い球、どちらが先に落ちる？", choices: [{label: "重い球"}, {label: "軽い球"}, {label: "同時"}], answer: 2, counts: [14, 3, 9], note: "空気の抵抗を除けば同時に落ちる"},
     note: {en: "choices are objects {\"label\": …} (not strings); answer is the 0-based index of the right choice; counts (optional) has one whole number ≥ 0 per choice",
            ja: "choices は {\"label\": …} の並び（字の並びではない）。answer は正しい選択肢の番号（0 から数える）。counts（省略可）は選択肢ごとに 0 以上の整数を 1 つずつ"},
@@ -64,6 +100,7 @@ return class extends base.MotionElement {
   }
   mount(ctx){
     var self = this, d = this.data || {}, n = (d.choices || []).length;
+    this.T = /^ja\b/i.test(ctx.lang || "") ? TEXT.ja : TEXT.en;
     if (!(d.answer >= 0 && d.answer < n)) throw new Error("answer " + d.answer + " is not a choice index (0–" + (n - 1) + ")");
     if (d.counts && d.counts.length !== n) throw new Error("counts has " + d.counts.length + " numbers for " + n + " choices");
     if (d.counts && d.counts.some(function(v){ return v < 0; })) throw new Error("counts must be 0 or more");
@@ -106,7 +143,8 @@ return class extends base.MotionElement {
   }
   // 大きさで決まる絵と操作を作る。数と予想（見る人の入力）・読み上げの知らせは残す（フォーカスは layout が戻す）
   place(ctx){
-    var self = this, P = this.props, D = base, d = this.data || {}, ch = d.choices || [], n = ch.length;
+    var self = this, P = this.props, D = base, d = this.data || {}, ch = d.choices || [], n = ch.length, T = this.T;
+    var correctLabel = (d.labels && d.labels.correct) || T.correct;
     var W = this.clientWidth, H = this.clientHeight, inter = !this.video;
     if (this.svg){
       this.svg.remove();
@@ -122,7 +160,7 @@ return class extends base.MotionElement {
     var mk = inter ? 40 : 0, LS = 26;
     var lw = Math.min(W * 0.34, Math.max.apply(null, ch.map(function(c){ return est(c.label, LS, true); })) + 16);
     var cw = inter ? 232 : 0;
-    var valW = est("9999" + P.unit, 26) + 12, okW = est("✓ 正解", 26) + 16;
+    var valW = est("9999" + P.unit, 26) + 12, okW = est(correctLabel, 26) + 16;
     // 棒の軸の長さ：選択肢の名前・数・「正解」・操作の残り。BARMIN px より短ければ知らせ、その長さは残す（負の長さで棒が消え、目盛りが重ならないように）
     var x0 = mk + lw + 8, x1 = W - cw - valW - okW - 8, BARMIN = 120;
     if (x1 < x0 + BARMIN){ ctx.report("size", "[predict] the element is " + W + " px wide; the bars get " + Math.round(x1 - x0) + " px, less than " + BARMIN + " (make it about " + Math.ceil(W + x0 + BARMIN - x1) + " px wide or shorten the labels)"); x1 = x0 + BARMIN; }
@@ -160,38 +198,38 @@ return class extends base.MotionElement {
         label: fitText(D.mtext(svg, mk + lw, cy + 9, c.label, {"text-anchor": "end", "font-size": LS}), c.label, lw - 8, LS, "label " + JSON.stringify(c.label), true),
         val: D.el("text", {"font-size": 26, "font-weight": 700, y: (cy + 9).toFixed(1), opacity: 0, style: "font-variant-numeric:tabular-nums"}, svg)};
       if (i === d.answer) r.ok = D.el("text", {"font-size": 26, "font-weight": 700, y: (cy + 9).toFixed(1), fill: "var(--emph)", opacity: 0}, svg);
-      if (r.ok) r.ok.textContent = "✓ 正解";
+      if (r.ok) r.ok.textContent = correctLabel;
       return r;
     });
     this.bw = bw;
     // 注（答えと一緒に）と、予想の当たり外れ（見る人が予想したときだけ）
     this.noteEl = D.el("text", {x: 0, y: H - 14, "font-size": 26, opacity: 0}, svg);
     this.noteText = d.note || "";
-    if (d.note) fitText(this.noteEl, "予想ははずれ。" + d.note, W - 8, 26, "note");
+    if (d.note){ var notePrefix = est(T.noteWrong, 26) >= est(T.noteRight, 26) ? T.noteWrong : T.noteRight; fitText(this.noteEl, notePrefix + d.note, W - 8, 26, "note"); }
     // live の集計の見出し（集計を出すときだけ）
     this.liveEl = D.el("text", {x: W, y: G.y1 + 30, "font-size": 24, "text-anchor": "end", opacity: 0, "class": "pd-live"}, svg);
-    this.liveEl.textContent = "投票の結果";
+    this.liveEl.textContent = T.liveResults;
     // 操作：選択肢の名前（自分の予想）、−1・数の欄・＋1。動画では作らない
     if (inter){
       var mkEl = function(tag, cls, attrs){ var e = document.createElement(tag); e.className = cls; for (var a in attrs) e.setAttribute(a, attrs[a]); self.appendChild(e); return e; };
       var unit = P.unit;
       this.rows.forEach(function(r, i){
         var top = r.cy - 24;
-        r.pick = mkEl("button", "pd-pick", {type: "button", "aria-pressed": "false", "aria-label": "予想：" + ch[i].label});
+        r.pick = mkEl("button", "pd-pick", {type: "button", "aria-pressed": "false", "aria-label": T.guessLabel(ch[i].label)});
         Object.assign(r.pick.style, {left: "0px", top: (r.cy - rh / 2 + 4) + "px", width: (mk + lw) + "px", height: (rh - 8) + "px"});
         r.pick.addEventListener("click", function(e){ e.stopPropagation(); self.choose(i); });
-        var ctl = r.ctl = mkEl("div", "pd-ctl", {role: "group", "aria-label": ch[i].label + "の数"});
+        var ctl = r.ctl = mkEl("div", "pd-ctl", {role: "group", "aria-label": T.countGroup(ch[i].label)});
         Object.assign(ctl.style, {left: (W - cw + 16) + "px", top: top + "px"});
-        var bt = function(txt, dlt, lab){
-          var b = document.createElement("button"); b.type = "button"; b.className = "pd-btn"; b.textContent = txt; b.setAttribute("aria-label", ch[i].label + "：" + lab);
+        var bt = function(txt, dlt, ariaLabel){
+          var b = document.createElement("button"); b.type = "button"; b.className = "pd-btn"; b.textContent = txt; b.setAttribute("aria-label", ariaLabel);
           b.addEventListener("click", function(e){ e.stopPropagation(); self.bump(i, dlt); });
           b.addEventListener("keydown", function(e){ self.key(e, i, false); });
           return b;
         };
-        ctl.appendChild(bt("−1", -1, "1 減らす"));
+        ctl.appendChild(bt("−1", -1, T.decrease(ch[i].label)));
         var f = r.field = document.createElement("input");
         f.type = "text"; f.className = "pd-num"; f.setAttribute("inputmode", "numeric"); f.setAttribute("autocomplete", "off");
-        f.setAttribute("aria-label", ch[i].label + "の数" + (unit ? "（" + unit + "）" : ""));
+        f.setAttribute("aria-label", T.countField(ch[i].label, unit));
         f.addEventListener("keydown", function(e){ self.key(e, i, true); });
         f.addEventListener("input", function(){
           var s = f.value.replace(/[^0-9]/g, "").slice(0, 4);
@@ -200,7 +238,7 @@ return class extends base.MotionElement {
         });
         f.addEventListener("change", function(){ f.value = String(self.counts()[i]); });
         ctl.appendChild(f);
-        ctl.appendChild(bt("+1", 1, "1 増やす"));
+        ctl.appendChild(bt("+1", 1, T.increase(ch[i].label)));
       });
     }
     function tone(t){ return /^(term|emph|muted|accent2|fg|series-[1-4])$/.test(t || "") ? "var(--" + t + ")" : "var(--term)"; }
@@ -226,17 +264,17 @@ return class extends base.MotionElement {
     if (c[i] === v) return;
     c[i] = v; this._vc = c;
     this.redraw();
-    this.say.textContent = this.data.choices[i].label + "：" + v + this.props.unit;
+    this.say.textContent = this.T.countAnnounce(this.data.choices[i].label, v, this.props.unit);
     this.emit();
   }
   // 自分の予想（1 つ。もう一度押すと外す）
   choose(i){
     if (this.video) return;
-    var d = this.data;
+    var d = this.data, T = this.T;
     this._pick = this._pick === i ? null : i;
     this.redraw();
     var lab = d.choices[i].label;
-    this.say.textContent = this._pick === null ? "予想を外しました" : this.revealed() ? (i === d.answer ? "当たり：" + lab : "はずれ。答えは " + d.choices[d.answer].label) : "あなたの予想：" + lab;
+    this.say.textContent = this._pick === null ? T.unpicked : this.revealed() ? (i === d.answer ? T.pickedRight(lab) : T.pickedWrong(d.choices[d.answer].label)) : T.myGuess(lab);
   }
   revealed(){ return this._k !== undefined && this._k >= this.aStep; }
   key(e, i, field){
@@ -280,7 +318,7 @@ return class extends base.MotionElement {
   }
   // (k, t) と見る人の状態の絵。ctx は {mode, preview, live}
   paint(k, t, ctx){
-    var self = this, P = this.props, D = base, G = this.g, dd = this.data, n = this.rows.length, vr = this.variant;
+    var self = this, P = this.props, D = base, G = this.g, dd = this.data, n = this.rows.length, vr = this.variant, T = this.T;
     var a = this.aStep;
     // 数：live の集計（実行系が見せてよいと渡したときだけ）→ 見る人の数 → 作者の数
     var live = null;
@@ -334,12 +372,12 @@ return class extends base.MotionElement {
     if (vr === "draw" && ea > 0 && ea < 1){ this.frame.setAttribute("stroke-dasharray", this.frameLen.toFixed(0)); this.frame.setAttribute("stroke-dashoffset", (this.frameLen * (1 - ea)).toFixed(1)); this.frame.setAttribute("opacity", 1); }
     else { this.frame.removeAttribute("stroke-dasharray"); this.frame.removeAttribute("stroke-dashoffset"); this.frame.setAttribute("opacity", ea.toFixed(3)); }
     // 注と、予想の当たり外れ
-    var pk = pick, st = pk != null && k >= a ? (pk === dd.answer ? "予想は当たり。" : "予想ははずれ。") : "";
+    var pk = pick, st = pk != null && k >= a ? (pk === dd.answer ? T.noteRight : T.noteWrong) : "";
     this.noteEl.textContent = (k >= a ? st : "") + this.noteText;
     this.noteEl.setAttribute("opacity", ea.toFixed(3));
     this.liveEl.setAttribute("opacity", live && k >= 1 ? 1 : 0);
     // 答えを開いた段階に入ったら知らせる（入力の知らせは set・choose が後から書く）
-    if (this._sayK !== k && !this.video){ this._sayK = k; this.say.textContent = k >= a ? "答え：" + dd.choices[dd.answer].label + (this.noteText ? "。" + this.noteText : "") : ""; }
+    if (this._sayK !== k && !this.video){ this._sayK = k; this.say.textContent = k >= a ? T.answerAnnounce(dd.choices[dd.answer].label, this.noteText) : ""; }
     function est(s, size){ return D.textWidth(s, size, {font: self}); }
     function nice(v){ var e = Math.pow(10, Math.floor(Math.log10(v))), x = v / e;
       return [1, 1.2, 1.5, 2, 2.5, 3, 4, 5, 6, 8, 10].filter(function(s){ return s >= x - 1e-9; })[0] * e; }

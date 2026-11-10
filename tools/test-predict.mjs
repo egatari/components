@@ -278,6 +278,95 @@ try {
     ok(errors.length === 0, 'real clicks: no console error' + (errors.length ? ': ' + errors[0] : ''));
     await page.close();
   }
+
+  // ---- 10. ctx.lang (document language, not the viewer's): the built-in UI text follows it; question/choices/note stay the
+  //      author's own text. en: an all-English fixture shows no Japanese anywhere. ja: the default (demo.html) still shows
+  //      「✓ 正解」. override: a child JSON `labels.correct` replaces the mark text regardless of ctx.lang, and its width
+  //      estimate (okW) follows the string actually drawn (no "does not fit" report for a longer override)
+  {
+    const mpredict = (attrs, data) => `<m-predict ${attrs}><script type="application/json">${JSON.stringify(data)}</script></m-predict>`;
+    const openAt = async (filePath) => {
+      const page = await browser.newPage({ viewport: { width: 1280, height: 720 } });
+      const errors = [];
+      page.on('pageerror', (e) => errors.push(e.message));
+      await page.goto(S.browser.fileUrl(filePath));
+      await page.waitForFunction(() => window.DECK && DECK.ready, null, { timeout: 15000 });
+      await page.evaluate(() => document.fonts.ready);
+      return { page, errors };
+    };
+    const buildDeck = (name, lang, slideHtml) => {
+      const html = `<!DOCTYPE html><html lang="${lang}" data-theme="default"><head><meta charset="utf-8"><title>m-predict ${name}</title></head><body><div id="stage">\n<section class="slide"><h2>t</h2><div class="body">${slideHtml}</div></section>\n</div></body></html>`;
+      const src = path.join(work, `${name}.html`), o = path.join(work, `${name}.out.html`);
+      fs.writeFileSync(src, html); S.build(src, o); return o;
+    };
+
+    // en: content and UI both English; no Japanese anywhere, including the aria-labels
+    const enData = { question: 'Which lands first?', choices: [{ label: 'Heavy' }, { label: 'Light' }, { label: 'Same' }], answer: 2, counts: [17, 2, 11], note: 'Without air resistance they land together' };
+    const enOut = buildDeck('lang-en', 'en', mpredict('unit="people" poll="p1" style="height:440px"', enData));
+    {
+      const { page, errors } = await openAt(enOut);
+      await page.evaluate(() => DECK.go(0, 1, false));
+      const comp = page.locator('m-predict').first();
+      await comp.locator('.pd-pick').nth(0).click();   // guess "Heavy" (wrong: the answer is "Same")
+      let r = await page.evaluate(() => {
+        const c = DECK.slides[0]._comps[0], btns = c.rows[0].ctl.querySelectorAll('button');
+        return {
+          ok: c.rows[c.data.answer].ok.textContent,
+          live: c.liveEl.textContent,
+          pick: c.rows[0].pick.getAttribute('aria-label'),
+          ctl: c.rows[0].ctl.getAttribute('aria-label'),
+          field: c.rows[0].field.getAttribute('aria-label'),
+          minus: btns[0].getAttribute('aria-label'),
+          plus: btns[1].getAttribute('aria-label'),
+          say: c.say.textContent,
+          allText: [...c.querySelectorAll('text')].map((t) => t.textContent).join(' '),
+        };
+      });
+      ok(r.ok === '✓ Correct', 'en: the correct mark is "✓ Correct" (got ' + r.ok + ')');
+      ok(r.live === 'Poll results', 'en: the live heading is "Poll results" (got ' + r.live + ')');
+      ok(r.pick === 'Guess: Heavy' && r.ctl === 'Heavy count' && r.field === 'Heavy count (people)', 'en: pick/group/field aria-labels are English (got ' + JSON.stringify({ pick: r.pick, ctl: r.ctl, field: r.field }) + ')');
+      ok(r.minus === 'Heavy: decrease by 1' && r.plus === 'Heavy: increase by 1', 'en: the −1/+1 aria-labels are English (got ' + r.minus + ' / ' + r.plus + ')');
+      ok(r.say === 'My guess: Heavy', 'en: picking a choice announces it in English (got ' + r.say + ')');
+      const jp = /[぀-ヿ一-鿿]/;
+      ok(![r.ok, r.live, r.pick, r.ctl, r.field, r.minus, r.plus, r.say, r.allText].some((s) => jp.test(s)), 'en: no Japanese anywhere in the SVG text or the UI aria-labels');
+      await page.evaluate(() => DECK.go(0, 2, false));
+      r = await page.evaluate(() => ({ note: DECK.slides[0]._comps[0].noteEl.textContent }));
+      ok(/^Wrong\. /.test(r.note), 'en: a wrong guess is told "Wrong. " at the answer step (got ' + JSON.stringify(r.note) + ')');
+      ok(errors.length === 0, 'en: no console error' + (errors.length ? ': ' + errors[0] : ''));
+      await page.close();
+    }
+
+    // ja: the default (demo.html, no override) still shows 「✓ 正解」 and 「投票の結果」
+    {
+      const { page, errors } = await openAt(out);
+      await page.evaluate(() => DECK.go(1, 0, false));
+      const r = await page.evaluate(() => ({
+        ok: DECK.slides[0]._comps[0].rows[DECK.slides[0]._comps[0].data.answer].ok.textContent,
+        live: DECK.slides[1]._comps[0].liveEl.textContent,
+      }));
+      ok(r.ok === '✓ 正解', 'ja: the correct mark is still "✓ 正解" (got ' + r.ok + ')');
+      ok(r.live === '投票の結果', 'ja: the live heading is still "投票の結果" (got ' + r.live + ')');
+      ok(errors.length === 0, 'ja: no console error' + (errors.length ? ': ' + errors[0] : ''));
+      await page.close();
+    }
+
+    // override: child JSON labels.correct replaces the mark text, and okW follows it (no "does not fit" report)
+    const ovData = { question: '重い球と軽い球、どちらが先に着く？', choices: [{ label: '重い球' }, { label: '軽い球' }, { label: '同時' }], answer: 2, counts: [17, 2, 11], note: '空気の抵抗を除けば同時に着く', labels: { correct: 'これが正解！' } };
+    const ovOut = buildDeck('lang-override', 'ja', mpredict('unit="人" style="height:390px"', ovData));
+    {
+      const { page, errors } = await openAt(ovOut);
+      const r = await page.evaluate(() => {
+        const c = DECK.slides[0]._comps[0], el = c.rows[c.data.answer].ok;
+        const box = c.getBoundingClientRect(), okBox = el.getBoundingClientRect();
+        return { ok: el.textContent, fits: okBox.right <= box.right + 1, reports: EGATARI_PARTS_SHIM.reports().map((x) => x.code + ': ' + x.msg) };
+      });
+      ok(r.ok === 'これが正解！', 'labels.correct overrides the default mark (got ' + r.ok + ')');
+      ok(r.fits, 'labels.correct: the overriding mark stays inside the element');
+      ok(!r.reports.some((m) => /does not fit/.test(m)), 'labels.correct: the width estimate (okW) follows the overriding string (no size report): ' + r.reports.join('; '));
+      ok(errors.length === 0, 'override: no console error' + (errors.length ? ': ' + errors[0] : ''));
+      await page.close();
+    }
+  }
 } finally { await browser.close(); }
 console.log(fails ? `\nFAIL: ${fails}` : '\nOK');
 process.exit(fails ? 1 : 0);

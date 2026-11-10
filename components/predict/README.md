@@ -1,6 +1,6 @@
 ---
 name: m-predict
-version: 2.0.5
+version: 2.1.0
 series: common
 tier: standard
 summary: 予想してから答えを開く。選択肢ごとの人数を棒で見せ、答えの段階で正解に枠
@@ -12,11 +12,12 @@ props: answer-step, unit, poll, ticks
 
 「A だと思う人〜」と手を挙げてもらい、先生が −1・＋1 で数える（数を打ち込んでもよい）。一人で自習する学習者は、選択肢を押すと自分の予想になる。
 
-子の JSON：`{"question", "choices": [{"label", "tone"?}], "answer": 正解の番号（0 から）, "counts"?: [選択肢ごとの例の人数], "note"?: 答えと出す一言}`
+子の JSON：`{"question", "choices": [{"label", "tone"?}], "answer": 正解の番号（0 から）, "counts"?: [選択肢ごとの例の人数], "note"?: 答えと出す一言, "labels"?: {"correct"?: 正解の印の文字}}`
 
 - 選択肢は 2〜6。動画・印刷・最初の表示は `counts`（無ければ 0）。同じスライドにいるあいだは数が残る（答えの段階でも、戻っても）
 - 口述原稿は `counts` の数で書き、数える所は `{note:ここで手を挙げてもらう}` と書く（丸かっこは読み上げられる）
 - `poll="p1"`：live の投票の集計を出す
+- `labels.correct`（省略可）：正解の印の文字を変える（既定「✓ 正解」）
 
 <!-- llm: omit -->
 作る人向けの注（dev と確かめること）
@@ -32,4 +33,5 @@ props: answer-step, unit, poll, ticks
 - index.js の `static interactive = true`（操作できるパーツ）と `static viewerInput = true`（入力を受け付ける）：manifest.json の `interactive`・`viewerInput` になる。README には書かない（AI への指示に入るので）
 - キー：数の欄と ±1 のボタンで `+` `-` `↑` `↓`（ボタンでは `←` `→` も）。数字のキーは割り当てない（欄の中で打つときだけ）。欄の中のキーはスライドに渡さない（Studio #69 の前でも）。Esc・Enter で欄を出る
 - 動画では操作も予想の印も作らない。印刷では `@media print` で隠す
+- 表示文（「✓ 正解」「予想：」「の数」「1 減らす」「1 増やす」「投票の結果」など）は ctx.lang の日英に従う（index.js の TEXT）。`labels.correct` があればそれで「✓ 正解」を上書きし、okW（幅の見積もり）もそれに合わせる
 <!-- llm: end -->

@@ -19,11 +19,12 @@
 //   親が窓の上にある枝は描かない（入ってくる道だけを上の縁から描く）。窓の上に「黒の木：ここまで 0000 0110」。window="auto"（既定）は段の間が 44 px より狭くなるときだけ流す。
 //   まとめの段階は窓を使わず、復号したすべての道の木を部品の高さに詰めて描く（段の間 SUM_GAP px 以上のとき。印刷・台本の小さい絵は最後の姿だけなので）。
 //   それより狭ければ、いちばん深い道の窓にして layout で知らせる。窓の段の間が 24 px より狭いときも layout で知らせる。最後の姿（t = Infinity）では窓の縁で薄れない
-// JSON の labels で文言を変える：white black start read makeup term eol invalid incomplete dangling done scan crumb（{c} は色、{n} は桁）
+// 画面の文言（NAMES/NAMES_EN）は ctx.lang の日英に従う（ja なら日本語、それ以外は英語）。JSON の labels で上書きできる：
+//   white black start read makeup term eol invalid incomplete dangling done scan crumb（{c} は色、{n} は桁）
 // 復号の規則は codetree-core（試験は tools/test-codetree.mjs）
 // 2.0（Egatari spec §6.1 の部品）：base の MotionElement・el・prog・lerp・previewOpacity と、表・木・復号の codetree-core を使い、
 // プレイヤーのグローバルは使わない
-egatariParts.define({name: "codetree", version: "2.0.4", requires: {base: "1.1.0", "codetree-core": "1.0.0"}, element: "m-codetree"}, function(deps){
+egatariParts.define({name: "codetree", version: "2.0.5", requires: {base: "1.1.0", "codetree-core": "1.0.0"}, element: "m-codetree"}, function(deps){
 "use strict";
 var base = deps.base;
 var D = base;
@@ -35,9 +36,13 @@ var COLORS = ["white", "black"];   // 色の木の順（codetree-core と同じ�
 
 
 // ---------------------------------------------------------------- 部品
+// 表示の文字（ctx.lang、見る人の言語ではなく文書の言語）。子の JSON の labels が勝つ
 var NAMES = {white: "白", black: "黒", start: "最初は白の木から読む", read: "{c}の木をたどる", makeup: "メイクアップ符号：次も{c}",
   term: "終端符号：次は{c}", eol: "行の終わり：次は白", invalid: "表にない符号（{n} 桁目）", incomplete: "系列が符号の途中で終わる",
   dangling: "メイクアップ符号の後に終端符号がない", done: "復号完了", scan: "画素", crumb: "{c}の木：ここまで"};
+var NAMES_EN = {white: "white", black: "black", start: "Start with the white tree", read: "Following the {c} tree", makeup: "Make-up code: {c} continues",
+  term: "Terminating code: next is {c}", eol: "End of line: next is white", invalid: "Not in the table (digit {n})", incomplete: "The sequence ends mid-code",
+  dangling: "Make-up code with no terminating code after it", done: "Decoded", scan: "Pixels", crumb: "{c} tree: so far"};
 var LETTER = {white: "w", black: "b"};
 // 字の幅の見積もり（字の読み込みによらず同じ配置にする）
 // 誤りの段階でたどれる道（表にない枝の手前まで）
@@ -80,7 +85,7 @@ return class extends base.MotionElement {
     var plan = r.tokens.map(function(t, i){ return {type: "tok", tok: i}; });
     if (r.error && r.error.kind !== "dangling") plan.push({type: "err"});
     if (P.summary && plan.length) plan.push({type: "sum"});
-    return (this._model = {trees: trees, dec: r, plan: plan, runs: runs(r.tokens), L: Object.assign({}, NAMES, d.labels || {})});
+    return (this._model = {trees: trees, dec: r, plan: plan, runs: runs(r.tokens)});
   }
   get steps(){
     if (this.getAttribute("steps") !== null) return +this.getAttribute("steps");
@@ -241,7 +246,9 @@ return class extends base.MotionElement {
     return {lv: lv, x: x - this.W / 2};
   }
   mount(ctx){
-    var D2 = D, P = this.props, self = this, m = this.model(), dec = m.dec, Lb = m.L, MK = P.mark;
+    var D2 = D, P = this.props, self = this, m = this.model(), dec = m.dec, d = this.data || {}, MK = P.mark;
+    var ja = this.ja = /^ja\b/i.test((ctx && ctx.lang) || "ja");
+    var Lb = this.Lb = Object.assign({}, ja ? NAMES : NAMES_EN, d.labels || {});
     this.style.display = "block"; this.style.position = "relative";
     var W0 = this.clientWidth, H = this.clientHeight;
     this.W = W0 - 8; this.H = H;
@@ -251,7 +258,7 @@ return class extends base.MotionElement {
     if (this._aria === undefined) this._aria = this.getAttribute("aria-label");
     this.setAttribute("role", "img");
     if (!this._aria){
-      var ja = /^ja\b/i.test((ctx && ctx.lang) || "ja"), er = dec.error;
+      var er = dec.error;
       var toks = dec.tokens.map(function(t){ return t.kind === "eol" ? "EOL" : Lb[t.color] + " " + t.run; });
       var end = !er ? Lb.done : fmt0(Lb[er.kind], "").replace("{n}", er.pos + 1);
       // 長い系列は初めの 12 語と語の数（1 文に収める）
@@ -270,7 +277,7 @@ return class extends base.MotionElement {
     if (sumL && sumL.both && sumL.follow) report("the summary cannot show all decoded paths: the whole tree (" + sumL.sumLv + " levels deep) would be " + sumL.sumGap.toFixed(1) + " px per level (at least " + SUM_GAP + " px are needed), so it shows the deepest path only; make the element taller (about " + Math.ceil(sumL.sumLv * SUM_GAP + 252) + " px)");
     // ---- 上：符号の系列と読む位置
     var nb = dec.bits.length, label0 = D2.el("text", {x: 0, y: 34, "font-size": 24, fill: "var(--muted)"}, root);
-    label0.textContent = "符号";
+    label0.textContent = ja ? "符号" : "Code";
     var bx0 = 64, cs = Math.max(22, Math.min(44, (this.W * 0.56 - bx0) / Math.max(1, nb))), bfs = Math.max(24, Math.min(32, cs * 0.75));
     this.B = {x0: bx0, cs: cs};
     var gBits = D2.el("g", {}, root);
@@ -374,7 +381,7 @@ return class extends base.MotionElement {
   // 作った直後と描き直した後で属性の字が変わる（docs/contract.md §3、tools/test-dom-order.mjs）
   // 段階 k の今の道の進み（0〜1 の各辺）と、葉の後の進み
   render(k, t, ctx){
-    var D2 = D, P = this.props, m = this.model(), dec = m.dec, self = this, Lb = m.L;
+    var D2 = D, P = this.props, m = this.model(), dec = m.dec, self = this, Lb = this.Lb;
     var preview = !!ctx.preview, PV = preview ? base.previewOpacity(this) : 0;
     var p = k ? m.plan[k - 1] : null, T = k ? this.times(k) : null;
     var A = k ? this.lay[k - 1] : this.lay[0], B = this.lay[k];
@@ -550,7 +557,7 @@ return class extends base.MotionElement {
       var len = vis.reduce(function(a, i){ return a + shown[i]; }, 0);
       var parts = vis.map(function(i){ return dec.tokens[i].run; });
       var full = vis.every(function(i){ return shown[i] === dec.tokens[i].run; });
-      var s = Lb[o.r.color] + " " + (parts.length > 1 ? parts.join(" ＋ ") + " ＝ " + parts.reduce(function(a, b){ return a + b; }, 0) : String(full ? parts[0] : len));
+      var s = Lb[o.r.color] + " " + (parts.length > 1 ? parts.join(self.ja ? " ＋ " : " + ") + (self.ja ? " ＝ " : " = ") + parts.reduce(function(a, b){ return a + b; }, 0) : String(full ? parts[0] : len));
       var a = S.x0 + o.r.start * S.sc, b = a + len * S.sc;
       o.br.setAttribute("d", "M" + (a + 1) + "," + (G.scanY + 34) + "v6H" + Math.max(a + 2, b - 1) + "v-6");
       var w = 26 + textW(s, 24, self), x = Math.max((a + b) / 2 - w / 2, right + 16, S.x0);

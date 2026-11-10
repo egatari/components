@@ -1,6 +1,6 @@
 ---
 name: m-timer
-version: 2.0.3
+version: 2.0.4
 series: common
 tier: specialized
 set: tools

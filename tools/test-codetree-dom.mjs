@@ -101,6 +101,34 @@ try {
     ok(bad === 0, `slide ${si}: render(a) then render(b) equals a fresh render(b), DOM and pixels, for all a, b (${n + 1} steps, t = Infinity and mid-step)` + (bad ? `\n     ${bad} differences; first: ${firstBad}` : ''));
   }
   ok(errors.length === 0, 'no console error' + (errors.length ? ': ' + errors[0] : ''));
+
+  // ---- labels follow ctx.lang (components 2.7.0): the built-in table was Japanese-only regardless of <html lang>
+  {
+    const demoSrc = fs.readFileSync(path.join(ROOT, 'components', 'codetree', 'demo.html'), 'utf8');
+    const enSrc = path.join(work, 'demo-en.html'), enOut = path.join(work, 'demo-en.out.html');
+    fs.writeFileSync(enSrc, demoSrc.replace('<html lang="ja"', '<html lang="en"'));
+    S.build(enSrc, enOut);
+    const page2 = await browser.newPage({ viewport: { width: 1280, height: 720 } });
+    const errors2 = [];
+    page2.on('pageerror', (e) => errors2.push(e.message));
+    await page2.goto(S.browser.fileUrl(enOut));
+    await page2.waitForFunction(() => window.DECK && DECK.ready, null, { timeout: 15000 });
+    await page2.evaluate(() => document.fonts.ready);
+    const r = await page2.evaluate(() => {
+      const c = DECK.slides[0]._comps[0];
+      DECK.seek(0, 1, Infinity);
+      return { code: c.querySelector('text').textContent, crumb: c.crumbHead.textContent, note: c.note[0].textContent + c.note[1].textContent };
+    });
+    const jp = /[぀-ヿ一-鿿]/;
+    ok(r.code === 'Code', 'en: the heading above the bit sequence is "Code" (got ' + r.code + ')');
+    ok(!jp.test(r.crumb) && !jp.test(r.note), 'en: the crumb and the corner note have no Japanese (got ' + JSON.stringify({ crumb: r.crumb, note: r.note }) + ')');
+    ok(errors2.length === 0, 'en: no console error' + (errors2.length ? ': ' + errors2[0] : ''));
+    await page2.close();
+
+    // ja: the default (demo.html, no override) still shows the Japanese heading
+    const rja = await page.evaluate(() => { DECK.seek(0, 0, Infinity); return DECK.slides[0]._comps[0].querySelector('text').textContent; });
+    ok(rja === '符号', 'ja: the heading above the bit sequence is still "符号" (got ' + rja + ')');
+  }
 } finally { await browser.close(); }
 console.log(fails ? `\nFAIL: ${fails}` : '\nOK');
 process.exit(fails ? 1 : 0);
