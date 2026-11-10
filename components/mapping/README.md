@@ -4,7 +4,7 @@ display: 確率変数の対応 / Random variable mapping
 version: 2.0.0
 series: academic
 tier: specialized
-set: stats
+set: data
 summary: 実験の結果を数値へ対応させ、同じ値になる結果をまとめて確率分布を作る
 steps: 結果の札→対応の矢印→同じ値の色と個数・確率の和→分布の横棒の 4 段階
 purposes: model, grouping

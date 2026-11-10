@@ -4,7 +4,7 @@ display: 標本抽出 / Sampling
 version: 2.0.0
 series: academic
 tier: specialized
-set: stats
+set: data
 summary: 母集団から標本を取り、比率・平均の標本分布を積む
 steps: 母集団→抽出→統計量と点→反復の 4 段階
 purposes: model, spread

@@ -8,8 +8,8 @@ props:
 ---
 
 JSON:
-- `mu`, `sigma`, `n`: mean, positive SD, integer n>0.
-- `reps`: integer >0 (40); `level`: (0,1), .95; `seed`: integer (2).
+- `mu`, `sigma`, `n`: mean, SD, size.
+- `reps` (40), `level` (.95), `seed`.
 
 <!-- llm: omit -->
 Known σ, z=1.645/1.96/2.576 for .90/.95/.99; Acklam inverse-normal otherwise. Mulberry32 + Box–Muller. Coverage is observed, not guaranteed. Confidence concerns repeated intervals containing fixed μ.

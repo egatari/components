@@ -4,7 +4,7 @@ display: コードの解説 / Code walkthrough
 version: 2.0.0
 series: academic
 tier: specialized
-set: stats
+set: data
 summary: 短いコードを行ごとに説明し、最後に出力を見せる
 steps: コード全体→説明を順に→出力（説明数＋1、出力ありは＋2）
 purposes: process, model

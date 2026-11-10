@@ -22,7 +22,7 @@ props: xr, yr, xt, yt, xf, yf, xl, yl, n, dur, lw, size
 | `pts` | 点列 `[[x, y], …]`（縦線や実測の折れ線） |
 | `tone` | `term` `emph` `accent2` `muted` `fg` `series-1..4`（既定は `series-1..4` の順） |
 | `dash` | 破線 |
-| `area` / `areaLabel` | 線と横軸のあいだを塗る区間 `[a, b]` か `[[a, b], …]`（null は端）。棄却域・p 値・確率に。`areaLabel` は区間ごとの札（字か字の列） |
+| `area` / `areaLabel` | 塗る区間 `[a, b]`（複数可、null は端）と札 |
 | `labelAt` / `anchor` / `dx` / `dy` / `ly` | 名前の位置：横軸の値 `labelAt` の点に置く（既定は線の端）。`anchor` は向き（`right` `left` `above` `below`）。`ly` は縦軸の値で高さを決める |
 
 `size="40"`：字の大きさ（24 以上）。
@@ -30,6 +30,7 @@ props: xr, yr, xt, yt, xf, yf, xl, yl, n, dur, lw, size
 `f` は算術の式で、コードとしては実行しない（v1.0.2 から。[SECURITY.md](../../SECURITY.md)）：数、`x`、`Math` の関数と定数（`sin(x)` とも `Math.sin(x)` とも書ける。`Math.random` は使えない）、`N(x, 平均, 標準偏差)`、`+ - * / % **`、比較（`< <= > >= == !=`）、`&& || !`、`? :`、括弧。べき乗は `**`（`^` は書けない）。書けない式は図の代わりに札が出る。
 
 <!-- llm: omit -->
+- `area`：線と横軸（y = 0）のあいだを塗る。`[[a, b], …]` で複数の区間。棄却域・p 値・確率に。`areaLabel` は区間ごとの札（字か字の列）。線の名前と同時に出る
 古い書き方（今も動く。AI 向けの説明には書かない）
 
 - `color`：`tone` の古い名前（両方あれば `tone`）。`var(--…)` もそのまま使える

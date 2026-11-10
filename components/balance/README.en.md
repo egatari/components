@@ -9,7 +9,7 @@ props:
 
 JSON:
 - `values`: 2–12 distinct numbers.
-- `probs`: probabilities; sum 1±1e-9; else report/draw.
+- `probs`: sum to 1 (else reported).
 - `name`: X.
 
 <!-- llm: omit -->
