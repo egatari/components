@@ -106,9 +106,9 @@ bandEn.render(2, .3);
 ok(bandEn.notes[0].g.textContent.includes('lines 3–4'), 'English band has a line-range marker');
 const withOutput = {...python, output: '0.91\n0.92'};
 const outputBelow = make(withOutput, {outputPos: 'below'});
-ok(!outputBelow.el.geometry.right && outputBelow.reports.some((r) => /7 lines; this height fits 4.*520 px/.test(r.msg)), 'wide code places output below band and reports its full 520px height requirement');
+ok(!outputBelow.el.geometry.right && outputBelow.reports.some((r) => /7 lines; this height fits 4 \(more than a slide body under a heading \(about 440 px\) holds; 440 px fits 4 lines.*split the slide\)/.test(r.msg)), 'explicit below output: needs 520px, more than a slide body, so the report names lines, not a height');
 const lower = make(withOutput, {outputPos: 'below'}, {clientHeight: 380});
-ok(lower.reports.some((r) => /7 lines; this height fits 2.*520 px/.test(r.msg)), '380px with below output reports numeric line capacity and required height');
+ok(lower.reports.some((r) => /7 lines; this height fits 2 .*440 px fits 4 lines/.test(r.msg)) && !lower.reports.some((r) => /give the element/.test(r.msg)), '380px with below output: capacity, and lines at 440px instead of a height');
 const sixty = make({...python, code: Array(7).fill('x'.repeat(60)).join('\n')});
 ok(!sixty.reports.length && sixty.el.noteLayout === 'band' && !sixty.el.codeLayer.textContent.includes('…'), '60-character lines use the band width without truncation');
 const enoughBelow = make(withOutput, {outputPos: 'below'}, {clientHeight: 520});
@@ -126,14 +126,37 @@ for (const [height, n] of table) {
   ok(!r.reports.length && r.el.numbers.length === n, 'documented height ' + height + 'px fits ' + n + ' band-mode lines with output right');
 }
 const sixteen = make({...medium, code: Array(16).fill('x'.repeat(45)).join('\n')});
-ok(sixteen.reports.some((r) => r.msg === '[code] 16 lines; this height fits 9 (give the element about 676 px, or show fewer lines)') && sixteen.el.numbers.length === 9, '16 lines at 440px report actual capacity and needed height');
+ok(sixteen.reports.some((r) => r.msg === '[code] 16 lines; this height fits 9 (more than a slide body under a heading (about 440 px) holds; 440 px fits 9 lines with these notes: show fewer lines, shorten notes or split the slide)') && sixteen.el.numbers.length === 9, '16 lines at 440px: capacity, no height beyond a slide body');
 const wide = make({code: 'x'.repeat(90), steps: [{lines: [1], note: 'Short'}]});
 ok(wide.reports.length === 1 && /longest line is 90 characters; this width fits 77 at 24px/.test(wide.reports[0].msg) && wide.el.codeLayer.textContent.includes('…'), '90-character code reports numeric width capacity and remains drawn');
 const longNote = make({...python, steps: [{lines: [1], note: '長い説明'.repeat(50)}]});
 ok(longNote.reports.some((r) => /note 1 is too long for the band \(\d+ px of \d+\); shorten it to about \d+ characters/.test(r.msg)) && longNote.el.notes[0].g.textContent.endsWith('…'), 'long band note reports index, measured width, capacity and target length; draws ellipsis');
 const manyNotes = make({...python, steps: Array.from({length: 30}, (_, i) => ({lines: [1], note: '説明その' + i}))}, {}, {clientHeight: 380});
 manyNotes.el.render(manyNotes.el.steps, Infinity);
-ok(manyNotes.reports.some((r) => /30 final notes need \d+ px.*\d+ px available.*showing the last note/.test(r.msg)) && manyNotes.el.finalNotes.textContent.includes('1：説明その29') && !manyNotes.el.finalNotes.textContent.includes('説明その0'), 'final list overflow reports required band height and keeps only the last note');
+ok(manyNotes.reports.some((r) => /30 final notes need \d+ band rows \(\d+ px\); this height fits \d+ .*showing the last note/.test(r.msg)) && manyNotes.el.finalNotes.textContent.includes('1：説明その29') && !manyNotes.el.finalNotes.textContent.includes('説明その0'), 'final list overflow reports required band height and keeps only the last note');
+// Eval C: one height formula for code + final list + output; advice never exceeds a slide body.
+const sideOut = make({...python, output: '[0.93 0.95 0.91 0.96 0.94]'});
+const so = sideOut.el.outputLayer.children[0];
+ok(!sideOut.reports.length && sideOut.el.geometry.side && +so.getAttribute('y') > sideOut.el.geometry.codeH && +so.getAttribute('x') > sideOut.el.notes[0].g.children[0].getAttribute('width'), 'auto output under wide code sits beside the note band (7 lines + 1 output row fit 440px)');
+const eight = {...python, code: python.code + '\nprint(len(scores))', steps: [{lines: [1, 2], note: '道具を読み込む'}, {lines: [3, 4], note: 'モデルを作る'}, {lines: [5], note: '5 分割で検証'}, {lines: [6, 8], note: '結果を表示'}], output: '[0.93 0.95 0.91 0.96 0.94]\n0.938'};
+const e8 = make(eight, {}, {clientHeight: 380});
+ok(e8.reports.length && e8.reports.every((r) => !/give the element about (\d+)/.test(r.msg) || +RegExp.$1 <= 440), '8 lines + 4 notes + output: no advice beyond 440px: ' + e8.reports.map((r) => r.msg).join(' | '));
+const six = {lang: 'python', code: Array.from({length: 6}, (_, i) => 'total = total + values[' + i + '] * weights[' + i + ']  # add step').join('\n'), steps: Array.from({length: 6}, (_, i) => ({lines: [i + 1], note: '合計に ' + (i + 1) + ' 個目を足す処理'}))};
+let checked = 0;
+for (const data of [python, six, {...python, output: '0.91'}, {...six, output: '21'}, {...six, steps: six.steps.slice(0, 3)}])
+  for (const lang of ['ja', 'en'])
+    for (const h of [260, 300, 340, 380]) {
+      const r = make(data, {}, {clientHeight: h}, lang);
+      for (const m of r.reports.map((x) => /give the element about (\d+) px/.exec(x.msg)).filter(Boolean)) {
+        const again = make(data, {}, {clientHeight: +m[1]}, lang);
+        ok(+m[1] <= 440 && !again.reports.some((x) => x.code === 'layout' && /lines; this height|final notes/.test(x.msg)), 'advised ' + m[1] + 'px (from ' + h + 'px, ' + lang + ') fits code and the final list');
+        checked++;
+      }
+    }
+ok(checked >= 6, 'height advice checked in ' + checked + ' cases');
+const sixR = make(six, {}, {clientHeight: 440});
+sixR.el.render(sixR.el.steps, Infinity);
+ok(!sixR.reports.length && sixR.el.noteLayout === 'band' && sixR.el.geometry.listRows >= 2 && sixR.el.finalNotes.textContent.includes('6：'), '6 lines + 6 notes fit 440px with a multi-row final list (' + sixR.el.geometry.listRows + ' rows)');
 for (const el of [bandEn, nine.el, outputBelow.el, manyNotes.el]) {
   let stable = true;
   for (let k = 0; k <= el.steps; k++) for (const t of [0, .3, Infinity]) for (const preview of [false, true]) {
