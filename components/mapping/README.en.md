@@ -1,15 +1,13 @@
 ---
-summary: Map outcomes to numbers; group equal values to form a distribution
-steps: Outcomes → arrows → grouped counts and sums → probability bars (4 steps)
+summary: Outcomes → values → distribution
+steps: Outcomes → arrows → groups → bars (4)
 props:
-  dur: Motion seconds; step 2 adds stagger offsets
-  stagger: Arrow delay in seconds (≥0)
-  digits: Decimal places (0–10)
-  size: Text px; 0 = 26, otherwise ≥24
+  dur: Motion s
+  stagger: Arrow delay s
+  digits: Decimals
+  size: Text px
 example: {"outcomes":[{"label":"HH","x":2},{"label":"HT","x":1},{"label":"TH","x":1},{"label":"TT","x":0}],"name":"X","unit":"","fractions":true}
 ---
-A random variable as a rule: outcomes → values → distribution.
-
 - `outcomes`: 2–12; `label`, `x`, `p` (default equal; sum ≠ 1 reported)
 - `name` (X), `fractions`
 - `picture`: `dots`, `grapes`, `dice`, `coins`, `balls` (colour names; 11 basic)
