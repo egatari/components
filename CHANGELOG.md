@@ -4,24 +4,27 @@ Versions follow [README.md § Releases and versions](README.md#releases-and-vers
 
 ## Unreleased
 
-### Added
-
-- `m-code` 2.0.0 (planned components 2.6.0, stats): line-by-line code explanations, stacked notes and supplied output; bilingual accessible text, deterministic previews and range/layout/size reports.
-
-- `m-ci`, `m-folds`, `m-balance` 2.0.0 (planned components 2.6.0, stats): repeated confidence intervals, cross-validation splits and expectation as a balance point; bilingual accessible diagrams, deterministic seeking and data/size reports.
-
-- `m-sampling` 2.0.0 (planned components 2.6.0, stats): seeded samples with or without replacement, proportions/means and an accumulating sampling distribution; Japanese/English text, accessible final state and size reports.
-- `m-mapping` 2.0.0 (planned components 2.6.0, stats): outcomes mapped to numerical values, grouped counts/probabilities and distribution bars; reported probability errors, Japanese/English text and accessible final state.
-- `m-particles` 2.0.0 (planned components 2.4.0, science): states of matter with fixed particle count and size, and chemical reactions with persistent atom identities, equations, conservation counts and reported invalid data.
-
-### Fixed
-
-- Unreleased `m-code` 2.0.0: automatic beside/band notes, 34px code rows at 24px, compact numbered print notes and separate numeric fit reports; document width/height budgets for real Python lines.
-- Unreleased `m-folds` 2.0.0: drop block letters and shrink rows to 32px before reporting; document minimum height (316px for k=5 with errors) and report measured fit limits.
-
 ### Later (candidates, not in this release)
 
 - `m-compare` `by="row"`; an "outside every set" region for `m-venn`; planned-vs-actual bars for `m-timeline`
+
+## 2.6.0 - 2026-11-11
+
+A new set `data` (情報・データサイエンス / Data science and code) with six parts, and areas under curves in `m-curves`. Released after the standards side's eval A (34/0) and the topics ds-cv-code, joho-list-sum and en-stats-histogram (6/6 final each, 18/18). Studio vendors it from v0.6.9.
+
+### Added
+
+- `m-code` 2.0.0 (data): a short program with its lines highlighted in turn, a note for each and then the supplied output (the code is never run). Notes sit beside narrow code or in a band under wide code, and the final state lists every note with its line range. One height formula, ≈ 132 + 34 × lines + 35 × (note-list rows − 1), is used by the README and by every height report, and no report advises more than a 440px slide body. The full code and output stay readable to screen readers.
+- `m-folds` 2.0.0 (data): k-fold cross-validation, one row per fold with the validation block moving along, then the errors and their mean. The rows shrink to 32px and drop the block letters before reporting (k = 5 needs about 316px).
+- `m-balance` 2.0.0 (data): expectation as a balance point. A fulcrum slides to E[X] while the beam levels, then the formula line appears.
+- `m-sampling` 2.0.0 (data): seeded samples drawn from a bag of balls or numbered cards, with or without replacement, and the sample proportion or mean collecting into a sampling distribution.
+- `m-ci` 2.0.0 (data): repeated confidence intervals around μ. The ones that miss are marked, then counted (「μ を含む：38 / 40」).
+- `m-mapping` 2.0.0 (data): a random variable as a mapping from outcomes to values to P(X = x). Outcomes can be drawn as dots, grapes, dice, coins or balls, and balls take the object colours of spec §8.4 (`--obj-*`, with the colour also named in words).
+
+### Changed
+
+- `m-curves` 2.2.0 (stats): `area` / `areaLabel` per series shade between a line and the x-axis over one or more spans (for rejection regions, p-values and probabilities), with a label above each span.
+- `tools/lint.mjs`: the set `data` is known.
 
 ## 2.5.1 - 2026-11-09
 
