@@ -14,6 +14,8 @@ example: {"lang":"python","code":"import pandas as pd\ndf = pd.read_csv(\"sales.
 - `lang`: tag; `steps[{lines,note}]`: 1-based inclusive range, note.
 - `output`: text, ≤8 lines.
 
+Narration never reads code aloud; say what the line does.
+
 <!-- llm: omit -->
 Displays supplied text; never runs code. Code first, then one highlight and note per step; earlier notes muted. Final: all notes, no band, supplied output. Preview uses --preview-opacity. Deterministic seeking.
 

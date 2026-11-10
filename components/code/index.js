@@ -81,12 +81,12 @@ return class extends base.MotionElement {
     var fs = this.fs, nf = this.noteSize, row = fs * 1.5 + 4, noteRow = nf * 1.45 + 4;
     var W = Math.max(1, this.clientWidth), H = Math.max(1, this.clientHeight), program = lines(d.code), output = d.output === undefined ? [] : lines(d.output);
     var lang = d.lang || "", commentAt = comments(program, lang.toLowerCase());
-    this.setAttribute("role", "img");
+    this.setAttribute("role", "figure");   // 中の読める pre が読まれるように（img の子は読まれない）
     if (!this.getAttribute("aria-label")) this.setAttribute("aria-label", T.summary(lang.toLowerCase() === "python" ? "Python" : lang, program.length, d.output !== undefined) + "; " + d.steps.map(function(s){ return s.note; }).join("; "));
     // A focusable document remains reachable inside role=img (whose ordinary descendants are presentational).
     var pre = document.createElement("pre"); pre.className = "sr-only";
     pre.setAttribute("style", "position:absolute;width:1px;height:1px;margin:-1px;padding:0;overflow:hidden;clip-path:inset(50%);white-space:pre;border:0");
-    pre.setAttribute("tabindex", "0"); pre.setAttribute("role", "document"); pre.setAttribute("aria-label", T.readable);
+    pre.setAttribute("aria-label", T.readable);
     pre.textContent = d.code + (d.output !== undefined ? "\n\n" + T.output + "\n" + d.output : ""); this.appendChild(pre);
     this.svg = base.el("svg", {viewBox: "0 0 " + W + " " + H, width: W, height: H, "aria-hidden": "true"}, this);
     var header = fs * 1.45 + 20, pad = 16, gap = 32, numW = monoWidth(String(program.length), fs) + 16;

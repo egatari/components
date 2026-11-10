@@ -36,11 +36,11 @@ const make = (data = example, attrs = {}, dims = {}, lang = 'ja') => {
 const texts = (e) => walk(e).filter((n) => n.localName === 'text');
 const {el: c, reports} = make();
 ok(reports.length === 0 && c.steps === 5 && Part.preview === undefined, 'example fits; 3 notes + code + output; default preview');
-ok(c.getAttribute('role') === 'img' && c.svg.getAttribute('aria-hidden') === 'true', 'image role, hidden SVG');
+ok(c.getAttribute('role') === 'figure' && c.svg.getAttribute('aria-hidden') === 'true', 'figure role, hidden SVG');
 ok(c.getAttribute('aria-label') === 'Python のコード 3 行と出力; pandas を読み込む; CSV を表として読む; 店ごとの平均', 'concise final Japanese label and ordered notes');
 ok(make(example, {'aria-label': 'Author label'}).el.getAttribute('aria-label') === 'Author label', 'author label retained');
 const pre = c.children.find((n) => n.localName === 'pre');
-ok(pre.className === 'sr-only' && pre.textContent.includes(example.code) && pre.textContent.endsWith(example.output) && pre.getAttribute('style').includes('clip-path:inset(50%)') && pre.getAttribute('tabindex') === '0' && pre.getAttribute('role') === 'document', 'full code/output in reachable hidden pre');
+ok(pre.className === 'sr-only' && pre.textContent.includes(example.code) && pre.textContent.endsWith(example.output) && pre.getAttribute('style').includes('clip-path:inset(50%)') && pre.getAttribute('tabindex') === null && pre.getAttribute('role') === null, 'full code/output in a hidden, non-focusable pre inside the figure');
 c.render(1, Infinity);
 ok(c.codeLayer.getAttribute('opacity') === '1' && c.notes.every((n) => n.g.getAttribute('opacity') === '0') && c.outputLayer.getAttribute('opacity') === '0', 'first step shows whole program alone');
 c.render(2, Infinity);
@@ -148,7 +148,7 @@ async function browserCheck() {
         return {history, problems, role: c.getAttribute('role'), aria: c.getAttribute('aria-label'), pre: c.querySelector('pre').textContent.includes(c.data.code)};
       }));
       for (const [i, r] of results.entries()) {
-        ok(r.history && r.role === 'img' && r.aria && r.pre && !r.problems.length, `browser ${lang} ${i}: accessible, deterministic, contained text, no overlaps: ${r.problems.join('; ')}`);
+        ok(r.history && r.role === 'figure' && r.aria && r.pre && !r.problems.length, `browser ${lang} ${i}: accessible, deterministic, contained text, no overlaps: ${r.problems.join('; ')}`);
         await page.evaluate((i) => DECK.seek(i, document.querySelectorAll('m-code')[i].steps, Infinity), i);
         await page.screenshot({path: path.join(work, `final-${lang}-${i}.png`)});
       }

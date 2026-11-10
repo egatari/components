@@ -17,6 +17,8 @@ props: dur, size, outputPos
 - `lang`：言語の札。`steps[{lines,note}]`：1 始まりの行番号か両端を含む範囲、短い説明
 - `output`：省略可の出力文字列（8 行まで）
 
+台本はコードを読み上げない。その行が何をするかを言葉で言う（変数名や記号は 1 つずつなら書いてよい）。
+
 <!-- llm: omit -->
 ```html
 <m-code style="height:440px"><script type="application/json">{"lang":"python","code":"x = 2\nprint(x)","steps":[{"lines":[1],"note":"値を代入"},{"lines":[2],"note":"表示する"}],"output":"2"}</script></m-code>
@@ -30,5 +32,5 @@ Python・R・shell の #、JavaScript（js）の // は文字列の外だけ mut
 
 注意：1184×440px が目安。16 行や 8 行の上限・幅・高さを超すテキストは layout を報告し、入る分を … で切る。説明が入らなければ layout を報告してその箱を描かない。最小の文字サイズでも箱が小さいと size を報告する。範囲が逆・0 以下・コードの行数外なら range を報告し、帯と接続線を省く。説明自体と段階数は保つ。
 
-ctx.lang の日英表示。role="img"、説明を順に含む最終状態の aria-label（作者の指定を保持）、aria-hidden の SVG。全コードと出力を sr-only の pre に保つ。img の子が読み上げ対象外になることを避けるため、pre はキーボードで到達できる role="document" とする。見本の売上データは架空。
+ctx.lang の日英表示。role="figure"、説明を順に含む最終状態の aria-label（作者の指定を保持）、aria-hidden の SVG。全コードと出力を、図の中の見えない pre に置く（フォーカスはしない）。見本の売上データは架空。
 <!-- llm: end -->
