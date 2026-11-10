@@ -6,6 +6,8 @@ Versions follow [README.md § Releases and versions](README.md#releases-and-vers
 
 ### Added
 
+- `m-code` 2.0.0 (planned components 2.6.0, stats): line-by-line code explanations, stacked notes and supplied output; bilingual accessible text, deterministic previews and range/layout/size reports.
+
 - `m-ci`, `m-folds`, `m-balance` 2.0.0 (planned components 2.6.0, stats): repeated confidence intervals, cross-validation splits and expectation as a balance point; bilingual accessible diagrams, deterministic seeking and data/size reports.
 
 - `m-sampling` 2.0.0 (planned components 2.6.0, stats): seeded samples with or without replacement, proportions/means and an accumulating sampling distribution; Japanese/English text, accessible final state and size reports.

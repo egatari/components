@@ -131,6 +131,7 @@ const TESTS = [
   ['test-cards', ['tools/test-cards.mjs', path.join(tmp, 'cards')]],
   ['test-particles', ['tools/test-particles.mjs', path.join(tmp, 'particles')]],
   ['test-sampling', ['tools/test-sampling.mjs', path.join(tmp, 'sampling')]],
+  ['test-code', ['tools/test-code.mjs', path.join(tmp, 'code')]],
   ['test-ci', ['tools/test-ci.mjs', path.join(tmp, 'ci')]],
   ['test-folds', ['tools/test-folds.mjs', path.join(tmp, 'folds')]],
   ['test-balance', ['tools/test-balance.mjs', path.join(tmp, 'balance')]],
