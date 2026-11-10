@@ -54,24 +54,37 @@ function mtext(parent, x, y, str, attrs){
   // 下付き・上付きは本文の 3/4、ただし 24px より小さくしない（図の字は 24px 以上。1.0.0 は 17px だった）。ずらしは字の大きさの
   // −0.25em・+0.45em（sub・super の語は字によってずれが違い、Source Sans 3 では下に 17px 近く落ちる）
   var subSize = Math.max(24, Math.round((+t.getAttribute("font-size") || 24) * 0.75));
-  var it = false, i = 0, buf = "";
-  function flush(extra){
-    if (!buf) return;
-    var s = el("tspan", extra || {}, t);
-    if (it){ s.setAttribute("font-style", "italic"); s.setAttribute("class", "mi"); }
-    s.textContent = buf; buf = "";
+  marks(str).forEach(function(m){
+    var s = el("tspan", m.shift ? {"baseline-shift": m.shift === "sub" ? "-0.25em" : "0.45em", "font-size": String(subSize)} : {}, t);
+    if (m.it){ s.setAttribute("font-style", "italic"); s.setAttribute("class", "mi"); }
+    s.textContent = m.text;
+  });
+  return t;
+}
+// mtext の記法を区切る（1.2.0）。* は対になるときだけ斜体：開く * の直後と閉じる * の直前が空白でなく、間に字があるとき
+// （markdown と同じ）。「A* 探索」「5*3」「注*」の * はそのまま。\* \_ \^ はその字そのもの。_x・^x は次の 1 字を下付き・上付きに
+function marks(str){
+  var out = [], it = false, buf = "", i = 0;
+  str = String(str == null ? "" : str);
+  function flush(shift){ if (buf){ out.push({text: buf, it: it, shift: shift || null}); buf = ""; } }
+  function closer(from){
+    for (var j = from; j < str.length; j++){
+      if (str[j] === "\\"){ j++; continue; }
+      if (str[j] === "*" && !/\s/.test(str[j - 1])) return true;
+    }
+    return false;
   }
   while (i < str.length){
     var c = str[i];
-    if (c === "*"){ flush(); it = !it; i++; }
+    if (c === "\\" && i + 1 < str.length && "*_^\\".includes(str[i + 1])){ buf += str[i + 1]; i += 2; }
+    else if (c === "*" && (it ? !/\s/.test(str[i - 1]) : i + 1 < str.length && !/[\s*]/.test(str[i + 1]) && closer(i + 2))){ flush(); it = !it; i++; }
     else if ((c === "_" || c === "^") && i + 1 < str.length){
-      flush(); buf = str[i + 1];
-      flush({"baseline-shift": c === "_" ? "-0.25em" : "0.45em", "font-size": String(subSize)});
+      flush(); buf = str[i + 1]; flush(c === "_" ? "sub" : "sup");
       i += 2;
     } else { buf += c; i++; }
   }
   flush();
-  return t;
+  return out;
 }
 
 // 字の幅の見積もり（px）。テーマの字で 1 字ずつ測った幅（em）を、字の種類ごとに表にした（2026-11 測定、普通と太字で同じ）。
@@ -94,7 +107,7 @@ function twTable(font){
 function textWidth(str, size, opts){
   opts = opts || {};
   var s = String(str == null ? "" : str), tb = twTable(opts.font), w = 0;
-  if (opts.mark) s = s.replace(/[*_^]/g, "");
+  if (opts.mark) s = marks(s).map(function(m){ return m.text; }).join("");
   for (var ch of s){ var e = 1; for (var i = 0; i < TW_CLASS.length; i++) if (TW_CLASS[i].test(ch)){ e = tb[i]; break; } w += e; }
   return w * (size || 24);
 }

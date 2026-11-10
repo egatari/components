@@ -120,13 +120,18 @@ try {
     const elOut = (lib) => ELS.map(([tag, attrs]) => { const p = document.createElementNS('http://www.w3.org/2000/svg', 'g'); const e = lib.el(tag, attrs, p); const e2 = lib.el(tag, attrs); return [e.namespaceURI, e.parentNode === p, p.innerHTML, e2.outerHTML, e2.parentNode === null]; });
     res.el = { n: ELS.length, same: JSON.stringify(elOut(B)) === JSON.stringify(elOut(DECK)) };
     // ------------------------------------------------ mtext
-    const STR = ['x', '', '*x*', '*x*_i', 'a^2+b^2', '*f*(*x*) = *x*^2', 'x_', 'x^', '**', '***', '_1_2', '^-1', 'σ^2 / *n*', '平均 *μ*', 'β_0 + β_1*x*', '*a*_*b*', '100%', '−3.5'];
+    const STR = ['x', '', '*x*', '*x*_i', 'a^2+b^2', '*f*(*x*) = *x*^2', 'x_', 'x^', '_1_2', '^-1', 'σ^2 / *n*', '平均 *μ*', 'β_0 + β_1*x*', '100%', '−3.5'];
     const ATTRS = [undefined, {}, { 'text-anchor': 'middle' }, { 'font-size': 30, fill: 'var(--term)' }, { fill: 'var(--muted)', style: 'font-weight:700' }];
     const mOut = (lib) => { const out = []; for (const s of STR) for (const a of ATTRS) { const p = document.createElementNS('http://www.w3.org/2000/svg', 'svg'); const t = lib.mtext(p, 12.5, 30, s, a && Object.assign({}, a)); out.push([t.parentNode === p, p.innerHTML]); } return out; };
     // base 1.1.0: a sub/superscript is 3/4 of the text, never under 24px (DECK.mtext: 17px); otherwise the same markup
     const shift = (v) => (v === 'sub' || v === '-0.25em' ? 'SUB' : 'SUP');
     const subless = (o) => JSON.stringify(o).replace(/baseline-shift=\\"(sub|super|-0\.25em|0\.45em)\\" font-size=\\"\d+/g, (_, v) => 'baseline-shift=' + shift(v) + ' S');
     const sizes = [...JSON.stringify(mOut(B)).matchAll(/baseline-shift=\\"(?:-0\.25em|0\.45em)\\" font-size=\\"(\d+)/g)].map((m) => +m[1]);
+    // base 1.2.0: a lone * stays literal (a pair needs non-space just inside, as in markdown); \\* \\_ \\^ escape
+    const plainText = (s) => { const p = document.createElementNS('http://www.w3.org/2000/svg', 'svg'); const t = B.mtext(p, 0, 0, s); return [t.textContent, t.querySelectorAll('[font-style=italic]').length, t.querySelectorAll('[baseline-shift]').length]; };
+    res.star = [['A* 探索', 'A* 探索', 0, 0], ['5*3', '5*3', 0, 0], ['注*', '注*', 0, 0], ['**', '**', 0, 0], ['* x *', '* x *', 0, 0], ['*x*', 'x', 1, 0], ['A* と *B*', 'A* と B', 1, 0],
+      ['a\\*b\\*', 'a*b*', 0, 0], ['max\\_depth', 'max_depth', 0, 0], ['x\\^2', 'x^2', 0, 0], ['*x*_1', 'x1', 1, 1], ['*a*_*b*', 'a*b*', 1, 1]].map(([s, txt, it, sh]) => { const g = plainText(s); return g[0] === txt && g[1] === it && g[2] === sh ? '' : s + ' → ' + JSON.stringify(g); }).filter(Boolean);
+    res.starW = B.textWidth('A* 探索', 24, { mark: true }) === B.textWidth('A* 探索', 24) && B.textWidth('max\\_depth', 24, { mark: true }) === B.textWidth('max_depth', 24);
     res.mtext = { n: STR.length * ATTRS.length, same: subless(mOut(B)) === subless(mOut(DECK)), sub: sizes.length, subMin: Math.min(...sizes) };
     // textWidth: per-font tables (measured), the widest table for an unknown font, mark: true skips *_^
     res.tw = { goth: B.textWidth('200000', 24, { font: '"BIZ UDPGothic", sans-serif' }), en: B.textWidth('200000', 24, { font: 'Source Sans 3' }),
@@ -230,6 +235,8 @@ try {
   ok(r.nums.nbad === 0, `clamp ≡ DECK.clamp01, lerp ≡ DECK.lerp, prog ≡ DECK.prog, prog(x, 0, 1) ≡ DECK.ease(x) (${r.nums.n} inputs${r.nums.nbad ? '; differ: ' + r.nums.bad.join(' | ') : ''})`);
   ok(r.el.same, `el ≡ DECK.el (${r.el.n} tag/attribute sets, with and without a parent)`);
   ok(r.mtext.same, `mtext ≡ DECK.mtext but for the sub/superscript size (${r.mtext.n} strings × attributes)`);
+  ok(!r.star.length, 'lone * stays literal, pairs italicise, \\* \\_ \\^ escape (A* 探索, 5*3, max\\_depth): ' + r.star.join('; '));
+  ok(r.starW, 'textWidth mark: true counts a lone * and escaped characters like mtext draws them');
   ok(r.mtext.sub > 0 && r.mtext.subMin >= 24, `sub/superscripts are 24px or more (${r.mtext.sub}, smallest ${r.mtext.subMin})`);
   ok(r.tw.goth === 108 && r.tw.en === 72 && r.tw.unknown === 108 && r.tw.cjk === 90 && r.tw.mark, `textWidth: 200000 at 24px is 108 (Gothic), 72 (Source Sans 3), 108 (unknown font); 日本語 at 30 is 90; *_^ skipped (${JSON.stringify(r.tw)})`);
   ok(r.me.same && r.me.warned > 0, `MotionElement ≡ DECK.MotionElement: steps, from, props, data, defaults, caching and warnings (${r.me.n} cases, ${r.me.warned} warnings compared)` + (r.me.diff.length ? '\n     ' + r.me.diff.map((d) => d.join('\n     ')).join('\n     ') : ''));
