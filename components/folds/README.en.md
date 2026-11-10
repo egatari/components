@@ -7,7 +7,7 @@ props:
 ---
 
 JSON:
-- `k`: integer 2–10; k=5 needs ≥316px height (264px without errors), default size.
+- `k`: 2–10; k=5: ≥316px tall (264 without errors)
 - `errors`: k errors (optional).
 - `labels`: k names (optional).
 
