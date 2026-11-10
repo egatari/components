@@ -10,7 +10,17 @@ steps: 結果の札→対応の矢印→同じ値の色と個数・確率の和�
 purposes: model, grouping
 props: dur, stagger, digits, size
 ---
+確率変数を「結果を数に対応させる規則」として見せる（結果 → 値 → 分布）。
 
+```html
+<m-mapping style="height:440px"><script type="application/json">{"outcomes":[{"label":"表表","x":2},{"label":"表裏","x":1},{"label":"裏表","x":1},{"label":"裏裏","x":0}],"picture":"coins"}</script></m-mapping>
+```
+
+- `outcomes`：2〜12 個。`label`、`x`（数）、`p`（省略すれば等確率。合計が 1 でなければ知らせる）
+- `name`（既定 X）・`fractions`（既約分数）
+- `picture`：`dots`・`grapes`（x 個）・`dice`（label の目）・`coins`（◯表 ●裏）・`balls`（色の名前の列。基本の 11 色、名前も書く）
+
+<!-- llm: omit -->
 高校の数学 B・大学初年の確率で、確率変数を「結果を数に対応させる規則」として説明するときに使う。左に標本空間 Ω の結果、中央に数値の箱、右に分布の横棒を置く。最後は対応と確率分布を一緒に読める。分布が予想の答えになるため、プレビューでも先の段階を見せない。
 
 ```html
@@ -33,7 +43,6 @@ props: dur, stagger, digits, size
 
 読み上げは全結果の対応、各値の確率、合計を説明する。作者の `aria-label` があれば保つ。言語は要素の `lang` または `ctx.lang` に従う。図は縦書きの教材でも横書き。
 
-<!-- llm: omit -->
 ぶどうの例は架空。房ごとの粒の数を X とする（picture: "grapes"）。
 
 注意：確率を併記する札が 6 個ある例は高さ 440px に詰めない。狭い数値間隔や長い名前は要素を大きくするか材料を分けて直す。
