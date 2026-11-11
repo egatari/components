@@ -2,6 +2,10 @@
 
 The part's own versions (Egatari spec §6.1). Releases of the whole library are in the repository's CHANGELOG.md.
 
+## 2.1.0 (components 2.7.0)
+
+- Colour ramps (spec §8.4 `--ramp-1` … `--ramp-5`): on a theme with ramps, class i of `values` takes the ramp at t = i/(n−1) (base `ramp`), in the map and the legend; the legend with values and the readable list stay. Every stop falls back to the 2.0.3 class colour (mixed from --bg, --term and --fg), so themes without ramps give the same colours. The lightness-gap report is not made on ramp themes (the theme chooses the stops). Requires the next base (ramp, rampStops).
+
 ## 2.0.3 (components 2.4.4)
 
 - Declares static glyphs (built-in names, captions and figures, including the English names), so a built lesson keeps those characters when it subsets its fonts. Without them, built-in names such as Takeshima were drawn in a fallback font and overflowed their label boxes.
