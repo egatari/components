@@ -27,7 +27,7 @@ return class extends base.MotionElement {
     fade:  {type: "number", default: 0.5, doc: "点が現れる秒数"},
     move:  {type: "number", default: 1.2, doc: "to の移動の秒数"},
     size:  {type: "number", default: 26, doc: "点の名前の字の大きさ（px）"},
-    "quads-step": {type: "number", default: 0, doc: "象限の名前を出す段階（0 = 初めから）"},
+    "quads-step": {type: "number", default: 0, doc: "象限の名前を出すステップ（0 = 初めから）"},
   };
   get steps(){
     if (this.getAttribute("steps") !== null) return +this.getAttribute("steps");

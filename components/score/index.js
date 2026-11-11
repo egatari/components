@@ -352,7 +352,7 @@ return class extends base.MotionElement {
   static props = {
     by: {type: "string", default: "note", doc: "note（1 音・和音ずつ）| measure（1 小節ずつ）"},
     names: {type: "string", default: "none", doc: "符頭の下の名前：solfa（ドレミ）| abc | iroha（ハニホ）| none"},
-    "per-step": {type: "number", default: 1, doc: "by=\"measure\" で 1 段階にまとめる小節の数（既定 1）。1 段階が 1.2 秒以上になるように。弱起の小節は次の小節とまとめる"},
+    "per-step": {type: "number", default: 1, doc: "by=\"measure\" で 1 ステップにまとめる小節の数（既定 1）。1 ステップが 1.2 秒以上になるように。弱起の小節は次の小節とまとめる"},
   };
   get steps(){
     if (this.getAttribute("steps") !== null) return +this.getAttribute("steps");

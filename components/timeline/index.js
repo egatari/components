@@ -46,10 +46,10 @@ var Part = class extends base.MotionElement {
   static props = {
     orient:     {type: "string", default: "h", doc: "h（左から右へ）か v（上から下へ）"},
     scale:      {type: "string", default: "time", doc: "time（時間に比例した間隔）か even（等間隔。間がとても不ぞろいなとき）"},
-    "per-step": {type: "number", default: 1, doc: "1 段階に出す出来事の数（0 = 全部を段階 1 で）"},
+    "per-step": {type: "number", default: 1, doc: "1 ステップに出す出来事の数（0 = 全部をステップ 1 で）"},
     size:       {type: "number", default: 26, doc: "名前の字の大きさ（px。入らなければ 24 まで縮める）"},
     dur:        {type: "number", default: 0.6, doc: "1 つの出来事が現れる秒数"},
-    stagger:    {type: "number", default: 0.3, doc: "同じ段階の出来事の出だしのずれ（秒）"},
+    stagger:    {type: "number", default: 0.3, doc: "同じステップの出来事の出だしのずれ（秒）"},
     unit:       {type: "string", default: "", doc: "目盛り：day・week・month"},
     today:      {type: "string", default: "", doc: "今日の線（YYYY-MM-DD）"},
   };

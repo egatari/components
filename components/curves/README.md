@@ -13,7 +13,7 @@ props: xr, yr, xt, yt, xf, yf, xl, yl, n, dur, lw, size
 「一つの図で比較の軸を一つずつ見せる」ときに使う。
 
 系列は子の `<script type="application/json">` に配列で書く。
-1 系列 = 1 段階（書いた順）。`step` で変えられ、同じ `step` の系列は一緒に引く。口述原稿の [n] はこの段階に合わせる。
+1 系列 = 1 ステップ（書いた順）。`step` で変えられ、同じ `step` の系列は一緒に引く。台本の [n] はこのステップに合わせる。
 
 | 欄 | 意味 |
 |---|---|
@@ -34,10 +34,10 @@ props: xr, yr, xt, yt, xf, yf, xl, yl, n, dur, lw, size
 古い書き方（今も動く。AI 向けの説明には書かない）
 
 - `color`：`tone` の古い名前（両方あれば `tone`）。`var(--…)` もそのまま使える
-- `at`：`labelAt` の古い名前で、`labelAt` がないときだけ効く。ほかの部品（`m-scatter` など）の `at` は「段階の中の開始秒」なので意味がぶつかる。かといって `at` を開始秒に変えると古い教材の名前の位置が変わるので、`at` は名前の位置のまま残し、説明には `labelAt` だけを書く
+- `at`：`labelAt` の古い名前で、`labelAt` がないときだけ効く。ほかのパーツ（`m-scatter` など）の `at` は「ステップの中の開始秒」なので意味がぶつかる。かといって `at` を開始秒に変えると古い教材の名前の位置が変わるので、`at` は名前の位置のまま残し、説明には `labelAt` だけを書く
 - `anchor` の `start` `middle` `end`：text-anchor そのもの（`right` = `start`、`left` = `end`、`above` / `below` は `middle` で、点の上・下に約 0.9 字ぶん離す。`below` が軸の下にはみ出すときは上に置く）
-- `step` を書かなければ系列 i（0 から）は段階 i + 1 で、今までと同じ。授業の表示（`ctx.preview`）では、`step` があってもなくても、後の段階の線と名前を引き終えた形でテーマの `--preview-opacity` の薄さで見せる
-- 見本は `demo.html`（予測分布と代表値、損失関数の形、段階をそろえた線と `below` の名前）
+- `step` を書かなければ系列 i（0 から）はステップ i + 1 で、今までと同じ。授業の表示（`ctx.preview`）では、`step` があってもなくても、後のステップの線と名前を引き終えた形でテーマの `--preview-opacity` の薄さで見せる
+- 見本は `demo.html`（予測分布と代表値、損失関数の形、ステップをそろえた線と `below` の名前）
 - 使いどころは motion-slides スキル §6「線を 1 本ずつ引く」
 - 系列の語（`label` `tone` `step` `anchor`）は `m-scatter` と同じ（共通の決まり §3）
 <!-- llm: end -->

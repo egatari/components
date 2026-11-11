@@ -140,7 +140,7 @@ return class extends base.MotionElement {
   static props = {
     size: {type: "number", default: 34, doc: "本文の字の大きさ（px）"},
     tate: {type: "bool", default: false, doc: "縦書きにする（品詞は語の左、現代語訳は文の左に）"},
-    yaku: {type: "bool", default: true, doc: "現代語訳（= の行）があれば、最後の段階で並べる"},
+    yaku: {type: "bool", default: true, doc: "現代語訳（= の行）があれば、最後のステップで並べる"},
     fade: {type: "number", default: 0.6, doc: "1 文の品詞分解を出す秒数"},
     detail: {type: "bool", default: false, doc: "品詞の下に [ ] の中をすべて（活用の種類・活用形など）出す"},
   };

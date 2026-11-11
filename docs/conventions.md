@@ -1,16 +1,16 @@
-# Shared conventions for components (draft)
+# Shared conventions for parts (draft)
 
 [日本語](conventions.ja.md)
 
-> Draft (2026-10-24), reviewed by the standards work, not yet by the owner. Component names are working names and become final when this document is approved.
+> Draft (2026-10-24), reviewed by the standards work, not yet by the owner. Part names are working names and become final when this document is approved.
 
-The 8 components added in v1.2.0 (`m-compare` `m-timeline` `m-fishbone` `m-cycle` `m-scatter` `m-tree` `m-pie` `m-venn`) follow these conventions from the start. Existing components adopt them gradually, without changing how existing lessons look ([1.6](#16-adding-variants-to-an-existing-component)).
+The 8 parts added in v1.2.0 (`m-compare` `m-timeline` `m-fishbone` `m-cycle` `m-scatter` `m-tree` `m-pie` `m-venn`) follow these conventions from the start. Existing parts adopt them gradually, without changing how existing lessons look ([1.6](#16-adding-variants-to-an-existing-part)).
 
-Variants are defined in spec [§8.4](https://github.com/egatari/egatari-spec/blob/main/egatari-1.0.md#84-component-contract-summary). The component contract (`render(k, t)` depends only on the step and the time, colours only through theme variables, and so on) is in Studio's [contract](https://github.com/egatari/egatari-studio/blob/main/docs/contract.md) and in [CONTRIBUTING](../CONTRIBUTING.md). This document adds to it.
+Variants are defined in spec [§8.4](https://github.com/egatari/egatari-spec/blob/main/egatari-1.0.md#84-component-contract-summary). The part contract (`render(k, t)` depends only on the step and the time, colours only through theme variables, and so on) is in Studio's [contract](https://github.com/egatari/egatari-studio/blob/main/docs/contract.md) and in [CONTRIBUTING](../CONTRIBUTING.md). This document adds to it.
 
 1. [Variants](#1-variants)
 2. [Box-and-line diagrams](#2-box-and-line-diagrams-timeline-cycle-tree-cause-and-effect)
-3. [Chart components](#3-chart-components)
+3. [Chart parts](#3-chart-parts)
 4. [Declaring purposes](#4-declaring-purposes)
 5. [Decided and deferred](#5-decided-and-deferred)
 6. [Interactive parts](#6-interactive-parts)
@@ -19,7 +19,7 @@ Variants are defined in spec [§8.4](https://github.com/egatari/egatari-spec/blo
 
 ### 1.1 Why
 
-When a component always appears the same way, every lesson starts to look alike (the number cards always count up). Each component therefore has a few variants. The first one is the default; an author (or the AI writing the lesson) picks another by name with `variant`. There is no lesson seed: until egatari-spec 28d8801 a lesson's `data-egatari-seed` chose among them, and Studio no longer writes it (spec §8.4).
+When a part always appears the same way, every lesson starts to look alike (the number cards always count up). Each part therefore has a few variants. The first one is the default; an author (or the AI writing the lesson) picks another by name with `variant`. There is no lesson seed: until egatari-spec 28d8801 a lesson's `data-egatari-seed` chose among them, and Studio no longer writes it (spec §8.4).
 
 ### 1.2 What a variant may and may not change
 
@@ -29,36 +29,36 @@ A variant changes only **how things appear within a step and where the eye is le
 |---|---|
 | How things appear (fade, rise, per digit, drawing a line, …) | The number of steps (`steps`) |
 | The order of motion within a step (left to right, largest first, …) | The step length (`duration(k)`) and cues (`cues(k)`) |
-| Whether there is an attention mark (underline, frame) | What the final state (`t = Infinity`) says: text, numbers, positions, the meaning of colours |
+| Whether there is emphasis (underline, frame) | What the final state (`t = Infinity`) says: text, numbers, positions, the meaning of colours |
 | | The colours (theme variables only) |
 | | The upper bound of motion: no longer, farther or more often than variant 0 |
 
-Because steps, lengths and cues stay the same, the narration, video timing, captions, lecture view, print and screen readers are the same whatever the variant.
+Because steps, lengths and cues stay the same, the script, video timing, captions, lecture view, print and screen readers are the same whatever the variant.
 
 - **Motion only guides attention.** No decorative motion (bouncing, spinning or wobbling that keeps going). Every variant finishes moving and stops within its step.
-- **Every variant honours `prefers-reduced-motion`.** With that setting the runtime draws at `t = Infinity` (`kit/deck.js`), so in every variant the final state must be readable on its own. A variant whose final state keeps an attention mark (an underline) may only use marks that make sense in a still picture (an underline saying "this number matters" is fine; a mark that only means something while moving is not).
-- **Lecture view** (previewing later steps; since spec §8.4 a flag, `ctx.preview === true`, while `ctx.mode` is "talk" | "learn" | "video"). Components test `ctx.preview || ctx.mode === "lecture"`, so they work both with the current bundled player (which passes `ctx.mode === "lecture"`) and with the next one (which passes `ctx.preview`). Under preview (spec §8.4 "Answers under preview", Player P1):
-  - **Every component answers**: it draws the content its later steps would add, in its final state (no motion), at the theme's `--preview-opacity`, the same in every variant. Read it on the element, `parseFloat(getComputedStyle(this).getPropertyValue("--preview-opacity"))`, and fall back to 0.45 only when it is missing; never hard-code the value. Nothing that changes is drawn brighter than that.
-  - The current step renders as usual; earlier steps are complete. Content the component shows at step 0 anyway is unchanged.
+- **Every variant honours `prefers-reduced-motion`.** With that setting the runtime draws at `t = Infinity` (`kit/deck.js`), so in every variant the final state must be readable on its own. A variant whose final state keeps emphasis (an underline) may only use marks that make sense in a still picture (an underline saying "this number matters" is fine; a mark that only means something while moving is not).
+- **Lecture view** (previewing later steps; since spec §8.4 a flag, `ctx.preview === true`, while `ctx.mode` is "talk" | "learn" | "video"). Parts test `ctx.preview || ctx.mode === "lecture"`, so they work both with the current bundled player (which passes `ctx.mode === "lecture"`) and with the next one (which passes `ctx.preview`). Under preview (spec §8.4 "Answers under preview", Player P1):
+  - **Every part answers**: it draws the content its later steps would add, in its final state (no motion), at the theme's `--preview-opacity`, the same in every variant. Read it on the element, `parseFloat(getComputedStyle(this).getPropertyValue("--preview-opacity"))`, and fall back to 0.45 only when it is missing; never hard-code the value. Nothing that changes is drawn brighter than that.
+  - The current step renders as usual; earlier steps are complete. Content the part shows at step 0 anyway is unchanged.
   - Controls stay inert for faint content (no pointer events, not focusable; m-menu's later cards).
-  - **Exempt components** are the ones whose later steps are an answer the audience should work out first: they declare `static preview = "none";` in index.js and show nothing ahead (exactly what they draw without preview). `tools/lint.mjs` reads the flag (the only value is `"none"`) and `tools/release.mjs` writes it to manifest.json as `components.<name>.preview: "none"`, beside `interactive`, `group` and `tile`. Exempt today: `m-predict` (the answer), `m-hissan` (the digits are the computation), `m-timer` (time ahead is not content), `m-orbit` (the later phases are what the class predicts).
-  - Not exempt: `m-kanbun`'s reading order and `m-kobun`'s parts of speech preview like everything else. For a particular answer (an exercise, one reading order), the author marks the element `data-preview="none"` and the player keeps it hidden; components do nothing for that.
-  - `tools/test-preview.mjs` renders every demo with and without `ctx.preview`: a component that answers draws more at step 0, at `--preview-opacity`; an exempt component draws exactly the same; every component is one or the other.
-- **The first variant (variant 0, the default)** is the current rendering for existing components, and the quietest one (fade in) for new components.
+  - **Exempt parts** are the ones whose later steps are an answer the audience should work out first: they declare `static preview = "none";` in index.js and show nothing ahead (exactly what they draw without preview). `tools/lint.mjs` reads the flag (the only value is `"none"`) and `tools/release.mjs` writes it to manifest.json as `components.<name>.preview: "none"`, beside `interactive`, `group` and `tile`. Exempt today: `m-predict` (the answer), `m-hissan` (the digits are the computation), `m-timer` (time ahead is not content), `m-orbit` (the later phases are what the class predicts).
+  - Not exempt: `m-kanbun`'s reading order and `m-kobun`'s parts of speech preview like everything else. For a particular answer (an exercise, one reading order), the author marks the element `data-preview="none"` and the player keeps it hidden; parts do nothing for that.
+  - `tools/test-preview.mjs` renders every demo with and without `ctx.preview`: a part that answers draws more at step 0, at `--preview-opacity`; an exempt part draws exactly the same; every part is one or the other.
+- **The first variant (variant 0, the default)** is the current rendering for existing parts, and the quietest one (fade in) for new parts.
 
 ### 1.3 Attributes
 
 | Where | Syntax | Meaning |
 |---|---|---|
-| Component | `variant="name"` | Chooses a variant by name (for example when the author asks for "counting up"). Without it, the first variant |
+| Part | `variant="name"` | Chooses a variant by name (for example when the author asks for "counting up"). Without it, the first variant |
 
 - An unknown `variant` name gives a `console.warn` and the first variant.
-- `variant` is common to all components and is not listed in `static props`.
-- `seed="N"` on a component and `data-egatari-seed` on the lesson are no longer read (no warning): lessons that still carry them draw the first variant unless they name one.
+- `variant` is common to all parts and is not listed in `static props`.
+- `seed="N"` on a part and `data-egatari-seed` on the lesson are no longer read (no warning): lessons that still carry them draw the first variant unless they name one.
 
 ### 1.4 How a variant is chosen
 
-A component declares its variant names in order; the first is the default (variant 0).
+A part declares its variant names in order; the first is the default (variant 0).
 
 ```js
 static variants = ["count", "rise", "flip", "underline"];
@@ -66,34 +66,34 @@ static variants = ["count", "rise", "flip", "underline"];
 
 The README frontmatter lists the same (`variants: count, rise, flip, underline`), so CATALOG.md shows them. The README says the first is the default in a few words (「書かなければ最初の見せ方」).
 
-1. If the component's `variant` attribute names one of its variants, that variant.
+1. If the part's `variant` attribute names one of its variants, that variant.
 2. Otherwise the first variant.
 
 Consequences:
 
-- Every instance of a component without `variant` looks the same, in every lesson. A lesson varies its look by naming variants.
+- Every instance of a part without `variant` looks the same, in every lesson. A lesson varies its look by naming variants.
 - **Adding a variant never changes a lesson**, as long as it is added after the first. The first variant is never replaced or reordered once released; a released variant name never changes (lessons name it). Retiring a variant other than the first changes only the lessons that name it (they get the first, with a warning).
 - A variant that needs randomness (shuffling the order cards appear in, say) derives it from the data and the attributes, never from `Math.random` (as before).
 
-### 1.5 How a component reads its variant
+### 1.5 How a part reads its variant
 
-The choice is a small function in `tools/variant.js`, copied into the components that use it the same way as `tools/expr.js` (`node tools/variant-sync.mjs` rewrites a marked block; the tests catch a component that was not synced). Inside the component:
+The choice is a small function in `tools/variant.js`, copied into the parts that use it the same way as `tools/expr.js` (`node tools/variant-sync.mjs` rewrites a marked block; the tests catch a part that was not synced). Inside the part:
 
 ```js
 // once, in mount
 this.variant = VARIANT.of(this);   // "count" | "rise" | …
 ```
 
-`VARIANT.of` reads the component's `static variants` through `customElements.get(tag)` (component code may not write `.constructor`), then the `variant` attribute, and chooses as in 1.4. `tools/test-variant.mjs` checks every component that has variants.
+`VARIANT.of` reads the part's `static variants` through `customElements.get(tag)` (part code may not write `.constructor`), then the `variant` attribute, and chooses as in 1.4. `tools/test-variant.mjs` checks every part that has variants.
 
-Alternatively Studio's component base class (`DECK.MotionElement`) could provide the same thing (`this.variant`), which would make the copied function unnecessary. That is a Studio change, to be discussed with dev after v0.4.8. Until then everything stays inside the components library.
+Alternatively Studio's part base class (`DECK.MotionElement`) could provide the same thing (`this.variant`), which would make the copied function unnecessary. That is a Studio change, to be discussed with dev after v0.4.8. Until then everything stays inside the components library.
 
-### 1.6 Adding variants to an existing component
+### 1.6 Adding variants to an existing part
 
 - **The first variant does not change by a single pixel.** Lessons that do not name a variant (all existing lessons, with or without an old seed) look the same. `tools/test-default-variant.mjs` compares each demo's screenshots (mid-step and final) with those of the last release; demo slides that name a variant are compared too. One owner-approved exception: v2.2.0 (base 1.1.0's measured text widths and 24px sub/superscripts) moves layouts in every part, so against an older baseline only the default variant's name is compared.
 - Removing the seed changed nothing for lessons without one: seed 0 always gave the first variant. A lesson that carried a non-zero `data-egatari-seed` (or a `seed` attribute) and pins v1.10.0 or earlier keeps its look; moved to a newer release, it shows the first variant of each part it does not name.
-- A lesson pins its component versions (spec [§6](https://github.com/egatari/egatari-spec/blob/main/egatari-1.0.md#6-components-and-profiles)), so a lesson changes look only when its author moves to a newer release. Adding variants is a minor version and goes in the CHANGELOG.
-- If an existing prop overlaps with a variant, the prop wins. For example `count="false"` on `m-kpi` still means "do not count": if a counting variant (`count`, `flip`) is chosen, the component uses the non-counting one (`rise`) and logs a `console.info` once saying why.
+- A lesson pins its part versions (spec [§6](https://github.com/egatari/egatari-spec/blob/main/egatari-1.0.md#6-components-and-profiles)), so a lesson changes look only when its author moves to a newer release. Adding variants is a minor version and goes in the CHANGELOG.
+- If an existing prop overlaps with a variant, the prop wins. For example `count="false"` on `m-kpi` still means "do not count": if a counting variant (`count`, `flip`) is chosen, the part uses the non-counting one (`rise`) and logs a `console.info` once saying why.
 
 ### 1.7 Example: `m-kpi`
 
@@ -110,7 +110,7 @@ All four keep today's step length (`at + dur`, plus 0.4 s with a delta) and the 
 
 ### 2.1 Principle: no coordinates in the data
 
-`m-flow` takes box coordinates in px, which is right when the author wants to fix the shape by hand. When an AI writes them, boxes overlap, overflow and drift. The four new components (`m-timeline` `m-cycle` `m-tree` `m-fishbone`) take **only the content and the connections; the component lays them out**.
+`m-flow` takes box coordinates in px, which is right when the author wants to fix the shape by hand. When an AI writes them, boxes overlap, overflow and drift. The four new parts (`m-timeline` `m-cycle` `m-tree` `m-fishbone`) take **only the content and the connections; the part lays them out**.
 
 `m-flow` stays as it is, for diagrams with coordinates. The four new ones use the same field names as `m-flow`.
 
@@ -124,14 +124,14 @@ The child JSON is always `{"nodes": [...], "edges": [...]}`; `edges` may be omit
 |---|---|
 | `id` | String or integer, used to refer to the node |
 | `label` | The box text (short; `\n` for a line break; `*italic*` `_sub` `^sup` as in `m-flow`), or `tex` (KaTeX) |
-| `note` | Supplementary text (`--muted`). Under the box or as the box's last line, whichever avoids the lines; the component decides and its README says which (timeline and cycle: inside; tree and fishbone: under) |
+| `note` | Supplementary text (`--muted`). Under the box or as the box's last line, whichever avoids the lines; the part decides and its README says which (timeline and cycle: inside; tree and fishbone: under) |
 | `tone` | `term` (default), `emph`, `muted`, `accent2`, `series-1..4` |
 | `step` | The step the node appears at (default: 2.4) |
 | `at` | Start time within the step, in seconds |
 
-**Fields per component**:
+**Fields per part**:
 
-| Component | Field | Meaning |
+| Part | Field | Meaning |
 |---|---|---|
 | `m-timeline` | `when`, `end`, `whenLabel` | A time (a number, or a string such as `"1868"`, `"2026-10"`, `"2026-10-24"`). With `end`, a period (drawn as a band). **`end` is exclusive** (the moment it ends: `"1912"` is the start of 1912), so Meiji 1868–1912 and Taishō 1912–1926 share a lane; to include December, write the next month (`"2027-01"`). `whenLabel` is the date text shown (`明治元年`); the position still comes from `when` |
 | `m-cycle` | (array order) | The cycle runs in array order; the arrow from the last back to the first is drawn automatically |
@@ -157,17 +157,17 @@ Example (timeline):
 - Box widths are estimated from character counts (as in `m-kpi`; no waiting for fonts). Boxes, and text and lines, stay at least 4 px apart (checked by `tools/test-components.mjs`, as for `m-flow`).
 - Direction is the `orient` attribute: `m-timeline` `h` (default, left to right) or `v` (top to bottom); `m-tree` `down` (default) or `right`; `m-fishbone` head on the right (default). `m-cycle` starts at 12 o'clock and runs clockwise.
 - `m-timeline` spacing is the `scale` attribute: `time` (default, proportional to time) or `even` (equal spacing, for very uneven gaps). Labels alternate above and below the axis.
-- Lines that connect boxes to boxes or to the axis are `--muted`, 3 px (`--line` is too faint on a projector, as seen in the 2026-10-23 workshop). `--line` is only for grid lines (and separators that carry no ticks or labels). An axis that carries ticks or labels is information and uses `--muted` (the timeline axis, its ticks, and its tick labels at the figure's text size). Axes drawn by `DECK.Plot` (`m-curves`, `m-scatter`) stay `--fg`. The arrowhead is the same in every component; emphasised lines use the `tone` colour.
-- **Text contrast**: every component text reaches at least 4.5:1 against what is under it (background, box fill), in the default, kokugo and business themes (measured by `tools/test-contrast.mjs`). Text that carries information (box text, edge labels, values) is `--fg` or its `tone` colour; `--muted` is for supplementary notes only. A `--muted` note on a tinted fill (`--emph-tint` and the like) becomes `--fg` when it would fall below 4.5:1.
+- Lines that connect boxes to boxes or to the axis are `--muted`, 3 px (`--line` is too faint on a projector, as seen in the 2026-10-23 workshop). `--line` is only for grid lines (and separators that carry no ticks or labels). An axis that carries ticks or labels is information and uses `--muted` (the timeline axis, its ticks, and its tick labels at the figure's text size). Axes drawn by `DECK.Plot` (`m-curves`, `m-scatter`) stay `--fg`. The arrowhead is the same in every part; emphasised lines use the `tone` colour.
+- **Text contrast**: every part text reaches at least 4.5:1 against what is under it (background, box fill), in the default, kokugo and business themes (measured by `tools/test-contrast.mjs`). Text that carries information (box text, edge labels, values) is `--fg` or its `tone` colour; `--muted` is for supplementary notes only. A `--muted` note on a tinted fill (`--emph-tint` and the like) becomes `--fg` when it would fall below 4.5:1.
 - One "main line" per diagram (the fishbone spine, the timeline axis) may be up to 5 px.
 - `m-flow`'s edges were already `--fg`, darker than `--muted`, so they stay. Its edge labels and the text of `muted` boxes became `--fg` in v1.2.0 (owner-approved; existing lessons change; issue #1).
-- No vertical writing (that is for the kokugo components).
+- No vertical writing (that is for the kokugo parts).
 
 ### 2.4 Step order (defaults)
 
 From the "steps" column of the purpose table that goes into the AI instructions (parts-map, section 10).
 
-| Component | Default steps | Change with |
+| Part | Default steps | Change with |
 |---|---|---|
 | `m-timeline` | One event at a time, in time order. The axis appears with the first event | `per-step`, node `step` |
 | `m-cycle` | One stage at a time. The arrow back to the first stage appears with the last stage | `per-step`, node `step` |
@@ -187,21 +187,21 @@ Following section 1, the four share variant names:
 
 The total motion of `draw` and `grow` stays within `fade`'s duration and travel (no more motion than variant 0, 1.2).
 
-## 3. Chart components
+## 3. Chart parts
 
-`m-scatter` `m-pie` `m-compare` `m-venn` are not box-and-line diagrams, but reuse the attribute names of existing components.
+`m-scatter` `m-pie` `m-compare` `m-venn` are not box-and-line diagrams, but reuse the attribute names of existing parts.
 
-- Components with axes (`m-scatter`) use the names of `m-curves`: `xr` `yr` (range), `xt` `yt` (ticks), `xf` `yf` (tick format), `xl` `yl` (axis labels). `m-sweep` uses the same names but has no `xf` `yf`.
-- Components that show numbers use `unit` and `digits` (as `m-bars` and `m-kpi`).
-- Chart parts share one series vocabulary: `label`, `tone`, `step`, `at` (start s within the step), `anchor` (right/left/above/below for a label; `top`/`bottom` are accepted as aliases of above/below), `labelAt` (x where a line's name goes). `m-curves`'s older `color`, `at` (the x of the name) and `anchor` values `start` `middle` `end` still work but are not documented for authors (`at` would clash with the other components, so `m-curves` does not use it as a start time).
-- Step defaults come from the same table as 2.4: scatter shows the points, then the trend; Venn shows the sets, then the overlap; compare shows one side, then the other, then the difference. A pie is shown whole (slice by slice only if the narration discusses each slice in turn).
+- Parts with axes (`m-scatter`) use the names of `m-curves`: `xr` `yr` (range), `xt` `yt` (ticks), `xf` `yf` (tick format), `xl` `yl` (axis labels). `m-sweep` uses the same names but has no `xf` `yf`.
+- Parts that show numbers use `unit` and `digits` (as `m-bars` and `m-kpi`).
+- Chart parts share one series vocabulary: `label`, `tone`, `step`, `at` (start s within the step), `anchor` (right/left/above/below for a label; `top`/`bottom` are accepted as aliases of above/below), `labelAt` (x where a line's name goes). `m-curves`'s older `color`, `at` (the x of the name) and `anchor` values `start` `middle` `end` still work but are not documented for authors (`at` would clash with the other parts, so `m-curves` does not use it as a start time).
+- Step defaults come from the same table as 2.4: scatter shows the points, then the trend; Venn shows the sets, then the overlap; compare shows one side, then the other, then the difference. A pie is shown whole (slice by slice only if the script discusses each slice in turn).
 - Stacked bars become an `m-bars` attribute (`stack`). Variant 0 rendering does not change.
 
 ## 4. Declaring purposes
 
 ### 4.1 The list of purposes
 
-The purposes a component can serve (shown to people as 「伝えたいこと」 / "What to convey") are listed in one file in this repository (`purposes.json`), which is also the single source of Studio's new-deck tiles: `tile` is `"own"`, `{"into": id}` (folded into that tile) or `"none"` (arrives through a subject's part set); `label` is the tile's short name, `icon` an icon key, `examples` the tile's small text. A reserved id has no tile until a component serves it; it then comes with a proposed `tile`, reviewed at release (by the owner if it adds a tile), taken from the tables in sections 8 and 10 of the parts map. Each entry has an `id`, Japanese and English names, and the default step pattern in words.
+The purposes a part can serve (shown to people as 「伝えたいこと」 / "What to convey") are listed in one file in this repository (`purposes.json`), which is also the single source of Studio's new-lesson tiles: `tile` is `"own"`, `{"into": id}` (folded into that tile) or `"none"` (arrives through a subject's part set); `label` is the tile's short name, `icon` an icon key, `examples` the tile's small text. A reserved id has no tile until a part serves it; it then comes with a proposed `tile`, reviewed at release (by the owner if it adds a tile), taken from the tables in sections 8 and 10 of the parts map. Each entry has an `id`, Japanese and English names, and the default step pattern in words.
 
 | id | Purpose | Default steps |
 |---|---|---|
@@ -226,16 +226,16 @@ The purposes a component can serve (shown to people as 「伝えたいこと」 
 | `music` | Music (pitch, chords, rhythm) | One note or chord at a time |
 | `model` | How it works (a model; science models, `tile: "none"`, reached through the science set) | The whole, then the motion one stage at a time |
 
-| `deviation` | Deviation, increase and decrease (diverging bars, waterfall) | (reserved; no component yet) |
-| `concept-links` | Concept links (concept map) | (reserved; no component yet) |
+| `deviation` | Deviation, increase and decrease (diverging bars, waterfall) | (reserved; no part yet) |
+| `concept-links` | Concept links (concept map) | (reserved; no part yet) |
 
-The list may grow, but an `id` never changes (lessons and instructions record it). `deviation` and `concept-links` are gaps in section 8 of the parts map; their ids are reserved now so they stay stable. `spatial` (place) is added when the map component arrives.
+The list may grow, but an `id` never changes (lessons and instructions record it). `deviation` and `concept-links` are gaps in section 8 of the parts map; their ids are reserved now so they stay stable. `spatial` (place) is added when the map part arrives.
 
-### 4.1.1 Mentioning other components in a README
+### 4.1.1 Mentioning other parts in a README
 
-The AI instructions carry only the READMEs of the components a lesson can use, and Studio drops a clause that names a component not in the pack. So a mention of another component ("to compare amounts, use `m-bars`", "names and meanings as in `m-curves`") goes in **a sentence of its own or a closing parenthetical**, never in the middle of an attribute description (dropping it would drop the description too). Consistency notes between components ("as in m-tree") are for maintainers: put them in `<!-- llm: omit -->` or leave them out.
+The AI instructions carry only the READMEs of the parts a lesson can use, and Studio drops a clause that names a part not in the pack. So a mention of another part ("to compare amounts, use `m-bars`", "names and meanings as in `m-curves`") goes in **a sentence of its own or a closing parenthetical**, never in the middle of an attribute description (dropping it would drop the description too). Consistency notes between parts ("as in m-tree") are for maintainers: put them in `<!-- llm: omit -->` or leave them out.
 
-### 4.2 Declaring them in a component
+### 4.2 Declaring them in a part
 
 The README frontmatter gets `purposes:`, main purpose first:
 
@@ -243,11 +243,11 @@ The README frontmatter gets `purposes:`, main purpose first:
 purposes: change, compare
 ```
 
-`tools/catalog.mjs` rejects ids not in the list and adds a "purpose → components" table to CATALOG.md. `purposes.json` belongs to this repository: Studio vendors it with the components, and the nightly evaluation reads it from there. When Studio builds the AI instructions, it lists the components by purpose from that table.
+`tools/catalog.mjs` rejects ids not in the list and adds a "purpose → parts" table to CATALOG.md. `purposes.json` belongs to this repository: Studio vendors it with the parts, and the nightly evaluation reads it from there. When Studio builds the AI instructions, it lists the parts by purpose from that table.
 
-Proposed declarations for existing and v1.2.0 components:
+Proposed declarations for existing and v1.2.0 parts:
 
-| Component | purposes |
+| Part | purposes |
 |---|---|
 | `m-bars` | compare, ranking, change, part-whole (`stack`) |
 | `m-curves` | change |
@@ -275,15 +275,15 @@ Proposed declarations for existing and v1.2.0 components:
 
 Decided in the standards review (2026-10-24):
 
-1. ~~The lesson seed is `data-egatari-seed` (spec §8.4, egatari-spec 270767a).~~ Withdrawn: there is no lesson seed (spec §8.4, egatari-spec 28d8801). A component's variant is its `variant` attribute, otherwise the first (1.4).
-2. Lessons pin component versions (spec §6); a lesson changes look only when moved to a newer release (1.6).
+1. ~~The lesson seed is `data-egatari-seed` (spec §8.4, egatari-spec 270767a).~~ Withdrawn: there is no lesson seed (spec §8.4, egatari-spec 28d8801). A part's variant is its `variant` attribute, otherwise the first (1.4).
+2. Lessons pin part versions (spec §6); a lesson changes look only when moved to a newer release (1.6).
 3. A base-class `this.variant` in Studio comes later, with dev. v1.2.0 uses `tools/variant.js` and `variant-sync`.
 4. This document does not rename the series (standards to dev, with #99).
 5. `purposes.json` lives in this repository (4.2).
 
 ## 6. Interactive parts
 
-Components the viewer can press or type into are called "interactive parts" (操作できるパーツ; standards review and the owner, 2026-10-25). Today: `m-predict` (counting, marking a prediction), `m-kobun` (an auxiliary verb opens its card) and `m-menu` (its cards are links).
+Parts the viewer can press or type into are called "interactive parts" (操作できるパーツ; standards review and the owner, 2026-10-25). Today: `m-predict` (counting, marking a prediction), `m-kobun` (an auxiliary verb opens its card) and `m-menu` (its cards are links).
 
 - **The flag lives in index.js**: `static interactive = true;` on the class. A part that takes viewer input (spec §8.4 "Viewer input") also has `static viewerInput = true;` (`m-predict` only). Not in the README frontmatter, which is shown to AI authors. A part whose content is elapsed time (`m-timer`) also has `static clock = true;`: under prefers-reduced-motion the player still gives it the real t and drops only decorative motion (spec §9.1). `tools/release.mjs` writes them to manifest.json as `components.<name>.interactive` / `.viewerInput` / `.clock` (only when true).
 - **Lint**: `tools/lint.mjs` checks index.js with a simple heuristic: an `input(…)` method, a click / pointer / key / input / change listener, creating `a` / `button` / `input` elements, or child links as data (`static shape = {links: true}`) without `static interactive = true` is an error; so is `viewerInput` without `interactive`.
@@ -291,8 +291,8 @@ Components the viewer can press or type into are called "interactive parts" (操
 
 ## 7. Tools (parts used only when asked)
 
-In a new deck, standard parts are always in; subject part sets and "tools" are in only when the user chooses them (owner, 2026-10-25). A tool is a part used only when asked (such as `m-timer`), not a purpose.
+In a new lesson, standard parts are always in; subject part sets and "tools" are in only when the user chooses them (owner, 2026-10-25). A tool is a part used only when asked (such as `m-timer`), not a purpose.
 
-- **The flags live in index.js**: `static group = "tool";` and the tool's new-deck tile `static tile = {"label": {"ja", "en"}, "examples": {"ja", "en"}, "icon"};` (one line of JSON). Not in the README. `tools/release.mjs` writes `components.<name>.group` / `.tile` to manifest.json, and Studio builds the 「道具」 / "Tools" row from components with `group: "tool"`.
+- **The flags live in index.js**: `static group = "tool";` and the tool's new-lesson tile `static tile = {"label": {"ja", "en"}, "examples": {"ja", "en"}, "icon"};` (one line of JSON). Not in the README. `tools/release.mjs` writes `components.<name>.group` / `.tile` to manifest.json, and Studio builds the 「道具」 / "Tools" row from parts with `group: "tool"`.
 - **Lint**: `tools/lint.mjs` fails on a `group` other than `"tool"`, and on a tool without a tile (`label`, `examples`, `icon`).
 - A tool's purpose (`timebox` for `m-timer`) has no purpose tile (`tile: "none"`), so that purpose tiles (which the user turns off) and tool tiles (which the user turns on) stay apart.

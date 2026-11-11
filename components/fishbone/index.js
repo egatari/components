@@ -39,7 +39,7 @@ var Part = class extends base.MotionElement {
     note: {en: "nodes without parent are main bones (categories); their children are causes, grandchildren finer causes (3 levels max)", ja: "parent のない節が大骨（分類）、その子が原因、孫が細かい原因（3 段まで）"},
   };
   static props = {
-    order: {type: "string", default: "causes-first", doc: "段階の順：causes-first（大骨 1 本ずつ、最後に頭、既定）か effect-first（頭と背骨が先）"},
+    order: {type: "string", default: "causes-first", doc: "ステップの順：causes-first（大骨 1 本ずつ、最後に頭、既定）か effect-first（頭と背骨が先）"},
     size:  {type: "number", default: 0, doc: "箱の字の大きさ（px。0 = 27 から入るまで 24 まで縮める）"},
     fade:  {type: "number", default: 0.45, doc: "箱が現れる秒数"},
     draw:  {type: "number", default: 0.5, doc: "線を引く秒数"},

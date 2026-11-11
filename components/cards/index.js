@@ -69,8 +69,8 @@ return class extends base.MotionElement {
     arrows:     {type: "bool", default: false, doc: "カードの間に順の矢印（grid では 1→2→3→4 の Z の順）"},
     nums:       {type: "bool", default: false, doc: "番号の丸を出す（カードの n が優先。n だけ書いたカードはそれを出す）"},
     hilite:     {type: "string", default: "", doc: "強調するカード：last か番号（1 から）。--emph の枠と地"},
-    "per-step": {type: "number", default: 1, doc: "1 段階に出すカードの数（0 = 全部を段階 1 で）"},
-    stagger:    {type: "number", default: 0.25, doc: "同じ段階のカードの出だしのずれ（秒）"},
+    "per-step": {type: "number", default: 1, doc: "1 ステップに出すカードの数（0 = 全部をステップ 1 で）"},
+    stagger:    {type: "number", default: 0.25, doc: "同じステップのカードの出だしのずれ（秒）"},
     dur:        {type: "number", default: 0.5, doc: "1 枚が出る秒数"},
   };
   get steps(){

@@ -14,7 +14,7 @@ example: {"lang":"python","code":"import pandas as pd\ndf = pd.read_csv(\"sales.
 - `lang`: tag; `steps[{lines,note}]`: 1-based, `"lines":[3]` or range `[3,4]`; note.
 - `output`: ≤8 lines.
 
-Narration: explain each line; never read code aloud.
+Script: explain each line; never read code aloud.
 
 <!-- llm: omit -->
 Displays supplied text; never runs code. Code first, then highlights and notes. Beside: natural code width ≤55% and every note fits; earlier notes stay muted, all shown at completion. Otherwise band: only the current note, prefixed “lines 3–4”. Final/print: numbered compact list, no code highlight. If the list needs more height, report and keep the last numbered note. Deterministic seeking. Preview uses --preview-opacity; the final list previews before notes begin.

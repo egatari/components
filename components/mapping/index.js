@@ -98,8 +98,8 @@ return class extends base.MotionElement {
     example: {outcomes: [{label: "表表", x: 2}, {label: "表裏", x: 1}, {label: "裏表", x: 1}, {label: "裏裏", x: 0}], name: "X", unit: "", fractions: true}
   };
   static props = {
-    dur: {type: "number", default: 1, doc: "各段階の動きの秒数（矢印は stagger のずれを足す）"},
-    stagger: {type: "number", default: 0.15, doc: "段階 2 の矢印ごとの開始のずれ（秒。0 以上）"},
+    dur: {type: "number", default: 1, doc: "各ステップの動きの秒数（矢印は stagger のずれを足す）"},
+    stagger: {type: "number", default: 0.15, doc: "ステップ 2 の矢印ごとの開始のずれ（秒。0 以上）"},
     digits: {type: "number", default: 2, doc: "分数でない確率の小数桁（0〜10 の整数）"},
     size: {type: "number", default: 0, doc: "文字の大きさ（px。0 は既定の 26、指定時は 24 以上）"}
   };

@@ -3,8 +3,8 @@ name: m-cards
 version: 2.0.4
 series: common
 tier: standard
-summary: カード（番号の丸・アイコン・見出し・説明）を横一列か 2 段に並べ、段階ごとに出す。矢印で順を、枠の色で強調を見せる
-steps: カードの step の最大（既定はカード 1 枚 = 1 段階。per-step で n 枚ずつ）
+summary: カード（番号の丸・アイコン・見出し・説明）を横一列か 2 段に並べ、ステップごとに出す。矢印で順を、枠の色で強調を見せる
+steps: カードの step の最大（既定はカード 1 枚 = 1 ステップ。per-step で n 枚ずつ）
 purposes: process, grouping
 variants: rise, fade, draw
 props: layout, arrows, nums, hilite, per-step, stagger, dur
@@ -42,9 +42,9 @@ props: layout, arrows, nums, hilite, per-step, stagger, dur
 <!-- llm: omit -->
 作る人向けの注
 
-- **アイコン**はライブラリ部品 `icons`（Tabler Icons outline、MIT）から名前で引く。組み立てはレッスンに書かれた名前のアイコンだけを残す（仕様 §6.2 subset by name）。名前はすべてレッスンのデータから来るので `keep` はいらない。色は `currentColor` で、カードが `color: var(--<tone>)` を与える
+- **アイコン**はライブラリパーツ `icons`（Tabler Icons outline、MIT）から名前で引く。組み立てはレッスンに書かれた名前のアイコンだけを残す（仕様 §6.2 subset by name）。名前はすべてレッスンのデータから来るので `keep` はいらない。色は `currentColor` で、カードが `color: var(--<tone>)` を与える
 - **大きさ**：カードの幅と高さから、アイコン（32〜64 px）・見出し（26〜34 px）・説明（24 px、行の高さ 34 px）を決める。字の幅は字数から見積もる（和文 1 字、欧文 0.6 字）
 - **折り返し**：空白・読点の後ろ、平仮名の後ろで平仮名でない字の前、欧文と和文の境で折る。小さい仮名・長音・句読点・閉じ括弧は行の頭に置かない。入らなければ最後の行を … で切って `ctx.report("layout", …)` を 1 回
 - **読み上げ**：svg は `role="list"`、カードは `role="listitem"` で、番号・見出し・説明をつないだ `aria-label`。アイコンと矢印は `aria-hidden`
-- 授業の表示（`ctx.preview`）では後の段階のカードを最後の形でテーマの `--preview-opacity` の濃さに。印刷と動画は最後の段階
+- 授業の表示（`ctx.preview`）では後のステップのカードを最後の形でテーマの `--preview-opacity` の濃さに。印刷と動画は最後のステップ
 <!-- llm: end -->

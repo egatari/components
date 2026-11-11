@@ -36,7 +36,7 @@ return class extends base.MotionElement {
     size:     {type: "number", default: 26, doc: "項目の字の大きさ（px）。収まらなければ 24 まで縮める"},
     dur:      {type: "number", default: 0.7, doc: "1 つの集合（と重なり）が現れる秒数"},
     spread:   {type: "number", default: 1, doc: "円の中心の間の距離 ÷ 半径（小さいほど重なりが広い。0.7〜1.3）"},
-    overlaps: {type: "string", default: "together", doc: "together（重なりを 1 段階でまとめて）か each（1 つずつ）"},
+    overlaps: {type: "string", default: "together", doc: "together（重なりを 1 ステップでまとめて）か each（1 つずつ）"},
   };
   // 項目のある重なりの鍵（なければ 2 つの集合の重なりすべて）。順は AB・AC・BC・ABC
   overlapKeys(){

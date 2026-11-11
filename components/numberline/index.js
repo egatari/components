@@ -179,9 +179,9 @@ return class extends base.MotionElement {
            ja: "lines [{from, to, step, sub, unit, label, labels}]（1 本か 2 本）、marks [{at, kind: dot|open|box, label}]、jumps [{from, to, label}]、ranges [{from, to, incl: [真偽, 真偽]}]、link [[上の値, 下の値]]、magnify [{from, to, step}]。値は数か \"1/3\""},
   };
   static props = {
-    build: {type: "string", default: "ticks,marks,links,jumps,ranges,magnify", doc: "出す順（種類をコンマで）か whole（全部を 1 段階で）"},
+    build: {type: "string", default: "ticks,marks,links,jumps,ranges,magnify", doc: "出す順（種類をコンマで）か whole（全部を 1 ステップで）"},
     arrow: {type: "string", default: "off", doc: "on：線の右の端を矢印に"},
-    dur:   {type: "number", default: 0.8, doc: "1 段階の動きの秒数（拡大はその 2 倍）"},
+    dur:   {type: "number", default: 0.8, doc: "1 ステップの動きの秒数（拡大はその 2 倍）"},
   };
   get steps(){
     if (this.getAttribute("steps") !== null) return +this.getAttribute("steps");

@@ -81,12 +81,12 @@ and after a tour of every slide. Change behaviour in a later version, not while 
     (`EGATARI_PARTS_SHIM.get(name, version)`) or without a browser through `partClass` in `tools/parts.mjs`.
 12. **Identifiers.** An id the part writes into the document (style elements, `clipPath`, `mask`, gradients) is named
     `<name>-<version with dashes>-…` and is deterministic (spec §6.1): a counter of the part's own, never `Math.random`,
-    time or another part's counter (`++D.Plot.n` in m-curves). Ids inside the component's DOM change its outerHTML, so
+    time or another part's counter (`++D.Plot.n` in m-curves). Ids inside the part's DOM change its outerHTML, so
     each rewrite must be in the identity test's table `ID_REWRITES` (`tools/test-c2-identity.mjs`) and nothing else is
     allowed. The table holds the decided ones: `plot-1-0-0-clip<n>` (plot), `curves-2-0-0-<n>` (m-curves masks,
     was `mc<n>`), `heatmap-2-0-0-legend-<n>` (m-heatmap, was `m-heatmap-legend-<n>`), `venn-2-0-0-<n>` (m-venn clip
     paths, was `m-venn-<n>`), `kakijun-2-0-0-clip-<n>` and `…<n>h` (m-kakijun, was `m-kakijun-clip-<n>`). A new rewrite needs a standards
-    decision first. Ids outside the component (m-menu's `<style id="menu-2-0-0-css">` in `<head>`) are renamed without
+    decision first. Ids outside the part (m-menu's `<style id="menu-2-0-0-css">` in `<head>`) are renamed without
     an entry.
 13. **README and changelog.** Frontmatter `version: 2.0.0` (this is what makes the part count as migrated). Add the part's
     own `components/<name>/CHANGELOG.md` with a `## 2.0.0` section: what moved (reports, language, events), every id
@@ -95,7 +95,7 @@ and after a tour of every slide. Change behaviour in a later version, not while 
 14. **Clean.** No `DECK`, `window`, `globalThis`, `import` or `require` left, and no `.testing` read (`node tools/lint.mjs`;
     comments are ignored). `node tools/scan-code.mjs` must pass (an `ALLOW` entry keeps the same counts).
 15. **A fixture when the demo is not enough.** If the part has behaviour the v1.13.0 demo does not reach (m-menu's
-    out-of-range step links), add `tools/fixtures/c2-identity/<name>.html`, a small deck the identity test builds both
+    out-of-range step links), add `tools/fixtures/c2-identity/<name>.html`, a small lesson the identity test builds both
     ways and compares like the demo.
 
 ## Derived, never listed
@@ -149,7 +149,7 @@ m-tree**) are migrated with build-time `tex` (spec §6.2; list as of egatari-spe
   Besides the losses the spec documents (colours: `\color`, `\textcolor`, `\colorbox`, `\fcolorbox`, `\pmb`, `mathcolor`,
   `mathbackground`, the errorColor of untrusted commands), a construct the list lacks is a gap for the spec
   (`tools/test-markup-reader.mjs` fails on it), never a reader exception.
-- The tests build every deck through the stand-in producer (`tools/katex-produce.mjs`, run by `tools/studio.mjs`), with
+- The tests build every lesson through the stand-in producer (`tools/katex-produce.mjs`, run by `tools/studio.mjs`), with
   the KaTeX the pinned Studio locks. `tools/test-c2-identity.mjs` builds the 1.x side as written and compares the data
   script as data (`DATA_REWRITE`), KaTeX's empty classes (`KATEX_EMPTY_CLASS`) and an `<svg>`'s style text
   (`KATEX_SVG_STYLE`) as equal (approved, egatari-spec 56ae5da). A demo that builds its data at play time has nothing
@@ -175,7 +175,7 @@ m-tree**) are migrated with build-time `tex` (spec §6.2; list as of egatari-spe
 
 All 36 element parts are at 2.0.0 (the six build-time `tex` parts and the new m-score included), with the library parts
 shape, base, plot, expr, markup-reader and the five `*-core` parts at 1.0.0. One egatari-spec pin (`tools/spec.json`,
-ce96072) feeds the one generated rendered-markup list. Identity: 50 decks (35 demos and 15 fixtures; m-collect's fixture replaces its demo), 4271 frames, 4982 component DOMs; DOM byte-identical but for 18951 ids rewritten as allowed, 1172 data scripts equal as data (`DATA_REWRITE`) and 2568 empty KaTeX classes (`KATEX_EMPTY_CLASS`), and m-score's 288 frames pixel-identical to cc0e60a.
+ce96072) feeds the one generated rendered-markup list. Identity: 50 lessons (35 demos and 15 fixtures; m-collect's fixture replaces its demo), 4271 frames, 4982 part DOMs; DOM byte-identical but for 18951 ids rewritten as allowed, 1172 data scripts equal as data (`DATA_REWRITE`) and 2568 empty KaTeX classes (`KATEX_EMPTY_CLASS`), and m-score's 288 frames pixel-identical to cc0e60a.
 
 ## Closed gaps
 

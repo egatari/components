@@ -15,7 +15,7 @@ return class extends base.MotionElement {
     k: {type: "number"}, errors: {type: "array", items: {type: "number"}}, labels: {type: "array", items: {type: "string"}}
   }}, example: {k: 5, errors: [0.21, 0.18, 0.25, 0.19, 0.22], labels: ["1", "2", "3", "4", "5"]}};
   static props = {
-    dur: {type: "number", default: 1, doc: "段階の秒数"},
+    dur: {type: "number", default: 1, doc: "ステップの秒数"},
     size: {type: "number", default: 0, doc: "文字 px（0 は 26）"}
   };
   get steps(){ var k = this.data.k; return Number.isInteger(k) && k >= 2 && k <= 10 ? k + 1 : 0; }

@@ -73,7 +73,7 @@ return class extends base.MotionElement {
     bit:     {type: "number", default: 0.6, doc: "1 ビットを読む秒数"},
     move:    {type: "number", default: 0.6, doc: "木を広げ直す秒数"},
     fill:    {type: "number", default: 0.8, doc: "画素の升目を塗る秒数"},
-    summary: {type: "bool", default: true, doc: "最後にまとめの段階を足す"},
+    summary: {type: "bool", default: true, doc: "最後にまとめのステップを足す"},
     mark:    {type: "string", default: "ct", doc: "data-mark の頭"},
     window:  {type: "string", default: "auto", doc: "木を見せる段の数（auto：入らなければ、たどる点を追って木を流す）"},
   };

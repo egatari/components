@@ -80,7 +80,7 @@ return class extends base.MotionElement {
   static props = {
     size:   {type: "number", default: 28, doc: "本文の字の大きさ（px）"},
     tate:   {type: "bool", default: false, doc: "縦書きにする（段落は右から左へ、枠をつなぐ線は上を通す）"},
-    phases: {type: "string", default: "marks refs roles", doc: "段階の並び（marks 傍線・refs 指示語・roles 段落の枠から選ぶ。中身のないものは飛ばす）"},
+    phases: {type: "string", default: "marks refs roles", doc: "ステップの並び（marks 傍線・refs 指示語・roles 段落の枠から選ぶ。中身のないものは飛ばす）"},
     draw:   {type: "number", default: 0.7, doc: "線 1 本を引く秒数"},
   };
   get model(){ if (!this._m) this._m = parse(this._src !== undefined ? this._src : this.textContent); return this._m; }

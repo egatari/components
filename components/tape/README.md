@@ -5,7 +5,7 @@ series: academic
 tier: specialized
 set: math
 summary: テープ図・線分図。全体や部分を括弧で括り、わからない量は □ か ?。行から行へ「2 倍」の矢印
-steps: steps（既定）：行 → 括弧 → 倍の矢印を 1 つずつ。rows：行 1 つ = 1 段階。whole：全部で 1 段階
+steps: steps（既定）：行 → 括弧 → 倍の矢印を 1 つずつ。rows：行 1 つ = 1 ステップ。whole：全部で 1 ステップ
 purposes: part-whole, compare
 variants: fade, grow
 props: kind, build, dur
@@ -18,7 +18,7 @@ props: kind, build, dur
 - brace：`{row, from, to, label, side: "above" | "below"}`。from・to は 0 から数えた区切りの番号
 - times：`{from, to, label: "2 倍"}`（行の番号）
 - `kind="line"`：線分図
-- 項目の `show`：出す段階
+- 項目の `show`：出すステップ
 - 行の `tone`：行の色（`term`・`emph`・`muted`・`accent2`・`fg`・`series-1..4`。既定は `series-1` から順に）
 - 行の名前に色の名前（赤・白）を使わない。色はテーマで変わる
 
@@ -30,6 +30,6 @@ props: kind, build, dur
 - 括弧：同じ行・同じ側の括弧が重なれば、狭い括弧を内に、広い括弧を外の段に置く。テープの上の名前の行があれば、その外に
 - 倍の矢印は、どの行も左の端がそろうので左に置く（行の右の端は長さがばらばらで、矢印が長く伸びてしまうため）。矢印があれば行の名前は左の列に寄せ、矢印の名前はその間に書く
 - 行の色は `tone` か、`--series-1` から順に。テープの塗りは薄く（0.14）、字は `--fg`
-- 見せ方：`fade`（0）はフェード、`grow` はテープが区切りごとに左から伸び（線分図は線を引く）、括弧と矢印は線を引く。段階の数・長さ・最後の中身は同じ。授業の表示（`ctx.preview`）では先の段階をテーマの `--preview-opacity`（ないときは 0.45）で見せる
+- 見せ方：`fade`（0）はフェード、`grow` はテープが区切りごとに左から伸び（線分図は線を引く）、括弧と矢印は線を引く。ステップの数・長さ・最後の中身は同じ。授業の表示（`ctx.preview`）では先のステップをテーマの `--preview-opacity`（ないときは 0.45）で見せる
 - 字は 24 px（行の名前と倍の名前は 26 px の太字、? は 28 px）
 <!-- llm: end -->

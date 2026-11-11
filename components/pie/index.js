@@ -31,8 +31,8 @@ return class extends base.MotionElement {
     digits:     {type: "number", default: 0, doc: "値の小数桁"},
     "pct-digits": {type: "number", default: 0, doc: "割合の小数桁"},
     show:       {type: "string", default: "pct", doc: "名前の下に書くもの：pct（割合）・value（値）・both（値と割合）・none"},
-    "per-step": {type: "number", default: 0, doc: "1 段階に出す切れの数（0 = 全部を段階 1 で）"},
-    dur:        {type: "number", default: 1.0, doc: "1 段階の動きの秒数"},
+    "per-step": {type: "number", default: 0, doc: "1 ステップに出す切れの数（0 = 全部をステップ 1 で）"},
+    dur:        {type: "number", default: 1.0, doc: "1 ステップの動きの秒数"},
   };
   get steps(){
     if (this.getAttribute("steps") !== null) return +this.getAttribute("steps");

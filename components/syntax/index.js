@@ -255,7 +255,7 @@ return class extends base.MotionElement {
   static props = {
     size:  {type: "number", default: 36, doc: "英文の字の大きさ（px）"},
     pos:   {type: "string", default: "off", doc: "on で品詞（語[名]）を語の下に"},
-    build: {type: "string", default: "steps", doc: "whole で全部を 1 段階に"},
+    build: {type: "string", default: "steps", doc: "whole で全部を 1 ステップに"},
     yaku:  {type: "bool", default: true, doc: "和訳（= の行）を最後に出す"},
   };
   get model(){ if (!this._m) this._m = parse(this._src !== undefined ? this._src : this.textContent); return this._m; }

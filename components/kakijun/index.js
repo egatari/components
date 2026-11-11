@@ -435,7 +435,7 @@ return class extends base.MotionElement {
   static shape = {schema: null, example: '<m-kakijun text="あさ" style="height:320px"></m-kakijun>'};
   static props = {
     text:    {type: "string", default: "", doc: "書く字（ひらがな・カタカナ、濁音・半濁音、小さい字、ー）。1 字以上"},
-    per:     {type: "string", default: "char", doc: "char（字 1 つ＝1 段階）か stroke（1 画＝1 段階）"},
+    per:     {type: "string", default: "char", doc: "char（字 1 つ＝1 ステップ）か stroke（1 画＝1 ステップ）"},
     writing: {type: "string", default: "yoko", doc: "yoko（横書き：左から右）か tate（縦書き：上から下、行は右から左）。小さい字の位置が変わる"},
     grid:    {type: "string", default: "cross", doc: "cross（四角い枠と十字の補助線）か none"},
     ghost:   {type: "string", default: "on", doc: "on：まだ書いていない画を薄く見せる。off：見せない"},

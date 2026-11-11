@@ -74,10 +74,10 @@ return class extends base.MotionElement {
     method:   {type: "string", default: "jp", doc: "四分位数の求め方：jp（教科書）・inc・exc（表計算の QUARTILE.INC / EXC）"},
     outliers: {type: "string", default: "off", doc: "on：1.5×四分位範囲の外を外れ値（点）にし、ひげはその内側まで"},
     dots:     {type: "string", default: "off", doc: "on：値の点を箱の下に並べる（build=\"steps\" ではいつも出る）"},
-    build:    {type: "string", default: "steps", doc: "steps（求める手順のとおり）か whole（群 1 つ = 1 段階）"},
+    build:    {type: "string", default: "steps", doc: "steps（求める手順のとおり）か whole（群 1 つ = 1 ステップ）"},
     unit:     {type: "string", default: "", doc: "書き出す値の後ろに付ける単位"},
     digits:   {type: "number", default: undefined, doc: "書き出す値の小数桁（書かなければ値の桁＋1 まで）"},
-    dur:      {type: "number", default: 0.8, doc: "1 段階の動きの秒数"},
+    dur:      {type: "number", default: 0.8, doc: "1 ステップの動きの秒数"},
   };
   get steps(){
     if (this.getAttribute("steps") !== null) return +this.getAttribute("steps");

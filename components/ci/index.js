@@ -43,7 +43,7 @@ return class extends base.MotionElement {
     mu: {type: "number"}, sigma: {type: "number"}, n: {type: "number"}, reps: {type: "number"}, level: {type: "number"}, seed: {type: "number"}
   }}, example: {mu: 50, sigma: 10, n: 25, reps: 40, level: 0.95, seed: 2}};
   static props = {
-    dur: {type: "number", default: 1, doc: "段階の秒数"},
+    dur: {type: "number", default: 1, doc: "ステップの秒数"},
     fast: {type: "number", default: 2.5, doc: "残りの区間の秒数"},
     size: {type: "number", default: 0, doc: "文字 px（0 は 26）"}
   };

@@ -35,8 +35,8 @@ return class extends base.MotionElement {
   };
   static props = {
     kind:  {type: "string", default: "tape", doc: "tape（テープ図）か line（線分図）"},
-    build: {type: "string", default: "steps", doc: "steps（行・括弧・矢印を 1 つずつ）・rows（行を 1 つずつ。括弧と矢印はその行と）・whole（全部を 1 段階で）"},
-    dur:   {type: "number", default: 0.8, doc: "1 段階の動きの秒数"},
+    build: {type: "string", default: "steps", doc: "steps（行・括弧・矢印を 1 つずつ）・rows（行を 1 つずつ。括弧と矢印はその行と）・whole（全部を 1 ステップで）"},
+    dur:   {type: "number", default: 0.8, doc: "1 ステップの動きの秒数"},
   };
   get steps(){
     if (this.getAttribute("steps") !== null) return +this.getAttribute("steps");

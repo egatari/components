@@ -66,10 +66,10 @@ return class extends base.MotionElement {
   static shape = {links: true, example: '<a href="#s-abc123" data-sub="副題">題</a>'};
   static props = {
     cols:       {type: "number", default: 0, doc: "列の数（0 なら札の数から：3 枚までは 1 行、4 枚は 2 列、それより多ければ 3 列）"},
-    "per-step": {type: "number", default: 0, doc: "1 段階に出す札の数（0 なら初めから全部出し、段階を使わない）"},
+    "per-step": {type: "number", default: 0, doc: "1 ステップに出す札の数（0 なら初めから全部出し、ステップを使わない）"},
     size:       {type: "number", default: 34, doc: "札の題の字の大きさ（px）。副題はその 0.8 倍（本文の下限の 27px より小さくしない）"},
     fade:       {type: "number", default: 0.4, doc: "札が出る秒数"},
-    stagger:    {type: "number", default: 0.12, doc: "同じ段階の札どうしの出るずれ（秒）"},
+    stagger:    {type: "number", default: 0.12, doc: "同じステップの札どうしの出るずれ（秒）"},
     visited:    {type: "bool", default: true, doc: "このセッションで行き先のスライドを開いた札に「見た」の印を付ける"},
   };
   get steps(){

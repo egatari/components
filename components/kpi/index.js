@@ -25,9 +25,9 @@ return class extends base.MotionElement {
   static props = {
     cols:       {type: "number", default: 0, doc: "1 行の札の数（0 = 札の数、4 まで）"},
     digits:     {type: "number", default: 0, doc: "数字の小数桁（札の digits が優先）"},
-    "per-step": {type: "number", default: 1, doc: "1 段階に出す札の数（0 = 全部を段階 1 で）"},
+    "per-step": {type: "number", default: 1, doc: "1 ステップに出す札の数（0 = 全部をステップ 1 で）"},
     dur:        {type: "number", default: 1.2, doc: "数え上げの秒数"},
-    stagger:    {type: "number", default: 0.3, doc: "同じ段階の札の出だしのずれ（秒）"},
+    stagger:    {type: "number", default: 0.3, doc: "同じステップの札の出だしのずれ（秒）"},
     count:      {type: "bool", default: true, doc: "数字を数え上げる"},
     size:       {type: "number", default: 0, doc: "数字の字の大きさ（px。0 = 札の高さから）"},
   };

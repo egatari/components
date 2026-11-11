@@ -74,7 +74,7 @@ return class extends base.MotionElement {
     example: {xs: [-2, -1, 0, 1, 2], steps: [{dens: [0.05, 0.24, 0.4, 0.24, 0.05], readout: {n: 0}}, {dens: [0.02, 0.2, 0.5, 0.2, 0.02], readout: {n: 1}, mark: 0.3}]},
   };
   static props = {
-    "per-step": {type: "number", default: 1, doc: "1 段階で動かす更新の回数"},
+    "per-step": {type: "number", default: 1, doc: "1 ステップで動かす更新の回数"},
     slot:  {type: "number", default: 0.9, doc: "更新 1 回の秒数（cues はこの間隔）"},
     xr: {type: "json", default: null, doc: "横軸の範囲（既定は xs の端）"}, yr: {type: "json", default: [0, 1]},
     xt: {type: "json", default: []}, yt: {type: "json", default: []},

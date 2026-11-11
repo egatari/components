@@ -75,15 +75,15 @@ return class extends base.MotionElement {
   static shape = {schema: null, example: '<m-sweep f="u*u + c*u" values="[0,0.5,1]" xr="[-3,3]" yr="[0,10]"></m-sweep>'};
   static props = {
     f:      {type: "string", default: "u*u", doc: "関数の式（算術の式。変数は横軸 u とパラメータ c。Math.exp(…) などの Math の関数と定数、+ - * / % **、比較と ? : が使える）"},
-    values: {type: "json",   default: [0, 1], doc: "パラメータの値の列。段階ごとに次の値へ動く", shape: {type: "array", items: {type: "number"}, minItems: 2}, example: [0, 0.5, 1]},
+    values: {type: "json",   default: [0, 1], doc: "パラメータの値の列。ステップごとに次の値へ動く", shape: {type: "array", items: {type: "number"}, minItems: 2}, example: [0, 0.5, 1]},
     param:  {type: "string", default: "c", doc: "表示するパラメータの名前"},
     xr: {type: "json", default: [-3, 3]}, yr: {type: "json", default: [0, 10]},
     xt: {type: "json", default: []}, yt: {type: "json", default: []},
     xl: {type: "string", default: ""}, yl: {type: "string", default: ""},
     digits: {type: "number", default: 2, doc: "表示する値の小数の桁数"},
-    at:     {type: "json",   default: null, doc: "変化ごとの開始秒（増える順）。あれば全部を段階 1 で", shape: {type: "array", items: {type: "number"}}, example: [0.5, 3]},
+    at:     {type: "json",   default: null, doc: "変化ごとの開始秒（増える順）。あれば全部をステップ 1 で", shape: {type: "array", items: {type: "number"}}, example: [0.5, 3]},
     point:  {type: "json",   default: null, doc: "曲線上の点 {u, label（{y} = 値）, digits}", shape: {type: "object", properties: {u: {type: "number"}, label: {type: "string"}, digits: {type: "number"}}, required: ["u"]}, example: {u: 9.8, label: "平均待ち {y} 日", digits: 1}},
-    dur: {type: "number", default: 1.2, doc: "1 段階の動きの秒数"},
+    dur: {type: "number", default: 1.2, doc: "1 ステップの動きの秒数"},
     size: {type: "number", default: 0, doc: "字の大きさ（24 以上。0 = 既定）"},
   };
   get steps(){ return this.getAttribute("steps") !== null ? +this.getAttribute("steps") : this.ats ? 1 : this.props.values.length - 1; }

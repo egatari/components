@@ -75,7 +75,7 @@ return class extends base.MotionElement {
     }}}
   }}, example: /*@egatari-block example*/{"lang":"python","code":"import pandas as pd\ndf = pd.read_csv(\"sales.csv\")\ndf.groupby(\"store\")[\"sales\"].mean()","steps":[{"lines":[1],"note":"pandas を読み込む"},{"lines":[2],"note":"CSV を表として読む"},{"lines":[3],"note":"店ごとの平均"}],"output":"store\nA    120.5\nB     98.0"}/*@egatari-block-end*/};
   static props = {
-    dur: {type: "number", default: 0.6, doc: "段階の秒数"},
+    dur: {type: "number", default: 0.6, doc: "ステップの秒数"},
     size: {type: "number", default: 0, doc: "文字 px（0 は既定）"},
     outputPos: {type: "enum", values: ["auto", "below", "right"], default: "auto", doc: "出力の位置"}
   };

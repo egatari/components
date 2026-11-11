@@ -57,7 +57,7 @@ return class extends base.MotionElement {
     example: {values: [1, 2, 3, 4, 5, 6], n: 2, replace: true, repeat: 40, seed: 3}
   };
   static props = {
-    dur: {type: "number", default: 1, doc: "段階の秒数"},
+    dur: {type: "number", default: 1, doc: "ステップの秒数"},
     stagger: {type: "number", default: 0.25, doc: "抽出のずれ（秒）"},
     fast: {type: "number", default: 2.5, doc: "反復の秒数"},
     size: {type: "number", default: 0, doc: "文字 px（0 は 26）"}

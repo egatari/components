@@ -38,10 +38,10 @@ var Part = class extends base.MotionElement {
     example: {center: {label: "PDCA"}, nodes: [{label: "計画"}, {label: "実行"}, {label: "評価"}, {label: "改善"}]},
   };
   static props = {
-    "per-step": {type: "number", default: 1, doc: "1 段階に出す段階（箱）の数（0 = 全部を段階 1 で）"},
+    "per-step": {type: "number", default: 1, doc: "1 ステップに出す箱の数（0 = 全部をステップ 1 で）"},
     size:       {type: "number", default: 26, doc: "箱の字の大きさ（px。入らなければ 24 まで縮める）"},
-    dur:        {type: "number", default: 0.8, doc: "1 つの段階（入ってくる矢印と箱）が現れる秒数"},
-    stagger:    {type: "number", default: 0.3, doc: "同じ段階の箱の出だしのずれ（秒）"},
+    dur:        {type: "number", default: 0.8, doc: "1 つの項目（入ってくる矢印と箱）が現れる秒数"},
+    stagger:    {type: "number", default: 0.3, doc: "同じステップの箱の出だしのずれ（秒）"},
   };
   get steps(){
     if (this.getAttribute("steps") !== null) return +this.getAttribute("steps");

@@ -59,7 +59,7 @@ return class extends base.MotionElement {
     scale:     {type: "string", default: "sequential", doc: "sequential か diverging（center を地の色に 2 色）"},
     center:    {type: "number", default: 0, doc: "diverging の真ん中の値"},
     range:     {type: "json", default: null, doc: "色の範囲 [最小, 最大]"},
-    tone:      {type: "string", default: "term", doc: "濃い側の色：term・emph・accent2。書かなければテーマの色の段階（なければ term）"},
+    tone:      {type: "string", default: "term", doc: "濃い側の色：term・emph・accent2。書かなければテーマの色の階調（なければ term）"},
     lowtone:   {type: "string", default: "emph", doc: "diverging の center より下の色"},
     normalize: {type: "string", default: "none", doc: "row：行ごとの割合（混同行列）"},
     show:      {type: "string", default: "percent", doc: "normalize=row の数字：percent・count・both"},
@@ -71,7 +71,7 @@ return class extends base.MotionElement {
     yl:        {type: "string", default: "", doc: "行の見出し"},
     unit:      {type: "string", default: undefined, doc: "セルの数字の後ろに付ける単位（JSON の unit より先）"},
     digits:    {type: "number", default: undefined, doc: "セルの数字の小数桁（既定は値の桁、2 桁まで。割合は 0）"},
-    dur:       {type: "number", default: 0.8, doc: "1 段階の秒数"},
+    dur:       {type: "number", default: 0.8, doc: "1 ステップの秒数"},
   };
   get steps(){
     if (this.getAttribute("steps") !== null) return +this.getAttribute("steps");

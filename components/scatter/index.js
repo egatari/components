@@ -41,7 +41,7 @@ return class extends base.MotionElement {
     xf: {type: "number", default: undefined, doc: "横軸の目盛りの小数桁"}, yf: {type: "number", default: undefined, doc: "縦軸の目盛りの小数桁"},
     xl: {type: "string", default: ""}, yl: {type: "string", default: ""},
     r:   {type: "number", default: 9, doc: "点の半径（px）"},
-    dur: {type: "number", default: 1.0, doc: "1 段階の動きの秒数"},
+    dur: {type: "number", default: 1.0, doc: "1 ステップの動きの秒数"},
   };
   get steps(){
     if (this.getAttribute("steps") !== null) return +this.getAttribute("steps");

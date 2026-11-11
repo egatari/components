@@ -2,7 +2,7 @@
 name: heatmap-core
 version: 1.0.0
 kind: library
-summary: m-heatmap の計算（行ごとの割合、色の範囲と混ぜる割合、セルの字の色と縁、名前の間引きとセルの大きさ、段階）。教材の作者が直接は書かない
+summary: m-heatmap の計算（行ごとの割合、色の範囲と混ぜる割合、セルの字の色と縁、名前の間引きとセルの大きさ、ステップ）。教材の作者が直接は書かない
 ---
 
 A library part (Egatari spec §6.1): it defines no element.

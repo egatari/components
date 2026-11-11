@@ -491,9 +491,9 @@ return class extends base.MotionElement {
   static shape = {schema: null, example: '<m-hissan expr="487+356"></m-hissan>'};
   static props = {
     expr:   {type: "string", default: "", doc: "式：487+356、1003-457、36×24、851÷23、3.6×2.4、7.56÷1.8（× は * でも、÷ は / でもよい）"},
-    build:  {type: "string", default: "steps", doc: "steps（手順ごと）か whole（1 段階で全部）"},
+    build:  {type: "string", default: "steps", doc: "steps（手順ごと）か whole（1 ステップで全部）"},
     fine:   {type: "string", default: "off", doc: "かけ算：on なら 1 けたずつ（小さなくり上がりを書く）"},
-    per:    {type: "string", default: "round", doc: "わり算：round（商 1 けた＝1 段階）か phase（たてる・かける・ひく・おろす を別の段階に）"},
+    per:    {type: "string", default: "round", doc: "わり算：round（商 1 けた＝1 ステップ）か phase（たてる・かける・ひく・おろす を別のステップに）"},
     kari:   {type: "string", default: "off", doc: "わり算：on なら大きすぎる仮の商を 1 回見せて直す"},
     rem:    {type: "string", default: "off", doc: "わり算：on なら商を整数で止めて あまり を出す"},
     digits: {type: "json", default: null, doc: "わり算：商を小数第何位まで求めるか", shape: {type: "integer"}, example: 2},

@@ -23,7 +23,7 @@ return class extends base.MotionElement {
     probs: {type: "array", minItems: 2, maxItems: 12, items: {type: "number"}}, name: {type: "string"}
   }}, example: {values: [0, 1, 2, 3], probs: [0.1, 0.3, 0.4, 0.2], name: "X"}};
   static props = {
-    dur: {type: "number", default: 1.5, doc: "段階の秒数"},
+    dur: {type: "number", default: 1.5, doc: "ステップの秒数"},
     digits: {type: "number", default: 2, doc: "期待値の小数桁"},
     size: {type: "number", default: 0, doc: "文字 px（0 は 26）"}
   };

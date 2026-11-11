@@ -57,7 +57,7 @@ var Part = class extends base.MotionElement {
   };
   static props = {
     orient: {type: "string", default: "down", doc: "down（上から下、既定）か right（左から右）"},
-    by:     {type: "string", default: "level", doc: "段階の分け方：level（深さごと、既定）か node（1 つずつ、深さ優先の順）"},
+    by:     {type: "string", default: "level", doc: "ステップの分け方：level（深さごと、既定）か node（1 つずつ、深さ優先の順）"},
     link:   {type: "string", default: "elbow", doc: "親子の線：elbow（かぎ形、既定）か straight（まっすぐ）"},
     size:   {type: "number", default: 0, doc: "箱の字の大きさ（px。0 = 27 から入るまで 24 まで縮める）"},
     fade:   {type: "number", default: 0.45, doc: "箱が現れる秒数"},

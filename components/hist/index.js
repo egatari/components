@@ -84,7 +84,7 @@ return class extends base.MotionElement {
     kind:       {type: "string", default: "bars", doc: "bars（柱状グラフ）か dots（ドットプロット）"},
     marks:      {type: "string", default: "", doc: "代表値の印：mean,median,mode のどれか（書いた順に 1 つずつ）"},
     build:      {type: "string", default: "whole", doc: "whole・values（値を 1 つずつ数える）・bins（階級を 1 つずつ）"},
-    dur:        {type: "number", default: 0.8, doc: "1 段階の動きの秒数"},
+    dur:        {type: "number", default: 0.8, doc: "1 ステップの動きの秒数"},
   };
   get steps(){
     if (this.getAttribute("steps") !== null) return +this.getAttribute("steps");

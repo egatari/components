@@ -4,8 +4,8 @@ version: 2.1.0
 series: social
 tier: specialized
 set: maps
-summary: 世界の国・地域の地図（太平洋が中央）。国や州の強調、区分と値の塗り分け、点、矢印を段階ごとに出す
-steps: 項目の step の最大（既定 1）。地図そのものは段階 0 から出ている
+summary: 世界の国・地域の地図（太平洋が中央）。国や州の強調、区分と値の塗り分け、点、矢印をステップごとに出す
+steps: 項目の step の最大（既定 1）。地図そのものはステップ 0 から出ている
 purposes: spatial
 variants: fade, sweep, draw
 props: labels, grid, show, unit, digits, legend, dur
@@ -16,7 +16,7 @@ data-credit: 地図データ：Natural Earth（パブリックドメイン）を
 
 - `regions`：`id`（`"JPN"` など ISO の 3 文字か国名）か `group`（六州）。`label`
 - `categories`：`label` と `ids`（国か州）。凡例に出す。4 区分まで
-- `values`：`{"JPN": 72, …}` と `classes`（階級の下限）。塗り分けの段階は `valuesStep`（既定 1）
+- `values`：`{"JPN": 72, …}` と `classes`（階級の下限）。塗り分けのステップは `valuesStep`（既定 1）
 - `points`：`lon` `lat`、`label`、`anchor`
 - `flows`：`from` `to`（`[経度, 緯度]` か国）、`via` `label` `bend`、`value`（数。線の太さが値で変わる：いちばん大きい値で 10 px）、`labelAt`（名前を置く `[経度, 緯度]`）
 - `shapes`：重ね描き。`polygon`（3 点以上の `[[経度, 緯度], …]`、薄く塗る）か `line`（2 点以上）。`label` `labelAt` `dash`
@@ -35,7 +35,7 @@ data-credit: 地図データ：Natural Earth（パブリックドメイン）を
   - 読める層には、北方領土・竹島・尖閣諸島・沖ノ鳥島・南鳥島（日本）と帰属未定地をいつも挙げる
 - 国名は検定済み地図帳の通称（docs/map-design.md §4.8。表は `tools/map/atlas-names.csv` の `ATLAS_name`）。Natural Earth の `NAME_JA` と違う 15 件（「ヴ」は地図帳と同じくバ行で書く。属領も同じ）：
 
-  | 符号 | Natural Earth | この部品 |
+  | 符号 | Natural Earth | このパーツ |
   |---|---|---|
   | CHN | 中華人民共和国 | 中国 |
   | KOR | 大韓民国 | 韓国 |
@@ -63,11 +63,11 @@ data-credit: 地図データ：Natural Earth（パブリックドメイン）を
 - 図法は Equal Earth（面積が正しい）、中央経線 150°E（docs/map-design.md §5.3・§6 2：太平洋中心だけ。大西洋中心は、要る授業が出てきたときに足す）。継ぎ目は 30°W で、グリーンランドは両端に分かれる。継ぎ目をまたぐ近道の矢印（例：ニューヨークからロンドン）は地図の上を遠回りに引いて `ctx.report` で知らせる
 - 地図データは `tools/map/build-world.mjs` が Natural Earth 5.1.1 の 1:10m 日本の見解版から作り、`index.js` の BEGIN/END map-world-data の間に書く。手で直さない。日本と帰属未定地は 2 km、ほかは 22 km で単純化し、1500 km² 未満の島は描かない（各国のいちばん大きい形は残す）。それでも形の残らない国・地域（バチカン・コーラル・シー諸島・スカボロー礁）は塗れず、`ctx.report` で知らせる。作り直し方は `tools/map/README.md`
 - `grid`：`equator` は赤道（と地図の外の輪郭）、`graticule` は 30° ごとの経線・緯線も。赤道には「赤道」と書く（海に入る所があれば）
-- 凡例：要素の右に入れば右に、入らなければ地図の隅の海に重ね、それでも入らなければ描かずに `ctx.report` で知らせる（値は読める層に残る）。値の塗り分けの階級は m-map-japan と同じ（OKLab の明るさを等しい間隔に。テーマに色の段階があれば段階の色、2.1.0）。区分（`categories`）の色は書かなければ `series-1`〜`4` を順に。テーマの区別できる色は 4 つなので、5 区分以上は `ctx.report` で知らせる
+- 凡例：要素の右に入れば右に、入らなければ地図の隅の海に重ね、それでも入らなければ描かずに `ctx.report` で知らせる（値は読める層に残る）。値の塗り分けの階級は m-map-japan と同じ（OKLab の明るさを等しい間隔に。テーマに色の階調があれば階調の色、2.1.0）。区分（`categories`）の色は書かなければ `series-1`〜`4` を順に。テーマの区別できる色は 4 つなので、5 区分以上は `ctx.report` で知らせる
 - 名前：国の名前は札がすべてその国の上に入るときだけ中に、州の名前は 6 割が州の上でほかの国に掛からなければ中に、入らなければ近くの海に引き出し線を付けて置く。点の名前は点のそばに。字はどれも 24 px
 - `points[].code` と `flows` の国の端点は、その国の内側の点（首都ではない）
 - 各国の陸の `path` に `data-mark="JPN"` のような印がある（Studio のカメラで寄れる）
-- 見せ方：`fade`（既定）・`sweep`（同じ段階の中で西から東へ）・`draw`（輪郭を引いてから塗る）。授業の表示（`ctx.preview`）では、先の段階の項目をテーマの `--preview-opacity` で見せる
-- 知らせ（`ctx.report`）は Studio の検査に出る
+- 見せ方：`fade`（既定）・`sweep`（同じステップの中で西から東へ）・`draw`（輪郭を引いてから塗る）。授業の表示（`ctx.preview`）では、先のステップの項目をテーマの `--preview-opacity` で見せる
+- 知らせ（`ctx.report`）は Studio の品質チェックに出る
 - 見本の値はすべて架空。都市の位置は公知の事実からのおおよその経度・緯度
 <!-- llm: end -->

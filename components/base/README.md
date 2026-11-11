@@ -28,7 +28,7 @@ egatariParts.define({name: "bars", version: "2.0.2", requires: {base: "1.2.0"}, 
 | `ramp(t, old)` (1.2.0) | the colour at `t` (0…1) on the theme's colour ramp (spec §8.4 `--ramp-1` … `--ramp-5`): `var(--ramp-k, old)` at a stop, else `color-mix(in oklab, …)` of the two neighbouring stops; every stop falls back to `old` (the colour the part drew before ramps), so a theme without ramps gives exactly `old` | — |
 | `rampStops(el)` (1.2.0) | the five `--ramp-*` values seen from `el`, or `null` when the theme does not set all five (for contrast checks that need resolved colours) | — |
 
-**Data shapes** (spec §6.1; players no longer validate component data). Every `MotionElement` checks, once, its `static
+**Data shapes** (spec §6.1; players no longer validate part data). Every `MotionElement` checks, once, its `static
 shape` (`{schema, example}`, `{text: true}` or `{links: true}`) and the `shape` of its `json` props with the `shape` part,
 as deck.js did before mount. When the data does not fit, `steps` is the `steps` attribute (else 0), `mount(ctx)` calls
 `ctx.report(code, "[<name>] data (<kind>): <summary>")` once and shows deck.js's placeholder (`<div class="m-error"

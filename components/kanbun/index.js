@@ -48,10 +48,10 @@ return class extends base.MotionElement {
   static props = {
     size:   {type: "number", default: 60, doc: "漢字の大きさ（px）。送り仮名・返り点はその 0.42 倍（24px より小さくしない）"},
     slot:   {type: "number", default: 0.55, doc: "読む順で 1 字にかける秒数"},
-    phases: {type: "string", default: "kunten order kaki", doc: "段階の並び（kunten 訓点・order 読む順・kaki 書き下し文から選ぶ）"},
+    phases: {type: "string", default: "kunten order kaki", doc: "ステップの並び（kunten 訓点・order 読む順・kaki 書き下し文から選ぶ）"},
     kaki:   {type: "number", default: 36, doc: "書き下し文の字の大きさ（px）"},
     nums:   {type: "bool", default: true, doc: "読む順の番号を字の左上に出す"},
-    "order-by": {type: "string", default: "col", doc: "読む順の段階の分け方：col は列（句）ごとに 1 段階、all は読む順の全体で 1 段階（v1.3.0 まで）"},
+    "order-by": {type: "string", default: "col", doc: "読む順のステップの分け方：col は列（句）ごとに 1 ステップ、all は読む順の全体で 1 ステップ（v1.3.0 まで）"},
   };
   get phaseList(){
     var a = String(this.props.phases || "").split(/[\s,]+/).filter(function(x){ return PH.indexOf(x) >= 0; });
