@@ -8,6 +8,16 @@ Versions follow [README.md § Releases and versions](README.md#releases-and-vers
 
 - `m-compare` `by="row"`; an "outside every set" region for `m-venn`; planned-vs-actual bars for `m-timeline`
 
+## 2.6.2 - 2026-11-11
+
+### Fixed
+
+- **`m-predict` 2.0.5:** the `answer-step` doc is shorter in English (`2 or more (default 2); after the step-1 count`), so the part's English pack text is again no longer than the Japanese (Studio refused 2.6.1: en 854 > ja 831). The Japanese doc says ステップ, the glossary term, instead of 段階.
+
+### For Studio
+
+- Pack bytes (`node tools/pack-bytes.mjs --base v2.6.1`, ja): m-predict +6; every other part +0. The English answer-step doc is 33 characters shorter.
+
 ## 2.6.1 - 2026-11-11
 
 Fixes found in a lecture deck. Lessons pinned to 2.6.0 keep their drawing.

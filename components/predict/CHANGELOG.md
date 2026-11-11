@@ -2,6 +2,10 @@
 
 The part's own versions (Egatari spec §6.1). Releases of the whole library are in the repository's CHANGELOG.md.
 
+## 2.0.5 (components 2.6.2)
+
+- The answer-step doc is shorter in English (`2 or more (default 2); after the step-1 count`) so the English pack text is not longer than the Japanese (Studio's check); the Japanese says ステップ (the glossary term) instead of 段階.
+
 ## 2.0.4 (components 2.6.1)
 
 - The answer-step doc (in the AI instructions) says 2 or more (default 2): the answer opens after step 1, where the class counts (it said 1 was allowed, so AIs chose 1 and the counts opened together with ✓ 正解). A value of 1 still works as before.

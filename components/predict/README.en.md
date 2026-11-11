@@ -2,7 +2,7 @@
 summary: Predict, reveal; votes as bars, answer framed
 steps: 0 question, 1 bars, answer-step (2)
 props:
-  answer-step: "2 or more (default 2): the answer opens after step 1, where the class counts"
+  answer-step: 2 or more (default 2); after the step-1 count
   unit: count unit
   poll: live poll id
   ticks: grid
