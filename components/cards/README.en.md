@@ -47,5 +47,5 @@ Notes for authors of parts
 - Sizes: icon 32–64 px, title 26–34 px, text 24 px
 - Overflow is cut with … and reported once (`layout`)
 - Screen readers: svg `role="list"`, cards `role="listitem"` with number, title and text; icons and arrows `aria-hidden`
-- Lecture view: later cards at `--preview-opacity`; print and video show the last step
+- Show later steps faintly: later cards at `--preview-opacity`; print and video show the last step
 <!-- llm: end -->

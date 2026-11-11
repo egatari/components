@@ -33,7 +33,7 @@ The demo is `demo.html`.
 Notes
 
 - `fade`: box rises 12 px, then incoming arrow. `draw`: arrow, then box slides 12 px from the previous side. `grow`: box slides 12 px and grows from 0.92× while the arrow draws. All within 12 px (box centre) and `fade` time (conventions §1.2)
-- Lecture view (`ctx.preview`): later boxes and arrows faint
+- Show later steps faintly (`ctx.preview`): later boxes and arrows faint
 - Box width estimated from characters (CJK 1, digits 0.6, Latin 0.62)
 - No fit (boxes overlap, no room for arrows, centre too big): text shrinks from `size` by 2px to 24px, then `ctx.report("size", …)`
 - Arrows are elliptical arcs (SVG `A`), 8px from the box; over 8 stages they get too short

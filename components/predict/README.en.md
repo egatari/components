@@ -19,7 +19,7 @@ Child JSON: `{"question", "choices": [{"label", "tone"?}], "answer": 0-based, "c
 Notes for authors of parts (check with dev)
 
 - Steps: 0 question, choices, ticks (context first); 1 bars and controls; `answer-step` frame, "✓ correct", `note`, others faded, text `--muted` (≥ 4.5:1)
-- Lecture view: nothing ahead shown (`static preview = "none"`, manifest `preview: "none"`)
+- Show later steps faintly: nothing ahead shown (`static preview = "none"`, manifest `preview: "none"`)
 - Viewer state (spec §8.4): counts and guess survive step changes on the slide; reset to author values only on `ctx.entered` (since 2.0.0); `ctx.reset` only drops focus
 - Hands up; teacher counts ±1 or types. Alone: click = guess. Counts kept while on the slide
 - Print: author values, no guess marks; screen counts restored after

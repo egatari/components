@@ -2,7 +2,7 @@
 
 [English](README.md)（英語が正本）
 
-[Egatari Studio](https://github.com/egatari/egatari-studio) の動く図のパーツ（Web Components）です。ステップごとに伸びる棒、組み上がる流れ図、1 本ずつ引く線、読む順に字をたどる漢文など。Studio がこれらを Egatari の教材（[形式](https://github.com/egatari/egatari-spec)。オフラインで再生できる 1 つの HTML）に組み込みます。
+[Egatari Studio](https://github.com/egatari/egatari-studio) のパーツ（Web Components）です。ステップごとに伸びる棒、組み上がる流れ図、1 本ずつ引く線、読む順に字をたどる漢文など。Studio がこれらを Egatari の教材（[形式](https://github.com/egatari/egatari-spec)。オフラインで再生できる 1 つの HTML）に組み込みます。
 
 一覧は **[CATALOG.md](CATALOG.md)**。パーツは 1 つずつ `components/<名前>/` にあります。
 
@@ -10,7 +10,7 @@
 |---|---|
 | `index.js` | カスタム要素 `<m-<名前>>`（Studio の[パーツの約束事](https://github.com/egatari/egatari-studio/blob/main/docs/contract.ja.md)に従う） |
 | `README.md` | 先頭の frontmatter（`name`・`version`・`series`・`tier`（と `set`）・`summary`・`steps`・`props`）と使い方 |
-| `demo.html` | 1〜2 枚の見本の教材 |
+| `demo.html` | 1〜2 枚のサンプル |
 
 ## 使い方
 

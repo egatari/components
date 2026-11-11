@@ -21,5 +21,5 @@ props: f, values, param, xr, yr, xt, yt, xl, yl, digits, dur, at, point, size
 - `size="40"`：字の大きさ（24 以上）
 
 <!-- llm: omit -->
-授業の表示（`ctx.preview`）：先の値の曲線を `--emph` で薄く見せる（今ある跡の線を使う）。先の値の「c = …」の字は出さない（新しい要素が要るため）
+先のステップを薄く見せる表示（`ctx.preview`）：先の値の曲線を `--emph` で薄く見せる（今ある跡の線を使う）。先の値の「c = …」の字は出さない（新しい要素が要るため）
 <!-- llm: end -->

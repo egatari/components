@@ -29,7 +29,7 @@ Child JSON: `{"series": [...], "trend": ...}`.
   - Clipped to the plot; lines outside reported. Vertical `pts`: `{a}` `{b}` empty; `{r}` only for fits
 - Axes: `xr` `yr` range, `xt` `yt` ticks, `xf` `yf` decimals, `xl` `yl` titles; range/ticks auto if omitted
 - `variant`: `fade` (default), `sweep` (left to right), `grow` (points grow, line from the middle)
-- Lecture view (`ctx.preview`): later points and lines faint
+- Show later steps faintly (`ctx.preview`): later points and lines faint
 
 The demo is `demo.html`. All numbers are fictional.
 

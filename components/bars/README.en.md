@@ -33,7 +33,7 @@ Child JSON: `{"series": [...], "groups": [...], "scale": [...]}`.
 - Values: `digits` decimals, thousands separators, `unit` appended
 - Negatives (not stacked): the axis includes 0; bars grow down/left from a `--fg` baseline; values outside the bar end
 - `stack="percent"`: axis 0–100 %, no `max`/`scale`, segment values in % when they fit, no total
-- Lecture view (`ctx.preview`): later bars fully grown at `--preview-opacity`; no axis change or over-max bar shown ahead
+- Show later steps faintly (`ctx.preview`): later bars fully grown at `--preview-opacity`; no axis change or over-max bar shown ahead
 <!-- llm: end -->
 
 The demo is `demo.html`. All numbers are fictional.

@@ -34,7 +34,7 @@ Notes
 - Default colours `--series-1..3`, slices 4–6 lighter, 7th `--series-4`. Values: thousands commas
 - Inside labels on dark slices use bg colour; one-sided outside labels centre with the pie
 - Labels inside if they fit, else in side columns with leader lines, de-overlapped
-- Lecture view (`ctx.preview`): later slices faint
+- Show later steps faintly (`ctx.preview`): later slices faint
 - `sweep`: names after all slices are out
 - Text width estimated from characters; "fits inside" = all 4 label-box corners in the sector (`show="both"` also tries 2 lines)
 - Reported (`ctx.report`): outside labels too tall or too wide, hole text wider than the hole, negative values

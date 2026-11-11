@@ -25,7 +25,7 @@ The demo is `demo.html` (forms example fictional).
 Notes
 
 - Text width estimated from character count (CJK 1, Latin 0.6); may be off by a few characters
-- Lecture view (`ctx.preview`): later columns and diffs at `--preview-opacity` (default 0.45)
+- Show later steps faintly (`ctx.preview`): later columns and diffs at `--preview-opacity` (default 0.45)
 - Moves 16 px over `dur` (default 0.6 s); `reveal` rows dur/2 each, staggered within dur/2
 - Table is top-aligned; spare height goes to rows
 - Text shrinks from `size` to 24 px to fit; `slide` enters from the sides; all variants same end

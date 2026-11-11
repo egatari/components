@@ -37,7 +37,7 @@ Layout:
 - With periods: round ticks; event boxes all above the axis
 - Steps: time order, periods and events together; the axis comes with the first
 - `variant`: `fade` (default), `draw` (lines first, bands drawn), `grow` (boxes grow, bands stretch); same steps and end
-- Lecture view (`ctx.preview`): later items faint
+- Show later steps faintly (`ctx.preview`): later items faint
 - `cues(k)`: start times of 2nd+ items in a step (for `{cue}`)
 
 The demo is `demo.html`; the schedule is fictional, years are history.

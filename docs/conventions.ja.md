@@ -33,15 +33,15 @@
 | | 使う色（テーマの変数だけ） |
 | | 動きの量の上限（長さ・距離・回数を、見せ方 0 より大きくしない） |
 
-ステップの数と長さと合図を変えないので、台本・動画の時間・字幕・授業の表示・印刷・読み上げは、見せ方によらず同じになる。
+ステップの数と長さと合図を変えないので、台本・動画の時間・字幕・先のステップを薄く見せる表示・印刷・読み上げは、見せ方によらず同じになる。
 
 - **動きは注目を導くためだけに使う。** 跳ね続ける、回り続ける、揺れ続けるなどの飾りの動きは入れない。どの見せ方も、ステップの中で動き終わって止まる。
 - **動きを減らす設定（`prefers-reduced-motion`）は、どの見せ方でも守られる。** 実行系がこの設定のときは `t = Infinity` で描く（`kit/deck.js`）。なので、どの見せ方でも最後の状態だけで読めること。最後の状態に注目の印（下線など）が残る見せ方は、止まった絵でも意味が通る印に限る（「この数字が大事」を表す下線はよい。動いていないと分からない印はだめ）。
-- **授業の表示**（先のステップも見せる表示。仕様 §8.4 で `ctx.preview === true` という旗になった。`ctx.mode` は "talk" | "learn" | "video"）。パーツは `ctx.preview || ctx.mode === "lecture"` で調べる（今の同梱の実行系は `ctx.mode === "lecture"` を渡し、次の実行系は `ctx.preview` を渡すので、どちらでも動く）。授業の表示では（仕様 §8.4「Answers under preview」、Player P1）：
+- **先のステップを薄く見せる表示**（先のステップも見せる表示。仕様 §8.4 で `ctx.preview === true` という旗になった。`ctx.mode` は "talk" | "learn" | "video"）。パーツは `ctx.preview || ctx.mode === "lecture"` で調べる（今の同梱の実行系は `ctx.mode === "lecture"` を渡し、次の実行系は `ctx.preview` を渡すので、どちらでも動く）。先のステップを薄く見せる表示では（仕様 §8.4「Answers under preview」、Player P1）：
   - **どのパーツも先を見せる**：後のステップで足される中身を、最後の形のまま（動かさずに）テーマの `--preview-opacity` の濃さで描く。見せ方によらず同じ。値は要素で読む（`parseFloat(getComputedStyle(this).getPropertyValue("--preview-opacity"))`）。0.45 はこの変数がないときだけの代わりで、値を書き込まない。変わるものをこれより濃く描かない。
   - 今のステップはふだんどおりに描く。前のステップは出来上がっている。ステップ 0 からもともと見えている中身は変えない。
   - 薄く見せている中身の操作は効かない（押せない・選べない。m-menu の先の札）。
-  - **例外のパーツ**は、先のステップが、見る人が先に考えるべき答えであるもの：index.js に `static preview = "none";` と書き、先を何も見せない（授業の表示でない時とまったく同じに描く）。`tools/lint.mjs` がこの旗を読み（値は `"none"` だけ）、`tools/release.mjs` が manifest.json の `components.<名前>.preview: "none"` に書く（`interactive`・`group`・`tile` と同じ）。今の例外：`m-predict`（答え）、`m-hissan`（数字が計算そのもの）、`m-timer`（先の時間は中身ではない）、`m-orbit`（先の形は、見る人が予想するもの）。
+  - **例外のパーツ**は、先のステップが、学習者が先に考えるべき答えであるもの：index.js に `static preview = "none";` と書き、先を何も見せない（先のステップを薄く見せる表示でない時とまったく同じに描く）。`tools/lint.mjs` がこの旗を読み（値は `"none"` だけ）、`tools/release.mjs` が manifest.json の `components.<名前>.preview: "none"` に書く（`interactive`・`group`・`tile` と同じ）。今の例外：`m-predict`（答え）、`m-hissan`（数字が計算そのもの）、`m-timer`（先の時間は中身ではない）、`m-orbit`（先の形は、学習者が予想するもの）。
   - 例外ではないもの：`m-kanbun` の読む順と `m-kobun` の品詞も、ほかと同じく先を見せる。特定の答え（練習問題、ある読む順）を隠したいときは、作る人が要素に `data-preview="none"` を付け、実行系がそれを隠す。パーツはそのために何もしない。
   - `tools/test-preview.mjs` が、どの見本も `ctx.preview` あり・なしで描く：先を見せるパーツはステップ 0 でより多くを `--preview-opacity` の濃さで描く。例外のパーツはまったく同じに描く。どのパーツもどちらかである。
 - **最初の見せ方（見せ方 0、既定）** は、今あるパーツでは今の見せ方そのもの。新しいパーツでは、いちばん控えめな見せ方（フェードして現れる）。
@@ -283,9 +283,9 @@ purposes: change, compare
 
 ## 6. 操作できるパーツ
 
-見る人が押したり入力したりできるパーツを「操作できるパーツ」と呼ぶ（2026-10-25、規格化の確認と作者の決定）。今は `m-predict`（数を数える・予想を押す）、`m-kobun`（助動詞を押すと札）、`m-menu`（札がリンク）。
+学習者が押したり入力したりできるパーツを「操作できるパーツ」と呼ぶ（2026-10-25、規格化の確認と作者の決定）。今は `m-predict`（数を数える・予想を押す）、`m-kobun`（助動詞を押すと札）、`m-menu`（札がリンク）。
 
-- **印は index.js に書く**：パーツのクラスに `static interactive = true;`。見る人の入力（仕様 §8.4「Viewer input」）を受け付けるパーツは、さらに `static viewerInput = true;`（`m-predict` だけ）。README の frontmatter には書かない（AI への指示に入るので）。経った時間そのものを見せるパーツ（`m-timer`）は `static clock = true;`：動きを減らす設定でも、実行系は実時間の t で描く（飾りの動きだけを止める。仕様 §9.1）。`tools/release.mjs` が manifest.json の `components.<名前>.interactive`・`.viewerInput`・`.clock`（true のときだけ）にする。
+- **印は index.js に書く**：パーツのクラスに `static interactive = true;`。学習者の入力（仕様 §8.4「Viewer input」）を受け付けるパーツは、さらに `static viewerInput = true;`（`m-predict` だけ）。README の frontmatter には書かない（AI への指示に入るので）。経った時間そのものを見せるパーツ（`m-timer`）は `static clock = true;`：動きを減らす設定でも、実行系は実時間の t で描く（飾りの動きだけを止める。仕様 §9.1）。`tools/release.mjs` が manifest.json の `components.<名前>.interactive`・`.viewerInput`・`.clock`（true のときだけ）にする。
 - **試験**：`tools/lint.mjs` が index.js を簡単に調べ、`input(…)` のメソッド、click・pointer・key・input・change などの受け取り、`a`・`button`・`input` の要素を作ること、子のリンクをデータにすること（`static shape = {links: true}`）のどれかがあって `static interactive = true` が無ければ誤りにする。`viewerInput` だけで `interactive` が無いのも誤り。
 - **見せ方（色だけに頼らない）**：CATALOG.md ではパーツの名前の横に「操作できる」。gallery のパーツの説明の 1 枚では「操作できる / Interactive」の札と、説明の字を `--accent2` の破線の枠で囲む。各パーツの demo.html の 1 枚目の本文の最初に「操作できる」の札（27 px、破線の枠）。見出し（h2）には入れない（Studio がスライドの題と鍵に使うので）。
 

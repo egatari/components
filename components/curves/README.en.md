@@ -39,6 +39,6 @@ Older forms (still work; not described to the AI)
 
 - `color` = `tone`; `at` = `labelAt` (only without `labelAt`)
 - `anchor` `start` `middle` `end`: raw text-anchor
-- Without `step`, series i is step i + 1. Lecture view shows later lines at `--preview-opacity`
+- Without `step`, series i is step i + 1. Showing later steps faintly draws later lines at `--preview-opacity`
 - The demo is `demo.html`. Series fields match `m-scatter` (conventions §3)
 <!-- llm: end -->

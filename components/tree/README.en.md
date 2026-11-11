@@ -23,7 +23,7 @@ Child JSON: `{"nodes": [...], "edges": [...]}` (`edges` optional).
 - Lines `--muted`, 3 px; `tone: emph` box: `--emph-tint` fill
 - Fit (~440 px high): ~8 four-character boxes per level (`down`), ~7 (`right`); ~5 levels. More leaves: 2 staggered rows (~16 / ~11), then 2-line names. Text ≥ 24 px; overflow spills, reported. Too many: split
 - `variant`: `fade` (default), `draw` (lines first), `grow`
-- Lecture view (`ctx.preview`): later parts faint
+- Show later steps faintly (`ctx.preview`): later parts faint
 
 The demo is `demo.html` (company and values fictional).
 
@@ -37,6 +37,6 @@ Notes
 - Motion: `fade` from below; `draw`, `grow` from the parent's direction, 12 px (root always as `fade`). `grow` from 0.92×
 - `branch`: 24 px, `--fg`. `elbow` bends 20 px from the parent, text on the child line; levels widen to fit (`right` +52 px, `down` ≥ 76 px); no staggering. `straight`: outside the line's middle (crowded at ≥ 3 children)
 - `path`: must start at the root, each pair parent–child, else a data card. Default: one step per line after the tree's last step. `pathStep`: drawn in that step (`draw` s each). `--emph` 6 px over the line, `--emph` 4 px frame on reached boxes, `branch` in `--emph`. `pathNote` beyond the end box after the last line; may overlap if the end box is not at the deepest level
-- Lecture view: later path faint; `branch` colour changes only at its step
+- Show later steps faintly: later path faint; `branch` colour changes only at its step
 - Edges take room outside the tree (`down`: 56 px below, +36 with a label); across depths they may cross boxes
 <!-- llm: end -->

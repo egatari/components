@@ -33,11 +33,11 @@ A variant changes only **how things appear within a step and where the eye is le
 | | The colours (theme variables only) |
 | | The upper bound of motion: no longer, farther or more often than variant 0 |
 
-Because steps, lengths and cues stay the same, the script, video timing, captions, lecture view, print and screen readers are the same whatever the variant.
+Because steps, lengths and cues stay the same, the script, video timing, captions, later steps shown faintly, print and screen readers are the same whatever the variant.
 
 - **Motion only guides attention.** No decorative motion (bouncing, spinning or wobbling that keeps going). Every variant finishes moving and stops within its step.
 - **Every variant honours `prefers-reduced-motion`.** With that setting the runtime draws at `t = Infinity` (`kit/deck.js`), so in every variant the final state must be readable on its own. A variant whose final state keeps emphasis (an underline) may only use marks that make sense in a still picture (an underline saying "this number matters" is fine; a mark that only means something while moving is not).
-- **Lecture view** (previewing later steps; since spec §8.4 a flag, `ctx.preview === true`, while `ctx.mode` is "talk" | "learn" | "video"). Parts test `ctx.preview || ctx.mode === "lecture"`, so they work both with the current bundled player (which passes `ctx.mode === "lecture"`) and with the next one (which passes `ctx.preview`). Under preview (spec §8.4 "Answers under preview", Player P1):
+- **Show later steps faintly** (previewing later steps; since spec §8.4 a flag, `ctx.preview === true`, while `ctx.mode` is "talk" | "learn" | "video"). Parts test `ctx.preview || ctx.mode === "lecture"`, so they work both with the current bundled player (which passes `ctx.mode === "lecture"`) and with the next one (which passes `ctx.preview`). Under preview (spec §8.4 "Answers under preview", Player P1):
   - **Every part answers**: it draws the content its later steps would add, in its final state (no motion), at the theme's `--preview-opacity`, the same in every variant. Read it on the element, `parseFloat(getComputedStyle(this).getPropertyValue("--preview-opacity"))`, and fall back to 0.45 only when it is missing; never hard-code the value. Nothing that changes is drawn brighter than that.
   - The current step renders as usual; earlier steps are complete. Content the part shows at step 0 anyway is unchanged.
   - Controls stay inert for faint content (no pointer events, not focusable; m-menu's later cards).

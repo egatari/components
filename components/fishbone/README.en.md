@@ -29,7 +29,7 @@ The demo is `demo.html` (delivery example fictional).
 Notes
 
 - Causes on lines off the bone; sub-causes off a drop from the cause line. `emph` box: `--emph-tint` fill, `--emph` frame/text. Bones 3.5 px, cause lines 2.5
-- Moves within `fade` time. Lecture view (`ctx.preview`): later bones faint
+- Moves within `fade` time. Show later steps faintly (`ctx.preview`): later bones faint
 - `fade`: boxes and text rise 12 px, then lines. `draw`: lines, then boxes slide 12 px from the spine side. `grow`: category boxes slide 12 px and grow from 0.92×; cause text slides from the bone; lines drawn together. Moves measured at box centre (conventions §1.2)
 - Text 27 → 24 px; row height (52 → 40 px) and bone slope chosen to fit. Cause width estimated from characters (`tex`: non-symbol characters × 0.62). If 24 px won't fit: no smaller text (conventions §2.3), bones close to 12 px, least-overflow layout centred, shortfall via `ctx.report("size", …)`
 - Spine 5 px (the only thick line); others ~3 px; all `--muted` (`--line` is for axes, ticks, grids)

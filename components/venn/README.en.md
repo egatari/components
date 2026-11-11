@@ -30,5 +30,5 @@ Notes
 - Layout: 2 sets left/right; 3 top-left, top-right, bottom. Items placed farthest from circle lines
 - Item width estimated from characters (CJK 1, Latin 0.6). 3-set overlaps are small: 1–2 words. Shrinks to 24 px, then ctx.report
 - Overlaps are clipPath cut-outs; theme variables only
-- Lecture view (`ctx.preview`): later circles and overlaps at `--preview-opacity` (default 0.45)
+- Show later steps faintly (`ctx.preview`): later circles and overlaps at `--preview-opacity` (default 0.45)
 <!-- llm: end -->
