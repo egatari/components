@@ -14,7 +14,7 @@
 // 式（tex）は組み立てのときに KaTeX で描く（spec §6.2）：build.fields の nodes[].tex を作り手が描いて texHtml を足し、
 // この部品は markup-reader で決まった要素と属性だけを読んで置く（再生のときに KaTeX は動かない）。描いた結果がなければ tex を字のまま出して知らせる。
 // 知らないデータ（loop の値、ない箱を指す辺）は ctx.report で知らせる（1.x の console.warn / console.error の代わり）
-egatariParts.define({name: "flow", version: "2.0.3", requires: {base: "1.1.0", "markup-reader": "1.0.1"}, element: "m-flow"}, function(deps){
+egatariParts.define({name: "flow", version: "2.0.4", requires: {base: "1.1.0", "markup-reader": "1.0.1"}, element: "m-flow"}, function(deps){
 "use strict";
 var base = deps.base, MR = deps["markup-reader"];
 // 複数行の名前の行の位置（1 行目からの下がり、px）と、上下に足す余白。base 1.1.0 で mtext の下付き・上付きは 24px 以上になり、
@@ -134,11 +134,29 @@ return class extends base.MotionElement {
       if (!lp && a === b){ ctx.report("data", "[flow] the edge " + JSON.stringify(e.from) + " → " + JSON.stringify(e.to) + " goes from a node to itself; it is drawn as a loop on the right (set loop to choose the side)"); lp = "right"; }
       if (!lp && !dx && !dy){ ctx.report("data", "[flow] the edge " + JSON.stringify(e.from) + " → " + JSON.stringify(e.to) + " joins two nodes with the same centre (not drawn)"); return false; }
       var p0 = lp ? null : edgePt(a.n, dx / L, dy / L, 6), p1 = lp ? null : edgePt(b.n, -dx / L, -dy / L, 6), route = null;
+      // Boxes apart along one axis: the edge ends at the middle of the target's facing side and starts on the source's facing
+      // side, as near the target's centre line as that side allows (a centre-to-centre line would enter a wide, flat target
+      // through its top or bottom, between stacked boxes)
+      var face = 0, sh = e.shift || (autoShift(e) ? 10 : 0);   // face 1: left/right sides face each other, 2: top/bottom
+      if (!lp){
+        var A = a.n, B = b.n, gx = Math.max(B.x - A.x - A.w, A.x - B.x - B.w), gy = Math.max(B.y - A.y - A.h, A.y - B.y - B.h);
+        if (gx > 0 || gy > 0){
+          // shift runs along the facing sides (to the right of travel); the start follows the shifted end's line
+          var hz = gx >= gy, sg = hz ? Math.sign(dx) : Math.sign(dy), m = function(n){ return Math.min((hz ? n.h : n.w) / 4, 12); };
+          p1 = hz ? [b.cx - sg * (B.w / 2 + 6), b.cy + sg * sh] : [b.cx - sg * sh, b.cy - sg * (B.h / 2 + 6)];
+          if (A.shape === "diamond"){ var ux = p1[0] - a.cx, uy = p1[1] - a.cy, ul = Math.hypot(ux, uy) || 1; p0 = edgePt(A, ux / ul, uy / ul, 6); }
+          else p0 = hz ? [a.cx + sg * (A.w / 2 + 6), Math.max(A.y + m(A), Math.min(A.y + A.h - m(A), p1[1]))]
+                       : [Math.max(A.x + m(A), Math.min(A.x + A.w - m(A), p1[0])), a.cy + sg * (A.h / 2 + 6)];
+          dx = p1[0] - p0[0]; dy = p1[1] - p0[1]; L = Math.hypot(dx, dy) || 1; face = hz ? 1 : 2;
+        }
+      }
       if (lp) route = loopRoute(lp, a.n, b.n);
       if (route){ p0 = route.pts[0]; p1 = route.pts[3]; }
-      // shift：線に垂直に（進む向きの右へ）ずらす。行きと帰りの 2 本を並べるときに使う
-      var sh = e.shift || (autoShift(e) ? 10 : 0);
-      if (sh){ var sx = -dy / L * sh, sy = dx / L * sh; p0 = [p0[0] + sx, p0[1] + sy]; p1 = [p1[0] + sx, p1[1] + sy]; }
+      // shift：線に垂直に（進む向きの右へ）ずらす。行きと帰りの 2 本を並べるときに使う（向かい合う辺の間はもうずらしてある）
+      if (sh && !face){ var sx = -dy / L * sh, sy = dx / L * sh; p0 = [p0[0] + sx, p0[1] + sy]; p1 = [p1[0] + sx, p1[1] + sy]; }
+      // self-check: an end that leaves its box's side (a shift larger than the side) is reported, not silently drawn
+      var off = function(p, n){ return face === 1 ? p[1] < n.y || p[1] > n.y + n.h : face === 2 ? p[0] < n.x || p[0] > n.x + n.w : false; };
+      if (off(p1, b.n)) ctx.report("layout", "[flow] the edge " + JSON.stringify(e.from) + " → " + JSON.stringify(e.to) + " leaves the side of its box (shift " + sh + " is larger than the side allows); use a smaller shift or a taller box");
       return {a: a, b: b, dx: dx, dy: dy, L: L, p0: p0, p1: p1, route: route, shift: sh};
     });
     // 線分（戻る辺は折れ線の 3 本）と、置いた字の箱 [x0, y0, x1, y1]

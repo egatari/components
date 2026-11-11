@@ -64,12 +64,160 @@ document.addEventListener("DOMContentLoaded", function(){
   <h2>部品の一覧（45 個、179 枚）</h2>
   <div class="body">
     <p>部品ごとに、説明の 1 枚と見本のスライドが続く。→ で段階を進める。</p>
-    <p>m-balance（新しい）　m-ci（新しい）　m-code（新しい）　m-folds（新しい）　m-mapping（新しい）　m-sampling（新しい）　m-curves（変わった）　m-bars　m-boxplot　m-cards　m-codetree　m-collect　m-compare　m-cycle　m-fishbone　m-flow　m-gendai　m-heatmap　m-hissan　m-hist　m-kakijun　m-kanbun　m-keyboard　m-kobun　m-kpi　m-map-japan　m-map-world　m-market　m-menu　m-numberline　m-orbit　m-particles　m-pie　m-predict　m-quad　m-scatter　m-score　m-seq　m-sweep　m-syntax　m-tape　m-timeline　m-timer　m-tree　m-venn</p>
+    <p>m-flow（変わった）　m-predict（変わった）　m-balance　m-bars　m-boxplot　m-cards　m-ci　m-code　m-codetree　m-collect　m-compare　m-curves　m-cycle　m-fishbone　m-folds　m-gendai　m-heatmap　m-hissan　m-hist　m-kakijun　m-kanbun　m-keyboard　m-kobun　m-kpi　m-map-japan　m-map-world　m-mapping　m-market　m-menu　m-numberline　m-orbit　m-particles　m-pie　m-quad　m-sampling　m-scatter　m-score　m-seq　m-sweep　m-syntax　m-tape　m-timeline　m-timer　m-tree　m-venn</p>
   </div>
 </section>
 
 <section class="slide">
-  <h2>m-balance（新しい、v2.6.0）</h2>
+  <h2>m-flow（変わった、v2.6.1）</h2>
+  <div class="body">
+    <p>流れ図の箱と矢印を段階ごとに出して、図を組み立てる</p>
+    <ul>
+      <li>伝えたいこと：手順・工程</li>
+      <li>見せ方：1 種類</li>
+      <li>系列：標準パーツ　見本のスライド：3 枚</li>
+    </ul>
+  </div>
+</section>
+
+<section id="g-flow-1" class="slide">
+  <h2>ベイズ決定の流れ</h2>
+  <div class="body">
+    <m-flow style="height:420px">
+      <script type="application/json">{
+        "nodes": [
+          {"id": "w",  "label": "観測 *w*",            "x": 0,   "y": 40,  "w": 220, "h": 80, "step": 1},
+          {"id": "p",  "tex": "p(y\\mid w)",          "x": 330, "y": 40,  "w": 240, "h": 80, "step": 1},
+          {"id": "L",  "label": "損失 *L*(*y*, *a*)\n（与えられる）", "x": 330, "y": 260, "w": 240, "h": 100, "step": 2, "tone": "muted"},
+          {"id": "r",  "tex": "r(a\\mid w)",          "x": 680, "y": 150, "w": 220, "h": 80, "step": 3},
+          {"id": "a",  "label": "決定 *a*^*",          "x": 1000, "y": 150, "w": 184, "h": 80, "step": 4, "tone": "emph"}
+        ],
+        "edges": [
+          {"from": "w", "to": "p", "step": 1, "label": "予測"},
+          {"from": "p", "to": "r", "step": 3},
+          {"from": "L", "to": "r", "step": 3, "dash": true},
+          {"from": "r", "to": "a", "step": 4, "label": "最小化", "tone": "emph"}
+        ]
+      }</script>
+    </m-flow>
+  </div>
+  <div class="concl"><span>→ 予測と損失から期待損失 <i>r</i> を作り，それを最小にする <i>a</i> を選ぶ</span></div>
+</section>
+
+<section id="g-flow-2" class="slide">
+  <h2>お金とサービスの流れ（架空）</h2>
+  <div class="body">
+    <m-flow style="height:420px">
+      <script type="application/json">{
+        "nodes": [
+          {"id": "co",  "label": "自社",         "x": 470, "y": 20,  "w": 240, "h": 80, "step": 1, "tone": "emph"},
+          {"id": "cu",  "label": "顧客の会社",   "x": 60,  "y": 300, "w": 260, "h": 80, "step": 1},
+          {"id": "us",  "label": "社員（使う人）", "x": 860, "y": 300, "w": 300, "h": 80, "step": 2},
+          {"id": "cl",  "label": "クラウド",     "x": 950, "y": 20,  "w": 220, "h": 80, "step": 3, "tone": "muted"}
+        ],
+        "edges": [
+          {"from": "co", "to": "cu", "kind": "service", "label": "使う権利", "shift": 14, "step": 1},
+          {"from": "cu", "to": "co", "kind": "money", "amount": "月 3 万円", "shift": 14, "step": 2, "pulse": [2, 3]},
+          {"from": "cu", "to": "us", "kind": "service", "label": "配る", "step": 2},
+          {"from": "us", "to": "co", "kind": "data", "label": "使い方の記録", "step": 3, "pulse": true},
+          {"from": "co", "to": "cl", "kind": "money", "amount": "売上の 15 %", "step": 3}
+        ]
+      }</script>
+    </m-flow>
+  </div>
+  <div class="concl"><span>→ 会社が払い，社員が使い，記録が戻る</span></div>
+</section>
+
+<section id="g-flow-3" class="slide">
+  <h2>1 から <i>n</i> までの和を求める手順（判断とくり返し）</h2>
+  <div class="body">
+    <m-flow aria-label="1 から n までの和を求める流れ図" style="height:420px">
+      <script type="application/json">{
+        "nodes": [
+          {"id": "init", "label": "*S* ← 0, *i* ← 1",  "x": 0,   "y": 70,  "w": 220, "h": 80, "step": 1},
+          {"id": "dec",  "label": "*i* ≤ *n* ?",       "x": 290, "y": 40,  "w": 260, "h": 140, "step": 1, "shape": "diamond"},
+          {"id": "add",  "label": "*S* ← *S* + *i*",   "x": 640, "y": 70,  "w": 230, "h": 80, "step": 2},
+          {"id": "inc",  "label": "*i* ← *i* + 1",     "x": 950, "y": 70,  "w": 220, "h": 80, "step": 2},
+          {"id": "out",  "label": "*S* を出力",        "x": 305, "y": 300, "w": 230, "h": 80, "step": 4, "tone": "emph"}
+        ],
+        "edges": [
+          {"from": "init", "to": "dec", "step": 1},
+          {"from": "dec", "to": "add", "label": "はい", "step": 2},
+          {"from": "add", "to": "inc", "step": 2},
+          {"from": "inc", "to": "dec", "loop": "top", "label": "くり返す", "step": 3},
+          {"from": "dec", "to": "out", "label": "いいえ", "step": 4, "tone": "emph"}
+        ]
+      }</script>
+    </m-flow>
+  </div>
+  <div class="concl"><span>→ <i>i</i> が <i>n</i> をこえるまで足してから，<i>S</i> を出力する</span></div>
+</section>
+
+<section class="slide">
+  <h2>m-predict（変わった、v2.6.1）</h2>
+  <div class="body">
+    <p style="margin:0 0 10px;line-height:1.3"><span style="display:inline-block;font-size:27px;font-weight:700;color:var(--fg);border:2px dashed var(--accent2);border-radius:8px;padding:0 12px">操作できる / Interactive</span></p>
+    <p style="border:3px dashed var(--accent2);border-radius:10px;padding:10px 16px">予想してから答えを開く。選択肢ごとの人数を棒で見せ、答えの段階で正解に枠（見る人が押して操作できる）</p>
+    <ul>
+      <li>伝えたいこと：予想してから確かめる</li>
+      <li>見せ方：fade・draw</li>
+      <li>系列：標準パーツ　見本のスライド：3 枚</li>
+    </ul>
+  </div>
+</section>
+
+<section id="g-predict-1" class="slide">
+  <h2>予想してみよう：落ちる速さ</h2>
+  <div class="body">
+    <p class="ia-badge" style="margin:0 0 10px;line-height:1.3"><span style="display:inline-block;font-size:27px;font-weight:700;color:var(--fg);border:2px dashed var(--accent2);border-radius:8px;padding:0 12px">操作できる</span></p>
+    <m-predict unit="人" style="height:390px">
+      <script type="application/json">{
+        "question": "同じ高さから落とすと、重い球と軽い球のどちらが先に着く？",
+        "choices": [{"label": "重い球"}, {"label": "軽い球"}, {"label": "同時"}],
+        "answer": 2,
+        "counts": [17, 2, 11],
+        "note": "空気の抵抗が小さければ、重さによらず同時に着く（ガリレオ）"
+      }</script>
+    </m-predict>
+  </div>
+  <div class="concl"><span>→ 落ちる速さは重さで決まらない（人数は架空の例）</span></div>
+</section>
+
+<section id="g-predict-2" class="slide">
+  <h2>予想してみよう：小数のかけ算</h2>
+  <div class="body">
+    <m-predict unit="人" poll="p1" style="height:440px">
+      <script type="application/json">{
+        "question": "0.1 × 0.1 はいくつ？",
+        "choices": [{"label": "0.1"}, {"label": "0.01"}, {"label": "0.2"}, {"label": "1"}],
+        "answer": 1,
+        "counts": [12, 10, 6, 2],
+        "note": "0.1 は 10 分の 1。10 分の 1 の 10 分の 1 は 100 分の 1"
+      }</script>
+    </m-predict>
+  </div>
+  <div class="concl"><span>→ 1 より小さい数をかけると、もとの数より小さくなる（人数は架空の例）</span></div>
+</section>
+
+<section id="g-predict-3" class="slide">
+  <h2>見せ方の種類（variant）</h2>
+  <div class="body">
+    <div style="display:grid;grid-template-columns:190px 1fr;gap:20px 16px;align-items:center;font-size:27px">
+      <div>フェード<br>（fade）</div>
+      <m-predict variant="fade" unit="人" style="height:210px">
+        <script type="application/json">{"choices": [{"label": "A"}, {"label": "B"}], "answer": 0, "counts": [8, 5]}</script>
+      </m-predict>
+      <div>線を引く<br>（draw）</div>
+      <m-predict variant="draw" unit="人" style="height:210px">
+        <script type="application/json">{"choices": [{"label": "A"}, {"label": "B"}], "answer": 0, "counts": [8, 5]}</script>
+      </m-predict>
+    </div>
+  </div>
+  <div class="concl"><span>→ 書かなければ最初の見せ方（fade）になる。人数は架空</span></div>
+</section>
+
+<section class="slide">
+  <h2>m-balance</h2>
   <div class="body">
     <p>確率の重りを置き、支点が期待値でつり合う様子を示す</p>
     <ul>
@@ -84,202 +232,6 @@ document.addEventListener("DOMContentLoaded", function(){
   <h2>期待値でつり合う（架空データ）</h2>
   <div class="body"><m-balance style="height:440px"><script type="application/json">{"values":[0,1,2,3],"probs":[0.1,0.3,0.4,0.2],"name":"X"}</script></m-balance></div>
   <div class="concl"><span>架空の分布。確率を重りとすると期待値が支点になる</span></div>
-</section>
-
-<section class="slide">
-  <h2>m-ci（新しい、v2.6.0）</h2>
-  <div class="body">
-    <p>正規標本の区間を重ね、母平均を含む割合で信頼水準を説明する</p>
-    <ul>
-      <li>伝えたいこと：仕組みをモデルで見る・ばらつき</li>
-      <li>見せ方：1 種類</li>
-      <li>系列：数理・統計　見本のスライド：1 枚</li>
-    </ul>
-  </div>
-</section>
-
-<section id="g-ci-1" class="slide">
-  <h2>95 % の区間を繰り返す（シミュレーション）</h2>
-  <div class="body"><m-ci style="height:440px"><script type="application/json">{"mu":50,"sigma":10,"n":25,"reps":40,"level":0.95,"seed":2}</script></m-ci></div>
-  <div class="concl"><span>架空の標本。95 % は繰り返した区間が μ を含む割合</span></div>
-</section>
-
-<section class="slide">
-  <h2>m-code（新しい、v2.6.0）</h2>
-  <div class="body">
-    <p>短いコードを行ごとに説明し、最後に出力を見せる</p>
-    <ul>
-      <li>伝えたいこと：手順・工程・仕組みをモデルで見る</li>
-      <li>見せ方：1 種類</li>
-      <li>系列：数理・統計　見本のスライド：3 枚</li>
-    </ul>
-  </div>
-</section>
-
-<section id="g-code-1" class="slide">
-  <h2>店ごとの売上平均を計算する</h2>
-  <div class="body"><m-code style="height:440px"><script type="application/json">{"lang":"python","code":"import pandas as pd\ndf = pd.read_csv(\"sales.csv\")\ndf.groupby(\"store\")[\"sales\"].mean()","steps":[{"lines":[1],"note":"pandas を読み込む"},{"lines":[2],"note":"CSV を表として読む"},{"lines":[3],"note":"店ごとの平均"}],"output":"store\nA    120.5\nB     98.0"}</script></m-code></div>
-  <div class="concl"><span>架空の売上データ。店ごとにまとめてから平均を求める</span></div>
-</section>
-
-<section id="g-code-2" class="slide">
-  <h2>繰り返しで平均を求める</h2>
-  <div class="body"><m-code style="height:440px"><script type="application/json">{"lang":"python","code":"def mean(values):\n    total = 0\n    for value in values:\n        total += value\n    return total / len(values)\n\nprint(mean([2, 4, 6]))","steps":[{"lines":[1,2],"note":"関数を定義し、合計を 0 にする"},{"lines":[3,4],"note":"値を一つずつ合計する"},{"lines":[5,7],"note":"個数で割り、関数の結果を表示"}],"output":"4.0"}</script></m-code></div>
-  <div class="concl"><span>合計を個数で割ると平均になる</span></div>
-</section>
-
-<section id="g-code-3" class="slide">
-  <h2>交差検証のコード（scikit-learn）</h2>
-  <div class="body"><m-code style="height:420px"><script type="application/json">{"lang": "python", "code": "from sklearn.model_selection import cross_val_score\nfrom sklearn.tree import DecisionTreeClassifier\nfrom sklearn.datasets import load_iris\nX, y = load_iris(return_X_y=True)\nmodel = DecisionTreeClassifier(max_depth=3, random_state=0)\nscores = cross_val_score(model, X, y, cv=5)\nprint(scores.mean())", "steps": [{"lines": [1, 3], "note": "道具を読み込む"}, {"lines": [4], "note": "アヤメのデータ"}, {"lines": [5], "note": "決定木を用意"}, {"lines": [6, 7], "note": "5 分割で検証し平均"}], "output": "0.96"}</script></m-code></div>
-  <div class="concl"><span>データを 5 つに分け、検証する区画を替えて平均する</span></div>
-</section>
-
-<section class="slide">
-  <h2>m-folds（新しい、v2.6.0）</h2>
-  <div class="body">
-    <p>検証用の区画を順に替え、各分割の誤差と平均を示す</p>
-    <ul>
-      <li>伝えたいこと：仕組みをモデルで見る・比べる（量・特徴）</li>
-      <li>見せ方：1 種類</li>
-      <li>系列：数理・統計　見本のスライド：1 枚</li>
-    </ul>
-  </div>
-</section>
-
-<section id="g-folds-1" class="slide">
-  <h2>検証する区画を替える（架空データ）</h2>
-  <div class="body"><m-folds style="height:440px"><script type="application/json">{"k":5,"errors":[0.21,0.18,0.25,0.19,0.22],"labels":["1","2","3","4","5"]}</script></m-folds></div>
-  <div class="concl"><span>架空の誤差。すべての区画を 1 回ずつ検証する</span></div>
-</section>
-
-<section class="slide">
-  <h2>m-mapping（新しい、v2.6.0）</h2>
-  <div class="body">
-    <p>実験の結果を数値へ対応させ、同じ値になる結果をまとめて確率分布を作る</p>
-    <ul>
-      <li>伝えたいこと：仕組みをモデルで見る・まとめる・分ける</li>
-      <li>見せ方：1 種類</li>
-      <li>系列：数理・統計　見本のスライド：4 枚</li>
-    </ul>
-  </div>
-</section>
-
-<section id="g-mapping-1" class="slide">
-  <h2>硬貨を 2 回投げる</h2>
-  <div class="body"><m-mapping style="height:440px"><script type="application/json">{"outcomes":[{"label":"表表","x":2},{"label":"表裏","x":1},{"label":"裏表","x":1},{"label":"裏裏","x":0}],"picture":"coins","name":"X"}</script></m-mapping></div>
-  <div class="concl"><span>X は表の数。同じ値になる結果の確率を足す</span></div>
-</section>
-
-<section id="g-mapping-2" class="slide">
-  <h2>さいころ：5 以上なら当たり（X = 1）</h2>
-  <div class="body"><m-mapping style="height:440px"><script type="application/json">{"outcomes":[{"label":"1","x":0},{"label":"2","x":0},{"label":"3","x":0},{"label":"4","x":0},{"label":"5","x":1},{"label":"6","x":1}],"name":"X","picture":"dice"}</script></m-mapping></div>
-  <div class="concl"><span>当たりは 6 通りのうち 2 通り。P(X = 1) = 1/3</span></div>
-</section>
-
-<section id="g-mapping-3" class="slide">
-  <h2>ぶどうの粒の数を X にする（架空）</h2>
-  <div class="body"><m-mapping style="height:440px"><script type="application/json">{"outcomes":[{"label":"房 A","x":3},{"label":"房 B","x":5},{"label":"房 C","x":3},{"label":"房 D","x":4}],"name":"X","picture":"grapes"}</script></m-mapping></div>
-  <div class="concl"><span>粒の数を数えると X の値になる</span></div>
-</section>
-
-<section id="g-mapping-4" class="slide">
-  <h2>袋から玉を 2 個取り出す（戻さない）</h2>
-  <div class="body"><m-mapping style="height:440px"><script type="application/json">{"outcomes":[{"label":"赤赤","x":2},{"label":"赤青","x":1},{"label":"青赤","x":1}],"name":"X","picture":"balls"}</script></m-mapping></div>
-  <div class="concl"><span>赤 2 個・青 1 個から 2 個。X は赤の数</span></div>
-</section>
-
-<section class="slide">
-  <h2>m-sampling（新しい、v2.6.0）</h2>
-  <div class="body">
-    <p>母集団から標本を取り、比率・平均の標本分布を積む</p>
-    <ul>
-      <li>伝えたいこと：仕組みをモデルで見る・ばらつき</li>
-      <li>見せ方：1 種類</li>
-      <li>系列：数理・統計　見本のスライド：3 枚</li>
-    </ul>
-  </div>
-</section>
-
-<section id="g-sampling-1" class="slide">
-  <h2>玉を戻さずに 4 個取る（シミュレーション）</h2>
-  <div class="body"><m-sampling style="height:440px"><script type="application/json">{"balls":{"赤":3,"青":2},"of":"赤","n":4,"replace":false,"repeat":40,"seed":1}</script></m-sampling></div>
-  <div class="concl"><span>赤 3・青 2 の架空の袋。点は 1 回の標本比率</span></div>
-</section>
-
-<section id="g-sampling-2" class="slide">
-  <h2>玉を戻して 4 個取る（シミュレーション）</h2>
-  <div class="body"><m-sampling style="height:440px"><script type="application/json">{"balls":{"赤":3,"青":2},"of":"赤","n":4,"replace":true,"repeat":40,"seed":1}</script></m-sampling></div>
-  <div class="concl"><span>同じ架空の袋。戻さない場合と分布の広がりを比べる</span></div>
-</section>
-
-<section id="g-sampling-3" class="slide">
-  <h2>さいころ 2 回の平均（シミュレーション）</h2>
-  <div class="body"><m-sampling style="height:440px"><script type="application/json">{"values":[1,2,3,4,5,6],"n":2,"replace":true,"repeat":40,"seed":3}</script></m-sampling></div>
-  <div class="concl"><span>架空の試行。標本平均の点を積んで分布を作る</span></div>
-</section>
-
-<section class="slide">
-  <h2>m-curves（変わった、v2.6.0）</h2>
-  <div class="body">
-    <p>同じ座標軸に線を 1 本ずつ引く（線の名前は凡例でなく線の端に直接書く）</p>
-    <ul>
-      <li>伝えたいこと：時間での変化</li>
-      <li>見せ方：1 種類</li>
-      <li>系列：標準パーツ　見本のスライド：4 枚</li>
-    </ul>
-  </div>
-</section>
-
-<section id="g-curves-1" class="slide">
-  <h2>予測分布と代表値</h2>
-  <div class="body">
-    <m-curves xr="[0,4]" yr="[0,0.8]" xt="[0,1,2,3,4]" yt="[0,0.2,0.4,0.6,0.8]" yf="1" xl="需要 *y*" yl="密度" style="height:420px">
-      <script type="application/json" id="pred-data">[]</script>
-    </m-curves>
-  </div>
-  <div class="concl"><span>→ 右に裾が長いと，平均は中央値より右に来る</span></div>
-</section>
-
-<section id="g-curves-2" class="slide">
-  <h2>損失関数の形</h2>
-  <div class="body">
-    <m-curves xr="[-2,2]" yr="[0,4]" xt="[-2,-1,0,1,2]" yt="[0,1,2,3,4]" xl="誤差 *u* = *y* − *a*" yl="損失" style="height:420px">
-      <script type="application/json">[
-        {"label": "二乗 *u*^2", "f": "x*x", "labelAt": 1.6, "anchor": "left", "dx": -14},
-        {"label": "絶対値 |*u*|", "f": "abs(x)", "labelAt": -2, "anchor": "right", "ly": 1.1},
-        {"label": "分位点（*τ* = 0.9）", "f": "x >= 0 ? 0.9*x : -0.1*x", "labelAt": -2, "anchor": "right", "dy": -6}
-      ]</script>
-    </m-curves>
-  </div>
-  <div class="concl"><span>→ どの損失を使うかで，最適な決定 <i>a</i> が変わる</span></div>
-</section>
-
-<section id="g-curves-3" class="slide">
-  <h2>需要が増えると（架空の例）</h2>
-  <div class="body">
-    <m-curves xr="[0,10]" yr="[0,12]" xt="[0,2,4,6,8,10]" yt="[0,3,6,9,12]" xl="数量 *Q*" yl="価格 *P*" style="height:420px">
-      <script type="application/json">[
-        {"label": "需要 D", "f": "10 - x", "tone": "term", "step": 1, "labelAt": 1.5, "anchor": "below"},
-        {"label": "供給 S", "f": "2 + x", "tone": "accent2", "step": 1, "labelAt": 8.5, "anchor": "left"},
-        {"label": "増えた需要 D′", "f": "13 - x", "tone": "emph", "step": 2, "labelAt": 2, "anchor": "right"},
-        {"label": "均衡", "pts": [[4, 0], [4, 6]], "tone": "muted", "dash": true, "step": 3, "anchor": "left", "ly": 1},
-        {"label": "新しい均衡", "pts": [[5.5, 0], [5.5, 7.5]], "tone": "emph", "dash": true, "step": 3, "anchor": "right", "ly": 1}
-      ]</script>
-    </m-curves>
-  </div>
-  <div class="concl"><span>→ 需要が増えると，価格も取引量も上がる</span></div>
-</section>
-
-<section id="g-curves-4" class="slide">
-  <h2>両側検定の棄却域</h2>
-  <div class="body">
-    <m-curves xr="[-4,4]" yr="[0,0.45]" xt="[-1.96,0,1.96]" xf="2" yt="[0,0.2,0.4]" xl="検定統計量 *z*" style="height:400px">
-      <script type="application/json">[
-        {"label": "標準正規分布", "f": "N(x, 0, 1)", "labelAt": 1, "anchor": "right", "area": [[null, -1.96], [1.96, null]], "areaLabel": "2.5 %", "tone": "term"}
-      ]</script>
-    </m-curves>
-  </div>
-  <div class="concl"><span>→ 両端の 5 % に入れば帰無仮説を棄却する</span></div>
 </section>
 
 <section class="slide">
@@ -502,6 +454,54 @@ document.addEventListener("DOMContentLoaded", function(){
       }</script>
     </m-cards>
   </div>
+</section>
+
+<section class="slide">
+  <h2>m-ci</h2>
+  <div class="body">
+    <p>正規標本の区間を重ね、母平均を含む割合で信頼水準を説明する</p>
+    <ul>
+      <li>伝えたいこと：仕組みをモデルで見る・ばらつき</li>
+      <li>見せ方：1 種類</li>
+      <li>系列：数理・統計　見本のスライド：1 枚</li>
+    </ul>
+  </div>
+</section>
+
+<section id="g-ci-1" class="slide">
+  <h2>95 % の区間を繰り返す（シミュレーション）</h2>
+  <div class="body"><m-ci style="height:440px"><script type="application/json">{"mu":50,"sigma":10,"n":25,"reps":40,"level":0.95,"seed":2}</script></m-ci></div>
+  <div class="concl"><span>架空の標本。95 % は繰り返した区間が μ を含む割合</span></div>
+</section>
+
+<section class="slide">
+  <h2>m-code</h2>
+  <div class="body">
+    <p>短いコードを行ごとに説明し、最後に出力を見せる</p>
+    <ul>
+      <li>伝えたいこと：手順・工程・仕組みをモデルで見る</li>
+      <li>見せ方：1 種類</li>
+      <li>系列：数理・統計　見本のスライド：3 枚</li>
+    </ul>
+  </div>
+</section>
+
+<section id="g-code-1" class="slide">
+  <h2>店ごとの売上平均を計算する</h2>
+  <div class="body"><m-code style="height:440px"><script type="application/json">{"lang":"python","code":"import pandas as pd\ndf = pd.read_csv(\"sales.csv\")\ndf.groupby(\"store\")[\"sales\"].mean()","steps":[{"lines":[1],"note":"pandas を読み込む"},{"lines":[2],"note":"CSV を表として読む"},{"lines":[3],"note":"店ごとの平均"}],"output":"store\nA    120.5\nB     98.0"}</script></m-code></div>
+  <div class="concl"><span>架空の売上データ。店ごとにまとめてから平均を求める</span></div>
+</section>
+
+<section id="g-code-2" class="slide">
+  <h2>繰り返しで平均を求める</h2>
+  <div class="body"><m-code style="height:440px"><script type="application/json">{"lang":"python","code":"def mean(values):\n    total = 0\n    for value in values:\n        total += value\n    return total / len(values)\n\nprint(mean([2, 4, 6]))","steps":[{"lines":[1,2],"note":"関数を定義し、合計を 0 にする"},{"lines":[3,4],"note":"値を一つずつ合計する"},{"lines":[5,7],"note":"個数で割り、関数の結果を表示"}],"output":"4.0"}</script></m-code></div>
+  <div class="concl"><span>合計を個数で割ると平均になる</span></div>
+</section>
+
+<section id="g-code-3" class="slide">
+  <h2>交差検証のコード（scikit-learn）</h2>
+  <div class="body"><m-code style="height:420px"><script type="application/json">{"lang": "python", "code": "from sklearn.model_selection import cross_val_score\nfrom sklearn.tree import DecisionTreeClassifier\nfrom sklearn.datasets import load_iris\nX, y = load_iris(return_X_y=True)\nmodel = DecisionTreeClassifier(max_depth=3, random_state=0)\nscores = cross_val_score(model, X, y, cv=5)\nprint(scores.mean())", "steps": [{"lines": [1, 3], "note": "道具を読み込む"}, {"lines": [4], "note": "アヤメのデータ"}, {"lines": [5], "note": "決定木を用意"}, {"lines": [6, 7], "note": "5 分割で検証し平均"}], "output": "0.96"}</script></m-code></div>
+  <div class="concl"><span>データを 5 つに分け、検証する区画を替えて平均する</span></div>
 </section>
 
 <section class="slide">
@@ -840,6 +840,70 @@ document.addEventListener("DOMContentLoaded", function(){
 </section>
 
 <section class="slide">
+  <h2>m-curves</h2>
+  <div class="body">
+    <p>同じ座標軸に線を 1 本ずつ引く（線の名前は凡例でなく線の端に直接書く）</p>
+    <ul>
+      <li>伝えたいこと：時間での変化</li>
+      <li>見せ方：1 種類</li>
+      <li>系列：標準パーツ　見本のスライド：4 枚</li>
+    </ul>
+  </div>
+</section>
+
+<section id="g-curves-1" class="slide">
+  <h2>予測分布と代表値</h2>
+  <div class="body">
+    <m-curves xr="[0,4]" yr="[0,0.8]" xt="[0,1,2,3,4]" yt="[0,0.2,0.4,0.6,0.8]" yf="1" xl="需要 *y*" yl="密度" style="height:420px">
+      <script type="application/json" id="pred-data">[]</script>
+    </m-curves>
+  </div>
+  <div class="concl"><span>→ 右に裾が長いと，平均は中央値より右に来る</span></div>
+</section>
+
+<section id="g-curves-2" class="slide">
+  <h2>損失関数の形</h2>
+  <div class="body">
+    <m-curves xr="[-2,2]" yr="[0,4]" xt="[-2,-1,0,1,2]" yt="[0,1,2,3,4]" xl="誤差 *u* = *y* − *a*" yl="損失" style="height:420px">
+      <script type="application/json">[
+        {"label": "二乗 *u*^2", "f": "x*x", "labelAt": 1.6, "anchor": "left", "dx": -14},
+        {"label": "絶対値 |*u*|", "f": "abs(x)", "labelAt": -2, "anchor": "right", "ly": 1.1},
+        {"label": "分位点（*τ* = 0.9）", "f": "x >= 0 ? 0.9*x : -0.1*x", "labelAt": -2, "anchor": "right", "dy": -6}
+      ]</script>
+    </m-curves>
+  </div>
+  <div class="concl"><span>→ どの損失を使うかで，最適な決定 <i>a</i> が変わる</span></div>
+</section>
+
+<section id="g-curves-3" class="slide">
+  <h2>需要が増えると（架空の例）</h2>
+  <div class="body">
+    <m-curves xr="[0,10]" yr="[0,12]" xt="[0,2,4,6,8,10]" yt="[0,3,6,9,12]" xl="数量 *Q*" yl="価格 *P*" style="height:420px">
+      <script type="application/json">[
+        {"label": "需要 D", "f": "10 - x", "tone": "term", "step": 1, "labelAt": 1.5, "anchor": "below"},
+        {"label": "供給 S", "f": "2 + x", "tone": "accent2", "step": 1, "labelAt": 8.5, "anchor": "left"},
+        {"label": "増えた需要 D′", "f": "13 - x", "tone": "emph", "step": 2, "labelAt": 2, "anchor": "right"},
+        {"label": "均衡", "pts": [[4, 0], [4, 6]], "tone": "muted", "dash": true, "step": 3, "anchor": "left", "ly": 1},
+        {"label": "新しい均衡", "pts": [[5.5, 0], [5.5, 7.5]], "tone": "emph", "dash": true, "step": 3, "anchor": "right", "ly": 1}
+      ]</script>
+    </m-curves>
+  </div>
+  <div class="concl"><span>→ 需要が増えると，価格も取引量も上がる</span></div>
+</section>
+
+<section id="g-curves-4" class="slide">
+  <h2>両側検定の棄却域</h2>
+  <div class="body">
+    <m-curves xr="[-4,4]" yr="[0,0.45]" xt="[-1.96,0,1.96]" xf="2" yt="[0,0.2,0.4]" xl="検定統計量 *z*" style="height:400px">
+      <script type="application/json">[
+        {"label": "標準正規分布", "f": "N(x, 0, 1)", "labelAt": 1, "anchor": "right", "area": [[null, -1.96], [1.96, null]], "areaLabel": "2.5 %", "tone": "term"}
+      ]</script>
+    </m-curves>
+  </div>
+  <div class="concl"><span>→ 両端の 5 % に入れば帰無仮説を棄却する</span></div>
+</section>
+
+<section class="slide">
   <h2>m-cycle</h2>
   <div class="body">
     <p>循環の図。段階の箱を円の上に 12 時から時計回りに並べ、円に沿った矢印でつなぐ（最後から最初へ戻る矢印も）</p>
@@ -997,88 +1061,21 @@ document.addEventListener("DOMContentLoaded", function(){
 </section>
 
 <section class="slide">
-  <h2>m-flow</h2>
+  <h2>m-folds</h2>
   <div class="body">
-    <p>流れ図の箱と矢印を段階ごとに出して、図を組み立てる</p>
+    <p>検証用の区画を順に替え、各分割の誤差と平均を示す</p>
     <ul>
-      <li>伝えたいこと：手順・工程</li>
+      <li>伝えたいこと：仕組みをモデルで見る・比べる（量・特徴）</li>
       <li>見せ方：1 種類</li>
-      <li>系列：標準パーツ　見本のスライド：3 枚</li>
+      <li>系列：数理・統計　見本のスライド：1 枚</li>
     </ul>
   </div>
 </section>
 
-<section id="g-flow-1" class="slide">
-  <h2>ベイズ決定の流れ</h2>
-  <div class="body">
-    <m-flow style="height:420px">
-      <script type="application/json">{
-        "nodes": [
-          {"id": "w",  "label": "観測 *w*",            "x": 0,   "y": 40,  "w": 220, "h": 80, "step": 1},
-          {"id": "p",  "tex": "p(y\\mid w)",          "x": 330, "y": 40,  "w": 240, "h": 80, "step": 1},
-          {"id": "L",  "label": "損失 *L*(*y*, *a*)\n（与えられる）", "x": 330, "y": 260, "w": 240, "h": 100, "step": 2, "tone": "muted"},
-          {"id": "r",  "tex": "r(a\\mid w)",          "x": 680, "y": 150, "w": 220, "h": 80, "step": 3},
-          {"id": "a",  "label": "決定 *a*^*",          "x": 1000, "y": 150, "w": 184, "h": 80, "step": 4, "tone": "emph"}
-        ],
-        "edges": [
-          {"from": "w", "to": "p", "step": 1, "label": "予測"},
-          {"from": "p", "to": "r", "step": 3},
-          {"from": "L", "to": "r", "step": 3, "dash": true},
-          {"from": "r", "to": "a", "step": 4, "label": "最小化", "tone": "emph"}
-        ]
-      }</script>
-    </m-flow>
-  </div>
-  <div class="concl"><span>→ 予測と損失から期待損失 <i>r</i> を作り，それを最小にする <i>a</i> を選ぶ</span></div>
-</section>
-
-<section id="g-flow-2" class="slide">
-  <h2>お金とサービスの流れ（架空）</h2>
-  <div class="body">
-    <m-flow style="height:420px">
-      <script type="application/json">{
-        "nodes": [
-          {"id": "co",  "label": "自社",         "x": 470, "y": 20,  "w": 240, "h": 80, "step": 1, "tone": "emph"},
-          {"id": "cu",  "label": "顧客の会社",   "x": 60,  "y": 300, "w": 260, "h": 80, "step": 1},
-          {"id": "us",  "label": "社員（使う人）", "x": 860, "y": 300, "w": 300, "h": 80, "step": 2},
-          {"id": "cl",  "label": "クラウド",     "x": 950, "y": 20,  "w": 220, "h": 80, "step": 3, "tone": "muted"}
-        ],
-        "edges": [
-          {"from": "co", "to": "cu", "kind": "service", "label": "使う権利", "shift": 14, "step": 1},
-          {"from": "cu", "to": "co", "kind": "money", "amount": "月 3 万円", "shift": 14, "step": 2, "pulse": [2, 3]},
-          {"from": "cu", "to": "us", "kind": "service", "label": "配る", "step": 2},
-          {"from": "us", "to": "co", "kind": "data", "label": "使い方の記録", "step": 3, "pulse": true},
-          {"from": "co", "to": "cl", "kind": "money", "amount": "売上の 15 %", "step": 3}
-        ]
-      }</script>
-    </m-flow>
-  </div>
-  <div class="concl"><span>→ 会社が払い，社員が使い，記録が戻る</span></div>
-</section>
-
-<section id="g-flow-3" class="slide">
-  <h2>1 から <i>n</i> までの和を求める手順（判断とくり返し）</h2>
-  <div class="body">
-    <m-flow aria-label="1 から n までの和を求める流れ図" style="height:420px">
-      <script type="application/json">{
-        "nodes": [
-          {"id": "init", "label": "*S* ← 0, *i* ← 1",  "x": 0,   "y": 70,  "w": 220, "h": 80, "step": 1},
-          {"id": "dec",  "label": "*i* ≤ *n* ?",       "x": 290, "y": 40,  "w": 260, "h": 140, "step": 1, "shape": "diamond"},
-          {"id": "add",  "label": "*S* ← *S* + *i*",   "x": 640, "y": 70,  "w": 230, "h": 80, "step": 2},
-          {"id": "inc",  "label": "*i* ← *i* + 1",     "x": 950, "y": 70,  "w": 220, "h": 80, "step": 2},
-          {"id": "out",  "label": "*S* を出力",        "x": 305, "y": 300, "w": 230, "h": 80, "step": 4, "tone": "emph"}
-        ],
-        "edges": [
-          {"from": "init", "to": "dec", "step": 1},
-          {"from": "dec", "to": "add", "label": "はい", "step": 2},
-          {"from": "add", "to": "inc", "step": 2},
-          {"from": "inc", "to": "dec", "loop": "top", "label": "くり返す", "step": 3},
-          {"from": "dec", "to": "out", "label": "いいえ", "step": 4, "tone": "emph"}
-        ]
-      }</script>
-    </m-flow>
-  </div>
-  <div class="concl"><span>→ <i>i</i> が <i>n</i> をこえるまで足してから，<i>S</i> を出力する</span></div>
+<section id="g-folds-1" class="slide">
+  <h2>検証する区画を替える（架空データ）</h2>
+  <div class="body"><m-folds style="height:440px"><script type="application/json">{"k":5,"errors":[0.21,0.18,0.25,0.19,0.22],"labels":["1","2","3","4","5"]}</script></m-folds></div>
+  <div class="concl"><span>架空の誤差。すべての区画を 1 回ずつ検証する</span></div>
 </section>
 
 <section class="slide">
@@ -1679,6 +1676,42 @@ document.addEventListener("DOMContentLoaded", function(){
 </section>
 
 <section class="slide">
+  <h2>m-mapping</h2>
+  <div class="body">
+    <p>実験の結果を数値へ対応させ、同じ値になる結果をまとめて確率分布を作る</p>
+    <ul>
+      <li>伝えたいこと：仕組みをモデルで見る・まとめる・分ける</li>
+      <li>見せ方：1 種類</li>
+      <li>系列：数理・統計　見本のスライド：4 枚</li>
+    </ul>
+  </div>
+</section>
+
+<section id="g-mapping-1" class="slide">
+  <h2>硬貨を 2 回投げる</h2>
+  <div class="body"><m-mapping style="height:440px"><script type="application/json">{"outcomes":[{"label":"表表","x":2},{"label":"表裏","x":1},{"label":"裏表","x":1},{"label":"裏裏","x":0}],"picture":"coins","name":"X"}</script></m-mapping></div>
+  <div class="concl"><span>X は表の数。同じ値になる結果の確率を足す</span></div>
+</section>
+
+<section id="g-mapping-2" class="slide">
+  <h2>さいころ：5 以上なら当たり（X = 1）</h2>
+  <div class="body"><m-mapping style="height:440px"><script type="application/json">{"outcomes":[{"label":"1","x":0},{"label":"2","x":0},{"label":"3","x":0},{"label":"4","x":0},{"label":"5","x":1},{"label":"6","x":1}],"name":"X","picture":"dice"}</script></m-mapping></div>
+  <div class="concl"><span>当たりは 6 通りのうち 2 通り。P(X = 1) = 1/3</span></div>
+</section>
+
+<section id="g-mapping-3" class="slide">
+  <h2>ぶどうの粒の数を X にする（架空）</h2>
+  <div class="body"><m-mapping style="height:440px"><script type="application/json">{"outcomes":[{"label":"房 A","x":3},{"label":"房 B","x":5},{"label":"房 C","x":3},{"label":"房 D","x":4}],"name":"X","picture":"grapes"}</script></m-mapping></div>
+  <div class="concl"><span>粒の数を数えると X の値になる</span></div>
+</section>
+
+<section id="g-mapping-4" class="slide">
+  <h2>袋から玉を 2 個取り出す（戻さない）</h2>
+  <div class="body"><m-mapping style="height:440px"><script type="application/json">{"outcomes":[{"label":"赤赤","x":2},{"label":"赤青","x":1},{"label":"青赤","x":1}],"name":"X","picture":"balls"}</script></m-mapping></div>
+  <div class="concl"><span>赤 2 個・青 1 個から 2 個。X は赤の数</span></div>
+</section>
+
+<section class="slide">
   <h2>m-market</h2>
   <div class="body">
     <p>市場規模の入れ子の円（TAM / SAM / SOM）。外の円から 1 つずつ、前の円の大きさから縮んで現れる</p>
@@ -1995,69 +2028,6 @@ document.addEventListener("DOMContentLoaded", function(){
 </section>
 
 <section class="slide">
-  <h2>m-predict</h2>
-  <div class="body">
-    <p style="margin:0 0 10px;line-height:1.3"><span style="display:inline-block;font-size:27px;font-weight:700;color:var(--fg);border:2px dashed var(--accent2);border-radius:8px;padding:0 12px">操作できる / Interactive</span></p>
-    <p style="border:3px dashed var(--accent2);border-radius:10px;padding:10px 16px">予想してから答えを開く。選択肢ごとの人数を棒で見せ、答えの段階で正解に枠（見る人が押して操作できる）</p>
-    <ul>
-      <li>伝えたいこと：予想してから確かめる</li>
-      <li>見せ方：fade・draw</li>
-      <li>系列：標準パーツ　見本のスライド：3 枚</li>
-    </ul>
-  </div>
-</section>
-
-<section id="g-predict-1" class="slide">
-  <h2>予想してみよう：落ちる速さ</h2>
-  <div class="body">
-    <p class="ia-badge" style="margin:0 0 10px;line-height:1.3"><span style="display:inline-block;font-size:27px;font-weight:700;color:var(--fg);border:2px dashed var(--accent2);border-radius:8px;padding:0 12px">操作できる</span></p>
-    <m-predict unit="人" style="height:390px">
-      <script type="application/json">{
-        "question": "同じ高さから落とすと、重い球と軽い球のどちらが先に着く？",
-        "choices": [{"label": "重い球"}, {"label": "軽い球"}, {"label": "同時"}],
-        "answer": 2,
-        "counts": [17, 2, 11],
-        "note": "空気の抵抗が小さければ、重さによらず同時に着く（ガリレオ）"
-      }</script>
-    </m-predict>
-  </div>
-  <div class="concl"><span>→ 落ちる速さは重さで決まらない（人数は架空の例）</span></div>
-</section>
-
-<section id="g-predict-2" class="slide">
-  <h2>予想してみよう：小数のかけ算</h2>
-  <div class="body">
-    <m-predict unit="人" poll="p1" style="height:440px">
-      <script type="application/json">{
-        "question": "0.1 × 0.1 はいくつ？",
-        "choices": [{"label": "0.1"}, {"label": "0.01"}, {"label": "0.2"}, {"label": "1"}],
-        "answer": 1,
-        "counts": [12, 10, 6, 2],
-        "note": "0.1 は 10 分の 1。10 分の 1 の 10 分の 1 は 100 分の 1"
-      }</script>
-    </m-predict>
-  </div>
-  <div class="concl"><span>→ 1 より小さい数をかけると、もとの数より小さくなる（人数は架空の例）</span></div>
-</section>
-
-<section id="g-predict-3" class="slide">
-  <h2>見せ方の種類（variant）</h2>
-  <div class="body">
-    <div style="display:grid;grid-template-columns:190px 1fr;gap:20px 16px;align-items:center;font-size:27px">
-      <div>フェード<br>（fade）</div>
-      <m-predict variant="fade" unit="人" style="height:210px">
-        <script type="application/json">{"choices": [{"label": "A"}, {"label": "B"}], "answer": 0, "counts": [8, 5]}</script>
-      </m-predict>
-      <div>線を引く<br>（draw）</div>
-      <m-predict variant="draw" unit="人" style="height:210px">
-        <script type="application/json">{"choices": [{"label": "A"}, {"label": "B"}], "answer": 0, "counts": [8, 5]}</script>
-      </m-predict>
-    </div>
-  </div>
-  <div class="concl"><span>→ 書かなければ最初の見せ方（fade）になる。人数は架空</span></div>
-</section>
-
-<section class="slide">
   <h2>m-quad</h2>
   <div class="body">
     <p>2 軸の位置づけ（ポジショニングマップ・SWOT 風の 4 象限）に、点を段階ごとに 1 つずつ置く</p>
@@ -2107,6 +2077,36 @@ document.addEventListener("DOMContentLoaded", function(){
     </m-quad>
   </div>
   <div class="concl"><span>→ 現場の知見を伸びる需要に向ける</span></div>
+</section>
+
+<section class="slide">
+  <h2>m-sampling</h2>
+  <div class="body">
+    <p>母集団から標本を取り、比率・平均の標本分布を積む</p>
+    <ul>
+      <li>伝えたいこと：仕組みをモデルで見る・ばらつき</li>
+      <li>見せ方：1 種類</li>
+      <li>系列：数理・統計　見本のスライド：3 枚</li>
+    </ul>
+  </div>
+</section>
+
+<section id="g-sampling-1" class="slide">
+  <h2>玉を戻さずに 4 個取る（シミュレーション）</h2>
+  <div class="body"><m-sampling style="height:440px"><script type="application/json">{"balls":{"赤":3,"青":2},"of":"赤","n":4,"replace":false,"repeat":40,"seed":1}</script></m-sampling></div>
+  <div class="concl"><span>赤 3・青 2 の架空の袋。点は 1 回の標本比率</span></div>
+</section>
+
+<section id="g-sampling-2" class="slide">
+  <h2>玉を戻して 4 個取る（シミュレーション）</h2>
+  <div class="body"><m-sampling style="height:440px"><script type="application/json">{"balls":{"赤":3,"青":2},"of":"赤","n":4,"replace":true,"repeat":40,"seed":1}</script></m-sampling></div>
+  <div class="concl"><span>同じ架空の袋。戻さない場合と分布の広がりを比べる</span></div>
+</section>
+
+<section id="g-sampling-3" class="slide">
+  <h2>さいころ 2 回の平均（シミュレーション）</h2>
+  <div class="body"><m-sampling style="height:440px"><script type="application/json">{"values":[1,2,3,4,5,6],"n":2,"replace":true,"repeat":40,"seed":3}</script></m-sampling></div>
+  <div class="concl"><span>架空の試行。標本平均の点を積んで分布を作る</span></div>
 </section>
 
 <section class="slide">

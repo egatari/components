@@ -2,6 +2,12 @@
 
 The part's own versions (Egatari spec §6.1). Releases of the whole library are in the repository's CHANGELOG.md.
 
+## 2.0.4 (components 2.6.1)
+
+- Fix: an edge between boxes that are apart along one axis ends at the middle of the target's facing side and starts on the source's facing side, as near the target's centre line as that side allows. Centre-to-centre lines entered wide, flat targets through their top or bottom, so a fan-out to stacked boxes ended between boxes or at the wrong box.
+- A `shift` (or the automatic one of a two-way pair) between facing sides runs along the sides, so both ends stay on them; an end pushed off its side is reported (`layout`).
+- tools/test-flow.mjs checks that every edge starts on its source and ends on a side of its target (fan-out, fan-in, stacked, diagonal, two-way, diamond).
+
 ## 2.0.3 (components 2.2.0)
 
 - Requires base 1.1.0 (sub- and superscripts at least 24px, a measured text-width estimate) and markup-reader 1.0.1.

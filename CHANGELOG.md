@@ -8,6 +8,19 @@ Versions follow [README.md § Releases and versions](README.md#releases-and-vers
 
 - `m-compare` `by="row"`; an "outside every set" region for `m-venn`; planned-vs-actual bars for `m-timeline`
 
+## 2.6.1 - 2026-11-11
+
+Fixes found in a lecture deck. Lessons pinned to 2.6.0 keep their drawing.
+
+### Fixed
+
+- **`m-flow` 2.0.4:** an edge between boxes that are apart along one axis ends at the middle of the target's facing side and starts on the source's facing side. Before, centre-to-centre lines entered wide, flat targets through their top or bottom, so a fan-out to stacked boxes ended between boxes or at the wrong box. `shift` runs along the facing sides; an end pushed off its side is reported (`layout`). New `tools/test-flow.mjs` checks every edge's start and end against its boxes.
+- **`m-predict` 2.0.4:** the `answer-step` doc (in the AI instructions) now says 2 or more (default 2): the answer opens after step 1, where the class counts. A value of 1 still works as before; Studio's check warns about it.
+
+### For Studio
+
+- Pack bytes (`node tools/pack-bytes.mjs --base v2.6.0`): m-predict +15; every other part +0.
+
 ## 2.6.0 - 2026-11-11
 
 A new set `data` (情報・データサイエンス / Data science and code) with six parts, and areas under curves in `m-curves`. Released after the standards side's eval A (34/0) and the topics ds-cv-code, joho-list-sum and en-stats-histogram (6/6 final each, 18/18). Studio vendors it from v0.6.9.

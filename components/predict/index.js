@@ -15,7 +15,7 @@
 // 2.0（Egatari spec §6.1 の部品）：base の MotionElement・el・mtext・prog・variant を使い、プレイヤーのグローバルは使わない。
 //   見る人の入力を戻すのは ctx.entered だけ（1.x の deck:pos の代わりはない）。動画かどうかは mount の ctx.mode。
 //   要素の大きさの問題は ctx.report("size", …)。印刷の前後は document.defaultView の beforeprint・afterprint
-egatariParts.define({name: "predict", version: "2.0.3", requires: {base: "1.1.0"}, element: "m-predict"}, function(deps){
+egatariParts.define({name: "predict", version: "2.0.4", requires: {base: "1.1.0"}, element: "m-predict"}, function(deps){
 "use strict";
 var base = deps.base;
 var CSS_ID = "predict-2-0-3-css";   // the style element this part writes, named with its name and version (spec §6.1 Identifiers)
@@ -49,7 +49,7 @@ return class extends base.MotionElement {
            ja: "choices は {\"label\": …} の並び（字の並びではない）。answer は正しい選択肢の番号（0 から数える）。counts（省略可）は選択肢ごとに 0 以上の整数を 1 つずつ"},
   };
   static props = {
-    "answer-step": {type: "number", default: 2, doc: "答えを開く段階（1 以上。1 なら数の棒と同時）"},
+    "answer-step": {type: "number", default: 2, doc: "2 以上（既定 2）。人数を数える段階 1 のあとに答えを開く"},
     unit:          {type: "string", default: "", doc: "数の単位（人 など）"},
     poll:          {type: "string", default: "", doc: "live の投票の id（live 拡張のある再生で、見せてよいと決まった集計を棒に出す）"},
     ticks:         {type: "bool", default: true, doc: "数の軸の目盛りと格子"},

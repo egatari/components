@@ -17,6 +17,7 @@ Child JSON: `{"nodes": [...], "edges": [...]}`; px; `x`, `y` = box top-left, `w`
 - edge: `from` `to` `step` (default: later end), `label`, `tone`, `dash`, `offset` (label gap), `at`, `loop` (back edge: `"left"` `"right"` `"top"` `"bottom"` or `true` = auto)
 
 <!-- llm: omit -->
+- Edge ends (2.0.4): boxes apart along one axis: the edge ends mid facing side of the target, starts on the source's facing side near the target's centre line; `shift` runs along those sides (reported if it leaves them). Before, centre-to-centre lines could end between stacked wide boxes
 - Lines, labels `--fg` (or `tone`); arrows draw after their step's boxes
 - `kind` colours: `money` `--emph`, `service` `--term`, `data` `--muted`
 - `muted` box: `--muted` frame, `--bg` fill, `--fg` text. Before v1.2.0 labels and `muted` text were `--muted`
