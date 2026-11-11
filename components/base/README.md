@@ -25,6 +25,8 @@ egatariParts.define({name: "bars", version: "2.0.2", requires: {base: "1.1.0"}, 
 | `textWidth(str, size, {font?, mark?})` (1.1.0) | the estimated width in px of `str` at `size`: per-character widths measured in the theme fonts (BIZ UDPGothic, BIZ UDPMincho, Source Sans 3; `font` is an element or a font-family, its first family picks the table; an unknown font takes the widest); `mark: true` skips mtext's `*_^` | — |
 | `variant(el, names?)` | the presentation variant: the `variant` attribute when it is one of `names` (default `el.constructor.variants`), else the first; an unknown name warns | `VARIANT.of(el)` (tools/variant.js) |
 | `previewOpacity(el)` | the theme's `--preview-opacity` seen from `el`, or 0.45 when unset or outside 0…1 | the inline `getComputedStyle` read |
+| `ramp(t, old)` (unreleased, next base) | the colour at `t` (0…1) on the theme's colour ramp (spec §8.4 `--ramp-1` … `--ramp-5`): `var(--ramp-k, old)` at a stop, else `color-mix(in oklab, …)` of the two neighbouring stops; every stop falls back to `old` (the colour the part drew before ramps), so a theme without ramps gives exactly `old` | — |
+| `rampStops(el)` (unreleased, next base) | the five `--ramp-*` values seen from `el`, or `null` when the theme does not set all five (for contrast checks that need resolved colours) | — |
 
 **Data shapes** (spec §6.1; players no longer validate component data). Every `MotionElement` checks, once, its `static
 shape` (`{schema, example}`, `{text: true}` or `{links: true}`) and the `shape` of its `json` props with the `shape` part,

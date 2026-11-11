@@ -319,5 +319,23 @@ function previewOpacity(e){
   return pv >= 0 && pv <= 1 ? pv : 0.45;
 }
 
-return {MotionElement: MotionElement, el: el, lerp: lerp, prog: prog, clamp: clamp01, mtext: mtext, textWidth: textWidth, variant: variant, previewOpacity: previewOpacity};
+// ---------------------------------------------------------------- 色の段階 (spec §8.4 Theme colours: colour ramps --ramp-1 … --ramp-5)
+// The colour at t (0…1, clamped) on the theme's ramp: at a stop var(--ramp-k, old), between two stops their color-mix in oklab.
+// `old` is the colour the part drew at t before ramps (a CSS colour built from --bg and its role); both sides fall back to
+// it, so on a theme without ramps the result is exactly `old` (spec: a component keeps the role it used).
+function ramp(t, old){
+  t = +t; t = t > 0 ? (t < 1 ? t : 1) : 0;
+  var s = t * 4, k = Math.floor(s + 1e-9), f = s - k;
+  if (k >= 4) return "var(--ramp-5, " + old + ")";
+  if (f < 1e-9) return "var(--ramp-" + (k + 1) + ", " + old + ")";
+  return "color-mix(in oklab, var(--ramp-" + (k + 1) + ", " + old + ") " + (100 * (1 - f)).toFixed(1) + "%, var(--ramp-" + (k + 2) + ", " + old + "))";
+}
+// The theme's five ramp stops as seen from element e (computed strings), or null when any of them is not set
+function rampStops(e){
+  var cs = getComputedStyle(e), out = [];
+  for (var i = 1; i <= 5; i++){ var v = cs.getPropertyValue("--ramp-" + i).trim(); if (!v) return null; out.push(v); }
+  return out;
+}
+
+return {MotionElement: MotionElement, el: el, lerp: lerp, prog: prog, clamp: clamp01, mtext: mtext, textWidth: textWidth, variant: variant, previewOpacity: previewOpacity, ramp: ramp, rampStops: rampStops};
 });
