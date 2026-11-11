@@ -14,7 +14,7 @@
 // 2.0（Egatari spec §6.1 の部品）：base の MotionElement・el・prog・previewOpacity を使い、プレイヤーのグローバルは使わない。
 // 書き方の誤りは ctx.report("data", "[gendai] …") で知らせる（1.x の console.warn("m-gendai: …") の代わり）。
 // 読み取り（parse）は試験のために static testing に出す（ほかのパーツは読まない）
-egatariParts.define({name: "gendai", version: "2.0.2", requires: {base: "1.1.0"}, element: "m-gendai"}, function(deps){
+egatariParts.define({name: "gendai", version: "2.0.3", requires: {base: "1.2.0"}, element: "m-gendai"}, function(deps){
 "use strict";
 var base = deps.base;
 var D = base;

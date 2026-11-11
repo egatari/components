@@ -5,6 +5,7 @@ The part's own versions (Egatari spec §6.1). Releases of the whole library are 
 ## 2.0.4 (components 2.7.0)
 
 - Fix: the aria-live announcement at the end of a phase joined the title and "done" with a hardcoded full-width colon even when `ctx.lang` was not `ja` (e.g. "Warm-up：Time's up"); it now follows `ctx.lang` like the rest of the part ("Warm-up: Time's up"). Style id timer-2-0-4-css.
+- Requires base 1.2.0 (mtext keeps a lone `*` literal and draws `\*` `\_` `\^` as the character).
 
 ## 2.0.3 (components 2.2.0)
 

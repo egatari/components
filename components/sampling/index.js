@@ -1,5 +1,5 @@
 // m-sampling: population → sample → simulated sampling distribution.
-egatariParts.define({name: "sampling", version: "2.0.0", requires: {base: "1.1.0", plot: "1.1.1"}, element: "m-sampling"}, function(deps){
+egatariParts.define({name: "sampling", version: "2.0.1", requires: {base: "1.2.0", plot: "1.1.2"}, element: "m-sampling"}, function(deps){
 "use strict";
 var base = deps.base;
 var TEXT = {

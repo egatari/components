@@ -1,5 +1,5 @@
 // m-code: a program, successive line explanations, then its supplied output. Never executes code.
-egatariParts.define({name: "code", version: "2.1.0", requires: {base: "1.1.0"}, element: "m-code"}, function(deps){
+egatariParts.define({name: "code", version: "2.1.0", requires: {base: "1.2.0"}, element: "m-code"}, function(deps){
 "use strict";
 var base = deps.base, MONO = 'ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace';
 var TEXT = {

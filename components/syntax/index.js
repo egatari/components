@@ -14,7 +14,7 @@
 // 書き方の誤りは ctx.report("data", "[syntax] …")、属性の誤りは ctx.report("attr", …)・ctx.report("range", …)、矢印が行をまたぐときと
 // 要素の高さが足りないときは ctx.report("size", …) で知らせる（1.x の console.warn("m-syntax: …") の代わり）。
 // 読み取りと段階（parse・plan・durationOf と表）は試験のために static testing に出す（ほかのパーツは読まない）
-egatariParts.define({name: "syntax", version: "2.0.2", requires: {base: "1.1.0"}, element: "m-syntax"}, function(deps){
+egatariParts.define({name: "syntax", version: "2.0.3", requires: {base: "1.2.0"}, element: "m-syntax"}, function(deps){
 "use strict";
 var base = deps.base;
 var D = base;

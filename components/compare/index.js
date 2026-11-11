@@ -10,7 +10,7 @@
 // reveal（列の中を上の行から 1 行ずつ）。どれも動く距離（16 px）と長さ（dur）は同じで、段階の数・長さ・最後の中身は変わらない
 // 2.0（Egatari spec §6.1 の部品）：base の MotionElement・el・mtext・prog・lerp・variant・previewOpacity を使い、プレイヤーのグローバルは使わない。
 // 違いの列の既定の見出しの言語は ctx.lang（mount で読む）。収まらない表は ctx.report で知らせる（1.x の console.warn の代わり）
-egatariParts.define({name: "compare", version: "2.0.2", requires: {base: "1.1.0"}, element: "m-compare"}, function(deps){
+egatariParts.define({name: "compare", version: "2.0.3", requires: {base: "1.2.0"}, element: "m-compare"}, function(deps){
 "use strict";
 var base = deps.base;
 return class extends base.MotionElement {

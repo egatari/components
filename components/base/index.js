@@ -1,5 +1,5 @@
 // base 1.0.0: the shared base class and helpers of Egatari components 2.0 (a library part, Egatari spec §6.1).
-// Element parts require it ({base: "1.1.0"}) and receive what this factory returns:
+// Element parts require it ({base: "1.2.0"}) and receive what this factory returns:
 //   {MotionElement, el, lerp, prog, clamp, mtext, variant, previewOpacity}
 // It uses no import, no network and no global of the player (spec §6.1): only the DOM, getComputedStyle and console.
 // It requires shape (the data-shape checker): MotionElement checks the part's data against its declared shape before the
@@ -16,7 +16,7 @@
 // compSummary, compPlaceholder) is deck.js's, with DECK.shape → the shape part and DECK.ja → ctx.lang. Differences: base's
 // own warnings start "[base] " (deck.js: "deck.js: ", "[deck] "), and a data problem is reported with a spec §8.4 code
 // (reportCode) and the part's "[<name>] " prefix.
-egatariParts.define({name: "base", version: "1.1.0", requires: {shape: "1.0.0"}}, function(deps){
+egatariParts.define({name: "base", version: "1.2.0", requires: {shape: "1.0.0"}}, function(deps){
 "use strict";
 var NS = "http://www.w3.org/2000/svg";
 var SH = deps.shape;

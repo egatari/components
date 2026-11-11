@@ -9,7 +9,7 @@
 // grow（中心から少し小さい大きさで現れて元の大きさに戻る）。段階の数・長さ・最後の中身は同じ
 // 2.0（Egatari spec §6.1 の部品）：base の MotionElement・el・mtext・prog・variant・previewOpacity を使い、プレイヤーのグローバルは使わない。
 // 負の値と、字が収まらないことは ctx.report で知らせる（1.x の console.warn の代わり）
-egatariParts.define({name: "pie", version: "2.0.3", requires: {base: "1.1.0"}, element: "m-pie"}, function(deps){
+egatariParts.define({name: "pie", version: "2.0.3", requires: {base: "1.2.0"}, element: "m-pie"}, function(deps){
 "use strict";
 var base = deps.base;
 return class extends base.MotionElement {

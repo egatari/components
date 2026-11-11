@@ -1,7 +1,7 @@
 ---
 name: m-balance
 display: 期待値はつり合いの位置 / Expectation as a balance point
-version: 2.0.0
+version: 2.0.1
 series: academic
 tier: specialized
 set: data

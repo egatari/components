@@ -11,7 +11,7 @@
 // 字は部品の中の表から授業の言語（ctx.lang）で選ぶ。データの labels・notes で位置ごとに上書きできる（null は表のまま、"" は字なし）。
 // eclipse（月だけ）：新月と満月の位置で、太陽・月・地球がそろったときの影（日食・月食）を描く。月の軌道の傾きは描かない（README）。
 // 2.0（Egatari spec §6.1 の部品）：base の MotionElement・el・prog・lerp だけを使い、プレイヤーのグローバルは使わない。
-egatariParts.define({name: "orbit", version: "2.0.4", requires: {base: "1.1.0"}, element: "m-orbit"}, function(deps){
+egatariParts.define({name: "orbit", version: "2.0.5", requires: {base: "1.2.0"}, element: "m-orbit"}, function(deps){
 "use strict";
 var base = deps.base;
 var TAU = 2 * Math.PI;

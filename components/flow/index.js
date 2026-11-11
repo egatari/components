@@ -14,7 +14,7 @@
 // 式（tex）は組み立てのときに KaTeX で描く（spec §6.2）：build.fields の nodes[].tex を作り手が描いて texHtml を足し、
 // この部品は markup-reader で決まった要素と属性だけを読んで置く（再生のときに KaTeX は動かない）。描いた結果がなければ tex を字のまま出して知らせる。
 // 知らないデータ（loop の値、ない箱を指す辺）は ctx.report で知らせる（1.x の console.warn / console.error の代わり）
-egatariParts.define({name: "flow", version: "2.0.4", requires: {base: "1.1.0", "markup-reader": "1.0.1"}, element: "m-flow"}, function(deps){
+egatariParts.define({name: "flow", version: "2.0.5", requires: {base: "1.2.0", "markup-reader": "1.0.2"}, element: "m-flow"}, function(deps){
 "use strict";
 var base = deps.base, MR = deps["markup-reader"];
 // 複数行の名前の行の位置（1 行目からの下がり、px）と、上下に足す余白。base 1.1.0 で mtext の下付き・上付きは 24px 以上になり、

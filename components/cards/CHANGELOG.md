@@ -2,6 +2,10 @@
 
 The part's own versions (Egatari spec §6.1). Releases of the whole library are in the repository's CHANGELOG.md.
 
+## 2.0.4 (components 2.7.0)
+
+- Requires base 1.2.0 (mtext keeps a lone `*` literal and draws `\*` `\_` `\^` as the character).
+
 ## 2.0.3 (components 2.5.0)
 
 - Spare height is balanced, not filled: a card's content (icon, title, text) sits in the vertical middle of the card; the number circle stays in the corner (owner, 11/8).

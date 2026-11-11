@@ -11,7 +11,7 @@
 // 2.0（Egatari spec §6.1 の部品）：base の MotionElement・prog・previewOpacity を使い、プレイヤーのグローバルは使わない。
 // 書き方の誤りは ctx.report("data", "[kobun] …") で知らせる（1.x の console.warn("m-kobun: …") の代わり）。動画かどうかは mount の ctx.mode。
 // 読み取り（parse）と助動詞の表は試験のために static testing に出す（ほかのパーツは読まない）
-egatariParts.define({name: "kobun", version: "2.0.2", requires: {base: "1.1.0"}, element: "m-kobun"}, function(deps){
+egatariParts.define({name: "kobun", version: "2.0.3", requires: {base: "1.2.0"}, element: "m-kobun"}, function(deps){
 "use strict";
 var base = deps.base;
 var D = base;

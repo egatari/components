@@ -1,5 +1,5 @@
 // m-balance: expectation is the zero-moment position of probability weights.
-egatariParts.define({name: "balance", version: "2.0.0", requires: {base: "1.1.0", plot: "1.1.1"}, element: "m-balance"}, function(deps){
+egatariParts.define({name: "balance", version: "2.0.1", requires: {base: "1.2.0", plot: "1.1.2"}, element: "m-balance"}, function(deps){
 "use strict";
 var base = deps.base;
 var TEXT = {

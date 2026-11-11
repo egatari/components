@@ -1,5 +1,9 @@
 # m-particles changelog
 
+## 2.0.1 (components 2.7.0)
+
+- Requires base 1.2.0 (mtext keeps a lone `*` literal and draws `\*` `\_` `\^` as the character).
+
 ## 2.0.0 (components 2.4.0)
 
 - New science part: fixed-count, fixed-size particles for states of matter, with deterministic arrangements and static motion marks.

@@ -1,5 +1,5 @@
 // m-folds: the validation block advances through k train/validation splits.
-egatariParts.define({name: "folds", version: "2.0.0", requires: {base: "1.1.0"}, element: "m-folds"}, function(deps){
+egatariParts.define({name: "folds", version: "2.0.1", requires: {base: "1.2.0"}, element: "m-folds"}, function(deps){
 "use strict";
 var base = deps.base;
 var TEXT = {

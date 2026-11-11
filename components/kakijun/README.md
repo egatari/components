@@ -1,6 +1,6 @@
 ---
 name: m-kakijun
-version: 2.0.1
+version: 2.0.2
 series: kokugo
 tier: extra
 summary: かな（ひらがな・カタカナ）の書き順。字を 1 画ずつ、書く順と向きのとおりに書いて見せる

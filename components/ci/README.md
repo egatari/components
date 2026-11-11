@@ -1,7 +1,7 @@
 ---
 name: m-ci
 display: 信頼区間の意味 / Confidence intervals
-version: 2.0.0
+version: 2.0.1
 series: academic
 tier: specialized
 set: data

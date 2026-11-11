@@ -1,6 +1,6 @@
 ---
 name: m-market
-version: 2.0.2
+version: 2.0.3
 series: business
 tier: specialized
 set: business

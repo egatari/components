@@ -2,6 +2,10 @@
 
 The part's own versions (Egatari spec §6.1). Releases of the whole library are in the repository's CHANGELOG.md.
 
+## 2.1.2 (components 2.7.0)
+
+- Requires base 1.2.0 and plot 1.1.2 (mtext keeps a lone `*` literal and draws `\*` `\_` `\^` as the character).
+
 ## 2.1.1 (components 2.4.2)
 
 - Requires plot 1.1.1: the y-axis title no longer overlaps wide tick labels such as 1000 or 50000 (it moves left of them, widening the margin if needed).

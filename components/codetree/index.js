@@ -24,7 +24,7 @@
 // 復号の規則は codetree-core（試験は tools/test-codetree.mjs）
 // 2.0（Egatari spec §6.1 の部品）：base の MotionElement・el・prog・lerp・previewOpacity と、表・木・復号の codetree-core を使い、
 // プレイヤーのグローバルは使わない
-egatariParts.define({name: "codetree", version: "2.0.5", requires: {base: "1.1.0", "codetree-core": "1.0.0"}, element: "m-codetree"}, function(deps){
+egatariParts.define({name: "codetree", version: "2.0.5", requires: {base: "1.2.0", "codetree-core": "1.0.0"}, element: "m-codetree"}, function(deps){
 "use strict";
 var base = deps.base;
 var D = base;

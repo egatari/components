@@ -6,7 +6,7 @@
 // 円の大きさ：scale="fixed"（既定。見やすい決まった比）か "area"（面積を値に比例。小さすぎる円は最小の大きさにする）
 // 配置：layout="bottom"（既定。下端をそろえる）か "center"（同心）。円の名前・値・根拠（basis）は右に引き出し線で書く
 // 2.0（Egatari spec §6.1 の部品）：base の MotionElement・el・mtext・prog・lerp・previewOpacity を使い、プレイヤーのグローバルは使わない
-egatariParts.define({name: "market", version: "2.0.2", requires: {base: "1.1.0"}, element: "m-market"}, function(deps){
+egatariParts.define({name: "market", version: "2.0.3", requires: {base: "1.2.0"}, element: "m-market"}, function(deps){
 "use strict";
 var base = deps.base;
 return class extends base.MotionElement {

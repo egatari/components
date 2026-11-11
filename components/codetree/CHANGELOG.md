@@ -5,6 +5,7 @@ The part's own versions (Egatari spec §6.1). Releases of the whole library are 
 ## 2.0.5 (components 2.7.0)
 
 - Fix: the built-in labels (tree/leaf names, the right-corner notes, the "so far" crumb, the run-length "+"/"=" and the "Code" heading above the bit sequence) were always Japanese regardless of `ctx.lang`; they now follow it (`ja` gets the Japanese table, anything else English), as the header comment always said. A child JSON `labels` still overrides them. The lookup moved from the memoized `model()` (built once, before `ctx` exists) to `mount(ctx)` (`this.Lb`), since `ctx.lang` is only known there.
+- Requires base 1.2.0 (mtext keeps a lone `*` literal and draws `\*` `\_` `\^` as the character).
 
 ## 2.0.4 (components 2.4.1)
 

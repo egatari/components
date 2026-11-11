@@ -2,6 +2,10 @@
 
 The part's own versions (Egatari spec §6.1). Releases of the whole library are in the repository's CHANGELOG.md.
 
+## 2.0.5 (components 2.7.0)
+
+- Requires base 1.2.0 and markup-reader 1.0.2 (mtext keeps a lone `*` literal and draws `\*` `\_` `\^` as the character).
+
 ## 2.0.4 (components 2.6.1)
 
 - Fix: an edge between boxes that are apart along one axis ends at the middle of the target's facing side and starts on the source's facing side, as near the target's centre line as that side allows. Centre-to-centre lines entered wide, flat targets through their top or bottom, so a fan-out to stacked boxes ended between boxes or at the wrong box.

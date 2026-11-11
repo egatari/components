@@ -9,7 +9,7 @@
 // 見せ方（docs/conventions.md §1）：fade（フェード、既定）・grow（テープが左から伸び、括弧と矢印は線を引く）
 // 2.0（Egatari spec §6.1 の部品）：base の MotionElement・el・mtext・prog・variant・previewOpacity を使い、プレイヤーのグローバルは使わない。
 // データや大きさの問題は ctx.report で知らせる（1.x の console.warn の代わり）
-egatariParts.define({name: "tape", version: "2.0.2", requires: {base: "1.1.0"}, element: "m-tape"}, function(deps){
+egatariParts.define({name: "tape", version: "2.0.3", requires: {base: "1.2.0"}, element: "m-tape"}, function(deps){
 "use strict";
 var base = deps.base;
 // 字の幅（base の textWidth：font の要素の字で測った幅。字は mtext で書くので *_^ は数えない）

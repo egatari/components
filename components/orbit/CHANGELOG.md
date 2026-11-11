@@ -2,6 +2,10 @@
 
 The part's own versions (Egatari spec §6.1). Releases of the whole library are in the repository's CHANGELOG.md.
 
+## 2.0.5 (components 2.7.0)
+
+- Requires base 1.2.0 (mtext keeps a lone `*` literal and draws `\*` `\_` `\^` as the character).
+
 ## 2.0.4 (components 2.5.1)
 
 - The lit side of the Moon and Venus and the sun disc are filled with the theme's --lit (light and what it lights; spec §8.4), outlined; without it, the same colours as before (--accent2 mixed with the background).

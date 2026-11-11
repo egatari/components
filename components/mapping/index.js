@@ -1,5 +1,5 @@
 // m-mapping: outcomes → numerical values → a probability distribution.
-egatariParts.define({name: "mapping", version: "2.0.0", requires: {base: "1.1.0"}, element: "m-mapping"}, function(deps){
+egatariParts.define({name: "mapping", version: "2.0.1", requires: {base: "1.2.0"}, element: "m-mapping"}, function(deps){
 "use strict";
 var base = deps.base;
 var TEXT = {

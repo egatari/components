@@ -1,6 +1,6 @@
 ---
 name: m-syntax
-version: 2.0.2
+version: 2.0.3
 series: english
 tier: specialized
 set: english

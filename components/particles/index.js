@@ -1,5 +1,5 @@
 // m-particles：状態変化の粒子モデルと、化学変化で保存される原子のモデル。
-egatariParts.define({name: "particles", version: "2.0.0", requires: {base: "1.1.0"}, element: "m-particles"}, function(deps){
+egatariParts.define({name: "particles", version: "2.0.1", requires: {base: "1.2.0"}, element: "m-particles"}, function(deps){
 "use strict";
 var base = deps.base;
 var STATES = ["solid", "liquid", "gas"];

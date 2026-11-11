@@ -13,7 +13,7 @@
 // 2.0（Egatari spec §6.1 の部品）：base の MotionElement・el・prog・variant・previewOpacity を使い、プレイヤーのグローバルは使わない。
 // 段階の数は ctx にも言語にもよらない（spec §8.4）：既定の鍵盤の名前（日本語ならドレミ、ほかは CDE）は plan() ではなく mount で選ぶ。
 // レッスンのデータや要素の大きさの問題は ctx.report で知らせる（1.x の console.warn("m-keyboard: …") の代わり）
-egatariParts.define({name: "keyboard", version: "2.0.3", requires: {base: "1.1.0"}, element: "m-keyboard"}, function(deps){
+egatariParts.define({name: "keyboard", version: "2.0.4", requires: {base: "1.2.0"}, element: "m-keyboard"}, function(deps){
 "use strict";
 var base = deps.base;
 // ---- 鍵盤の名前と形（DOM を使わない。tools/test-keyboard.mjs が試す） ----

@@ -9,7 +9,7 @@
 // 03eaf0607598b993eb020f8e619caa53526bc771, DECK.Plot there), MIT License, Copyright (c) 2026 Gendo Kumoi, the same owner
 // and licence as this repository; el and mtext come from base instead of deck.js's closure.
 // tools/test-part-plot.mjs compares it with the pinned Studio's DECK.Plot.
-egatariParts.define({name: "plot", version: "1.1.1", requires: {base: "1.1.0"}}, function(deps){
+egatariParts.define({name: "plot", version: "1.1.2", requires: {base: "1.2.0"}}, function(deps){
 "use strict";
 var el = deps.base.el, mtext = deps.base.mtext, textWidth = deps.base.textWidth;
 var ID = "plot-1-1-1-";   // name and version of this part, dots replaced (spec §6.1 Identifiers)
