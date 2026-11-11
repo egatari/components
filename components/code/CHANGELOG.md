@@ -1,5 +1,10 @@
 # m-code changelog
 
+## 2.1.0 (components 2.7.0)
+
+- Syntax colouring with theme roles only: keywords `--term`, strings `--accent2`, comments `--muted` (Python, R, shell, JavaScript). Each code line is one `<text>` with coloured `<tspan>` runs.
+- `"lines":[[3,4]]` reads as the range `[3,4]`; the README pack line shows `"lines":[3]` and `[3,4]`.
+
 ## 2.0.0 (components 2.6.0)
 
 - Line-by-line code walkthroughs, stacked notes and supplied output; Japanese/English labels.

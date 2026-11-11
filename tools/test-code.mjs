@@ -168,14 +168,26 @@ for (const el of [bandEn, nine.el, outputBelow.el, manyNotes.el]) {
 }
 const invalid = make(example, {dur: -1, size: 23, outputPos: 'left'});
 ok(invalid.reports.filter((r) => r.code === 'attr').length === 3 && invalid.el.props.dur === .6 && invalid.el.fs === 24, 'bad props report/default');
+const runs = (e) => walk(e).filter((n) => n.localName === 'tspan').map((n) => [n.textContent, (/--(muted|accent2|term)\b/.exec(n.getAttribute('style') || '') || [, 'fg'])[1]]);
+const has = (e, text, role) => runs(e).some(([t, r]) => t === text && r === role);
 for (const lang of ['python', 'r', 'shell', 'js', 'javascript', 'PYTHON']) {
   const token = /js|javascript/.test(lang) ? '//' : '#';
   const r = make({lang, code: `x = "${token} literal" ${token} comment\nprint(x)`, steps: []}).el;
-  const ts = texts(r.codeLayer);
-  ok(ts.some((n) => n.textContent === token + ' comment' && n.getAttribute('style').includes('--muted')) && ts.some((n) => n.textContent.includes(token + ' literal') && n.getAttribute('style').includes('--fg')), 'comments outside quoted strings only: ' + lang);
+  ok(has(r.codeLayer, token + ' comment', 'muted') && has(r.codeLayer, `"${token} literal"`, 'accent2'), 'comments outside quoted strings only; strings accent2: ' + lang);
 }
 const triple = make({lang: 'python', code: 's = """text\n# string\n""" # comment', steps: []}).el;
-ok(texts(triple.codeLayer).some((n) => n.textContent === '# string' && n.getAttribute('style').includes('--fg')) && texts(triple.codeLayer).some((n) => n.textContent === '# comment' && n.getAttribute('style').includes('--muted')), 'Python multiline strings do not become comments');
+ok(has(triple.codeLayer, '# string', 'accent2') && has(triple.codeLayer, '# comment', 'muted'), 'Python multiline strings do not become comments');
+const kw = make({lang: 'python', code: 'for x in xs:  # loop\n    if x is None: forx = "if"\nimport pandas as pd', steps: []}).el;
+ok(['for', 'in', 'if', 'is', 'None', 'import', 'as'].every((w) => has(kw.codeLayer, w, 'term')) && !has(kw.codeLayer, 'forx', 'term') && has(kw.codeLayer, '"if"', 'accent2'), 'keywords term outside strings and comments; identifiers stay fg');
+ok(texts(kw.codeLayer).filter((n) => /^\d+$/.test(n.textContent) === false).some((n) => n.textContent === '    if x is None: forx = "if"'), 'one text per line keeps the whole line (tabs/spaces kept)');
+const plain = make({lang: 'sql', code: 'select 1 # x', steps: []}).el;
+ok(runs(plain.codeLayer).every(([, r]) => r === 'fg'), 'unknown languages are not coloured');
+const js = make({lang: 'js', code: 'const t = `a\n// b`; // c\nlet ok = true', steps: []}).el;
+ok(has(js.codeLayer, '`a', 'accent2') && has(js.codeLayer, '// b`', 'accent2') && has(js.codeLayer, '// c', 'muted') && has(js.codeLayer, 'const', 'term') && has(js.codeLayer, 'true', 'term'), 'JS templates span lines; keywords coloured');
+const nested = make({...example, steps: [{lines: [[2, 3]], note: '範囲'}]});
+ok(!nested.reports.length && nested.el.notes[0].a === 2 && nested.el.notes[0].b === 3 && nested.el.notes[0].valid, '[[2, 3]] reads as the range [2, 3]');
+const twoRanges = make({...example, steps: [{lines: [[1, 2], [3, 3]], note: '二つ'}]});
+ok(twoRanges.reports.filter((r) => r.code === 'range').length === 1 && /one range per step/.test(twoRanges.reports[0].msg ?? JSON.stringify(twoRanges.reports[0])) && !twoRanges.el.notes[0].valid, 'two nested ranges: one range report');
 const en = make(example, {}, {}, 'en').el;
 ok(en.getAttribute('aria-label').startsWith('Python: 3 lines of code and output') && en.outputLayer.textContent.includes('Output') && en.outputLayer.textContent.includes('▶ Run'), 'English label, output and run label');
 for (const data of [null, {}, {code: 1, steps: []}, {code: 'pass', steps: [{lines: ['1'], note: 'Bad'}]}, {code: 'pass', steps: [{lines: [1, 2, 3], note: 'Bad'}]}, {...example, extra: 1}]) {

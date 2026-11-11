@@ -204,7 +204,8 @@ export function lintMeta(name, js, meta, warns = []) {
   const code = strip(js);
   if (/\bDECK\b/.test(code)) errs.push(`${at}: a 2.0 part must not use DECK (spec §6.1: no globals of the player; use ctx and base)`);
   if (/(^|[^.\w$])(window|globalThis)\b(?!\s*:)/m.test(code)) errs.push(`${at}: a 2.0 part must not use window or globalThis (spec §6.1: no globals of the player; the DOM through document and the element)`);
-  if (/\brequire\s*\(/.test(code) || /(^|[^.\w$])import\b/m.test(code)) errs.push(`${at}: a 2.0 part must not import or require (spec §6.1)`);
+  const bare = code.replace(/"(?:[^"\\\n]|\\.)*"|'(?:[^'\\\n]|\\.)*'/g, '""');   // words inside string literals (m-code's keyword lists) are not imports
+  if (/\brequire\s*\(/.test(bare) || /(^|[^.\w$])import\b/m.test(bare)) errs.push(`${at}: a 2.0 part must not import or require (spec §6.1)`);
   // an element part declares its registry name for report prefixes (base reads it): static partName = "<meta.name>"
   if ('element' in meta) {
     const pn = code.match(/static\s+partName\s*=\s*["']([^"']*)["']/);

@@ -11,7 +11,7 @@ example: {"lang":"python","code":"import pandas as pd\ndf = pd.read_csv(\"sales.
 `<m-code>` child JSON.
 
 - `code`: ≤76 chars/line; height ≈ 132+34×lines+35×(list rows−1), ~40 chars/row; >440px: cut/split.
-- `lang`: tag; `steps[{lines,note}]`: 1-based range, note.
+- `lang`: tag; `steps[{lines,note}]`: 1-based, `"lines":[3]` or range `[3,4]`; note.
 - `output`: ≤8 lines.
 
 Narration: explain each line; never read code aloud.
@@ -21,7 +21,7 @@ Displays supplied text; never runs code. Code first, then highlights and notes. 
 
 dur .6s; size 0=24px code/26px notes, otherwise ≥24. outputPos auto/below/right. Beside auto: right for ≤8 lines when columns fit. Band auto: right when natural code width ≤70% and output fits, else below the band. Explicit right/below retained. Bad props report/default.
 
-Python/R/shell # and JS // outside strings are muted. Tabs: four spaces. Monospace width .6em, wide characters 1em. Full-width band mode at 1184px/24px fits 77 ASCII characters with single-digit line numbers, 76 with two digits. Beside notes/right output reduce this. Beside notes wrap/stack with connectors; each band note is one truncated row.
+Colours are theme roles: for Python, R, shell and JavaScript (js), keywords term, strings accent2 (Python triple quotes and JS templates span lines), # (JS //) comments outside strings muted, the rest fg; other languages stay fg. Code reads the same without colour. `[[3,4]]` reads as `[3,4]`; two ranges in one step report range. Tabs: four spaces. Monospace width .6em, wide characters 1em. Full-width band mode at 1184px/24px fits 77 ASCII characters with single-digit line numbers, 76 with two digits. Beside notes/right output reduce this. Beside notes wrap/stack with connectors; each band note is one truncated row.
 
 Default height, one band row, right/no output: header 50 + n × row 34 + padding 16 + gap 8 + band 58 = **132 + 34n px**. General: r=ceil(1.4×size), header=r+16, b=ceil(1.45×note px+4)+16; H=header+n×r+16+8+b. No notes: omit 8+b. Below output adds 16+header+output rows×r+16. Final list (24px, 35px rows) packs “3–4: note” items; each row beyond one adds 35px. Auto output that would go below sits beside the band when its natural width ≤45%; the zone is then max(band, output). Every “give the element about H px” uses this formula; above 440px (body under a heading) reports give lines that fit at 440px and say fewer lines/shorter notes/split instead. If only the list misses, all code stays and the final state keeps the last note.
 

@@ -1,5 +1,5 @@
 // m-code: a program, successive line explanations, then its supplied output. Never executes code.
-egatariParts.define({name: "code", version: "2.0.0", requires: {base: "1.1.0"}, element: "m-code"}, function(deps){
+egatariParts.define({name: "code", version: "2.1.0", requires: {base: "1.1.0"}, element: "m-code"}, function(deps){
 "use strict";
 var base = deps.base, MONO = 'ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace';
 var TEXT = {
@@ -15,21 +15,38 @@ function cut(s, w, fs){
   while (ch.length && monoWidth(ch.join("") + "…", fs) > w) ch.pop();
   return w >= fs ? ch.join("") + "…" : "";
 }
-// Recognize line comments outside quoted strings; retain multiline Python strings / JS templates.
-function comments(program, lang){
-  var quote = "", triple = false;
+// Colour roles for code: keywords term, strings accent2, comments muted (theme roles only; the text stays readable without colour).
+var KEYWORDS = {
+  python: "False None True and as assert async await break class continue def del elif else except finally for from global if import in is lambda nonlocal not or pass raise return try while with yield",
+  js: "async await break case catch class const continue default delete do else export extends false finally for function if import in instanceof let new null of return super switch this throw true try typeof undefined var void while yield",
+  r: "if else repeat while function for in next break TRUE FALSE NULL Inf NaN NA return",
+  shell: "if then else elif fi case esac for while until do done in function return export local"
+};
+function dialect(lang){ return lang === "javascript" ? "js" : lang === "sh" || lang === "bash" ? "shell" : KEYWORDS[lang] ? lang : ""; }
+// Split each line into [start, end, role] spans: strings (also across lines for Python triple quotes / JS templates),
+// line comments outside strings, keywords outside both. Unknown languages give no spans.
+function spans(program, lang){
+  var L = dialect(lang), kw = L ? new Set(KEYWORDS[L].split(" ")) : null, quote = "", triple = false;
   return program.map(function(s){
+    var out = [], from = quote ? 0 : -1;
+    if (!L) return out;
     for (var i = 0; i < s.length; i++){
       var c = s[i];
-      if (c === "\\"){ i++; continue; }
       if (quote){
-        if (c === quote && (!triple || s.slice(i, i + 3) === quote.repeat(3))){ i += triple ? 2 : 0; quote = ""; triple = false; }
-      } else if (c === '"' || c === "'" || (lang === "js" || lang === "javascript") && c === "`"){
-        quote = c; triple = lang === "python" && s.slice(i, i + 3) === c.repeat(3); if (triple) i += 2;
-      } else if ((lang === "python" || lang === "r" || lang === "shell" || lang === "sh" || lang === "bash") && c === "#" && (!(lang === "shell" || lang === "sh" || lang === "bash") || i === 0 || /\s/.test(s[i - 1])) || (lang === "js" || lang === "javascript") && s.slice(i, i + 2) === "//") return i;
+        if (c === "\\"){ i++; continue; }
+        if (c === quote && (!triple || s.slice(i, i + 3) === quote.repeat(3))){ i += triple ? 2 : 0; out.push([from, i + 1, "accent2"]); quote = ""; triple = false; }
+      } else if (c === '"' || c === "'" || L === "js" && c === "`"){
+        from = i; quote = c; triple = L === "python" && s.slice(i, i + 3) === c.repeat(3); if (triple) i += 2;
+      } else if (L !== "js" && c === "#" && (L !== "shell" || i === 0 || /\s/.test(s[i - 1])) || L === "js" && s.slice(i, i + 2) === "//"){
+        out.push([i, s.length, "muted"]); return out;
+      } else if (/[A-Za-z_]/.test(c) && (i === 0 || !/[\w.$]/.test(s[i - 1]))){
+        var m = /^[A-Za-z_]\w*/.exec(s.slice(i))[0];
+        if (kw.has(m)) out.push([i, i + m.length, "term"]);
+        i += m.length - 1;
+      }
     }
-    if (!triple && quote !== "`") quote = "";
-    return -1;
+    if (quote){ out.push([from, s.length, "accent2"]); if (!triple && quote !== "`") quote = ""; }
+    return out;
   });
 }
 // Wrap prose on words where possible, falling back to characters for Japanese / long tokens.
@@ -54,7 +71,7 @@ return class extends base.MotionElement {
   static shape = {schema: {type: "object", additionalProperties: false, required: ["code", "steps"], properties: {
     code: {type: "string"}, lang: {type: "string"}, output: {type: "string"},
     steps: {type: "array", items: {type: "object", additionalProperties: false, required: ["lines", "note"], properties: {
-      lines: {type: "array", minItems: 1, maxItems: 2, items: {type: "integer"}}, note: {type: "string"}
+      lines: {type: "array", minItems: 1, maxItems: 2, items: {type: ["integer", "array"], minItems: 2, maxItems: 2, items: {type: "integer"}}}, note: {type: "string"}
     }}}
   }}, example: /*@egatari-block example*/{"lang":"python","code":"import pandas as pd\ndf = pd.read_csv(\"sales.csv\")\ndf.groupby(\"store\")[\"sales\"].mean()","steps":[{"lines":[1],"note":"pandas を読み込む"},{"lines":[2],"note":"CSV を表として読む"},{"lines":[3],"note":"店ごとの平均"}],"output":"store\nA    120.5\nB     98.0"}/*@egatari-block-end*/};
   static props = {
@@ -71,7 +88,12 @@ return class extends base.MotionElement {
     e.textContent = s; return e;
   }
   mount(ctx){
-    var self = this, d = this.data, P = this.props, T = /^ja\b/i.test(ctx.lang || "") ? TEXT.ja : TEXT.en;
+    // [[3, 4]] is read as [3, 4] (one range per step); any other nesting is a range problem below
+    var self = this, d = Object.assign({}, this.data, {steps: this.data.steps.map(function(s, j){
+      var r = s.lines.length === 1 && Array.isArray(s.lines[0]) ? s.lines[0] : s.lines;
+      if (r.some(Array.isArray)){ ctx.report("range", "[code] steps[" + j + "].lines: one range per step, e.g. [3, 4]"); return {lines: [0], note: s.note, nested: true}; }
+      return {lines: r, note: s.note};
+    })}), P = this.props, T = /^ja\b/i.test(ctx.lang || "") ? TEXT.ja : TEXT.en;
     if (!(Number.isFinite(P.dur) && P.dur > 0)){ ctx.report("attr", "[code] dur must be positive; using 0.6"); P.dur = 0.6; }
     if (!(P.size === 0 || Number.isFinite(P.size) && P.size >= 24)){ ctx.report("attr", "[code] size must be 0 or at least 24; using defaults"); P.size = 0; }
     if (!["auto", "below", "right"].includes(P.outputPos)){ ctx.report("attr", "[code] invalid outputPos; using auto"); P.outputPos = "auto"; }
@@ -80,7 +102,7 @@ return class extends base.MotionElement {
     this.fs = P.size || 24; this.noteSize = P.size || 26;
     var fs = this.fs, nf = this.noteSize, row = Math.ceil(fs * 1.4), noteRow = Math.ceil(nf * 1.45 + 4);
     var W = Math.max(1, this.clientWidth), H = Math.max(1, this.clientHeight), program = lines(d.code), output = d.output === undefined ? [] : lines(d.output);
-    var lang = d.lang || "", commentAt = comments(program, lang.toLowerCase());
+    var lang = d.lang || "", marks = spans(program, lang.toLowerCase());
     this.setAttribute("role", "figure");   // 中の読める pre が読まれるように（img の子は読まれない）
     if (!this.getAttribute("aria-label")) this.setAttribute("aria-label", T.summary(lang.toLowerCase() === "python" ? "Python" : lang, program.length, d.output !== undefined) + "; " + d.steps.map(function(s){ return s.note; }).join("; "));
     // Keep the full source readable inside the figure even when the SVG is truncated.
@@ -164,13 +186,14 @@ return class extends base.MotionElement {
       var y = firstY + i * row, original = program[i].replace(/\t/g, "    "), s = cut(original, Math.max(0, codeW - textX - pad), fs);
       if (i === count - 1 && count < program.length) s = cut(s + "…", Math.max(0, codeW - textX - pad), fs);
       this.numbers.push(this.label(this.codeLayer, pad, y, String(i + 1), fs, "var(--muted)", true));
-      // Index after tab expansion (comment scanner operates on the original program).
-      var at = commentAt[i] < 0 ? -1 : program[i].slice(0, commentAt[i]).replace(/\t/g, "    ").length;
-      if (at < 0 || at >= s.length) this.label(this.codeLayer, textX, y, s, fs, "var(--fg)", true);
-      else {
-        this.label(this.codeLayer, textX, y, s.slice(0, at), fs, "var(--fg)", true);
-        this.label(this.codeLayer, textX + monoWidth(s.slice(0, at), fs), y, s.slice(at), fs, "var(--muted)", true);
-      }
+      // One <text> per line; coloured runs are tspans, so the browser's own advance places them (indices after tab expansion)
+      var e = this.label(this.codeLayer, textX, y, "", fs, "var(--fg)", true), pos = 0, line = program[i];
+      var put = function(a, b, role){ if (b > a) base.el("tspan", role ? {fill: "var(--" + role + ")"} : {}, e).textContent = s.slice(a, b); };
+      marks[i].forEach(function(m){
+        var a = Math.min(s.length, line.slice(0, m[0]).replace(/\t/g, "    ").length), b = Math.min(s.length, line.slice(0, m[1]).replace(/\t/g, "    ").length);
+        put(pos, a); put(a, b, m[2]); pos = b;
+      });
+      put(pos, s.length);
     }
     if (count === 0 || W < 360 || textW < fs){
       ctx.report("size", "[code] element is " + W + " × " + H + " px; allow at least 360 × " + Math.ceil(header + row + pad + bandSpace) + " px for one code line and notes");
@@ -191,7 +214,7 @@ return class extends base.MotionElement {
     this.notes = d.steps.map(function(s, j){
       var a = s.lines[0], b = s.lines.length === 2 ? s.lines[1] : a;
       var valid = a >= 1 && b >= a && b <= program.length;
-      if (!valid) ctx.report("range", "[code] steps[" + j + "].lines must be an inclusive range within 1–" + program.length);
+      if (!valid && !s.nested) ctx.report("range", "[code] steps[" + j + "].lines must be an inclusive range within 1–" + program.length);
       var target = valid && a <= count ? header + ((a - 1 + Math.min(b, count) - 1) / 2 + 0.5) * row : header;
       var g = base.el("g", {opacity: 0}, self.svg), text, top, h, labels;
       if (beside){
