@@ -79,7 +79,7 @@ Components 2.0 (alpha, not for lessons yet): parts other parts require (Egatari 
 
 | パーツ | 版 | 内容 | 使うパーツ |
 |---|---|---|---|
-| [`base`](components/base/README.md) | 1.1.0 | 2.0 の要素のパーツが使う土台（基底のクラス MotionElement と、SVG・時間・見せ方の補助）。データの形は mount の前に確かめる。教材の作者が直接は書かない | shape@1.0.0 |
+| [`base`](components/base/README.md) | 1.2.0 | 2.0 の要素のパーツが使う土台（基底のクラス MotionElement と、SVG・時間・見せ方の補助）。データの形は mount の前に確かめる。教材の作者が直接は書かない | shape@1.0.0 |
 | [`boxplot-core`](components/boxplot-core/README.md) | 1.0.0 | m-boxplot の四分位数の計算（中央値、教科書の求め方 jp と表計算の inc・exc の四分位数、1.5×四分位範囲の外れ値）。教材の作者が直接は書かない | — |
 | [`codetree-core`](components/codetree-core/README.md) | 1.0.0 | 符号表からハフマン木を作り、2 値の系列を復号する（ファクシミリの MH 符号：白と黒のランを交互に読む）。m-codetree が使う。教材の作者が直接は書かない | — |
 | [`expr`](components/expr/README.md) | 1.0.0 | 2.0 のパーツが属性やデータに書かれた式を計算するための、算術だけの安全な式の評価器（コードとしては動かさない）。教材の作者が直接は書かない | — |
@@ -87,8 +87,8 @@ Components 2.0 (alpha, not for lessons yet): parts other parts require (Egatari 
 | [`hist-core`](components/hist-core/README.md) | 1.0.0 | m-hist の代表値と度数の計算（平均値・中央値・最頻値、階級への数え上げ、度数分布表からの代表値）。教材の作者が直接は書かない | — |
 | [`icons`](components/icons/README.md) | 1.0.0 | 名前で引く線のアイコン（Tabler Icons outline 3.49.0、MIT、4,808 個。brand-* と塗りのアイコンは入れない）。教材の作者が直接は書かない | — |
 | [`kanbun-core`](components/kanbun-core/README.md) | 1.0.0 | 漢文の読み取り（白文・返り点・送り仮名・振り仮名）と訓読の順・書き下し文の計算。m-kanbun が使う。教材の作者が直接は書かない | — |
-| [`markup-reader`](components/markup-reader/README.md) | 1.0.1 | 組み立てのときに描いた結果（KaTeX の HTML・MathML、abcjs の SVG）を、決まった要素と属性だけで読んで置く。教材の作者が直接は書かない | base@1.1.0 |
-| [`plot`](components/plot/README.md) | 1.1.1 | 2.0 のパーツが使う座標軸つきの図（軸・目盛り・軸の名前・切り抜き）。教材の作者が直接は書かない | base@1.1.0 |
+| [`markup-reader`](components/markup-reader/README.md) | 1.0.2 | 組み立てのときに描いた結果（KaTeX の HTML・MathML、abcjs の SVG）を、決まった要素と属性だけで読んで置く。教材の作者が直接は書かない | base@1.2.0 |
+| [`plot`](components/plot/README.md) | 1.1.2 | 2.0 のパーツが使う座標軸つきの図（軸・目盛り・軸の名前・切り抜き）。教材の作者が直接は書かない | base@1.2.0 |
 | [`shape`](components/shape/README.md) | 1.0.0 | 2.0 のパーツのデータの形（static shape）を確かめる小さな検査器。base が使う。教材の作者が直接は書かない | — |
 
 ## By purpose / 伝えたいことから

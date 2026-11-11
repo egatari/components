@@ -11,11 +11,11 @@
 // 見せ方（docs/conventions.md §1）：fade（既定。円が薄く現れる）・draw（円の線を引いてから、塗りと字が現れる）。
 // どちらも長さは dur で、段階の数・長さ・最後の中身は変わらない
 // 2.0（Egatari spec §6.1 の部品）：base の MotionElement・el・mtext・prog・lerp・variant・previewOpacity を使い、プレイヤーのグローバルは使わない。
-// 切り抜き（clipPath）の id は venn-2-0-2-<n>-in<i>・-out<i>（部品の名前と版。n はこの部品の数え。1.x は m-venn-<n>）
+// 切り抜き（clipPath）の id は venn-2-0-3-<n>-in<i>・-out<i>（部品の名前と版。n はこの部品の数え。1.x は m-venn-<n>）
 egatariParts.define({name: "venn", version: "2.0.3", requires: {base: "1.2.0"}, element: "m-venn"}, function(deps){
 "use strict";
 var base = deps.base;
-var ID = "venn-2-0-2-", count = 0;   // ids this part writes: its name and version, and a counter of its own (spec §6.1 Identifiers)
+var ID = "venn-2-0-3-", count = 0;   // ids this part writes: its name and version, and a counter of its own (spec §6.1 Identifiers)
 // 形の要素ごとに、書き直すと形が作り直される属性（render の終わりで使う）
 var SHAPE_GEOM = {rect: "width", circle: "r", ellipse: "rx", path: "d", line: "x1", polyline: "points", polygon: "points"};
 return class extends base.MotionElement {

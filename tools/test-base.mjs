@@ -65,7 +65,7 @@ function make(Base, kind){
     cues(k){ return [0.5]; }
   };
 }
-var BASE = EGATARI_PARTS_SHIM.get("base", "1.1.0");
+var BASE = EGATARI_PARTS_SHIM.get("base", "1.2.0");
 KINDS.forEach(function(kind, i){ customElements.define("x-d" + i, make(DECK.MotionElement, kind)); customElements.define("x-b" + i, make(BASE.MotionElement, kind)); });
 `;
 const S = await studio();
@@ -96,7 +96,7 @@ try {
   await page.goto(S.browser.fileUrl(out) + '?mode=video');
   await page.waitForFunction(() => window.DECK && DECK.ready, null, { timeout: 15000 });
   const r = await page.evaluate(() => {
-    const B = EGATARI_PARTS_SHIM.get('base', '1.1.0'), res = {};
+    const B = EGATARI_PARTS_SHIM.get('base', '1.2.0'), res = {};
     res.keys = Object.keys(B);
     const same = (a, b) => Object.is(a, b);
     const host = document.getElementById('host');
@@ -231,7 +231,7 @@ try {
   }, CASES);
   console.log(`(reference: ${pinLabel()} kit/deck.js DECK.*, tools/variant.js VARIANT.of)`);
   ok(errors.length === 0, 'no exception or console error' + (errors.length ? ': ' + errors[0] : ''));
-  ok(r.keys.join() === 'MotionElement,el,lerp,prog,clamp,mtext,textWidth,variant,previewOpacity', `base returns exactly ${r.keys.join(', ')}`);
+  ok(r.keys.join() === 'MotionElement,el,lerp,prog,clamp,mtext,textWidth,variant,previewOpacity,ramp,rampStops', `base returns exactly ${r.keys.join(', ')}`);
   ok(r.nums.nbad === 0, `clamp ≡ DECK.clamp01, lerp ≡ DECK.lerp, prog ≡ DECK.prog, prog(x, 0, 1) ≡ DECK.ease(x) (${r.nums.n} inputs${r.nums.nbad ? '; differ: ' + r.nums.bad.join(' | ') : ''})`);
   ok(r.el.same, `el ≡ DECK.el (${r.el.n} tag/attribute sets, with and without a parent)`);
   ok(r.mtext.same, `mtext ≡ DECK.mtext but for the sub/superscript size (${r.mtext.n} strings × attributes)`);

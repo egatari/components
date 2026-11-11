@@ -5,11 +5,11 @@
 // 1 系列 = 1 段階（書いた順。系列の step で変えられ、同じ step の系列は一緒に引く）。f は x の式（Math の関数と N(x,平均,標準偏差) が使える）、pts は点列
 // 2.0（Egatari spec §6.1 の部品）：base の MotionElement・el・mtext・prog・previewOpacity、plot の Plot、expr の compile を使い、
 // プレイヤーのグローバルは使わない（1.x は式の評価器 egatari-expr を写して持っていた）。破線の mask の id は
-// curves-2-0-2-<n>m<系列>：このパーツの名前と版に、このパーツだけの数え（1.x は mc<n>m<系列> で、DECK.Plot の数えを進めていた）
+// curves-2-2-1-<n>m<系列>：このパーツの名前と版に、このパーツだけの数え（1.x は mc<n>m<系列> で、DECK.Plot の数えを進めていた）
 egatariParts.define({name: "curves", version: "2.2.1", requires: {base: "1.2.0", expr: "1.0.0", plot: "1.1.2"}, element: "m-curves"}, function(deps){
 "use strict";
 var base = deps.base, plot = deps.plot, expr = deps.expr;
-var ID = "curves-2-0-2-";   // name and version of this part, dots replaced (spec §6.1 Identifiers)
+var ID = "curves-2-2-1-";   // name and version of this part, dots replaced (spec §6.1 Identifiers)
 var count = 0;              // this part's own counter for its ids (deterministic: the order of mounting)
 // 線の名前（26px）の下付き・上付きの分の高さ（px）。base 1.1.0 で mtext の下付き・上付きは 24px 以上になり、下付きの字の下端は基線から
 // 添字の 0.75 倍まで、上付きの字の上端は 1.4 倍まで届く（Source Sans 3 で測った値。BIZ UDPGothic ではそれぞれ 0.5 倍と 1.2 倍）。
