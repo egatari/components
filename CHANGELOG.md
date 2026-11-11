@@ -8,6 +8,32 @@ Versions follow [README.md § Releases and versions](README.md#releases-and-vers
 
 - `m-compare` `by="row"`; an "outside every set" region for `m-venn`; planned-vs-actual bars for `m-timeline`
 
+## 2.7.0 - 2026-11-12
+
+Colour ramps from the theme (Egatari spec §8.4), built-in UI text that follows the lesson language, syntax colouring in `m-code`, and READMEs and docs in Studio's glossary. Lessons pinned to 2.6.x keep their drawing; on themes without ramps every part paints the same colours as 2.6.2. Studio vendors it from v0.6.11.
+
+### Added
+
+- **`base` 1.2.0:** `ramp(t, old)` and `rampStops(el)` read the theme's `--ramp-1` … `--ramp-5` (spec §8.4). Between stops the colour is mixed in oklab; every stop falls back to the colour the part drew before, so a theme without ramps gives the old colours. New `tools/test-ramp.mjs`.
+- **`m-heatmap` 2.1.0:** with `scale="sequential"` and no `tone`, cells and the legend use the ramp; the text colour and halo are chosen from the resolved colour. Diverging scales and an explicit `tone` are unchanged.
+- **`m-map-japan` 2.1.0, `m-map-world` 2.1.0:** class i of `values` takes the ramp at i/(n−1), in the map and the legend. On ramp themes the lightness-gap report is not made (the theme chooses the stops).
+- **`m-code` 2.1.0:** syntax colouring with theme roles only (keywords `--term`, strings `--accent2`, comments `--muted`; Python, R, shell, JavaScript). `"lines":[[3,4]]` reads as the range 3–4.
+- **`m-predict` 2.1.0:** every built-in UI text follows `ctx.lang`; a new optional child JSON field `labels.correct` overrides the correct mark's text.
+
+### Changed
+
+- **`base` 1.2.0 `mtext`:** a lone `*` stays literal (no emphasis without its closing `*`), and `\*` `\_` `\^` draw the character itself. Every element part requires base 1.2.0 (patch bumps; `plot` 1.1.2, `markup-reader` 1.0.2).
+- READMEs, docs and the AI instruction text use Studio's glossary (docs/terms.md): パーツ / part, 台本 / script, 教材 / lesson, ステップ / step, 品質チェック (Studio's check) and 試験 (this repository's tests). Code, file names, URLs and CHANGELOGs are unchanged. The proposal template's heading is now "Steps and final state / ステップと最終状態".
+
+### Fixed
+
+- **`m-pie` 2.0.3, `m-timer` 2.0.4, `m-codetree` 2.0.5:** built-in text that was Japanese (or used full-width punctuation) whatever the lesson language now follows `ctx.lang`.
+
+### For Studio
+
+- en ≤ ja holds for every part (Studio's own `gen` check with this release's parts swapped in: ok).
+- Pack bytes (`node tools/pack-bytes.mjs --base v2.6.2`, ja): 45 parts change, +1,641 in total, mostly the glossary (パーツ, ステップ are longer than 部品, 段階); the largest is m-predict +173 (`labels.correct`).
+
 ## 2.6.2 - 2026-11-11
 
 ### Fixed
