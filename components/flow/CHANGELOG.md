@@ -2,6 +2,10 @@
 
 The part's own versions (Egatari spec §6.1). Releases of the whole library are in the repository's CHANGELOG.md.
 
+## 2.1.0 (components 2.8.0)
+
+- Marks what it draws for Studio's geometry check: each box shape (`<rect>` or `<polygon>`) has `data-part="box"` and `data-part-id` (the node id); each edge `<g>` has `data-part="edge"`, `data-part-id`, `data-part-from` and `data-part-to`, and its line (`<line>`, or `<path>` for a loop) has `data-part-line` (the arrowhead does not); each text (and a node's TeX frame) has `data-part="label"`, `data-part-id` (its owner's id) and `data-part-of="box"` or `"edge"`. An edge's id is `from→to` (U+2192), with `#2`, `#3` … on later edges with the same ends. No text has a halo, so none has `data-part-halo`. Drawing is unchanged.
+
 ## 2.0.5 (components 2.7.0)
 
 - Requires base 1.2.0 and markup-reader 1.0.2 (mtext keeps a lone `*` literal and draws `\*` `\_` `\^` as the character).

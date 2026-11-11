@@ -14,7 +14,7 @@
 // 式（tex）は組み立てのときに KaTeX で描く（spec §6.2）：build.fields の nodes[].tex を作り手が描いて texHtml を足し、
 // この部品は markup-reader で決まった要素と属性だけを読んで置く（再生のときに KaTeX は動かない）。描いた結果がなければ tex を字のまま出して知らせる。
 // 知らないデータ（loop の値、ない箱を指す辺）は ctx.report で知らせる（1.x の console.warn / console.error の代わり）
-egatariParts.define({name: "flow", version: "2.0.5", requires: {base: "1.2.0", "markup-reader": "1.0.2"}, element: "m-flow"}, function(deps){
+egatariParts.define({name: "flow", version: "2.1.0", requires: {base: "1.2.0", "markup-reader": "1.0.2"}, element: "m-flow"}, function(deps){
 "use strict";
 var base = deps.base, MR = deps["markup-reader"];
 // 複数行の名前の行の位置（1 行目からの下がり、px）と、上下に足す余白。base 1.1.0 で mtext の下付き・上付きは 24px 以上になり、
@@ -76,13 +76,16 @@ return class extends base.MotionElement {
     this.nodes = (data.nodes || []).map(function(n){
       var c = tone[n.tone || "term"] || tone.term, cx = n.x + n.w / 2, cy = n.y + n.h / 2;
       var g = D.el("g", {opacity: 0}, gN);
-      if (n.shape === "diamond") D.el("polygon", {class: "box", points: [cx, n.y, n.x + n.w, cy, cx, n.y + n.h, n.x, cy].join(" "), "stroke-linejoin": "round", fill: c[1], stroke: c[0], "stroke-width": n.tone === "emph" ? 3 : 2.2}, g);
-      else D.el("rect", {class: "box", x: n.x, y: n.y, width: n.w, height: n.h, rx: 10, fill: c[1], stroke: c[0], "stroke-width": n.tone === "emph" ? 3 : 2.2}, g);
+      // data-part：Studio の形の検査（geometry check）が測る印。形の要素に box、字に label（data-part-of で持ち主が箱か辺か）
+      var nid = String(n.id), pb = {"data-part": "box", "data-part-id": nid}, pl = {"data-part": "label", "data-part-id": nid, "data-part-of": "box"};
+      if (n.shape === "diamond") D.el("polygon", Object.assign({class: "box", points: [cx, n.y, n.x + n.w, cy, cx, n.y + n.h, n.x, cy].join(" "), "stroke-linejoin": "round", fill: c[1], stroke: c[0], "stroke-width": n.tone === "emph" ? 3 : 2.2}, pb), g);
+      else D.el("rect", Object.assign({class: "box", x: n.x, y: n.y, width: n.w, height: n.h, rx: 10, fill: c[1], stroke: c[0], "stroke-width": n.tone === "emph" ? 3 : 2.2}, pb), g);
       // 式の div は行の中の inline-block なので、上端にそろえないと親の行の高さの分だけ下へずれる
-      if (n.tex) MR.texFrame(g, cx, cy + P.size * 0.36, n, "tex", {size: P.size, anchor: "middle", color: c[2], w: n.w, h: n.h}, sk).firstChild.style.verticalAlign = "top";
+      if (n.tex){ var tf = MR.texFrame(g, cx, cy + P.size * 0.36, n, "tex", {size: P.size, anchor: "middle", color: c[2], w: n.w, h: n.h}, sk);
+        tf.firstChild.style.verticalAlign = "top"; for (var k in pl) tf.setAttribute(k, pl[k]); }
       else {
         var lines = String(n.label || "").split("\n"), ys = lineYs(lines, P.size * 1.25, P.size), y0 = cy - ys[ys.length - 1] / 2 + P.size * 0.36;
-        lines.forEach(function(s, j){ D.mtext(g, cx, y0 + ys[j], s, {"text-anchor": "middle", "font-size": P.size, fill: c[2]}); });
+        lines.forEach(function(s, j){ D.mtext(g, cx, y0 + ys[j], s, Object.assign({"text-anchor": "middle", "font-size": P.size, fill: c[2]}, pl)); });
       }
       var o = {g: g, cx: cx, cy: cy, n: n, step: n.step || 1, at: n.at || 0};
       if (byId[n.id]) dup.push(JSON.stringify(n.id));
@@ -161,7 +164,7 @@ return class extends base.MotionElement {
     });
     // 線分（戻る辺は折れ線の 3 本）と、置いた字の箱 [x0, y0, x1, y1]
     var segs = geo.map(function(q){ return !q ? [] : q.route ? [0, 1, 2].map(function(i){ return [q.route.pts[i], q.route.pts[i + 1]]; }) : [[q.p0, q.p1]]; });
-    var boxes = [];
+    var boxes = [], eids = {};
     this.edges = es.map(function(e, ei){
       var q = geo[ei];
       if (q === false) return null;   // 知らせてある
@@ -172,9 +175,13 @@ return class extends base.MotionElement {
       var kind = {money: ["emph", false, 3.5], service: ["term", false, 2.5], data: ["muted", true, 2.5]}[e.kind] || [null, false, 2.5];
       var tn = e.tone || kind[0], dash = e.dash !== undefined ? e.dash : kind[1];
       var col = tn ? (tone[tn] || tone.term)[0] : "var(--fg)";
-      var g = D.el("g", {opacity: 0}, gE);
-      var line = route ? D.el("path", {d: "", fill: "none", "stroke-linejoin": "round", stroke: col, "stroke-width": kind[2], "stroke-dasharray": dash ? "8 6" : "none"}, g)
-        : D.el("line", {x1: p0[0], y1: p0[1], x2: p0[0], y2: p0[1], stroke: col, "stroke-width": kind[2], "stroke-dasharray": dash ? "8 6" : "none"}, g);
+      // 辺の id は "from→to"。同じ from→to の 2 本目からは "#2"、"#3" …を付ける
+      var eid = String(e.from) + "\u2192" + String(e.to);
+      eids[eid] = (eids[eid] || 0) + 1; if (eids[eid] > 1) eid += "#" + eids[eid];
+      var pe = {"data-part": "edge", "data-part-id": eid, "data-part-from": String(e.from), "data-part-to": String(e.to)};
+      var g = D.el("g", Object.assign({opacity: 0}, pe), gE);
+      var line = route ? D.el("path", {d: "", fill: "none", "stroke-linejoin": "round", stroke: col, "stroke-width": kind[2], "stroke-dasharray": dash ? "8 6" : "none", "data-part-line": ""}, g)
+        : D.el("line", {x1: p0[0], y1: p0[1], x2: p0[0], y2: p0[1], stroke: col, "stroke-width": kind[2], "stroke-dasharray": dash ? "8 6" : "none", "data-part-line": ""}, g);
       var head = D.el("path", {d: "M0,0L-16,-7L-16,7Z", fill: col}, g);
       var lab = null, amt = null;
       // 線の中点から、線に垂直な向き（上か右）へずらして置く。amount は反対の側（label がなければ同じ側）に太字で
@@ -207,7 +214,7 @@ return class extends base.MotionElement {
         }
         if (!free) ctx.report("layout", "[flow] no free place for the edge text " + JSON.stringify(text) + " (" + JSON.stringify(e.from) + " → " + JSON.stringify(e.to) + "): it touches a box, a line or another text; move the boxes apart or set offset");
         boxes.push(box0);
-        return D.mtext(g, pos[0], pos[1], text, Object.assign({"text-anchor": anc0, "font-size": 24, opacity: 0}, attrs));
+        return D.mtext(g, pos[0], pos[1], text, Object.assign({"text-anchor": anc0, "font-size": 24, opacity: 0}, attrs, {"data-part": "label", "data-part-id": eid, "data-part-of": "edge"}));
       };
       // shift でずらした辺は、ずらした側に書く（行きと帰りの字が同じ側に重ならない）
       var sg = q.shift && (-dy * nx + dx * ny) * q.shift < 0 ? -1 : 1;
@@ -220,7 +227,7 @@ return class extends base.MotionElement {
         var at2 = r.hz ? {x: r.ch + o2 * 10, y: m + 8, a: o2 > 0 ? "start" : "end"} : {x: m, y: r.ch + (o2 > 0 ? 30 : -10), a: "middle"};
         var bx0 = at2.a === "start" ? at2.x : at2.a === "end" ? at2.x - tw : at2.x - tw / 2;
         boxes.push([bx0, at2.y - 26 * 0.88, bx0 + tw, at2.y + 26 * 0.22]);
-        return D.mtext(g, +at2.x.toFixed(2), +at2.y.toFixed(2), text, Object.assign({"text-anchor": at2.a, "font-size": 24, opacity: 0}, attrs));
+        return D.mtext(g, +at2.x.toFixed(2), +at2.y.toFixed(2), text, Object.assign({"text-anchor": at2.a, "font-size": 24, opacity: 0}, attrs, {"data-part": "label", "data-part-id": eid, "data-part-of": "edge"}));
       };
       if (route){
         if (e.label) lab = rside(true, e.label, {fill: tn ? col : "var(--fg)"});

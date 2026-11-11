@@ -1,6 +1,6 @@
 ---
 name: m-flow
-version: 2.0.5
+version: 2.1.0
 series: common
 tier: standard
 summary: 流れ図の箱と矢印をステップごとに出して、図を組み立てる

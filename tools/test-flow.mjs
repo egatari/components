@@ -71,6 +71,25 @@ check('diagonal and two-way pairs', {nodes: [{id: 'p', label: 'P', x: 20, y: 20,
   edges: [{from: 'p', to: 'q'}, {from: 'q', to: 'p'}, {from: 'q', to: 'r'}, {from: 'p', to: 'r'}]});
 check('diamond source and target', {nodes: [{id: 'd', label: '?', x: 20, y: 100, w: 200, h: 120, shape: 'diamond'}, {id: 'y', label: 'Y', x: 700, y: 0, w: 400, h: 50}, {id: 'n', label: 'N', x: 700, y: 260, w: 400, h: 50}],
   edges: [{from: 'd', to: 'y'}, {from: 'd', to: 'n'}, {from: 'y', to: 'd'}]});
+// data-part markers for Studio's geometry check: box shapes, edge groups with ends, the edge line, labels with their owner
+{
+  const walk = (n, f) => { f(n); n.children.forEach((c) => walk(c, f)); };
+  const {el} = make({nodes: [{id: 'a', label: 'A', x: 0, y: 0, w: 200, h: 60}, {id: 'b', label: 'B\nC', x: 600, y: 0, w: 200, h: 90, shape: 'diamond'}, {id: 'c', label: 'D', x: 0, y: 220, w: 200, h: 60}],
+    edges: [{from: 'a', to: 'b', label: 'x'}, {from: 'a', to: 'b', label: 'y', shift: 20, amount: 3}, {from: 'b', to: 'a', loop: 'bottom', label: 'z'}, {from: 'a', to: 'c'}]});
+  const all = []; walk(el, (n) => all.push(n));
+  const part = (k) => all.filter((n) => n.attrs['data-part'] === k);
+  const boxes = part('box'), edges = part('edge'), labels = part('label');
+  ok(boxes.length === 3 && boxes.map((n) => n.localName).join() === 'rect,polygon,rect' && boxes.map((n) => n.attrs['data-part-id']).join() === 'a,b,c',
+    'data-part="box" on each box shape (rect, polygon) with the node id');
+  ok(edges.length === 4 && edges.every((n) => n.localName === 'g') && edges.map((n) => n.attrs['data-part-id']).join() === 'a\u2192b,a\u2192b#2,b\u2192a,a\u2192c'
+    && edges.map((n) => n.attrs['data-part-from'] + n.attrs['data-part-to']).join() === 'ab,ab,ba,ac', 'data-part="edge" on each edge <g>: id from→to (#2 for the second), data-part-from and data-part-to');
+  ok(edges.every((g) => { const ls = g.children.filter((c) => 'data-part-line' in c.attrs); return ls.length === 1 && /^(line|path)$/.test(ls[0].localName) && ls[0] === g.children[0]; }),
+    'each edge has exactly one data-part-line (its line, not the arrowhead)');
+  const of = (k) => labels.filter((n) => n.attrs['data-part-of'] === k).map((n) => n.attrs['data-part-id']).join();
+  ok(labels.every((n) => n.localName === 'text') && of('box') === 'a,b,b,c' && of('edge') === 'a\u2192b,a\u2192b#2,a\u2192b#2,b\u2192a',
+    'data-part="label" on every text with its owner id and data-part-of (box or edge)');
+  ok(!all.some((n) => 'data-part-halo' in n.attrs), 'no text has a halo, so none is marked data-part-halo');
+}
 {
   const {reports} = make({nodes: [{id: 'a', label: 'A', x: 0, y: 0, w: 200, h: 40}, {id: 'b', label: 'B', x: 600, y: 0, w: 200, h: 40}], edges: [{from: 'a', to: 'b', shift: 30}]});
   ok(reports.length === 1 && reports[0].code === 'layout' && /leaves the side/.test(reports[0].msg), 'an end pushed off its side by shift is reported (layout)');
