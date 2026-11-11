@@ -1,6 +1,6 @@
 ---
 name: m-heatmap
-version: 2.0.2
+version: 2.1.0
 series: academic
 tier: specialized
 set: stats
@@ -21,6 +21,7 @@ props: scale, center, range, tone, lowtone, normalize, show, numbers, diag, buil
 作る人向けの注
 
 - 色はテーマの色だけ：セルは `color-mix(in oklab, var(--term) p%, var(--bg))`（diverging の下側は lowtone）。p は値の位置（sequential は [min(0, 最小), 最大]、diverging は center から遠い方の端までを対称に、`range` で決め打ち）。セルの色は尺度のとおりで動かさない（色がデータなので）。数字の色はセルごとに --fg と --bg のコントラストを計算して高い方。明るさが中くらいの帯ではどちらも 4.5:1 に届かないので、その数字にだけ反対の色の 3 px の縁（`paint-order: stroke`）を付ける。tools/test-heatmap.mjs が 3 つのテーマで全部のセルを測る
+- 色の段階（2.1.0、spec §8.4 `--ramp-1`〜`--ramp-5`）：sequential で `tone` を書いていないとき、テーマに段階があればセルと凡例の帯を段階の色で塗る（`base.ramp`：どの段も上の色に戻るので、段階のないテーマでは 2.0.2 と同じ色）。`tone` を書けばその役割の色。diverging は段階を使わない。字の色は段階の色を解いて同じように選ぶ
 - 凡例の帯は格子の右：上が最大、真ん中が center（sequential は範囲の真ん中）、下が最小。帯が 90 px より低ければ真ん中の数を出さない
 - 字は 26 px、入らなければ 24 px（それより小さくしない）。列の名前が長ければ縦（`rotate="auto"`）。それでも入らなければ k 個おきに出して `ctx.report`（行も同じ）。セルは正方形で 180 px まで
 - セルの数字：12×12 を超えると自動で消える（`ctx.report`。`numbers="on"` なら入る限り出す）。24 px で入らなければ消す。`show="both"` が 2 行で入らなければ割合だけ

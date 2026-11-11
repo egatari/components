@@ -4,6 +4,8 @@
 //     (the text colour picked per cell from --fg / --bg), or, in the mid-lightness band, against its 2–3 px halo in the other
 //     colour (paint-order: stroke), over fine sequential ramps in each tone and a full diverging ramp, plus the demo-like matrices
 //   - cell fills use only theme colours (var(--…) or color-mix of them)
+//   - colour ramps (spec §8.4): without ramps every cell and legend colour paints the same 8-bit sRGB as 2.0.2; on a theme with
+//     --ramp-1…5 only sequential parts without tone take the ramp (the oklab mix of the neighbouring stops), the rest keep their roles
 //   - steps and durations per build (rows, whole, cells), highlights at their steps
 //   - more than 12×12: numbers off with a warning; too many labels: every k-th label with a warning, labels ≥ 24 px;
 //     long column labels turn vertical
@@ -98,6 +100,16 @@ ok(s.steps === 4 && s.hl.map((h) => h.st).join() === '2,3,4' && s.cell[3][3] ===
 s = C.steps(4, 4, 'cells', [[0, 1, 5]]);
 ok(s.steps === 5 && s.hl[0].st === 5, 'a highlight with its own step');
 
+// base.ramp (the helper the part uses) and its inverse: the fallback inside var(--ramp-k, …) is the colour before ramps
+let B = null;
+vm.runInNewContext(fs.readFileSync(path.join(ROOT, 'components', 'base', 'index.js'), 'utf8'),
+  { egatariParts: { define: (meta, f) => { if (meta.name === 'base') B = f({ shape: {} }); } }, console, Math, String, JSON, Number, Array, Object, Error, isFinite, HTMLElement: class {} });
+const fallbackAt = (s, i) => { let d = 0; for (let j = i; j < s.length; j++) { if (s[j] === '(') d++; else if (s[j] === ')') { if (d === 0) return s.slice(i, j); d--; } } return null; };
+const unramp = (s) => { const m = /var\(--ramp-\d, /.exec(s); return m ? fallbackAt(s, m.index + m[0].length) : s; };
+// the ramp string base.ramp gives for the same fallback at the same t (t from the fallback's percentage)
+const rampOf = (s) => { const old = unramp(s), m = /^color-mix\(in oklab, var\(--\w+\) ([\d.]+)%, var\(--bg\)\)$/.exec(old); const t = m ? +m[1] / 100 : old === 'var(--bg)' ? 0 : 1; return B.ramp(t, old); };
+const rgbHex = (h) => [1, 3, 5].map((i) => parseInt(h.slice(i, i + 2), 16));
+
 // ---- in a browser ----
 const S = await studio();
 const work = path.resolve(process.argv[2] || fs.mkdtempSync(path.join(os.tmpdir(), 'test-heatmap-')));
@@ -115,14 +127,16 @@ const slides = [
   el('id="big"', { rows: Array.from({ length: 40 }, (_, i) => 'w' + i), cols: Array.from({ length: 40 }, (_, i) => 'w' + i), values: Array.from({ length: 40 }, (_, r) => Array.from({ length: 40 }, (_, c) => Math.abs(Math.sin(r * 0.3 + c * 0.17)))) }, 430),
   el('id="long"', { rows: ['a', 'b', 'c'], cols: longCols, values: [[1, 2, 3, 4, 5, 6], [6, 5, 4, 3, 2, 1], [1, 3, 5, 2, 4, 6]] }, 430),
 ];
+// a theme with colour ramps (spec §8.4): the default theme plus --ramp-1…5 (pale yellow → orange → dark violet, lightness monotone)
+const RAMP = ['#f7f3e3', '#f4c56a', '#e07b39', '#8e3b46', '#2b2350'];
 const deck = (theme) => `<!DOCTYPE html>
-<html lang="ja" data-theme="${theme}"><head><meta charset="utf-8"><title>m-heatmap test</title></head><body><div id="stage">
+<html lang="ja" data-theme="${theme.replace('+ramp', '')}"><head><meta charset="utf-8"><title>m-heatmap test</title>${theme.endsWith('+ramp') ? `<style>:root{${RAMP.map((c, i) => `--ramp-${i + 1}:${c}`).join(';')}}</style>` : ''}</head><body><div id="stage">
 ${slides.map((b, i) => `<section class="slide noconcl" id="s-h${i}"><h2>ヒートマップ ${i}</h2><div class="body">${b}</div></section>`).join('\n')}
 </div></body></html>`;
 
 const b = await S.browser.launch();
 try {
-  for (const theme of ['default', 'kokugo', 'business']) {
+  for (const theme of ['default', 'kokugo', 'business', 'default+ramp']) {
     const src = path.join(work, `heatmap-${theme}-src.html`), out = path.join(work, `heatmap-${theme}.html`);
     fs.writeFileSync(src, deck(theme));
     S.build(src, out);
@@ -138,7 +152,7 @@ try {
       const rgb = (s) => { g.fillStyle = '#fff'; g.fillRect(0, 0, 1, 1); g.fillStyle = s; g.fillRect(0, 0, 1, 1); return [...g.getImageData(0, 0, 1, 1).data.slice(0, 3)]; };
       const lum = (c) => { const f = c.map((x) => { x /= 255; return x <= 0.03928 ? x / 12.92 : Math.pow((x + 0.055) / 1.055, 2.4); }); return 0.2126 * f[0] + 0.7152 * f[1] + 0.0722 * f[2]; };
       const cr = (a, b) => { const x = lum(a), y = lum(b); return (Math.max(x, y) + 0.05) / (Math.min(x, y) + 0.05); };
-      const out = { cells: [], fills: [], cellFill: [], steps: {}, dur: {}, labels: {}, table: {}, hl: {} };
+      const out = { cells: [], fills: [], cellFill: [], steps: {}, dur: {}, labels: {}, table: {}, hl: {}, stops: [] };
       for (let i = 0; i < DECK.slides.length; i++) {
         const s = DECK.slides[i];
         DECK.seek(i, s._max, Infinity);
@@ -155,12 +169,13 @@ try {
             const rect = cg.querySelector('rect'), fill = getComputedStyle(rect).fill, style = rect.getAttribute('style') || '';
             out.fills.push(style);
             const idx = cellGroups.indexOf(cg);
-            out.cellFill.push({ id: c.id, i: idx, style });
+            out.cellFill.push({ id: c.id, i: idx, style, paint: rgb(fill).join() });
             for (const t of cg.querySelectorAll('text')) {
               const ts = getComputedStyle(t), tf = rgb(ts.fill), halo = ts.stroke !== 'none' && /^stroke/.test(ts.paintOrder) ? rgb(ts.stroke) : null;
               out.cells.push({ id: c.id, txt: t.textContent, cr: +cr(tf, rgb(fill)).toFixed(2), fill, halo: halo ? { cr: +cr(tf, halo).toFixed(2), w: parseFloat(ts.strokeWidth) } : null });
             }
           }
+          for (const st of svg.querySelectorAll('linearGradient stop')) out.stops.push({ id: c.id, style: st.getAttribute('style') || '', paint: rgb(getComputedStyle(st).stopColor).join() });
           const tb = c.querySelector('.sr-only table');
           out.table[c.id] = tb ? { rows: tb.querySelectorAll('tr').length, cells: tb.querySelectorAll('td').length, first: (tb.querySelector('td') || {}).textContent, hl: [...tb.querySelectorAll('td')].filter((x) => /強調/.test(x.textContent)).length } : null;
           // highlight frames per step (opacity of the frame groups at each step's end)
@@ -172,7 +187,30 @@ try {
       }
       return out;
     });
+    // the 2.0.2 colour of each fill: the fallback inside the ramp wrapper (base.ramp gives every stop the same fallback)
+    const items = [...r.cellFill.map((x) => ({ ...x, prop: 'fill' })), ...r.stops.map((x) => ({ ...x, prop: 'stop-color' }))];
+    const olds = items.map((x) => ({ id: x.id, css: x.prop + ':' + unramp(x.style.replace(/^[\w-]+:|;$/g, '')) + ';' }));
+    const oldPaint = await p.evaluate((list) => {
+      const cv = document.createElement('canvas'); cv.width = cv.height = 1;
+      const g = cv.getContext('2d', { willReadFrequently: true });
+      const rgb = (s) => { g.fillStyle = '#fff'; g.fillRect(0, 0, 1, 1); g.fillStyle = s; g.fillRect(0, 0, 1, 1); return [...g.getImageData(0, 0, 1, 1).data.slice(0, 3)].join(); };
+      return list.map(({ id, css }) => { const svg = document.getElementById(id).querySelector('svg'), e = document.createElementNS('http://www.w3.org/2000/svg', 'rect'); e.setAttribute('style', css.replace(/^stop-color:/, 'fill:')); svg.appendChild(e); const v = rgb(getComputedStyle(e).fill); e.remove(); return v; });
+    }, olds);
     await p.close();
+    const ramped = items.filter((x) => /--ramp-/.test(x.style));
+    if (!theme.endsWith('+ramp')) {
+      const diff = items.filter((x, i) => x.paint !== oldPaint[i]);
+      ok(diff.length === 0 && items.length > 400, `${theme}: without ramps every cell and legend colour (${items.length}) paints the same 8-bit sRGB as 2.0.2${diff.length ? ': ' + diff.slice(0, 3).map((x) => `${x.id} ${x.style}`).join('; ') : ''}`);
+    } else {
+      // conf has no tone: the ramp; seq-* (tone written) and div (diverging) keep their roles
+      ok(ramped.length > 0 && ramped.every((x) => x.id === 'conf' || x.id === 'cells' || x.id === 'big' || x.id === 'long'), `${theme}: only sequential parts without tone use the ramp (${[...new Set(ramped.map((x) => x.id))]})`);
+      const want = (t) => { const x = Math.max(0, Math.min(1, t)) * 4, k = Math.min(3, Math.floor(x + 1e-9)); return C.mix(rgbHex(RAMP[k]), rgbHex(RAMP[k + 1]), 1 - (x - k)); };
+      const conf = r.cellFill.filter((x) => x.id === 'conf'), V = [[45, 3, 2], [6, 38, 6], [1, 4, 45]];
+      const bad = conf.filter((x) => { const w = want(V[Math.floor(x.i / 3)][x.i % 3] / 50), got = x.paint.split(',').map(Number); return got.some((v, j) => Math.abs(v - w[j]) > 1.5); });
+      ok(conf.length === 9 && bad.length === 0, `${theme}: conf cells paint the ramp colour at their value (±1 of the oklab mix of the neighbouring stops)${bad.length ? ': ' + bad.map((x) => x.i + ' ' + x.paint).join('; ') : ''}`);
+      const same = items.filter((x, i) => !/--ramp-/.test(x.style) && x.paint !== oldPaint[i]);
+      ok(same.length === 0, `${theme}: parts that keep their roles paint the same as without ramps`);
+    }
     ok(errors.length === 0, `${theme}: no console errors (${errors.join(' | ')})`);
     // contrast counting the halo: on the cell ≥ 4.5:1, or a 2–3 px halo (paint-order: stroke) that reaches 4.5:1 against the text
     const low = r.cells.filter((x) => x.cr < 4.5 && !(x.halo && x.halo.cr >= 4.5 && x.halo.w >= 2 && x.halo.w <= 3));
@@ -186,9 +224,9 @@ try {
       if (id === 'conf') { const V = [[45, 3, 2], [6, 38, 6], [1, 4, 45]], v = V[Math.floor(i / 3)][i % 3] / 50; return `fill:color-mix(in oklab, var(--term) ${+(v * 100).toFixed(2)}%, var(--bg));`; }
       return null;
     };
-    const off = r.cellFill.filter((x) => want(x.id, x.i) !== null && x.style !== want(x.id, x.i));
+    const off = r.cellFill.filter((x) => want(x.id, x.i) !== null && 'fill:' + unramp(x.style.slice(5, -1)) + ';' !== want(x.id, x.i));
     ok(r.cellFill.filter((x) => want(x.id, x.i) !== null).length === 3 * 44 + 22 + 9 && off.length === 0, `${theme}: cell colours equal the scale exactly${off.length ? ': ' + off.slice(0, 4).map((x) => `${x.id}[${x.i}] ${x.style} ≠ ${want(x.id, x.i)}`).join('; ') : ''}`);
-    ok(r.fills.every((f) => /^fill:(var\(--(bg|term|emph|accent2)\)|color-mix\(in oklab, var\(--(term|emph|accent2)\) [\d.]+%, var\(--bg\)\));$/.test(f)), `${theme}: cell fills are theme colours or color-mix of them (${[...new Set(r.fills.filter((f) => !/var\(--/.test(f)))].join(', ')})`);
+    ok(r.fills.every((f) => /^(var\(--(bg|term|emph|accent2)\)|color-mix\(in oklab, var\(--(term|emph|accent2)\) [\d.]+%, var\(--bg\)\))$/.test(unramp(f.slice(5, -1))) && (!/--ramp-/.test(f) || f.slice(5, -1) === rampOf(f.slice(5, -1)))), `${theme}: cell fills are theme colours or color-mix of them (${[...new Set(r.fills.filter((f) => !/var\(--/.test(f)))].join(', ')})`);
     if (theme !== 'default') continue;
     // steps and durations
     ok(r.steps.conf === 3 && r.dur.conf.join() === '0,0.8,0.8,0.8,0', `normalize="row": build rows, 3 steps, 0.8 s each (${r.steps.conf}: ${r.dur.conf})`);

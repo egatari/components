@@ -11,7 +11,7 @@
 // 2.0（Egatari spec §6.1 の部品）：base の MotionElement・el・prog・variant・previewOpacity と、計算は heatmap-core（1.x の
 // static calc）を使い、プレイヤーのグローバルは使わない。書き方やデータの知らせ（1.x の console.warn）は mount で ctx.report に。
 // 言語は ctx.lang（mount で読む）。凡例のグラデーションの id は heatmap-2-0-2-legend-<n>（1.x は m-heatmap-legend-<n>）
-egatariParts.define({name: "heatmap", version: "2.0.2", requires: {base: "1.1.0", "heatmap-core": "1.0.0"}, element: "m-heatmap"}, function(deps){
+egatariParts.define({name: "heatmap", version: "2.1.0", requires: {base: "1.1.0", "heatmap-core": "1.0.0"}, element: "m-heatmap"}, function(deps){
 "use strict";
 var base = deps.base;
 // ---- 計算（heatmap-core。tools/test-heatmap.mjs がブラウザなしで試す） ----
@@ -38,7 +38,7 @@ function clip(s, w, C){
 }
 var ON = function(v){ return /^(on|true|yes)$/i.test(String(v || "").trim()); };
 var TONES = ["term", "emph", "accent2"];
-var ID = "heatmap-2-0-2-";   // name and version of this part, dots replaced (spec §6.1 Identifiers)
+var ID = "heatmap-2-1-0-";   // name and version of this part, dots replaced (spec §6.1 Identifiers)
 var SEQ = 0;   // 凡例のグラデーションの id（ページの中で部品ごとに別。mount は 1 回だけ。このパーツだけの数え）
 return class extends base.MotionElement {
   static partName = "heatmap";   // the registry name (define meta name), for report prefixes
@@ -59,7 +59,7 @@ return class extends base.MotionElement {
     scale:     {type: "string", default: "sequential", doc: "sequential か diverging（center を地の色に 2 色）"},
     center:    {type: "number", default: 0, doc: "diverging の真ん中の値"},
     range:     {type: "json", default: null, doc: "色の範囲 [最小, 最大]"},
-    tone:      {type: "string", default: "term", doc: "濃い側の色：term・emph・accent2"},
+    tone:      {type: "string", default: "term", doc: "濃い側の色：term・emph・accent2。書かなければテーマの色の段階（なければ term）"},
     lowtone:   {type: "string", default: "emph", doc: "diverging の center より下の色"},
     normalize: {type: "string", default: "none", doc: "row：行ごとの割合（混同行列）"},
     show:      {type: "string", default: "percent", doc: "normalize=row の数字：percent・count・both"},
@@ -149,12 +149,22 @@ return class extends base.MotionElement {
     if (pl.kind === "diverging" && tone === low) ctx.report("attr", "[heatmap] tone and lowtone are the same colour; the two sides cannot be told apart");
     var cs0 = getComputedStyle(this), get = function(v){ return rgbOf(cs0.getPropertyValue(v).trim()); };
     var RGB = {bg: get("--bg"), fg: get("--fg"), term: get("--term"), emph: get("--emph"), accent2: get("--accent2")};
+    // 色の段階（spec §8.4 --ramp-1…5）：sequential で tone を書いていないときだけ。tone を書けばその役割の色（段階は使わない）。
+    // diverging は役割の 2 色のまま。段階のないテーマでは、どの段も 2.6.2 までの色（old）に戻るので同じ色になる
+    var useRamp = pl.kind === "sequential" && !this.hasAttribute("tone");
+    var stops = useRamp ? D.rampStops(this) : null, SRGB = stops ? stops.map(rgbOf) : null;
+    if (SRGB && SRGB.some(function(c){ return !c; })) SRGB = null;
+    var oldFill = function(side, pc){ return pc <= 0 ? "var(--bg)" : pc >= 100 ? "var(--" + side + ")" : "color-mix(in oklab, var(--" + side + ") " + pc + "%, var(--bg))"; };
+    // 段階の色（解いた RGB）：t の両隣の段を oklab で混ぜる（base.ramp と同じ割合）
+    var rampRGB = function(t){ var x = Math.max(0, Math.min(1, t)) * 4, k = Math.min(3, Math.floor(x + 1e-9)); return C.mix(SRGB[k], SRGB[k + 1], 1 - (x - k)); };
     var paint = function(f){
       var side = f < 0 ? low : tone, p = Math.abs(f), o;
-      if (RGB.bg && RGB.fg && RGB[side]) o = C.pick(RGB[side], RGB.bg, RGB.fg, p);
+      if (useRamp && stops && SRGB && RGB.bg && RGB.fg){ o = C.pick(rampRGB(p), RGB.bg, RGB.fg, 1); o.p = p; }
+      else if (useRamp && stops) o = {p: p, text: p > 0.55 ? "bg" : "fg", halo: true};   // 段階の色が読めなければ、いつも縁を付ける
+      else if (RGB.bg && RGB.fg && RGB[side]) o = C.pick(RGB[side], RGB.bg, RGB.fg, p);
       else o = {p: p, text: p > 0.55 ? "bg" : "fg", halo: true};   // テーマの色が読めなければ、いつも縁を付ける
-      var pc = Math.round(o.p * 10000) / 100;
-      return {fill: pc <= 0 ? "var(--bg)" : pc >= 100 ? "var(--" + side + ")" : "color-mix(in oklab, var(--" + side + ") " + pc + "%, var(--bg))", text: "var(--" + o.text + ")",
+      var pc = Math.round(o.p * 10000) / 100, old = oldFill(side, pc);
+      return {fill: useRamp ? D.ramp(pc / 100, old) : old, text: "var(--" + o.text + ")",
               halo: o.halo ? "var(--" + (o.text === "fg" ? "bg" : "fg") + ")" : null};
     };
     // ---- 配置 ----
@@ -252,7 +262,7 @@ return class extends base.MotionElement {
     var grad = D.el("linearGradient", {id: gid, x1: 0, y1: 0, x2: 0, y2: 1}, D.el("defs", {}, svg));
     for (i = 0; i <= 20; i++){
       var f = C.frac(dm.hi - (dm.hi - dm.lo) * i / 20, pl.kind, dm), pc = Math.round(Math.abs(f) * 10000) / 100, side = f < 0 ? low : tone;
-      D.el("stop", {offset: (i / 20).toFixed(3), "stop-color": pc <= 0 ? "var(--bg)" : "color-mix(in oklab, var(--" + side + ") " + pc + "%, var(--bg))"}, grad);
+      D.el("stop", {offset: (i / 20).toFixed(3), "stop-color": useRamp ? D.ramp(pc / 100, oldFill(side, pc)) : pc <= 0 ? "var(--bg)" : "color-mix(in oklab, var(--" + side + ") " + pc + "%, var(--bg))"}, grad);
     }
     D.el("rect", {x: f1(bx), y: f1(L.gy), width: 24, height: f1(bh), fill: "url(#" + gid + ")", stroke: "var(--line)", "stroke-width": 1.5}, gGrid);
     var marks = bh >= 3 * 30 ? [[0, legend[0]], [0.5, legend[1]], [1, legend[2]]] : [[0, legend[0]], [1, legend[2]]];

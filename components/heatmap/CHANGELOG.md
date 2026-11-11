@@ -2,6 +2,10 @@
 
 The part's own versions (Egatari spec §6.1). Releases of the whole library are in the repository's CHANGELOG.md.
 
+## 2.1.0 (components 2.7.0)
+
+- Colour ramps (spec §8.4 `--ramp-1` … `--ramp-5`): with scale="sequential" and no `tone` attribute, cells and the legend band use the theme's ramp (base `ramp`). Every stop falls back to the 2.0.2 colour, so themes without ramps give the same colours. A `tone` the author wrote keeps that role; diverging keeps its two roles. Text colour and halo are chosen from the resolved ramp colour. Requires the next base (ramp, rampStops). Ids heatmap-2-1-0-.
+
 ## 2.0.2 (components 2.2.0)
 
 - Requires base 1.1.0 (sub- and superscripts at least 24px, a measured text-width estimate).
