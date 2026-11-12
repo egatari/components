@@ -3,7 +3,7 @@
 //   2. every element part with a demo has its intro slide, and every demo slide is there (noconcl slides included)
 //   3. demo slides without an id get one, so slide keys do not collide across parts
 //   4. a changed file, an extra file or a tarball that is not the manifest's is refused
-//   5. with --previous: new, changed (another version) and サンプルが変わった (same version, other demo.html); no marks without it
+//   5. with --previous: new, changed (another version) and サンプルが変わった (same version, other demo.html; another README.md alone is no mark); no marks without it
 //   6. it runs with no git on PATH, and from a copy of tools/ with no node_modules (no parse5)
 //   7. --samples-href and --samples-tags: a link under the summary of the listed parts only, {tag} URL-encoded; both or neither;
 //      a link without {tag} is refused; tags not in the release are named; without them, no link (6's deck is 1's)
@@ -74,11 +74,12 @@ const prev = JSON.parse(JSON.stringify(manifest));
 delete prev.components.cards;
 prev.components.orbit.version = '1.9.9';
 prev.components.tape.files['demo.html'] = '0'.repeat(64);
+prev.components.bars.files['README.md'] = '0'.repeat(64);
 fs.writeFileSync(path.join(work, 'prev.json'), JSON.stringify(prev));
 const r7 = run(['--pack', tgz, '--manifest', man, '--previous', path.join(work, 'prev.json'), '-o', path.join(work, 'd')]);
 const D = deck(path.join(work, 'd'));
 ok(r7.status === 0 && D.includes(`<h2>m-cards（新しい、v${version}）</h2>`) && D.includes(`<h2>m-orbit（変わった、v${version}）</h2>`)
-  && D.includes(`<h2>m-tape（サンプルが変わった、v${version}）</h2>`) && D.includes('<h2>m-bars</h2>'), 'marks: new, changed, サンプルが変わった; the rest none');
+  && D.includes(`<h2>m-tape（サンプルが変わった、v${version}）</h2>`) && D.includes('<h2>m-bars</h2>'), 'marks: new, changed, サンプルが変わった; the rest none (m-bars with only another README.md is unmarked)');
 
 // 6
 const r8 = run(['--pack', tgz, '--manifest', man, '-o', path.join(work, 'e')], { ...process.env, PATH: '' });
