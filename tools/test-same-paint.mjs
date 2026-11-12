@@ -1,4 +1,4 @@
-// node tools/test-same-paint.mjs [shots folder] [--only flow,tree]: m-flow, m-tree, m-fishbone and m-quad paint the same pixels as the release before,
+// node tools/test-same-paint.mjs [shots folder] [--only flow,tree]: m-flow, m-tree, m-fishbone and m-quad (or the --only parts) paint the same pixels as the release before,
 // on their demo pages, in each of Egatari Studio's themes and in a dark theme. The data-part marks for Studio's geometry check
 // (components 2.8.0) are attributes only; this test makes sure they changed nothing that is painted.
 // The baseline is the newest release tag not newer than package.json's version that does not point at HEAD (before the release
@@ -18,7 +18,8 @@ import { partMeta } from './parts.mjs';
 import { LAUNCH, TOLERANCE, hideChrome, settle, pixelDiff } from './shot-helpers.mjs';
 
 const oi = process.argv.indexOf('--only'), only = oi >= 0 ? process.argv.splice(oi, 2)[1].split(',') : null;
-const NAMES = ['flow', 'tree', 'fishbone', 'quad'].filter((x) => !only || only.includes(x));
+// by default the parts given data-part marks in 2.8.0; --only names any parts (e.g. a part whose sizes were clamped)
+const NAMES = only || ['flow', 'tree', 'fishbone', 'quad'];
 const THEMES = ['default', 'kokugo', 'business', 'dark'];
 const DARK = ':root:root{--bg:#15171c!important;--fg:#e8e6e1!important;--muted:#9a9a9a!important;--line:#4a4d55!important;--term:#7fb2ff!important;'
   + '--emph:#ff8a7a!important;--accent2:#e6c15a!important;--term-tint:#1d2a40!important;--emph-tint:#3a2220!important;'

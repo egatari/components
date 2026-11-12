@@ -1,7 +1,7 @@
 ---
 name: m-particles
 display: 粒子のモデル / Particle model
-version: 2.0.1
+version: 2.0.2
 series: academic
 tier: specialized
 set: science

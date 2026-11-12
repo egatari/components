@@ -1,5 +1,5 @@
 // m-particles：状態変化の粒子モデルと、化学変化で保存される原子のモデル。
-egatariParts.define({name: "particles", version: "2.0.1", requires: {base: "1.2.0"}, element: "m-particles"}, function(deps){
+egatariParts.define({name: "particles", version: "2.0.2", requires: {base: "1.2.0"}, element: "m-particles"}, function(deps){
 "use strict";
 var base = deps.base;
 var STATES = ["solid", "liquid", "gas"];
@@ -36,7 +36,7 @@ function latticeColumns(n, aspect, maxCols){
   for (var c = Math.ceil(Math.sqrt(n)); c <= Math.min(maxCols || n, n > 3 ? n / 2 : n); c++) if (n % c === 0){
     var d = Math.abs(c - ideal); if (d < error){ best = c; error = d; }
   }
-  return best || Math.min(maxCols || n, Math.ceil(ideal));
+  return Math.max(1, best || Math.min(maxCols || n, Math.ceil(ideal)));   // at least 1 column, also when the box is 0 wide
 }
 function segmentDistance(p, a, b){
   var dx = b.x - a.x, dy = b.y - a.y, den = dx * dx + dy * dy;
@@ -140,13 +140,13 @@ var Part = class extends base.MotionElement {
   checkWidth(s, fs, width, ctx){ if (base.textWidth(s, fs, {font: this, mark: true}) > width) ctx.report("size", "[particles] a label does not fit; shorten it or make the element larger"); }
   stateLabel(i){ var d = this.data || {}, v = (d.labels || [])[i]; return v === undefined || v === null ? this.T.states[STATES.indexOf(this.plan().states[i])] : v; }
   stateBox(s){
-    var full = Math.min(this.W - 40, 700), w = full;
+    var full = Math.max(0, Math.min(this.W - 40, 700)), w = full;   // 0 when the element is too narrow, never negative
     if (this.props.volume && s !== "gas"){
       var layerWidth = 54;
       for (var i = 1; i < Math.ceil((this.props.count + 1) / 2); i++) layerWidth += 38.2 + 3 * hash(i + 71);
       w = Math.min(full, Math.max(full * 0.72, layerWidth));
     }
-    var h = Math.min(this.H - 108, Math.max(240, Math.ceil(this.props.count / 6) * 50 + 40));
+    var h = Math.max(0, Math.min(this.H - 108, Math.max(240, Math.ceil(this.props.count / 6) * 50 + 40)));
     return {x: (this.W - w) / 2, y: 44, width: w, height: h};
   }
   boxWidth(s){ return this.stateBox(s).width; }
@@ -167,7 +167,7 @@ var Part = class extends base.MotionElement {
         out.push(best);
       }
     } else if (s === "solid"){
-      var pitch = 2 * r + 3, cols = latticeColumns(N, 1, Math.floor((box.width - 2 * r - 8) / pitch) + 1);
+      var pitch = 2 * r + 3, cols = latticeColumns(N, 1, Math.max(1, Math.floor((box.width - 2 * r - 8) / pitch) + 1));
       for (i = 0; i < N;){
         var row = Math.floor(i / cols), n = Math.min(cols, N - i);
         for (var c = 0; c < n; c++, i++) out.push({x: this.W / 2 + (c - (n - 1) / 2) * pitch, y: floor - row * pitch});
