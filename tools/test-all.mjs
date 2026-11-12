@@ -70,6 +70,7 @@
 //      timeline-gantt m-timeline's after arrows (ends, right angles, no band crossed), progress width, today line position, unit ticks (tools/test-timeline-gantt.mjs)
 //  12. shape            wrong-shaped data and refused expressions: inline placeholder and DECK.componentErrors, no exception (tools/test-shape.mjs)
 //  13. default-variant the default (first) variant of every component with variants is pixel-identical to the last release (tools/test-default-variant.mjs)
+//      same-paint      m-flow, m-tree, m-fishbone, m-quad paint the same pixels as the last release in every theme and a dark one (tools/test-same-paint.mjs)
 //      preview        answers under preview: with ctx.preview a part draws its later steps at --preview-opacity, or declares static preview = "none"
 //                     and draws exactly the same; lecture-view screenshots (tools/test-preview.mjs)
 //  14. duration        every step is complete when its declared length ends (tools/test-duration.mjs)
@@ -158,6 +159,7 @@ const TESTS = [
   ['test-heatmap', ['tools/test-heatmap.mjs', path.join(tmp, 'heatmap')]],
   ['test-shape', ['tools/test-shape.mjs', path.join(tmp, 'shape')]],
   ['test-default-variant', ['tools/test-default-variant.mjs', path.join(tmp, 'default-variant')]],
+  ['test-same-paint', ['tools/test-same-paint.mjs', path.join(tmp, 'same-paint')]],
   ['test-preview', ['tools/test-preview.mjs', path.join(tmp, 'preview')]],
   ['test-duration', ['tools/test-duration.mjs']],
   ['test-contrast', ['tools/test-contrast.mjs']],
