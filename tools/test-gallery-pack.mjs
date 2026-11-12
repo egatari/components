@@ -5,6 +5,8 @@
 //   4. a changed file, an extra file or a tarball that is not the manifest's is refused
 //   5. with --previous: new, changed (another version) and サンプルが変わった (same version, other demo.html); no marks without it
 //   6. it runs with no git on PATH, and from a copy of tools/ with no node_modules (no parse5)
+//   7. --samples-href and --samples-tags: a link under the summary of the listed parts only, {tag} URL-encoded; both or neither;
+//      a link without {tag} is refused; tags not in the release are named; without them, no link (6's deck is 1's)
 //   node tools/test-gallery-pack.mjs [work dir]
 import fs from 'node:fs';
 import os from 'node:os';
@@ -85,6 +87,25 @@ const bare = path.join(work, 'bare');
 fs.cpSync(path.join(ROOT, 'tools'), path.join(bare, 'tools'), { recursive: true });
 const r9 = spawnSync(process.execPath, [path.join(bare, 'tools', 'gallery.mjs'), '--pack', tgz, '--manifest', man, '-o', path.join(work, 'f')], { encoding: 'utf8', cwd: work });
 ok(r9.status === 0 && deck(path.join(work, 'f')) === A, 'runs from a copy of tools/ with no node_modules' + (r9.status ? `: ${r9.stderr.trim()}` : ''));
+
+// 7
+const link = (tag) => `<a href="../../?samples-part=${tag}">`;
+ok(!A.includes('samples-part') && !A.includes('Samples that use this part'), 'no samples links without the options');
+const r10 = run(['--pack', tgz, '--manifest', man, '-o', path.join(work, 'g'), '--samples-href', '../../?samples-part={tag}', '--samples-tags', 'm-flow,m-bars,m-nosuch']);
+const G = deck(path.join(work, 'g'));
+const intro = (html, tag) => (html.match(new RegExp(`<section class="slide">\\s*<h2>${tag}</h2>[\\s\\S]*?</section>`)) || [''])[0];
+ok(r10.status === 0 && intro(G, 'm-flow').includes(link('m-flow')) && intro(G, 'm-bars').includes(link('m-bars')) && !intro(G, 'm-tree').includes('samples-part')
+  && (G.match(/samples-part=/g) || []).length === 2, 'links under the summary of the listed parts only');
+ok(/m-nosuch/.test(r10.stderr), 'a listed tag not in the release is named: ' + r10.stderr.trim());
+ok(G.replace(/\n {4}<p style="margin:6px 0 0"><a href="[^"]*">[^<]*<\/a><\/p>/g, '') === A, 'apart from the link lines, the same deck');
+const r11 = run(['--pack', tgz, '--manifest', man, '-o', path.join(work, 'h'), '--samples-href', 'x={tag}', '--samples-tags', 'm-a"b']);
+ok(r11.status === 0, 'odd tags are harmless');
+const r12 = run(['--pack', tgz, '--manifest', man, '-o', path.join(work, 'h'), '--samples-href', '../../?samples-part={tag}']);
+const r13 = run(['--pack', tgz, '--manifest', man, '-o', path.join(work, 'h'), '--samples-href', '../../?samples-part=', '--samples-tags', 'm-flow']);
+const r14 = run(['--pack', tgz, '--manifest', man, '-o', path.join(work, 'h'), '--samples-href', 'javascript:alert({tag})', '--samples-tags', 'm-flow']);
+ok(r12.status === 1 && r13.status === 1 && r14.status === 1, 'one option alone, a link without {tag} and a script link are refused');
+const r15 = run(['--pack', tgz, '--manifest', man, '-o', path.join(work, 'h'), '--samples-href', '?p={tag}&x="<y>', '--samples-tags', 'm-flow']);
+ok(r15.status === 0 && intro(deck(path.join(work, 'h')), 'm-flow').includes('<a href="?p=m-flow&amp;x=&quot;&lt;y&gt;">'), 'the link is escaped in the attribute');
 
 if (fails) { console.log(`\n${fails} failure(s)`); process.exit(1); }
 console.log('\nOK');
