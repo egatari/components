@@ -16,7 +16,7 @@
 // 式（tex）は組み立てのときに KaTeX で描く（spec §6.2）：build.fields の effect.tex・nodes[].tex を作り手が描いて texHtml を足し、
 // この部品は markup-reader で決まった要素と属性だけを読んで置く（再生のときに KaTeX は動かない）。描いた結果がなければ tex を字のまま出して知らせる。
 // 入らないときは ctx.report("size", "[fishbone] …") で知らせる（1.x の console.warn の代わり）
-egatariParts.define({name: "fishbone", version: "2.0.4", requires: {base: "1.2.0", "markup-reader": "1.0.2"}, element: "m-fishbone"}, function(deps){
+egatariParts.define({name: "fishbone", version: "2.1.0", requires: {base: "1.2.0", "markup-reader": "1.0.2"}, element: "m-fishbone"}, function(deps){
 "use strict";
 var base = deps.base, MR = deps["markup-reader"];
 var Part = class extends base.MotionElement {
@@ -50,6 +50,7 @@ var Part = class extends base.MotionElement {
     var d = this.data || {}, P = this.props, byId = {}, cats = [], notes = this._notes = [];   // データの問題：mount が ctx.report で知らせる
     var nodes = (d.nodes || []).map(function(n){
       var o = {n: n, kids: []};
+      if (/^@/.test(String(n.id))) notes.push("[fishbone] the id " + JSON.stringify(n.id) + " starts with @, which is kept for the part's own marks (@head, @spine, @tail); use another id");
       if (byId[n.id]) notes.push("[fishbone] the id " + JSON.stringify(n.id) + " is used by more than one node (parent and edges refer to the last one; give each node its own id)");
       byId[n.id] = o; return o;
     });
@@ -194,24 +195,33 @@ var Part = class extends base.MotionElement {
     var s = L.s, ox = (W - L.width) / 2 - L.tail, oy = H / 2;
     this.size = s;
     var X = function(x){ return ox + x; }, Y = function(y){ return oy + y; };
-    var mkLine = function(parent, w, col){ return D.el("path", {d: "", fill: "none", stroke: col || "var(--muted)", "stroke-width": w, "stroke-linecap": "round", "stroke-linejoin": "round"}, parent); };
-    var boxText = function(g, b, n, x, y, c, sz){
-      var cx = x + b.w / 2, cy = y + b.h / 2;
-      if (n.tex) MR.texFrame(g, cx, cy + sz * 0.36, n, "tex", {size: sz, anchor: "middle", color: c[2], w: b.w, h: b.h}, sk).firstChild.style.verticalAlign = "top";
+    var mkLine = function(parent, w, col){ return D.el("path", {d: "", fill: "none", stroke: col || "var(--muted)", "stroke-width": w, "stroke-linecap": "round", "stroke-linejoin": "round", "data-part-line": ""}, parent); };
+    // data-part：Studio の形の検査（geometry check）が測る印。箱の形に box、線に edge（<g>、from と to）、字に label
+    // （data-part-of で持ち主が箱か辺か、箱の外の字は data-part-at="outside"）。節でない端は @ で始まる（@head、@spine、@tail）
+    var eids = {}, edgeG = function(f, t, attrs, parent){
+      var id = String(f) + "\u2192" + String(t); eids[id] = (eids[id] || 0) + 1; if (eids[id] > 1) id += "#" + eids[id];
+      return D.el("g", Object.assign({"data-part": "edge", "data-part-id": id, "data-part-from": String(f), "data-part-to": String(t)}, attrs || {}), parent || gL);
+    };
+    var lab = function(id, of, out){ var a = {"data-part": "label", "data-part-id": String(id), "data-part-of": of}; if (out) a["data-part-at"] = "outside"; return a; };
+    var boxText = function(g, b, n, x, y, c, sz, id){
+      var cx = x + b.w / 2, cy = y + b.h / 2, lb = lab(id, "box");
+      if (n.tex){ var tf = MR.texFrame(g, cx, cy + sz * 0.36, n, "tex", {size: sz, anchor: "middle", color: c[2], w: b.w, h: b.h}, sk);
+        tf.firstChild.style.verticalAlign = "top"; for (var k in lb) tf.setAttribute(k, lb[k]); }
       else {
         var lh = sz * 1.25, y0 = cy - (b.lines.length - 1) * lh / 2 + sz * 0.36;
-        b.lines.forEach(function(t, j){ D.mtext(g, cx, y0 + j * lh, t, {"text-anchor": "middle", "font-size": sz, fill: c[2]}); });
+        b.lines.forEach(function(t, j){ D.mtext(g, cx, y0 + j * lh, t, Object.assign({"text-anchor": "middle", "font-size": sz, fill: c[2]}, lb)); });
       }
     };
     // 頭（結果）
     var hb = L.hb, hx = X(L.spineEnd), hy = Y(0) - hb.h / 2, hc = toneOf(pl.head.n.tone, "emph");
     var H0 = this.head = {o: pl.head, g: D.el("g", {opacity: 0}, gN), x: hx, y: hy, cx: hx + hb.w / 2, cy: Y(0), inP: [hx, Y(0)]};
-    D.el("rect", {class: "box", x: hx.toFixed(1), y: hy.toFixed(1), width: hb.w.toFixed(1), height: hb.h.toFixed(1), rx: 10, fill: hc[1], stroke: hc[0], "stroke-width": 3}, H0.g);
-    boxText(H0.g, hb, pl.head.n, hx, hy, hc, s);
-    hb.notes.forEach(function(t, j){ D.mtext(H0.g, hx + hb.w / 2, hy + hb.h + 4 + NLH * j + NS * 0.95, t, {"text-anchor": "middle", "font-size": NS, fill: "var(--muted)"}); });
+    D.el("rect", {class: "box", x: hx.toFixed(1), y: hy.toFixed(1), width: hb.w.toFixed(1), height: hb.h.toFixed(1), rx: 10, fill: hc[1], stroke: hc[0], "stroke-width": 3, "data-part": "box", "data-part-id": "@head"}, H0.g);
+    boxText(H0.g, hb, pl.head.n, hx, hy, hc, s, "@head");
+    hb.notes.forEach(function(t, j){ D.mtext(H0.g, hx + hb.w / 2, hy + hb.h + 4 + NLH * j + NS * 0.95, t, Object.assign({"text-anchor": "middle", "font-size": NS, fill: "var(--muted)"}, lab("@head", "box", true))); });
     // 背骨（尾から頭の手前まで）と矢じり
-    this.spine = {path: this.poly([[X(L.tail), Y(0)], [hx - 3, Y(0)]]), line: mkLine(gL, 5), step: pl.spineStep};
-    H0.arrow = D.el("path", {d: "M0,0L-16,-7L-16,7Z", fill: "var(--muted)", transform: "translate(" + (hx - 1).toFixed(1) + " " + Y(0).toFixed(1) + ")", opacity: 0}, gL);
+    var gS = edgeG("@tail", "@head");
+    this.spine = {path: this.poly([[X(L.tail), Y(0)], [hx - 3, Y(0)]]), line: mkLine(gS, 5), step: pl.spineStep};
+    H0.arrow = D.el("path", {d: "M0,0L-16,-7L-16,7Z", fill: "var(--muted)", transform: "translate(" + (hx - 1).toFixed(1) + " " + Y(0).toFixed(1) + ")", opacity: 0}, gS);
     // 大骨と原因
     var cnt = {};
     this.bones = cats.map(function(c, i){
@@ -221,13 +231,13 @@ var Part = class extends base.MotionElement {
       // 大骨：背骨の点から外の端まで（path は外から背骨へ。fade と grow は外から引く、draw は背骨から引く）
       B.spineP = [X(bx), Y(0)]; B.outP = [X(bx + g.outer[0]), Y(g.outer[1])];
       B.path = self.poly([B.outP, B.spineP]); B.rpath = self.poly([B.spineP, B.outP]);
-      B.line = mkLine(gL, 3.5, col);
+      B.line = mkLine(edgeG(c.n.id, "@spine"), 3.5, col);
       var x0 = X(bx + g.boxX), y0 = Y(g.boxY);
-      D.el("rect", {class: "box", x: x0.toFixed(1), y: y0.toFixed(1), width: g.b.w.toFixed(1), height: g.b.h.toFixed(1), rx: 10, fill: cc[1], stroke: cc[0], "stroke-width": c.n.tone === "emph" ? 3 : 2.2}, B.g);
-      boxText(B.g, g.b, c.n, x0, y0, cc, s);
+      D.el("rect", {class: "box", x: x0.toFixed(1), y: y0.toFixed(1), width: g.b.w.toFixed(1), height: g.b.h.toFixed(1), rx: 10, fill: cc[1], stroke: cc[0], "stroke-width": c.n.tone === "emph" ? 3 : 2.2, "data-part": "box", "data-part-id": String(c.n.id)}, B.g);
+      boxText(B.g, g.b, c.n, x0, y0, cc, s, c.n.id);
       g.b.notes.forEach(function(t, j){
         var ny = g.up ? y0 - 8 - NLH * (g.b.notes.length - 1 - j) : y0 + g.b.h + 4 + NLH * j + NS * 0.95;
-        D.mtext(B.g, x0 + g.b.w / 2, ny, t, {"text-anchor": "middle", "font-size": NS, fill: "var(--muted)"});
+        D.mtext(B.g, x0 + g.b.w / 2, ny, t, Object.assign({"text-anchor": "middle", "font-size": NS, fill: "var(--muted)"}, lab(c.n.id, "box", true)));
       });
       B.cx = x0 + g.b.w / 2; B.cy = y0 + g.b.h / 2;
       // 背骨の側から箱へ向かう向き（draw と grow で箱が寄ってくる向き）
@@ -238,19 +248,22 @@ var Part = class extends base.MotionElement {
         var o = r.o, tc = o.n.tone ? toneOf(o.n.tone)[0] : "var(--fg)", lc = o.n.tone ? toneOf(o.n.tone)[0] : "var(--muted)";
         var gr = D.el("g", {opacity: 0}, gT);
         var y = Y(r.y), xa = X(bx + r.x0), xl = X(bx + r.xl);
-        var rec = {o: o, step: o.step, g: gr, path: self.poly([[xa, y], [xl, y]]), line: mkLine(gL, 2.5, lc)};
+        // 原因の横線は、その原因から親（大骨か原因）への辺。字はその辺の label（自分の線の上にのせる）
+        var rid = String(o.n.id), rg = edgeG(rid, o.par.n.id), pr = lab(rid, "edge");
+        var rec = {o: o, step: o.step, g: gr, eg: rg, path: self.poly([[xa, y], [xl, y]]), line: mkLine(rg, 2.5, lc)};
         if (r.miniEnd){
           // 細かい原因へ下ろす、大骨と平行な線（親の原因の行が持つ）
           var p0 = [X(bx + r.mini.x0), y], p1 = [X(bx + r.mini.xm(r.y + r.miniEnd)), y + r.miniEnd];
-          rec.mpath = self.poly([p0, p1]); rec.mline = mkLine(gL, 2.5, lc);
+          rec.mpath = self.poly([p0, p1]); rec.mline = mkLine(rg, 2.5, lc);   // 下の、最初の細かい原因の辺へ移す
         }
         var tx, xe = X(bx + r.xe);
         if (o.n.tex){
           // 式（組み立てのときに描いた KaTeX）：箱と同じ枠（MR.texFrame）で、行の右端に寄せる。note はその右に別の字で
-          MR.texFrame(gr, xe - r.nw, y - 8, o.n, "tex", {size: r.sz, anchor: "end", color: tc, w: r.tw - r.nw + 40, h: r.sz * 1.6}, sk).firstChild.style.verticalAlign = "top";
-          if (o.n.note) D.mtext(gr, xe, y - 8, "  " + o.n.note, {"text-anchor": "end", "font-size": NS, fill: "var(--muted)"});
+          var rf = MR.texFrame(gr, xe - r.nw, y - 8, o.n, "tex", {size: r.sz, anchor: "end", color: tc, w: r.tw - r.nw + 40, h: r.sz * 1.6}, sk);
+          rf.firstChild.style.verticalAlign = "top"; for (var k in pr) rf.setAttribute(k, pr[k]);
+          if (o.n.note) D.mtext(gr, xe, y - 8, "  " + o.n.note, Object.assign({"text-anchor": "end", "font-size": NS, fill: "var(--muted)"}, pr));
         } else {
-          tx = D.mtext(gr, xe, y - 8, o.n.label || "", {"text-anchor": "end", "font-size": r.sz, fill: tc});
+          tx = D.mtext(gr, xe, y - 8, o.n.label || "", Object.assign({"text-anchor": "end", "font-size": r.sz, fill: tc}, pr));
           if (o.n.tone === "emph") tx.setAttribute("font-weight", 700);
           if (o.n.note){ var ns = D.el("tspan", {"font-size": NS, fill: "var(--muted)", "font-weight": 400}, tx); ns.textContent = "  " + o.n.note; }
         }
@@ -268,6 +281,7 @@ var Part = class extends base.MotionElement {
         if (!r.mpath) return;
         var first = B.rows.filter(function(q){ return q.o.par === r.o; })[0];
         r.mstep = first.step; r.mat = first.at;
+        first.eg.appendChild(r.mline);   // data-part：細かい原因へ下ろす線は、その最初の細かい原因の辺に入れる
       });
     });
     // そのほかのつながり：字の左端どうしを、左へふくらむ破線で
@@ -281,13 +295,13 @@ var Part = class extends base.MotionElement {
       var pts = [];
       for (var j = 0; j <= 24; j++){ var u = j / 24, v = 1 - u; pts.push([v * v * pa[0] + 2 * u * v * ctl[0] + u * u * pb[0], v * v * pa[1] + 2 * u * v * ctl[1] + u * u * pb[1]]); }
       var col = e.tone ? toneOf(e.tone)[0] : "var(--muted)";
-      var g = D.el("g", {opacity: 0}, gE);
-      var line = D.el("path", {d: "", fill: "none", stroke: col, "stroke-width": 3, "stroke-dasharray": e.dash === false ? "none" : "8 6"}, g);
+      var g = edgeG(e.from, e.to, {opacity: 0}, gE);
+      var line = D.el("path", {d: "", fill: "none", stroke: col, "stroke-width": 3, "stroke-dasharray": e.dash === false ? "none" : "8 6", "data-part-line": ""}, g);
       var head = D.el("path", {d: "M0,0L-16,-7L-16,7Z", fill: col}, g);
-      var lab = e.label ? D.mtext(g, far - 8, mid[1] + 8, e.label, {"text-anchor": "end", "font-size": 24, fill: col, opacity: 0}) : null;
+      var elab = e.label ? D.mtext(g, far - 8, mid[1] + 8, e.label, Object.assign({"text-anchor": "end", "font-size": 24, fill: col, opacity: 0}, lab(g.getAttribute("data-part-id"), "edge"))) : null;
       var after = 0;
       [ra, rb].forEach(function(r){ if (r.step === x.step) after = Math.max(after, r.at + 0.45); });
-      return {g: g, line: line, head: head, lab: lab, path: self.poly(pts), step: x.step, at: e.at !== undefined ? e.at : after};
+      return {g: g, line: line, head: head, lab: elab, path: self.poly(pts), step: x.step, at: e.at !== undefined ? e.at : after};
     });
     // 読み上げ：最後の形（結果と、大骨ごとの原因）を 1 文で。作者の aria-label があればそれを使う（上書きしない）
     if (this._aria === undefined) this._aria = this.getAttribute("aria-label");

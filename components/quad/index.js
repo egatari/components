@@ -8,7 +8,7 @@
 // 点は既定で 1 つ = 1 段階（step で直接、at で段階の中の開始秒）。self の点は強調の色で大きく、着いたときに輪が広がる
 // to は移動先：to.step（既定は点の次の段階）に、点が破線の跡を引きながら滑る
 // 2.0（Egatari spec §6.1 の部品）：base の MotionElement・el・prog・lerp・clamp・previewOpacity を使い、プレイヤーのグローバルは使わない
-egatariParts.define({name: "quad", version: "2.0.4", requires: {base: "1.2.0"}, element: "m-quad"}, function(deps){
+egatariParts.define({name: "quad", version: "2.1.0", requires: {base: "1.2.0"}, element: "m-quad"}, function(deps){
 "use strict";
 var base = deps.base;
 return class extends base.MotionElement {
@@ -134,18 +134,22 @@ return class extends base.MotionElement {
     });
     // 点：丸と名前
     var gT = D.el("g", {}, svg), gP = D.el("g", {}, svg);
-    this.pts = items.map(function(m){
+    // data-part：Studio の形の検査（geometry check）が測る印。点の丸は mark（id は items の並びで p1, p2 …）、点の名前と行き先の名前は
+    // その点の label（箱の外の字）、動いた跡は p<n> から @moved への edge（破線が data-part-line、矢じりは端）
+    this.pts = items.map(function(m, i){
       var o = m.o, it = m.it, me = m.me, r = m.r, col = me ? "var(--emph)" : it.tone === "term" ? "var(--term)" : it.tone === "fg" ? "var(--fg)" : "var(--muted)";
-      var trail = o.to ? D.el("line", {stroke: col, "stroke-width": 2.5, "stroke-dasharray": "7 6", opacity: 0}, gT) : null;
+      var pid = "p" + (i + 1), lb = {"data-part": "label", "data-part-id": pid, "data-part-of": "mark", "data-part-at": "outside"};
+      var gM = o.to ? D.el("g", {"data-part": "edge", "data-part-id": pid + "\u2192@moved", "data-part-from": pid, "data-part-to": "@moved"}, gT) : null;
+      var trail = o.to ? D.el("line", {stroke: col, "stroke-width": 2.5, "stroke-dasharray": "7 6", opacity: 0, "data-part-line": ""}, gM) : null;
       // 動いた跡の印（最後の形にも残す）：出発点の白抜きの丸と、行き先へ向く矢じり（丸の手前）
       var from = o.to ? D.el("circle", {cx: self.X(it.x).toFixed(2), cy: self.Y(it.y).toFixed(2), r: (r * 0.8).toFixed(1), fill: "var(--bg)", stroke: col, "stroke-width": 2.5, opacity: 0}, gT) : null;
-      var head = o.to ? D.el("path", {d: "M0,0L-14,-7L-14,7Z", fill: col, opacity: 0}, gT) : null;
+      var head = o.to ? D.el("path", {d: "M0,0L-14,-7L-14,7Z", fill: col, opacity: 0}, gM) : null;
       var ring = me ? D.el("circle", {r: r, fill: "none", stroke: col, "stroke-width": 3, opacity: 0}, gP) : null;
       var g = D.el("g", {opacity: 0}, gP);
-      D.el("circle", {cx: 0, cy: 0, r: r, fill: col, stroke: "var(--bg)", "stroke-width": 2.5}, g);
+      D.el("circle", {cx: 0, cy: 0, r: r, fill: col, stroke: "var(--bg)", "stroke-width": 2.5, "data-part": "mark", "data-part-id": pid}, g);
       var lp = m.place(m.an);
-      D.mtext(g, lp[0], lp[1], it.label || "", {"text-anchor": lp[2], "font-size": P.size, "font-weight": me ? 700 : 400, fill: me ? col : "var(--fg)"});
-      var lab2 = o.to && o.to.label ? D.mtext(gP, 0, 0, o.to.label, {"text-anchor": "middle", "font-size": 24, fill: col, opacity: 0}) : null;
+      D.mtext(g, lp[0], lp[1], it.label || "", Object.assign({"text-anchor": lp[2], "font-size": P.size, "font-weight": me ? 700 : 400, fill: me ? col : "var(--fg)"}, lb));
+      var lab2 = o.to && o.to.label ? D.mtext(gP, 0, 0, o.to.label, Object.assign({"text-anchor": "middle", "font-size": 24, fill: col, opacity: 0}, lb)) : null;
       return {o: o, g: g, ring: ring, r: r, trail: trail, from: from, head: head, lab2: lab2};
     });
   }

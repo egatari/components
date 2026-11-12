@@ -19,7 +19,7 @@
 // 式（tex）は組み立てのときに KaTeX で描く（spec §6.2）：build.fields の nodes[].tex を作り手が描いて texHtml を足し、
 // この部品は markup-reader で決まった要素と属性だけを読んで置く（再生のときに KaTeX は動かない）。描いた結果がなければ tex を字のまま出して知らせる。
 // 入らないときは ctx.report("size", "[tree] …") で知らせる（1.x の console.warn の代わり）
-egatariParts.define({name: "tree", version: "2.0.4", requires: {base: "1.2.0", "markup-reader": "1.0.2"}, element: "m-tree"}, function(deps){
+egatariParts.define({name: "tree", version: "2.1.0", requires: {base: "1.2.0", "markup-reader": "1.0.2"}, element: "m-tree"}, function(deps){
 "use strict";
 var base = deps.base, MR = deps["markup-reader"];
 // 形の要素ごとに、書き直すと形が作り直される属性（render の終わりで使う）
@@ -273,15 +273,18 @@ var Part = class extends base.MotionElement {
       if (right){ o.x = d0; o.y = b - o.fb / 2; } else { o.x = b - o.w / 2; o.y = d0; }
       o.cx = o.x + o.w / 2; o.cy = o.y + o.h / 2;
       o.g = D.el("g", {opacity: 0}, gN);
-      D.el("rect", {class: "box", x: o.x.toFixed(1), y: o.y.toFixed(1), width: o.w.toFixed(1), height: o.h.toFixed(1), rx: 10, fill: c[1], stroke: c[0], "stroke-width": n.tone === "emph" ? 3 : 2.2}, o.g);
-      if (n.tex) MR.texFrame(o.g, o.cx, o.cy + s * 0.36, n, "tex", {size: s, anchor: "middle", color: c[2], w: o.w, h: o.h}, sk).firstChild.style.verticalAlign = "top";
+      // data-part：Studio の形の検査（geometry check）が測る印。箱の形に box、字に label（data-part-of で持ち主、箱の外の字は data-part-at="outside"）
+      var nid = String(n.id), lb = {"data-part": "label", "data-part-id": nid, "data-part-of": "box"};
+      D.el("rect", {class: "box", x: o.x.toFixed(1), y: o.y.toFixed(1), width: o.w.toFixed(1), height: o.h.toFixed(1), rx: 10, fill: c[1], stroke: c[0], "stroke-width": n.tone === "emph" ? 3 : 2.2, "data-part": "box", "data-part-id": nid}, o.g);
+      if (n.tex){ var tf = MR.texFrame(o.g, o.cx, o.cy + s * 0.36, n, "tex", {size: s, anchor: "middle", color: c[2], w: o.w, h: o.h}, sk);
+        tf.firstChild.style.verticalAlign = "top"; for (var k in lb) tf.setAttribute(k, lb[k]); }
       else {
         var ys = lineYs(o.lines, s * 1.25, s), y0 = o.cy - ys[ys.length - 1] / 2 + s * 0.36 + (ys.top - ys.bottom) / 2;
-        o.lines.forEach(function(t, j){ D.mtext(o.g, o.cx, y0 + ys[j], t, {"text-anchor": "middle", "font-size": s, fill: c[2]}); });
+        o.lines.forEach(function(t, j){ D.mtext(o.g, o.cx, y0 + ys[j], t, Object.assign({"text-anchor": "middle", "font-size": s, fill: c[2]}, lb)); });
       }
       o.notes.forEach(function(t, j){
         var ny = o.y + o.h + 4 + NLH * j + NS * 0.95;
-        D.mtext(o.g, right ? o.x + 2 : o.cx, ny, t, {"text-anchor": right ? "start" : "middle", "font-size": NS, fill: "var(--muted)"});
+        D.mtext(o.g, right ? o.x + 2 : o.cx, ny, t, Object.assign({"text-anchor": right ? "start" : "middle", "font-size": NS, fill: "var(--muted)", "data-part-at": "outside"}, lb));
       });
       // 線が付く点：入る点（親からの線の終わり）と出る点（子への線の始まり）
       o.inP = right ? [o.x, o.cy] : [o.cx, o.y];
@@ -290,11 +293,14 @@ var Part = class extends base.MotionElement {
     // 親子の線。o.dir：親の中心から箱の中心への向き（draw と grow で箱が寄ってくる向き）
     // 枝の名前があれば、かぎの曲がり角を親の側に寄せ（20 px）、子へ入る線を長くしてそこに名前を添える
     var bo = brs.length ? Math.min(lgap / 2, 20) : lgap / 2, gB = brs.length ? D.el("g", {}) : null;
+    // 辺の id は "from→to"。同じ端の 2 本目からは "#2"、"#3" …（親子の線とそのほかのつながりで数えを共にする）
+    var eids = {}, eidOf = function(f, t){ var id = String(f) + "\u2192" + String(t); eids[id] = (eids[id] || 0) + 1; return eids[id] > 1 ? id + "#" + eids[id] : id; };
+    var edgeAttrs = function(id, f, t){ return {"data-part": "edge", "data-part-id": id, "data-part-from": String(f), "data-part-to": String(t)}; };
     pl.nodes.forEach(function(o){
       if (!o.par){ o.dir = [0, 1]; return; }
       var dx = o.cx - o.par.cx, dy = o.cy - o.par.cy, dl = Math.hypot(dx, dy) || 1;
       o.dir = [dx / dl, dy / dl];
-      var p = o.par, a = p.outP, z = o.inP, pts;
+      var p = o.par, a = p.outP, z = o.inP, pts, lid = eidOf(p.n.id, o.n.id);
       if (P.link === "straight") pts = [a, z];
       else if (right){ var bx = lvStart[p.depth] + oD + ds.ext[p.depth] + bo; pts = [a, [bx, a[1]], [bx, z[1]], z]; }
       else { var by = lvStart[p.depth] + oD + ds.ext[p.depth] + bo; pts = [a, [a[0], by], [z[0], by], z]; }
@@ -308,9 +314,9 @@ var Part = class extends base.MotionElement {
           else { lx = mx + sd * (10 + 14 * Math.abs(ddx / (ddy || 1))); ly = my + 8; an = sd > 0 ? "start" : "end"; }
         } else if (right){ lx = (q[0] + z[0]) / 2; ly = z[1] - 9; an = "middle"; }
         else { lx = z[0] + sd * 10; ly = (q[1] + z[1]) / 2 + 8; an = sd > 0 ? "start" : "end"; }
-        o.blab = D.mtext(gB, lx.toFixed(1), ly.toFixed(1), String(o.n.branch), {"text-anchor": an, "font-size": 24, fill: "var(--fg)", opacity: 0});
+        o.blab = D.mtext(gB, lx.toFixed(1), ly.toFixed(1), String(o.n.branch), {"text-anchor": an, "font-size": 24, fill: "var(--fg)", opacity: 0, "data-part": "label", "data-part-id": lid, "data-part-of": "edge"});
       }
-      o.line = D.el("path", {d: "", fill: "none", stroke: "var(--muted)", "stroke-width": 3, "stroke-linejoin": "round"}, gL);
+      o.line = D.el("path", {d: "", fill: "none", stroke: "var(--muted)", "stroke-width": 3, "stroke-linejoin": "round", "data-part-line": ""}, D.el("g", edgeAttrs(lid, p.n.id, o.n.id), gL));
     });
     // そのほかのつながり：外側（down は下、right は右）にふくらむ破線の曲線
     var depthEnd = oD + totalD;
@@ -328,11 +334,12 @@ var Part = class extends base.MotionElement {
         pts.push([v * v * pa[0] + 2 * u * v * ctl[0] + u * u * pb[0], v * v * pa[1] + 2 * u * v * ctl[1] + u * u * pb[1]]);
       }
       var col = e.tone ? toneOf(e.tone)[0] : "var(--muted)";
-      var g = D.el("g", {opacity: 0}, gE);
-      var line = D.el("path", {d: "", fill: "none", stroke: col, "stroke-width": 3, "stroke-dasharray": e.dash === false ? "none" : "8 6"}, g);
+      var xid = eidOf(a.n.id, b.n.id);
+      var g = D.el("g", Object.assign({opacity: 0}, edgeAttrs(xid, a.n.id, b.n.id)), gE);
+      var line = D.el("path", {d: "", fill: "none", stroke: col, "stroke-width": 3, "stroke-dasharray": e.dash === false ? "none" : "8 6", "data-part-line": ""}, g);
       var head = D.el("path", {d: "M0,0L-16,-7L-16,7Z", fill: col}, g);
       var lab = e.label ? D.mtext(g, right ? far + 10 : (pa[0] + pb[0]) / 2, right ? mid[1] + 8 : far + 30, e.label,
-        {"text-anchor": right ? "start" : "middle", "font-size": 24, fill: col, opacity: 0}) : null;
+        {"text-anchor": right ? "start" : "middle", "font-size": 24, fill: col, opacity: 0, "data-part": "label", "data-part-id": xid, "data-part-of": "edge"}) : null;
       depthEnd = Math.max(depthEnd, far);
       var after = 0;
       [a, b].forEach(function(o){ if (o.step === x.step) after = Math.max(after, o.at + self.span()); });

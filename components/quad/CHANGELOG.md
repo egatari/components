@@ -2,6 +2,10 @@
 
 The part's own versions (Egatari spec §6.1). Releases of the whole library are in the repository's CHANGELOG.md.
 
+## 2.1.0 (components 2.8.0)
+
+- Marks what it draws for Studio's geometry check (as m-flow 2.1.0): each point's circle has `data-part="mark"` and `data-part-id="p<n>"` (n = its place in `items`, from 1); its name and its move target's name have `data-part="label"`, the same id, `data-part-of="mark"` and `data-part-at="outside"`; a move is a `<g data-part="edge">` from `p<n>` to `@moved` holding the dashed line (`data-part-line`) and the arrowhead. Axes and quadrant names are not marked. Drawing is unchanged.
+
 ## 2.0.4 (components 2.7.0)
 
 - Requires base 1.2.0 (mtext keeps a lone `*` literal and draws `\*` `\_` `\^` as the character).

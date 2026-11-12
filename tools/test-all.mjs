@@ -7,7 +7,7 @@
 //      variant-sync  the variant chooser copied into components equals tools/variant.js (tools/variant-sync.mjs --check)
 //   5. release          the release tarball and manifest can be made and are deterministic (tools/release.mjs --check)
 //   6. unit             the safe expression evaluator (tools/test-expr.mjs), m-codetree, m-kanbun / m-kobun / m-gendai parsing
-//                       (tools/test-codetree.mjs, tools/test-kokugo.mjs, tools/test-flow.mjs, tools/test-ramp.mjs; no browser)
+//                       (tools/test-codetree.mjs, tools/test-kokugo.mjs, tools/test-flow.mjs, tools/test-data-part.mjs, tools/test-ramp.mjs; no browser)
 //      (also tools/test-yanked.mjs: yanked.json becomes manifest.json's `yanked`; tools/test-gallery-pack.mjs: the gallery of a
 //       release from its pack and manifest alone (gallery.mjs --pack): every demo slide, unique slide ids, refused if a file
 //       is not the manifest's, marks against --previous, no git; tools/test-changed-without-bump.mjs: release.mjs --previous
@@ -114,6 +114,7 @@ const TESTS = [
   ['test-score', ['tools/test-score.mjs']],
   ['test-codetree', ['tools/test-codetree.mjs']],
   ['test-flow', ['tools/test-flow.mjs']],
+  ['test-data-part', ['tools/test-data-part.mjs']],
   ['test-ramp', ['tools/test-ramp.mjs']],
   ['test-kokugo', ['tools/test-kokugo.mjs']],
   ['studio', ['tools/studio.mjs']],

@@ -2,6 +2,10 @@
 
 The part's own versions (Egatari spec §6.1). Releases of the whole library are in the repository's CHANGELOG.md.
 
+## 2.1.0 (components 2.8.0)
+
+- Marks what it draws for Studio's geometry check (as m-flow 2.1.0). Boxes: the effect's `<rect>` is `data-part="box"` with `data-part-id="@head"`, each main bone's box has its node id. Edges (`<g data-part="edge">` with `data-part-id`, `-from`, `-to`; each line `<path>` has `data-part-line`): the spine `@tail→@head` (with its arrowhead), each main bone `<id>→@spine`, each cause `<id>→<parent id>` (a sub-cause's slanted line is in its first sub-cause's edge), and the other connections. Texts: box names (and TeX frames) are `data-part="label"` of their box, box notes add `data-part-at="outside"`, a cause's text (and note, TeX) is the label of its own edge. Ids starting with `@` are kept for these marks: a node id that starts with `@` is reported (`data`). Drawing is unchanged.
+
 ## 2.0.4 (components 2.7.0)
 
 - Requires base 1.2.0 and markup-reader 1.0.2 (mtext keeps a lone `*` literal and draws `\*` `\_` `\^` as the character).

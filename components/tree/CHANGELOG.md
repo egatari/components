@@ -2,6 +2,10 @@
 
 The part's own versions (Egatari spec §6.1). Releases of the whole library are in the repository's CHANGELOG.md.
 
+## 2.1.0 (components 2.8.0)
+
+- Marks what it draws for Studio's geometry check (as m-flow 2.1.0): each box `<rect>` has `data-part="box"` and `data-part-id` (the node id); each parent–child line is now wrapped in a `<g>` with `data-part="edge"`, `data-part-id` (`parent→child`), `data-part-from` and `data-part-to`, and the line `<path>` has `data-part-line`; the other connections' `<g>` are marked the same way (their arrowhead is not a line). Texts have `data-part="label"`, `data-part-id` and `data-part-of`: a node's name (and TeX frame) belongs to its box, its notes too with `data-part-at="outside"`, a branch name and a connection's label to their edge. Edge ids repeat with `#2`, `#3` … The path highlight is not marked. Drawing is unchanged.
+
 ## 2.0.4 (components 2.7.0)
 
 - Requires base 1.2.0 and markup-reader 1.0.2 (mtext keeps a lone `*` literal and draws `\*` `\_` `\^` as the character).
