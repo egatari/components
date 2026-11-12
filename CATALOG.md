@@ -106,7 +106,7 @@ From `purposes.json` (docs/conventions.md §4). Bold: the component's main purpo
 | `process` | 手順・工程 | Steps of a process | 1 つの手順ずつ | **`<m-cards>`** **`<m-code>`** `<m-codetree>` **`<m-flow>`** **`<m-hissan>`** **`<m-kakijun>`** `<m-particles>` |
 | `timeline` | 年表・予定 | Timeline, schedule | 1 つの出来事ずつ | **`<m-timeline>`** |
 | `cause-effect` | 原因と結果 | Cause and effect | 原因、それから結果 | **`<m-fishbone>`** |
-| `cycle` | 循環 | Cycle | 1 つの段階ずつ | **`<m-cycle>`** `<m-orbit>` |
+| `cycle` | 循環 | Cycle | 順を追って 1 つずつ | **`<m-cycle>`** `<m-orbit>` |
 | `hierarchy` | 階層・分類 | Hierarchy, classification | 上から | **`<m-codetree>`** **`<m-tree>`** |
 | `position` | 位置づけ（2 軸） | Position on 2 axes | 軸、それから項目 | **`<m-quad>`** |
 | `overlap` | 重なり | Overlap | 集合、それから重なり | **`<m-venn>`** |
@@ -120,6 +120,6 @@ From `purposes.json` (docs/conventions.md §4). Bold: the component's main purpo
 | `timebox` | 時間を区切る | Time-boxing | 区切りを 1 つずつ（残り時間） | **`<m-timer>`** |
 | `spatial` | 場所・地図 | Place / map | 地図、それから地域・点・矢印を 1 つずつ | **`<m-map-japan>`** **`<m-map-world>`** |
 | `music` | 音楽（音の高さ・和音・リズム） | Music (pitch, chords, rhythm) | 音・和音を 1 つずつ | **`<m-keyboard>`** **`<m-score>`** |
-| `model` | 仕組みをモデルで見る | How it works (a model) | 全体、それから動きを 1 段階ずつ | **`<m-balance>`** **`<m-ci>`** `<m-code>` **`<m-folds>`** **`<m-mapping>`** **`<m-orbit>`** **`<m-particles>`** **`<m-sampling>`** |
+| `model` | 仕組みをモデルで見る | How it works (a model) | 全体、それから動きを 1 つずつ | **`<m-balance>`** **`<m-ci>`** `<m-code>` **`<m-folds>`** **`<m-mapping>`** **`<m-orbit>`** **`<m-particles>`** **`<m-sampling>`** |
 | `deviation` | 差・増減 | Deviation, increase and decrease | 基準、それから差 | （予約 / reserved） |
 | `concept-links` | 概念のつながり | Concept links | 中心から外へ | （予約 / reserved） |
