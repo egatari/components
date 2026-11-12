@@ -14,21 +14,21 @@
 
 ## 使い方
 
-ここから何かを入れる必要はありません。Studio の各版は、試験を通したパーツの写しを持っています（`vendor/components/<名前>/<版>/`、版は `components.lock.json` で固定）。Studio の管理者が新しい版を取り込むには
+ここから何かを入れる必要はありません。Studio の各バージョンは、試験を通したパーツの写しを持っています（`vendor/components/<名前>/<バージョン>/`、バージョンは `components.lock.json` で固定）。Studio の管理者が新しいバージョンを取り込むには
 
 ```bash
 npm run components:update -- v1.0.0
 ```
 
-を使います。リリースの tarball を取ってきて `manifest.json` と照らし、取り込んだ版をすべて残します（古い版で組んだ教材も、そのとおりに組み直せるように）。
+を使います。リリースの tarball を取ってきて `manifest.json` と照らし、取り込んだバージョンをすべて残します（古いバージョンで組んだ教材も、そのとおりに組み直せるように）。
 
-## リリースと版
+## リリースとバージョン
 
 - リリースはタグ `vX.Y.Z` と 2 つのファイル：`egatari-components-vX.Y.Z.tar.gz`（全パーツのファイルと `LICENSE`）と `manifest.json`（`name`・`version`・tarball の SHA-256・各ファイルの SHA-256。`index.js` も）。リリースの説明にも tarball の SHA-256 を書きます。tarball の hash はバイトのまま、各ファイルの hash は[仕様 §6](https://github.com/egatari/egatari-spec/blob/main/egatari-1.0.md#6-components-and-profiles)の同一性の hash です（字のファイルは、CRLF と単独の CR を LF にし、先頭の UTF-8 の BOM を除いてから hash する。どの OS の checkout でも同じ hash）。ファイルは LF で置きます。
-- **取り下げ（yank）。** リリースは、たとえば安全性の修正のあとに取り下げられます。取り下げた版も手に入るままで、最新のリリースの `manifest.json` の `yanked` に、置き換え先の版（`replacement`）・理由（`reason`）・日付（`date`）とともに載ります。2.0 からは、パーツの 1 つの版も同じように取り下げられ、そのパーツの項目の `withdrawn` に載ります（[SECURITY.md](SECURITY.md#yanked-versions)）。編集アプリは組み直しを勧め、黙って置き換えてはなりません（[仕様 §6](https://github.com/egatari/egatari-spec/blob/main/egatari-1.0.md#6-components-and-profiles)）。
-- **タグは付け替えず、使い回しません。** 直しは新しい版にします。
-- Egatari のファイルはパーツライブラリのパーツを `{name, version, sha256}` で記録し、`sha256` は `index.js` だけのハッシュです（[仕様 §6](https://github.com/egatari/egatari-spec/blob/main/egatari-1.0.md#6-components-and-profiles)）。`index.js` を（改行のほかで）変えるとハッシュが変わるので、編集アプリは教材が要る版を見分けられます。
-- 版の番号：今ある教材の見え方（配置・時間・ステップ）が変わりうる変更はマイナー以上、教材が書くデータの形を壊す変更はメジャー。
+- **取り下げ（yank）。** リリースは、たとえば安全性の修正のあとに取り下げられます。取り下げたバージョンも手に入るままで、最新のリリースの `manifest.json` の `yanked` に、置き換え先のバージョン（`replacement`）・理由（`reason`）・日付（`date`）とともに載ります。2.0 からは、パーツの 1 つのバージョンも同じように取り下げられ、そのパーツの項目の `withdrawn` に載ります（[SECURITY.md](SECURITY.md#yanked-versions)）。編集アプリは組み直しを勧め、黙って置き換えてはなりません（[仕様 §6](https://github.com/egatari/egatari-spec/blob/main/egatari-1.0.md#6-components-and-profiles)）。
+- **タグは付け替えず、使い回しません。** 直しは新しいバージョンにします。
+- Egatari のファイルはパーツライブラリのパーツを `{name, version, sha256}` で記録し、`sha256` は `index.js` だけのハッシュです（[仕様 §6](https://github.com/egatari/egatari-spec/blob/main/egatari-1.0.md#6-components-and-profiles)）。`index.js` を（改行のほかで）変えるとハッシュが変わるので、編集アプリは教材が要るバージョンを見分けられます。
+- バージョンの番号：今ある教材の見え方（配置・時間・ステップ）が変わりうる変更はマイナー以上、教材が書くデータの形を壊す変更はメジャー。
 
 リリースの手順は [RELEASING.md](RELEASING.md)。
 
@@ -44,7 +44,7 @@ npm run components:update -- v1.0.0
 npm test
 ```
 
-Node 22 以上と、Chrome・Edge・Playwright の Chromium のどれか。試験は、固定したコミットの Egatari Studio（[tools/studio.json](tools/studio.json)。コミットの sha をすべて書く。今は Studio の `main` の `03eaf06`）で見本を組みます。初回はそのコミットだけを `.studio/` に取ってきて `npm ci` します（ネットワークを使うのはここだけ）。見本ごとに Studio 自身の品質チェック（`kit/check.mjs`）も走らせ、エラーがないことを確かめます（警告は一覧に出すだけ）。見本ごとに、コンソールのエラーがないこと、ステップごとの画像（動きの途中と最終状態）、決定性（ほかの位置へ飛んで戻っても同じ画素）、字が 24px 以上、字の重なりとスライドからのはみ出しがないこと、形の違うデータでは例外を出さずにその場に札を出すことを確かめます。CI は Linux・macOS・Windows で走らせます。
+Node 22 以上と、Chrome・Edge・Playwright の Chromium のどれか。試験は、固定したコミットの Egatari Studio（[tools/studio.json](tools/studio.json)。コミットの sha をすべて書く。今は Studio の `main` の `03eaf06`）でサンプルを組みます。初回はそのコミットだけを `.studio/` に取ってきて `npm ci` します（ネットワークを使うのはここだけ）。サンプルごとに Studio 自身の品質チェック（`kit/check.mjs`）も走らせ、エラーがないことを確かめます（警告は一覧に出すだけ）。サンプルごとに、コンソールのエラーがないこと、ステップごとの画像（動きの途中と最終状態）、決定性（ほかの位置へ飛んで戻っても同じ画素）、字が 24px 以上、字の重なりとスライドからのはみ出しがないこと、形の違うデータでは例外を出さずにその場に札を出すことを確かめます。CI は Linux・macOS・Windows で走らせます。
 
 ## 安全
 
@@ -56,6 +56,6 @@ Node 22 以上と、Chrome・Edge・Playwright の Chromium のどれか。試�
 
 ## ライセンス
 
-[MIT](LICENSE)（Egatari Studio と同じ）。見本の文章は作者の書き下ろし、パブリックドメイン（漢文・古文）、または架空（社名と数値）です。
+[MIT](LICENSE)（Egatari Studio と同じ）。サンプルの文章は作者の書き下ろし、パブリックドメイン（漢文・古文）、または架空（社名と数値）です。
 
 ただし `components/kakijun/index.js` には OFL-1.1 のデータの区切り（strokesvg（Klee One）から派生したかなの画の形。`/*@egatari-block strokes*/` と `/*@egatari-block-end*/` の間）があり、このパーツのライセンスは `MIT AND OFL-1.1` です。[components/kakijun/OFL.txt](components/kakijun/OFL.txt) と [NOTICE](NOTICE) を見てください。

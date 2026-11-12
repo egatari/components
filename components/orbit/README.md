@@ -38,7 +38,7 @@ props: mode, hemisphere, sun, earth, moon, observer, size, dur
 
 縦書きの教材でも、横書きの 1 つの図として置く。
 
-見本は `demo.html`（月の 1 周、日食と月食、金星）。
+サンプルは `demo.html`（月の 1 周、日食と月食、金星）。
 
 <!-- llm: omit -->
 - 光っている面と太陽はテーマの `--lit`（光とそれが照らすもの。形式 §8.4）で塗り、縁を付ける。テーマが持たなければ `--accent2` を地に混ぜた今までの色

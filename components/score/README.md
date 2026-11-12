@@ -28,8 +28,8 @@ props: by, names, per-step
 - **出し方**：組み立てが付けた印だけで選ぶ（abcjs の class は読まない。`cls` は組み立ての記録）：`data-note="i"` の音符・休符、`data-beam="k"` の連桁（`beams[k]` の最初の音符と）、`data-measure="m"` の小節線（小節の最後の音符と）、`data-arc="n"` の弧の線（タイは `to`、スラーは `from` の音符と）。印のないものはステップ 0 から見える（五線・音部記号・調号・拍子）。印の要素がない音符・連桁・弧、知らない値は `ctx.report("data", "[score] …")`。段は SVG のいちばん上の子 1 つ
 - **音**（仕様 §8.4）：`events(k)` は音の高さ 1 つに 1 つの `note`（`vel` 0.7、和音は同じ `t`）。タイの弧でつながる音の高さは、先の音符の分まで `dur` を延ばす（ステップをまたいで鳴る）。休符と、タイの弧の `to`・`pitch` の音（タイの先）は鳴らさない
 - 段は abcjs の `abcjs-l…` ごとに分け、段の下に名前の帯（26 px、和音は高い音が上の行。名前が重なる小節は、その小節の名前を全部ジグザグに：奇数番目の音符は上の段、偶数番目は下の段）を入れて、幅と高さに収まる倍率で描く。五線の間が 7 px より狭くなる・名前が重なる・高さが足りないと `ctx.report("size", "[score] …")`。`names` の知らない値は `ctx.report("attr", …)`
-- abcjs の字（速さ・題名・歌詞）は小さいので、組み立ては `%%printtempo false` と `T:` なしで描く（見本もそう）
+- abcjs の字（速さ・題名・歌詞）は小さいので、組み立ては `%%printtempo false` と `T:` なしで描く（サンプルもそう）
 - 今のステップの音符は `--emph`、前は `--fg`。先のステップを薄く見せる表示では先の音符を `--preview-opacity` で薄く
 - **per-step と弱起**：`by="measure"` は小節を abcMap の `measure` で分け、`per-step` 小節ずつ 1 ステップにまとめる。音符の `t` はステップの頭から（前の小節の長さを足す）、`duration(k)` はステップの小節の長さの和。終わりの余りは 1 ステップ。最初の小節の長さ（拍）が `abc` の最初の `M:` の 1 小節（`C` = 4/4、`C|` = 2/2、`6/8` = 3 拍）より短ければ弱起として数に入れず、次のステップに入れる。`M:` がない・`none` なら弱起は見ない。1 以上の整数でない `per-step`、`by="note"` での `per-step` は `ctx.report("attr", …)`（1 を使う・使わない）
-- 見本の楽譜：fixtures/*.json と demo.html は tools/score-fixtures.mjs（組み立ての代わり）が abcjs 6.7.2（MIT、Paul Rosen and Gregory Dyke）で描いたもの（fixtures/LICENSE-abcjs.txt）。`ties.json` は試験だけ。abcjs の読み方（class・弧を描く順・癖）は fixtures/ABCJS-ADAPTER.md にあり、パーツには持ち込まない。曲は作った練習と、かえるの合唱（ドイツ民謡、パブリックドメイン）
+- サンプルの楽譜：fixtures/*.json と demo.html は tools/score-fixtures.mjs（組み立ての代わり）が abcjs 6.7.2（MIT、Paul Rosen and Gregory Dyke）で描いたもの（fixtures/LICENSE-abcjs.txt）。`ties.json` は試験だけ。abcjs の読み方（class・弧を描く順・癖）は fixtures/ABCJS-ADAPTER.md にあり、パーツには持ち込まない。曲は作った練習と、かえるの合唱（ドイツ民謡、パブリックドメイン）
 <!-- llm: end -->

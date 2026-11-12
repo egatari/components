@@ -23,7 +23,7 @@ props: cols, per-step, size, fade, stagger, visited
 </m-menu>
 ```
 
-- 子の `<a href>` 1 つが札 1 枚。`href` は `#<スライドの id>`（そのステップ 0）か `#<id>:<段階の鍵>`（`0`・`1`・… か `concl`）。id は `npm run ids` が付けたもの。中身（文字・`<b>` など）が札の題になる
+- 子の `<a href>` 1 つが札 1 枚。`href` は `#<スライドの id>`（そのステップ 0）か `#<id>:<ステップの鍵>`（`0`・`1`・… か `concl`）。id は `npm run ids` が付けたもの。中身（文字・`<b>` など）が札の題になる
 - `data-icon`：題の左の丸に入れる短い字（`一`・`1`・`A` など。色は `--term`）。`data-sub`：題の下の副題（`--muted`）
 <!-- llm: omit -->
 - ほかのファイルへのリンク（`other.ega.html#s-…`）はふつうのリンクで、札の右下に「別のファイル」の印。そのファイルは Egatari ファイル（.ega.html）には入らない
@@ -39,7 +39,7 @@ props: cols, per-step, size, fade, stagger, visited
 - 字の大きさ：題は `size`（既定 34px）、副題はその 0.8 倍（本文の下限の 27px より小さくしない）
 <!-- llm: end -->
 
-見本は `demo.html`（4 枚、2 枚ずつ出る目次）と `examples/kokugo-kanbun` の 2 枚目（6 枚の目次）。
+サンプルは `demo.html`（4 枚、2 枚ずつ出る目次）と `examples/kokugo-kanbun` の 2 枚目（6 枚の目次）。
 
 <!-- llm: omit -->
 注意

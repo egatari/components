@@ -25,8 +25,8 @@ I.names();            // the names this copy carries (in a lesson, only the ones
 <!-- llm: omit -->
 作る人向けの注
 
-- **データ**：`/*@egatari-block icons*/` と `/*@egatari-block-end*/` の間は `node tools/icons-import.mjs` が書く（手で直さない）。npm の `@tabler/icons` の tarball を版（`PIN`）と sha256 で固定して取り込み、`tabler-nodes-outline.json` の各 path の `d` だけを残す。`fill="currentColor"` の path は先頭に `+`、`fill="currentColor" stroke="none"` は `*`。`brand-*`（商標。MIT が許すのは絵で、印ではない）と塗りの版（filled）は入れない。Tabler を上げるのは `PIN` を書き換える明示の更新だけ。`--check` は区切りの中・`names.txt`・知らせが合っていることを確かめる（ネットワークなし）
+- **データ**：`/*@egatari-block icons*/` と `/*@egatari-block-end*/` の間は `node tools/icons-import.mjs` が書く（手で直さない）。npm の `@tabler/icons` の tarball をバージョン（`PIN`）と sha256 で固定して取り込み、`tabler-nodes-outline.json` の各 path の `d` だけを残す。`fill="currentColor"` の path は先頭に `+`、`fill="currentColor" stroke="none"` は `*`。`brand-*`（商標。MIT が許すのは絵で、印ではない）と塗りの版（filled）は入れない。Tabler を上げるのは `PIN` を書き換える明示の更新だけ。`--check` は区切りの中・`names.txt`・知らせが合っていることを確かめる（ネットワークなし）
 - **絞り込み**（仕様 §6.2 subset by name、`match: "name"`）：ファクトリの返す値の `build` で宣言する（ライブラリパーツの宣言の置き場。仕様 3d4ead0）。組み立てはレッスンの字句（a–z・0–9・`-` 以外で区切った語）と完全に一致する名前だけを残す。`chart-bar-popular` は `chart-bar` を残さない。`keep` はない（`m-cards` は名前をすべてレッスンのデータから取る）
-- **探すための語**（#160）：`<言語>.json`（`{"_tabler": 版, "_lang": 言語, "<名前>": [語, …]}`、どの言語も同じ形）。編集アプリがアイコンを語で探すのに使う。`index.js` には入らないので、レッスンの絞り込みには関わらない。`en.json` は Tabler の tags から `icons-import` が書く。`ja.json` は中核のアイコン（約 400）に日本語の語を 3〜6 つ、よく使う語から（LLM で下書きし、人が確かめる）。ない言語は en に落とす。`--check` は `_tabler` が `PIN` と同じこと、名前が Tabler にあること、語が重ならないことを確かめる
+- **探すための語**（#160）：`<言語>.json`（`{"_tabler": バージョン, "_lang": 言語, "<名前>": [語, …]}`、どの言語も同じ形）。編集アプリがアイコンを語で探すのに使う。`index.js` には入らないので、レッスンの絞り込みには関わらない。`en.json` は Tabler の tags から `icons-import` が書く。`ja.json` は中核のアイコン（約 400）に日本語の語を 3〜6 つ、よく使う語から（LLM で下書きし、人が確かめる）。ない言語は en に落とす。`--check` は `_tabler` が `PIN` と同じこと、名前が Tabler にあること、語が重ならないことを確かめる
 - **ライセンス**：MIT（Tabler Icons、Copyright (c) 2020-2026 Paweł Kuna）。`LICENSE-tabler.txt` とリポジトリの `NOTICE`、区切りの中の `_notice` が対になる（絞り込んでも `_notice` は残る）
 <!-- llm: end -->

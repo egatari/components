@@ -37,7 +37,7 @@ props: layout, arrows, nums, hilite, per-step, stagger, dur
 - 安全：shield shield-check lock key alert-triangle first-aid-kit heart heart-rate-monitor eye
 - 学び：school pencil ruler math-function atom flask microscope palette music language
 
-見本は `demo.html`（窓口の進め方、4 つの店の工夫、まとめて出す）。会社と数字はすべて架空。
+サンプルは `demo.html`（窓口の進め方、4 つの店の工夫、まとめて出す）。会社と数字はすべて架空。
 
 <!-- llm: omit -->
 作る人向けの注

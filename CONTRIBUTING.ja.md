@@ -21,7 +21,7 @@
 | **データの形（案）** | 書く人（や AI）が書くもの：子の JSON か字と、属性 |
 | **最終状態** | 最後のステップに見えるもの。印刷と、動きを止めたときの姿になる |
 | **インライン SVG と動きの素では足りない理由** | パーツはどの教材も信頼して動かすコード。それだけの理由が要る |
-| **権利** | 例と見本に入る文章・データ・画像・コードの出典とライセンス |
+| **権利** | 例とサンプルに入る文章・データ・画像・コードの出典とライセンス |
 | **静止したときに読めなければならないもの** | 印刷・本・スクリーンリーダーで |
 | **ほかの分野・授業での使い道** | パーツは 1 つの授業のためのものではない |
 
@@ -34,24 +34,24 @@
 - [ ] `index.js` が `<m-<名前>>` を定義し、[パーツの約束事](https://github.com/egatari/egatari-studio/blob/main/docs/contract.ja.md)に従う：`render(k, t)` はステップと時刻だけで画面を決める（`setTimeout`・`requestAnimationFrame`・`Date`・シードのない乱数を使わない。`t = Infinity` が最終状態）、色はテーマの変数だけ（`var(--term)` `var(--emph)` `var(--muted)` `var(--accent2)` `var(--line)` `var(--fg)` `var(--series-1..4)`）、データの形を `static shape` で宣言、教材固有の文言・数値を持たない
 - [ ] パーツの中の字は、どんなデータでも互いに重ならず、線にもかからない（Studio の点検は svg の字どうしの重なりを警告する）。わざと重ねるところは、その `<text>` か上の `<g>` に `data-overlap="ok"` を付ける（わざと切る字の `data-clip` と同じ考え）
 - [ ] コードを実行する書き方がない（`npm test` の `tools/scan-code.mjs`）：`eval`・`Function`・`constructor`・文字列のタイマー・`import`・`innerHTML` などを使わない。作者が書く式は JavaScript として実行せず `tools/expr.js` で計算する（`node tools/expr-sync.mjs` で写し、その `USERS` にパーツを足す。[SECURITY.md](SECURITY.md)）
-- [ ] `README.md`：frontmatter の `name`・`version`（そのパーツ自身の版 X.Y.Z。1.x のパーツは最後に出たパーツライブラリの版）・`series`（`common`＝標準パーツ・`academic`・`business`・`kokugo`・`info`・`social`・`music`・`english`）・`tier`（段：`standard` 標準・`specialized` 専門・`extra` 特殊。専門は `set`（束）も：`stats` 統計・`math` 数学・`maps` 地図・`kokugo` 国語・`english` 英語・`music` 音楽・`business` ビジネス・`tools` 道具）・あれば `display`（タグと別の名前、`<日本語> / <英語>`）・`summary`・`steps`・`props` と、いつ使うかの本文
+- [ ] `README.md`：frontmatter の `name`・`version`（そのパーツ自身のバージョン X.Y.Z。1.x のパーツは最後に出たパーツライブラリのバージョン）・`series`（`common`＝標準パーツ・`academic`・`business`・`kokugo`・`info`・`social`・`music`・`english`）・`tier`（段：`standard` 標準・`specialized` 専門・`extra` 特殊。専門は `set`（束）も：`stats` 統計・`math` 数学・`maps` 地図・`kokugo` 国語・`english` 英語・`music` 音楽・`business` ビジネス・`tools` 道具）・あれば `display`（タグと別の名前、`<日本語> / <英語>`）・`summary`・`steps`・`props` と、いつ使うかの本文
 - [ ] `demo.html`：1〜3 枚のサンプル（見せ方の種類があれば、それを並べた 1 枚を足す）。文章とデータは自作・パブリックドメイン・架空のもの
 - [ ] `tools/test-shape.mjs` に形の違うデータの例を 1 行
 - [ ] `node tools/catalog.mjs` で CATALOG.md を作り直す（手で直さない）
 - [ ] `npm test` が通り、書き出された画像（ステップの途中と最終状態）を目で見た
 - [ ] `CHANGELOG.md` の `## Unreleased` に 1 行
 
-今あるパーツを直すとき：使っている教材を壊さないこと。今あるデータの描き方（配置・時間・ステップの数）が変わる直しは、少なくともマイナーの版にします。プルリクエストにそう書いてください。
+今あるパーツを直すとき：使っている教材を壊さないこと。今あるデータの描き方（配置・時間・ステップの数）が変わる直しは、少なくともマイナーのバージョンにします。プルリクエストにそう書いてください。
 
 ## 試験
 
 ```bash
 npm test                                   # すべて
 node tools/test-all.mjs --only test-components
-node tools/test-components.mjs bars        # 見本 1 つ（画像は components/bars/out/shots/）
+node tools/test-components.mjs bars        # サンプル 1 つ（画像は components/bars/out/shots/）
 ```
 
-試験は、固定したコミットの Egatari Studio（`tools/studio.json` にコミットの sha をすべて書く。`tools/studio.mjs` が `.studio/` に取ってきて、checkout の後に確かめる）で見本を組みます。手元の Studio で試すときは `EGATARI_STUDIO=<作業用の写しのパス>` を指定します（ここのパーツをそこへ写します）。Studio がパーツの約束事を変えたら、固定するコミットをそれを含む Studio のコミット（リリースのタグのコミット、または `main` のコミット）に移します。sha はいつも同じコードです。手順は RELEASING.md の「Moving the Studio pin」。
+試験は、固定したコミットの Egatari Studio（`tools/studio.json` にコミットの sha をすべて書く。`tools/studio.mjs` が `.studio/` に取ってきて、checkout の後に確かめる）でサンプルを組みます。手元の Studio で試すときは `EGATARI_STUDIO=<作業用の写しのパス>` を指定します（ここのパーツをそこへ写します）。Studio がパーツの約束事を変えたら、固定するコミットをそれを含む Studio のコミット（リリースのタグのコミット、または `main` のコミット）に移します。sha はいつも同じコードです。手順は RELEASING.md の「Moving the Studio pin」。
 
 ## リリース
 

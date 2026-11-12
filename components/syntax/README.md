@@ -40,4 +40,4 @@ props: size, pos, build, yaku
 - 試験：`tools/test-syntax.mjs`
 <!-- llm: end -->
 
-見本は `demo.html`（SVO と修飾する句、SVOC と品詞、関係代名詞の節）。
+サンプルは `demo.html`（SVO と修飾する句、SVOC と品詞、関係代名詞の節）。

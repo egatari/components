@@ -76,4 +76,4 @@ props: size, slot, phases, kaki, nums, order-by
 <!-- llm: end -->
 - 字は要素の大きさに合わせる。収まらなければ句を分けるか、要素を高くする
 
-見本は `demo.html`（「春暁」、『史記』の一レ点（`order-by="all"`）、『論語』の再読文字と置き字）。
+サンプルは `demo.html`（「春暁」、『史記』の一レ点（`order-by="all"`）、『論語』の再読文字と置き字）。

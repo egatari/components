@@ -11,7 +11,7 @@ props: f, values, param, xr, yr, xt, yt, xl, yl, digits, dur, at, point, size
 ---
 
 「φ が大きいほど〜」を目で確かめさせるときに使う（motion-slides スキル §6「パラメータを動かす」）。
-見本は `demo.html`。
+サンプルは `demo.html`。
 
 `f` の式の中では、動かす値はいつも `c` と書く（`param` は図に表示する名前だけ。`param="η"` でも `f="u*u + c*u"`）。
 

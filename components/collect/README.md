@@ -20,4 +20,4 @@ props: move, stagger, shrink, chip-w, chip-h, box-w, box-h
 - 箱に `tex` と `label` の両方があれば、式を箱の中に、`label` を箱の下に小さく書く（下に入らなければ上）
 - ステップ 1 の始めに箱の点線の枠を出し、札が着いてから箱の中身を出す。`data-from` で始まるステップをずらせる
 
-見本は `demo.html`（コイン投げの結果から Beta 事後分布の平均と分散）。
+サンプルは `demo.html`（コイン投げの結果から Beta 事後分布の平均と分散）。
