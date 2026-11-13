@@ -3,22 +3,22 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>部品の一覧（見本）</title>
-<!-- tools/gallery.mjs が各部品の demo.html と README.md から作る。手で直さない。数値・会社はすべて架空か公の事実 -->
+<title>パーツの一覧（サンプル）</title>
+<!-- tools/gallery.mjs が各パーツの demo.html と README.md から作る。手で直さない。数値・会社はすべて架空か公の事実 -->
 <style>
-/* m-fishbone */
-.vcap{font-size:27px;color:var(--muted);text-align:center;margin-bottom:6px}
-/* m-tree */
-.vcap{font-size:27px;color:var(--muted);text-align:center;margin-bottom:6px}
 /* m-compare */
 .vlabel{font-size:27px;color:var(--muted);margin:0 0 6px}
 /* m-cycle */
 .vcap{font-size:27px;line-height:1.3;margin:0 0 6px;color:var(--muted)}
+/* m-fishbone */
+.vcap{font-size:27px;color:var(--muted);text-align:center;margin-bottom:6px}
 /* m-timeline */
 .vcap{font-size:27px;line-height:1.3;margin:0 0 6px;color:var(--muted)}
 /* m-timer */
 /* 1 枚目は Studio の部品の一覧の見本の絵（本文の枠で撮る）にもなる。時計の 0 が枠の左端に付いて切れて見えないよう、少し内側に置く */
 .slide:first-of-type .body{padding:0 10px}
+/* m-tree */
+.vcap{font-size:27px;color:var(--muted);text-align:center;margin-bottom:6px}
 /* m-venn */
 .vlabel{font-size:27px;color:var(--muted);margin:0 0 6px}
 </style>
@@ -61,406 +61,198 @@ document.addEventListener("DOMContentLoaded", function(){
 <div id="stage">
 
 <section class="slide">
-  <h2>部品の一覧（45 個、179 枚）</h2>
+  <h2>パーツの一覧（48 個、192 枚）</h2>
   <div class="body">
-    <p>部品ごとに、説明の 1 枚と見本のスライドが続く。→ で段階を進める。</p>
-    <p>m-fishbone（変わった）　m-flow（変わった）　m-particles（変わった）　m-quad（変わった）　m-tree（変わった）　m-balance　m-bars　m-boxplot　m-cards　m-ci　m-code　m-codetree　m-collect　m-compare　m-curves　m-cycle　m-folds　m-gendai　m-heatmap　m-hissan　m-hist　m-kakijun　m-kanbun　m-keyboard　m-kobun　m-kpi　m-map-japan　m-map-world　m-mapping　m-market　m-menu　m-numberline　m-orbit　m-pie　m-predict　m-sampling　m-scatter　m-score　m-seq　m-sweep　m-syntax　m-tape　m-timeline　m-timer　m-venn</p>
+    <p>パーツごとに、説明の 1 枚とサンプルのスライドが続く。→ でステップを進める。</p>
+    <p>m-callout（新しい）　m-checklist（新しい）　m-diverge（新しい）　m-bars（変わった）　m-codetree（変わった）　m-collect（変わった）　m-compare（変わった）　m-cycle（変わった）　m-fishbone（変わった）　m-flow（変わった）　m-heatmap（変わった）　m-keyboard（変わった）　m-kpi（変わった）　m-market（変わった）　m-orbit（変わった）　m-particles（変わった）　m-predict（変わった）　m-quad（変わった）　m-tape（変わった）　m-timeline（変わった）　m-timer（変わった）　m-tree（変わった）　m-balance　m-boxplot　m-cards　m-ci　m-code　m-curves　m-folds　m-gendai　m-hissan　m-hist　m-kakijun　m-kanbun　m-kobun　m-map-japan　m-map-world　m-mapping　m-menu　m-numberline　m-pie　m-sampling　m-scatter　m-score　m-seq　m-sweep　m-syntax　m-venn</p>
   </div>
 </section>
 
 <section class="slide">
-  <h2>m-fishbone（変わった、v2.8.0）</h2>
+  <h2>m-callout（新しい、v2.8.0）</h2>
   <div class="body">
-    <p>原因と結果の図（特性要因図・フィッシュボーン図）を、大骨 1 本ずつ組み立て、最後に結果（頭）を出す。座標は書かず、配置はパーツが決める</p>
-    <ul>
-      <li>伝えたいこと：原因と結果</li>
-      <li>見せ方：fade・draw・grow</li>
-      <li>系列：標準パーツ　見本のスライド：3 枚</li>
-    </ul>
-  </div>
-</section>
-
-<section id="g-fishbone-1" class="slide">
-  <h2>配送の遅れの原因（架空）</h2>
-  <div class="body">
-    <m-fishbone aria-label="配送の遅れの特性要因図" style="height:440px">
-      <script type="application/json">{
-        "effect": {"label": "配送の遅れ", "note": "1 日 12 件"},
-        "nodes": [
-          {"id": "p", "label": "人"},
-          {"id": "p1", "label": "人手が足りない", "parent": "p"},
-          {"id": "p11", "label": "繁忙期の採用が遅い", "parent": "p1"},
-          {"id": "p2", "label": "道に慣れていない", "parent": "p"},
-          {"id": "m", "label": "機械"},
-          {"id": "m1", "label": "車の故障が多い", "parent": "m"},
-          {"id": "m2", "label": "端末の反応が遅い", "parent": "m"},
-          {"id": "h", "label": "方法"},
-          {"id": "h1", "label": "積み込みの順が悪い", "parent": "h", "tone": "emph"},
-          {"id": "h2", "label": "経路を手で決めている", "parent": "h"},
-          {"id": "z", "label": "材料"},
-          {"id": "z1", "label": "伝票の記入漏れ", "parent": "z"},
-          {"id": "z2", "label": "箱の大きさがばらばら", "parent": "z"}
-        ]
-      }</script>
-    </m-fishbone>
-  </div>
-  <div class="concl"><span>→ 人・機械・方法・材料（4M）に分けて原因を洗い出す</span></div>
-</section>
-
-<section id="g-fishbone-2" class="slide">
-  <h2>植物が育たないのはなぜ（order="effect-first"）</h2>
-  <div class="body">
-    <m-fishbone order="effect-first" aria-label="植物が育たない原因" style="height:440px">
-      <script type="application/json">{
-        "effect": {"label": "植物が\n育たない"},
-        "nodes": [
-          {"id": "l", "label": "光"},
-          {"id": "l1", "label": "日当たりが悪い", "parent": "l"},
-          {"id": "l2", "label": "光の当たる時間が短い", "parent": "l"},
-          {"id": "w", "label": "水"},
-          {"id": "w1", "label": "水が足りない", "parent": "w"},
-          {"id": "w2", "label": "水のやりすぎ", "parent": "w"},
-          {"id": "w21", "label": "根が腐る", "parent": "w2"},
-          {"id": "s", "label": "土"},
-          {"id": "s1", "label": "肥料が足りない", "parent": "s"},
-          {"id": "s2", "label": "水はけが悪い", "parent": "s"},
-          {"id": "t", "label": "温度"},
-          {"id": "t1", "label": "気温が低い", "parent": "t", "note": "15 ℃ 未満"},
-          {"id": "t2", "label": "昼と夜の差が大きい", "parent": "t"}
-        ]
-      }</script>
-    </m-fishbone>
-  </div>
-  <div class="concl"><span>→ 結果を先に置き、光・水・土・温度の順に原因を足す</span></div>
-</section>
-
-<section id="g-fishbone-3" class="slide">
-  <h2>見せ方の種類（variant）</h2>
-  <div class="body">
-    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:28px">
-      <div><div class="vcap">箱と字、それから線（fade、既定）</div>
-      <m-fishbone variant="fade" aria-label="遅刻の原因（fade）" style="height:340px">
-        <script type="application/json">{"effect": {"label": "遅刻"}, "nodes": [{"id": "a", "label": "自分"}, {"id": "a1", "label": "寝坊", "parent": "a"}, {"id": "a2", "label": "準備が遅い", "parent": "a"}, {"id": "b", "label": "交通"}, {"id": "b1", "label": "電車の遅れ", "parent": "b"}, {"id": "b2", "label": "道の混雑", "parent": "b"}]}</script>
-      </m-fishbone></div>
-      <div><div class="vcap">線を引いてから箱と字（draw）</div>
-      <m-fishbone variant="draw" aria-label="遅刻の原因（draw）" style="height:340px">
-        <script type="application/json">{"effect": {"label": "遅刻"}, "nodes": [{"id": "a", "label": "自分"}, {"id": "a1", "label": "寝坊", "parent": "a"}, {"id": "a2", "label": "準備が遅い", "parent": "a"}, {"id": "b", "label": "交通"}, {"id": "b1", "label": "電車の遅れ", "parent": "b"}, {"id": "b2", "label": "道の混雑", "parent": "b"}]}</script>
-      </m-fishbone></div>
-      <div><div class="vcap">背骨の側から伸びる（grow）</div>
-      <m-fishbone variant="grow" aria-label="遅刻の原因（grow）" style="height:340px">
-        <script type="application/json">{"effect": {"label": "遅刻"}, "nodes": [{"id": "a", "label": "自分"}, {"id": "a1", "label": "寝坊", "parent": "a"}, {"id": "a2", "label": "準備が遅い", "parent": "a"}, {"id": "b", "label": "交通"}, {"id": "b1", "label": "電車の遅れ", "parent": "b"}, {"id": "b2", "label": "道の混雑", "parent": "b"}]}</script>
-      </m-fishbone></div>
-    </div>
-  </div>
-  <div class="concl"><span>→ 書かなければ最初の見せ方（fade）になる</span></div>
-</section>
-
-<section class="slide">
-  <h2>m-flow（変わった、v2.8.0）</h2>
-  <div class="body">
-    <p>流れ図の箱と矢印をステップごとに出して、図を組み立てる</p>
+    <p>画面の画像に番号の丸を置き、引き出し線で横の説明につなぐ。ステップごとに 1 つずつ（研修・手引き・操作の説明）</p>
     <ul>
       <li>伝えたいこと：手順・工程</li>
       <li>見せ方：1 種類</li>
-      <li>系列：標準パーツ　見本のスライド：3 枚</li>
+      <li>内容の分野：標準パーツ　サンプルのスライド：2 枚</li>
     </ul>
   </div>
 </section>
 
-<section id="g-flow-1" class="slide">
-  <h2>ベイズ決定の流れ</h2>
+<section id="g-callout-1" class="slide">
+  <h2>電子申請で住所変更を届け出る（架空の画面）</h2>
   <div class="body">
-    <m-flow style="height:420px">
+    <m-callout style="height:440px">
+      <img src="data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%221280%22 height=%22800%22 viewBox=%220 0 1280 800%22 font-family=%22sans-serif%22%3E%3Crect width=%221280%22 height=%22800%22 fill=%22%23f4f6f9%22/%3E%3Crect width=%221280%22 height=%2272%22 fill=%22%232b4c7e%22/%3E%3Ctext x=%2232%22 y=%2247%22 font-size=%2230%22 fill=%22%23fff%22%3EA %E5%B8%82 %E9%9B%BB%E5%AD%90%E7%94%B3%E8%AB%8B%EF%BC%88%E6%9E%B6%E7%A9%BA%EF%BC%89%3C/text%3E%3Crect x=%221110%22 y=%2218%22 width=%22140%22 height=%2236%22 rx=%226%22 fill=%22%23fff%22 opacity=%22.2%22/%3E%3Ctext x=%221180%22 y=%2244%22 font-size=%2222%22 fill=%22%23fff%22 text-anchor=%22middle%22%3E%E3%83%AD%E3%82%B0%E3%82%A2%E3%82%A6%E3%83%88%3C/text%3E%3Crect x=%220%22 y=%2272%22 width=%22260%22 height=%22728%22 fill=%22%23e3e8ef%22/%3E%3Cg font-size=%2224%22 fill=%22%23333%22%3E%3Ctext x=%2232%22 y=%22130%22%3E%E3%81%8A%E7%9F%A5%E3%82%89%E3%81%9B%3C/text%3E%3Crect x=%2216%22 y=%22160%22 width=%22228%22 height=%2248%22 rx=%226%22 fill=%22%23c9d6e8%22/%3E%3Ctext x=%2232%22 y=%22193%22%3E%E7%94%B3%E8%AB%8B%E3%81%99%E3%82%8B%3C/text%3E%3Ctext x=%2232%22 y=%22256%22%3E%E7%94%B3%E8%AB%8B%E3%81%AE%E7%8A%B6%E6%B3%81%3C/text%3E%3Ctext x=%2232%22 y=%22316%22%3E%E3%82%88%E3%81%8F%E3%81%82%E3%82%8B%E8%B3%AA%E5%95%8F%3C/text%3E%3C/g%3E%3Ctext x=%22310%22 y=%22140%22 font-size=%2234%22 fill=%22%23222%22%3E%E4%BD%8F%E6%89%80%E5%A4%89%E6%9B%B4%E3%81%AE%E5%B1%8A%E3%81%91%E5%87%BA%3C/text%3E%3Cg font-size=%2224%22 fill=%22%23444%22%3E%3Ctext x=%22310%22 y=%22210%22%3E%E5%B1%8A%E3%81%91%E5%87%BA%E3%81%AE%E7%A8%AE%E9%A1%9E%3C/text%3E%3Crect x=%22310%22 y=%22225%22 width=%22560%22 height=%2252%22 rx=%226%22 fill=%22%23fff%22 stroke=%22%239aa5b5%22/%3E%3Ctext x=%22326%22 y=%22260%22 fill=%22%23222%22%3E%E8%BB%A2%E5%85%A5%EF%BC%88%E5%B8%82%E3%81%AE%E5%A4%96%E3%81%8B%E3%82%89%EF%BC%89%3C/text%3E%3Cpath d=%22M840 245l12 12 12-12%22 fill=%22none%22 stroke=%22%23555%22 stroke-width=%223%22/%3E%3Ctext x=%22310%22 y=%22330%22%3E%E6%B0%8F%E5%90%8D%3C/text%3E%3Crect x=%22310%22 y=%22345%22 width=%22560%22 height=%2252%22 rx=%226%22 fill=%22%23fff%22 stroke=%22%239aa5b5%22/%3E%3Ctext x=%22326%22 y=%22380%22 fill=%22%23999%22%3E%EF%BC%88%E5%85%A5%E5%8A%9B%E4%BE%8B%EF%BC%89A %E3%81%95%E3%82%93%3C/text%3E%3Ctext x=%22310%22 y=%22450%22%3E%E6%96%B0%E3%81%97%E3%81%84%E4%BD%8F%E6%89%80%3C/text%3E%3Crect x=%22310%22 y=%22465%22 width=%22760%22 height=%2252%22 rx=%226%22 fill=%22%23fff%22 stroke=%22%239aa5b5%22/%3E%3Ctext x=%22326%22 y=%22500%22 fill=%22%23999%22%3E%EF%BC%88%E5%85%A5%E5%8A%9B%E4%BE%8B%EF%BC%89A %E5%B8%82 1 %E4%B8%81%E7%9B%AE 1-1%3C/text%3E%3Ctext x=%22310%22 y=%22570%22%3E%E6%B7%BB%E4%BB%98%E3%81%99%E3%82%8B%E6%9B%B8%E9%A1%9E%3C/text%3E%3Crect x=%22310%22 y=%22585%22 width=%22220%22 height=%2252%22 rx=%226%22 fill=%22%23fff%22 stroke=%22%232b4c7e%22 stroke-width=%222%22/%3E%3Ctext x=%22420%22 y=%22620%22 text-anchor=%22middle%22 fill=%22%232b4c7e%22%3E%E3%83%95%E3%82%A1%E3%82%A4%E3%83%AB%E3%82%92%E9%81%B8%E3%81%B6%3C/text%3E%3C/g%3E%3Crect x=%221010%22 y=%22700%22 width=%22220%22 height=%2264%22 rx=%228%22 fill=%22%232b4c7e%22/%3E%3Ctext x=%221120%22 y=%22742%22 font-size=%2228%22 fill=%22%23fff%22 text-anchor=%22middle%22%3E%E9%80%81%E3%82%8B%3C/text%3E%3C/svg%3E" alt="A 市の電子申請の、住所変更の届け出の画面（架空）" width="1280" height="800">
       <script type="application/json">{
-        "nodes": [
-          {"id": "w",  "label": "観測 *w*",            "x": 0,   "y": 40,  "w": 220, "h": 80, "step": 1},
-          {"id": "p",  "tex": "p(y\\mid w)",          "x": 330, "y": 40,  "w": 240, "h": 80, "step": 1},
-          {"id": "L",  "label": "損失 *L*(*y*, *a*)\n（与えられる）", "x": 330, "y": 260, "w": 240, "h": 100, "step": 2, "tone": "muted"},
-          {"id": "r",  "tex": "r(a\\mid w)",          "x": 680, "y": 150, "w": 220, "h": 80, "step": 3},
-          {"id": "a",  "label": "決定 *a*^*",          "x": 1000, "y": 150, "w": 184, "h": 80, "step": 4, "tone": "emph"}
-        ],
-        "edges": [
-          {"from": "w", "to": "p", "step": 1, "label": "予測"},
-          {"from": "p", "to": "r", "step": 3},
-          {"from": "L", "to": "r", "step": 3, "dash": true},
-          {"from": "r", "to": "a", "step": 4, "label": "最小化", "tone": "emph"}
+        "callouts": [
+          {"x": 0.205, "y": 0.23, "text": "左の「申請する」を選ぶ", "box": [0.013, 0.2, 0.178, 0.06]},
+          {"x": 0.66, "y": 0.315, "text": "届け出の種類を選ぶ"},
+          {"x": 0.83, "y": 0.61, "text": "新しい住所を\n建物の名前まで書く"},
+          {"x": 0.435, "y": 0.765, "text": "転出証明書の写真を\n添付する", "box": [0.242, 0.731, 0.172, 0.065]},
+          {"x": 0.962, "y": 0.915, "text": "「送る」を押す"}
         ]
       }</script>
-    </m-flow>
+    </m-callout>
   </div>
-  <div class="concl"><span>→ 予測と損失から期待損失 <i>r</i> を作り，それを最小にする <i>a</i> を選ぶ</span></div>
+  <div class="concl"><span>→ 5 つの手順で届け出が終わる</span></div>
 </section>
 
-<section id="g-flow-2" class="slide">
-  <h2>お金とサービスの流れ（架空）</h2>
+<section id="g-callout-2" class="slide noconcl">
+  <h2>説明を両側に置く（side="both"）</h2>
   <div class="body">
-    <m-flow style="height:420px">
+    <m-callout side="both" label-width="0.24" per-step="0" style="height:470px">
+      <img src="data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%221280%22 height=%22800%22 viewBox=%220 0 1280 800%22 font-family=%22sans-serif%22%3E%3Crect width=%221280%22 height=%22800%22 fill=%22%23f4f6f9%22/%3E%3Crect width=%221280%22 height=%2272%22 fill=%22%232b4c7e%22/%3E%3Ctext x=%2232%22 y=%2247%22 font-size=%2230%22 fill=%22%23fff%22%3EA %E5%B8%82 %E9%9B%BB%E5%AD%90%E7%94%B3%E8%AB%8B%EF%BC%88%E6%9E%B6%E7%A9%BA%EF%BC%89%3C/text%3E%3Crect x=%221110%22 y=%2218%22 width=%22140%22 height=%2236%22 rx=%226%22 fill=%22%23fff%22 opacity=%22.2%22/%3E%3Ctext x=%221180%22 y=%2244%22 font-size=%2222%22 fill=%22%23fff%22 text-anchor=%22middle%22%3E%E3%83%AD%E3%82%B0%E3%82%A2%E3%82%A6%E3%83%88%3C/text%3E%3Crect x=%220%22 y=%2272%22 width=%22260%22 height=%22728%22 fill=%22%23e3e8ef%22/%3E%3Cg font-size=%2224%22 fill=%22%23333%22%3E%3Ctext x=%2232%22 y=%22130%22%3E%E3%81%8A%E7%9F%A5%E3%82%89%E3%81%9B%3C/text%3E%3Crect x=%2216%22 y=%22160%22 width=%22228%22 height=%2248%22 rx=%226%22 fill=%22%23c9d6e8%22/%3E%3Ctext x=%2232%22 y=%22193%22%3E%E7%94%B3%E8%AB%8B%E3%81%99%E3%82%8B%3C/text%3E%3Ctext x=%2232%22 y=%22256%22%3E%E7%94%B3%E8%AB%8B%E3%81%AE%E7%8A%B6%E6%B3%81%3C/text%3E%3Ctext x=%2232%22 y=%22316%22%3E%E3%82%88%E3%81%8F%E3%81%82%E3%82%8B%E8%B3%AA%E5%95%8F%3C/text%3E%3C/g%3E%3Ctext x=%22310%22 y=%22140%22 font-size=%2234%22 fill=%22%23222%22%3E%E4%BD%8F%E6%89%80%E5%A4%89%E6%9B%B4%E3%81%AE%E5%B1%8A%E3%81%91%E5%87%BA%3C/text%3E%3Cg font-size=%2224%22 fill=%22%23444%22%3E%3Ctext x=%22310%22 y=%22210%22%3E%E5%B1%8A%E3%81%91%E5%87%BA%E3%81%AE%E7%A8%AE%E9%A1%9E%3C/text%3E%3Crect x=%22310%22 y=%22225%22 width=%22560%22 height=%2252%22 rx=%226%22 fill=%22%23fff%22 stroke=%22%239aa5b5%22/%3E%3Ctext x=%22326%22 y=%22260%22 fill=%22%23222%22%3E%E8%BB%A2%E5%85%A5%EF%BC%88%E5%B8%82%E3%81%AE%E5%A4%96%E3%81%8B%E3%82%89%EF%BC%89%3C/text%3E%3Cpath d=%22M840 245l12 12 12-12%22 fill=%22none%22 stroke=%22%23555%22 stroke-width=%223%22/%3E%3Ctext x=%22310%22 y=%22330%22%3E%E6%B0%8F%E5%90%8D%3C/text%3E%3Crect x=%22310%22 y=%22345%22 width=%22560%22 height=%2252%22 rx=%226%22 fill=%22%23fff%22 stroke=%22%239aa5b5%22/%3E%3Ctext x=%22326%22 y=%22380%22 fill=%22%23999%22%3E%EF%BC%88%E5%85%A5%E5%8A%9B%E4%BE%8B%EF%BC%89A %E3%81%95%E3%82%93%3C/text%3E%3Ctext x=%22310%22 y=%22450%22%3E%E6%96%B0%E3%81%97%E3%81%84%E4%BD%8F%E6%89%80%3C/text%3E%3Crect x=%22310%22 y=%22465%22 width=%22760%22 height=%2252%22 rx=%226%22 fill=%22%23fff%22 stroke=%22%239aa5b5%22/%3E%3Ctext x=%22326%22 y=%22500%22 fill=%22%23999%22%3E%EF%BC%88%E5%85%A5%E5%8A%9B%E4%BE%8B%EF%BC%89A %E5%B8%82 1 %E4%B8%81%E7%9B%AE 1-1%3C/text%3E%3Ctext x=%22310%22 y=%22570%22%3E%E6%B7%BB%E4%BB%98%E3%81%99%E3%82%8B%E6%9B%B8%E9%A1%9E%3C/text%3E%3Crect x=%22310%22 y=%22585%22 width=%22220%22 height=%2252%22 rx=%226%22 fill=%22%23fff%22 stroke=%22%232b4c7e%22 stroke-width=%222%22/%3E%3Ctext x=%22420%22 y=%22620%22 text-anchor=%22middle%22 fill=%22%232b4c7e%22%3E%E3%83%95%E3%82%A1%E3%82%A4%E3%83%AB%E3%82%92%E9%81%B8%E3%81%B6%3C/text%3E%3C/g%3E%3Crect x=%221010%22 y=%22700%22 width=%22220%22 height=%2264%22 rx=%228%22 fill=%22%232b4c7e%22/%3E%3Ctext x=%221120%22 y=%22742%22 font-size=%2228%22 fill=%22%23fff%22 text-anchor=%22middle%22%3E%E9%80%81%E3%82%8B%3C/text%3E%3C/svg%3E" alt="A 市の電子申請の画面（架空）" width="1280" height="800">
       <script type="application/json">{
-        "nodes": [
-          {"id": "co",  "label": "自社",         "x": 470, "y": 20,  "w": 240, "h": 80, "step": 1, "tone": "emph"},
-          {"id": "cu",  "label": "顧客の会社",   "x": 60,  "y": 300, "w": 260, "h": 80, "step": 1},
-          {"id": "us",  "label": "社員（使う人）", "x": 860, "y": 300, "w": 300, "h": 80, "step": 2},
-          {"id": "cl",  "label": "クラウド",     "x": 950, "y": 20,  "w": 220, "h": 80, "step": 3, "tone": "muted"}
-        ],
-        "edges": [
-          {"from": "co", "to": "cu", "kind": "service", "label": "使う権利", "shift": 14, "step": 1},
-          {"from": "cu", "to": "co", "kind": "money", "amount": "月 3 万円", "shift": 14, "step": 2, "pulse": [2, 3]},
-          {"from": "cu", "to": "us", "kind": "service", "label": "配る", "step": 2},
-          {"from": "us", "to": "co", "kind": "data", "label": "使い方の記録", "step": 3, "pulse": true},
-          {"from": "co", "to": "cl", "kind": "money", "amount": "売上の 15 %", "step": 3}
+        "callouts": [
+          {"x": 0.10, "y": 0.23, "text": "メニュー"},
+          {"x": 0.30, "y": 0.42, "text": "入力の欄"},
+          {"x": 0.92, "y": 0.05, "text": "終わったら\nログアウト"},
+          {"x": 0.875, "y": 0.915, "text": "送る"}
         ]
       }</script>
-    </m-flow>
+    </m-callout>
   </div>
-  <div class="concl"><span>→ 会社が払い，社員が使い，記録が戻る</span></div>
-</section>
-
-<section id="g-flow-3" class="slide">
-  <h2>1 から <i>n</i> までの和を求める手順（判断とくり返し）</h2>
-  <div class="body">
-    <m-flow aria-label="1 から n までの和を求める流れ図" style="height:420px">
-      <script type="application/json">{
-        "nodes": [
-          {"id": "init", "label": "*S* ← 0, *i* ← 1",  "x": 0,   "y": 70,  "w": 220, "h": 80, "step": 1},
-          {"id": "dec",  "label": "*i* ≤ *n* ?",       "x": 290, "y": 40,  "w": 260, "h": 140, "step": 1, "shape": "diamond"},
-          {"id": "add",  "label": "*S* ← *S* + *i*",   "x": 640, "y": 70,  "w": 230, "h": 80, "step": 2},
-          {"id": "inc",  "label": "*i* ← *i* + 1",     "x": 950, "y": 70,  "w": 220, "h": 80, "step": 2},
-          {"id": "out",  "label": "*S* を出力",        "x": 305, "y": 300, "w": 230, "h": 80, "step": 4, "tone": "emph"}
-        ],
-        "edges": [
-          {"from": "init", "to": "dec", "step": 1},
-          {"from": "dec", "to": "add", "label": "はい", "step": 2},
-          {"from": "add", "to": "inc", "step": 2},
-          {"from": "inc", "to": "dec", "loop": "top", "label": "くり返す", "step": 3},
-          {"from": "dec", "to": "out", "label": "いいえ", "step": 4, "tone": "emph"}
-        ]
-      }</script>
-    </m-flow>
-  </div>
-  <div class="concl"><span>→ <i>i</i> が <i>n</i> をこえるまで足してから，<i>S</i> を出力する</span></div>
 </section>
 
 <section class="slide">
-  <h2>m-particles（変わった、v2.8.0）</h2>
+  <h2>m-checklist（新しい、v2.8.0）</h2>
   <div class="body">
-    <p>状態変化の粒子の並び方と間隔、化学変化で保存される原子の数を見せる</p>
+    <p>確かめる項目を並べ、ステップごとに 1 つずつ印（✓・×）を描く。印はスライドの中身で、見ている人の操作を保存しない</p>
     <ul>
-      <li>伝えたいこと：仕組みをモデルで見る・手順・工程・比べる（量・特徴）</li>
+      <li>伝えたいこと：手順・工程</li>
       <li>見せ方：1 種類</li>
-      <li>系列：数理・統計　見本のスライド：4 枚</li>
+      <li>内容の分野：標準パーツ　サンプルのスライド：3 枚</li>
     </ul>
   </div>
 </section>
 
-<section id="g-particles-1" class="slide">
-  <h2>水の状態変化</h2>
-  <div class="body"><m-particles style="height:440px"><script type="application/json">{"substance":"水"}</script></m-particles></div>
-  <div class="concl"><span>粒子の数と大きさは同じ。並び方と間隔が変わる</span></div>
-</section>
-
-<section id="g-particles-2" class="slide">
-  <h2>水素の燃焼</h2>
-  <div class="body"><m-particles mode="reaction" style="height:440px"><script type="application/json">{"reactants":[{"formula":"H2","n":2},{"formula":"O2","n":1}],"products":[{"formula":"H2O","n":2}]}</script></m-particles></div>
-  <div class="concl"><span>水素と酸素から水ができても、原子の数は変わらない</span></div>
-</section>
-
-<section id="g-particles-3" class="slide">
-  <h2>鉄と硫黄の化合</h2>
-  <div class="body"><m-particles mode="reaction" style="height:440px"><script type="application/json">{"reactants":[{"formula":"Fe","n":1},{"formula":"S","n":1}],"products":[{"formula":"FeS","n":1}]}</script></m-particles></div>
-  <div class="concl"><span>鉄と硫黄の原子が結び付き、硫化鉄ができる</span></div>
-</section>
-
-<section id="g-particles-4" class="slide">
-  <h2>炭素の燃焼</h2>
-  <div class="body"><m-particles mode="reaction" style="height:440px"><script type="application/json">{"reactants":[{"formula":"C","n":1},{"formula":"O2","n":1}],"products":[{"formula":"CO2","n":1}]}</script></m-particles></div>
-  <div class="concl"><span>炭素と酸素から二酸化炭素ができる</span></div>
-</section>
-
-<section class="slide">
-  <h2>m-quad（変わった、v2.8.0）</h2>
+<section id="g-checklist-1" class="slide">
+  <h2>実習に入る前に</h2>
   <div class="body">
-    <p>2 軸の位置づけ（ポジショニングマップ・SWOT 風の 4 象限）に、点をステップごとに 1 つずつ置く</p>
-    <ul>
-      <li>伝えたいこと：位置づけ（2 軸）</li>
-      <li>見せ方：1 種類</li>
-      <li>系列：標準パーツ　見本のスライド：2 枚</li>
-    </ul>
-  </div>
-</section>
-
-<section id="g-quad-1" class="slide">
-  <h2>報告書づくりの道具の位置づけ（架空）</h2>
-  <div class="body">
-    <m-quad quads-step="1" style="height:430px">
+    <m-checklist style="height:440px">
       <script type="application/json">{
-        "x": {"lo": "手で書く", "hi": "自動で下書き"},
-        "y": {"lo": "導入が重い", "hi": "すぐ使える"},
-        "quads": {"tr": "空いている場所", "tl": "", "bl": "", "br": "", "fill": "tr"},
         "items": [
-          {"label": "表計算の雛形", "x": 0.14, "y": 0.78},
-          {"label": "汎用の文章 AI", "x": 0.6, "y": 0.4, "anchor": "left"},
-          {"label": "大型の業務システム", "x": 0.7, "y": 0.18},
-          {"label": "自社の製品", "x": 0.68, "y": 0.66, "self": true, "to": {"x": 0.78, "y": 0.74, "label": "次の版"}}
+          {"label": "名札を胸に付けた"},
+          {"label": "指輪と腕時計を外した"},
+          {"label": "石けんで手を洗った", "note": "指の間と爪の先まで 30 秒"},
+          {"label": "手を乾かし、消毒した"}
         ]
       }</script>
-    </m-quad>
+    </m-checklist>
   </div>
-  <div class="concl"><span>→ すぐ使えて自動で書く場所が空いている</span></div>
+  <div class="concl"><span>→ 4 つがそろってから実習室に入る</span></div>
 </section>
 
-<section id="g-quad-2" class="slide">
-  <h2>SWOT 風に使う（同じ段階に 2 つ）</h2>
+<section id="g-checklist-2" class="slide noconcl">
+  <h2>窓口に持ってくるもの（A 市の転入の手続き、架空）</h2>
   <div class="body">
-    <m-quad style="height:430px">
+    <m-checklist style="height:440px">
       <script type="application/json">{
-        "x": {"lo": "マイナス", "hi": "プラス"},
-        "y": {"lo": "内部の要因", "hi": "外部の環境"},
-        "quads": {"tr": "機会", "tl": "脅威", "bl": "弱み", "br": "強み"},
         "items": [
-          {"label": "伸びる需要", "x": 0.72, "y": 0.8, "step": 1},
-          {"label": "人手不足", "x": 0.3, "y": 0.72, "step": 1, "at": 1.2},
-          {"label": "少ない人数", "x": 0.25, "y": 0.25, "step": 2, "tone": "term"},
-          {"label": "現場の知見", "x": 0.75, "y": 0.3, "step": 2, "at": 1.2, "self": true}
+          {"label": "転出証明書", "note": "前に住んでいた市区町村で受け取る"},
+          {"label": "本人を確かめる書類", "note": "運転免許証・マイナンバーカードなど"},
+          {"label": "印鑑", "mark": "cross", "note": "要らない（署名でよい）"},
+          {"label": "国民健康保険の保険証", "mark": "none", "note": "加入している人だけ"}
         ]
       }</script>
-    </m-quad>
+    </m-checklist>
   </div>
-  <div class="concl"><span>→ 現場の知見を伸びる需要に向ける</span></div>
+</section>
+
+<section id="g-checklist-3" class="slide noconcl">
+  <h2>項目も 1 つずつ出す（reveal="true"）</h2>
+  <div class="body">
+    <m-checklist reveal="true" style="height:440px">
+      <script type="application/json">{
+        "items": [
+          {"label": "患者さんの名前を、本人に言ってもらう"},
+          {"label": "リストバンドの名前と照らし合わせる"},
+          {"label": "これから行うことを説明する"}
+        ]
+      }</script>
+    </m-checklist>
+  </div>
 </section>
 
 <section class="slide">
-  <h2>m-tree（変わった、v2.8.0）</h2>
+  <h2>m-diverge（新しい、v2.8.0）</h2>
   <div class="body">
-    <p>階層・分類の木（組織図、生物の分類など）を、根から 1 段ずつ組み立てる。座標は書かず、配置はパーツが決める</p>
+    <p>基準の棒から始め、増減の棒を前の棒の端から上下に積んで、最後に合計の棒を立てる（ウォーターフォール）</p>
     <ul>
-      <li>伝えたいこと：階層・分類</li>
-      <li>見せ方：fade・draw・grow</li>
-      <li>系列：標準パーツ　見本のスライド：4 枚</li>
-    </ul>
-  </div>
-</section>
-
-<section id="g-tree-1" class="slide">
-  <h2>会社の組織（架空）</h2>
-  <div class="body">
-    <m-tree aria-label="架空の会社の組織図" style="height:440px">
-      <script type="application/json">{
-        "nodes": [
-          {"id": "ceo", "label": "社長", "tone": "emph"},
-          {"id": "s", "label": "営業本部", "parent": "ceo"},
-          {"id": "d", "label": "開発本部", "parent": "ceo"},
-          {"id": "a", "label": "管理本部", "parent": "ceo"},
-          {"id": "s1", "label": "国内営業部", "parent": "s"},
-          {"id": "s2", "label": "海外営業部", "parent": "s"},
-          {"id": "d1", "label": "製品開発部", "parent": "d"},
-          {"id": "d2", "label": "品質保証部", "parent": "d"},
-          {"id": "a1", "label": "人事部", "parent": "a"},
-          {"id": "a2", "label": "経理部", "parent": "a"},
-          {"id": "d11", "label": "設計課", "parent": "d1"},
-          {"id": "d12", "label": "試作課", "parent": "d1"},
-          {"id": "d13", "label": "試験課", "parent": "d1", "note": "2026 年に新設"}
-        ]
-      }</script>
-    </m-tree>
-  </div>
-  <div class="concl"><span>→ 上から 1 段ずつ：本部、部、課</span></div>
-</section>
-
-<section id="g-tree-2" class="slide">
-  <h2>動物の分け方（orient="right"）</h2>
-  <div class="body">
-    <m-tree orient="right" aria-label="動物の分類" style="height:440px">
-      <script type="application/json">{
-        "nodes": [
-          {"id": "an", "label": "動物"},
-          {"id": "v", "label": "脊椎動物", "parent": "an", "note": "背骨がある"},
-          {"id": "i", "label": "無脊椎動物", "parent": "an", "note": "背骨がない", "tone": "muted"},
-          {"id": "f", "label": "魚類", "parent": "v"},
-          {"id": "am", "label": "両生類", "parent": "v"},
-          {"id": "r", "label": "は虫類", "parent": "v"},
-          {"id": "b", "label": "鳥類", "parent": "v"},
-          {"id": "m", "label": "哺乳類", "parent": "v", "tone": "emph"},
-          {"id": "ar", "label": "節足動物", "parent": "i", "tone": "muted"},
-          {"id": "mo", "label": "軟体動物", "parent": "i", "tone": "muted"}
-        ],
-        "edges": [
-          {"from": "r", "to": "b", "label": "近い仲間", "step": 4}
-        ]
-      }</script>
-    </m-tree>
-  </div>
-  <div class="concl"><span>→ 背骨の有無で分け、脊椎動物をさらに 5 つに分ける</span></div>
-</section>
-
-<section id="g-tree-3" class="slide">
-  <h2>見せ方の種類（variant）</h2>
-  <div class="body">
-    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:28px">
-      <div><div class="vcap">箱、それから線（fade、既定）</div>
-      <m-tree variant="fade" aria-label="植物の分類（fade）" style="height:330px">
-        <script type="application/json">{"nodes": [{"id": "p", "label": "植物"}, {"id": "s", "label": "種子植物", "parent": "p"}, {"id": "f", "label": "胞子植物", "parent": "p"}, {"id": "a", "label": "被子植物", "parent": "s"}, {"id": "g", "label": "裸子植物", "parent": "s"}]}</script>
-      </m-tree></div>
-      <div><div class="vcap">線を引いてから箱（draw）</div>
-      <m-tree variant="draw" aria-label="植物の分類（draw）" style="height:330px">
-        <script type="application/json">{"nodes": [{"id": "p", "label": "植物"}, {"id": "s", "label": "種子植物", "parent": "p"}, {"id": "f", "label": "胞子植物", "parent": "p"}, {"id": "a", "label": "被子植物", "parent": "s"}, {"id": "g", "label": "裸子植物", "parent": "s"}]}</script>
-      </m-tree></div>
-      <div><div class="vcap">親の側から大きくなる（grow）</div>
-      <m-tree variant="grow" aria-label="植物の分類（grow）" style="height:330px">
-        <script type="application/json">{"nodes": [{"id": "p", "label": "植物"}, {"id": "s", "label": "種子植物", "parent": "p"}, {"id": "f", "label": "胞子植物", "parent": "p"}, {"id": "a", "label": "被子植物", "parent": "s"}, {"id": "g", "label": "裸子植物", "parent": "s"}]}</script>
-      </m-tree></div>
-    </div>
-  </div>
-  <div class="concl"><span>→ 書かなければ最初の見せ方（fade）になる</span></div>
-</section>
-
-<section id="g-tree-4" class="slide">
-  <h2>確率の木：雨の日に遅れる確率（架空の値）</h2>
-  <div class="body">
-    <m-tree orient="right" aria-label="天気と遅刻の確率の木（架空の値）" style="height:440px">
-      <script type="application/json">{
-        "nodes": [
-          {"id": "s", "label": "出発"},
-          {"id": "r", "label": "雨", "parent": "s", "branch": "0.3"},
-          {"id": "f", "label": "晴れ", "parent": "s", "branch": "0.7"},
-          {"id": "rl", "label": "遅れる", "parent": "r", "branch": "0.4"},
-          {"id": "ro", "label": "間に合う", "parent": "r", "branch": "0.6"},
-          {"id": "fl", "label": "遅れる", "parent": "f", "branch": "0.1"},
-          {"id": "fo", "label": "間に合う", "parent": "f", "branch": "0.9"}
-        ],
-        "path": ["s", "r", "rl"],
-        "pathNote": "0.3 × 0.4 = 0.12"
-      }</script>
-    </m-tree>
-  </div>
-  <div class="concl"><span>→ 道に沿って枝の確率をかける：雨で遅れる確率は 0.12</span></div>
-</section>
-
-<section class="slide">
-  <h2>m-balance</h2>
-  <div class="body">
-    <p>確率の重りを置き、支点が期待値でつり合う様子を示す</p>
-    <ul>
-      <li>伝えたいこと：仕組みをモデルで見る</li>
+      <li>伝えたいこと：差・増減・比べる（量・特徴）</li>
       <li>見せ方：1 種類</li>
-      <li>系列：数理・統計　見本のスライド：1 枚</li>
+      <li>内容の分野：標準パーツ　サンプルのスライド：3 枚</li>
     </ul>
   </div>
 </section>
 
-<section id="g-balance-1" class="slide">
-  <h2>期待値でつり合う（架空データ）</h2>
-  <div class="body"><m-balance style="height:440px"><script type="application/json">{"values":[0,1,2,3],"probs":[0.1,0.3,0.4,0.2],"name":"X"}</script></m-balance></div>
-  <div class="concl"><span>架空の分布。確率を重りとすると期待値が支点になる</span></div>
+<section id="g-diverge-1" class="slide">
+  <h2>今年の利益が増えた内訳（A 食品、架空）</h2>
+  <div class="body">
+    <m-diverge unit="億円" style="height:440px">
+      <script type="application/json">{
+        "items": [
+          {"label": "前年の利益", "value": 120, "total": true},
+          {"label": "売上の増加", "value": 45},
+          {"label": "原価の増加", "value": -30},
+          {"label": "広告費の削減", "value": 12},
+          {"label": "為替", "value": -8},
+          {"label": "今年の利益", "value": 139, "total": true}
+        ]
+      }</script>
+    </m-diverge>
+  </div>
+  <div class="concl"><span>→ 売上の増加が原価の増加を上回った</span></div>
+</section>
+
+<section id="g-diverge-2" class="slide">
+  <h2>A 市の人口の増減（1 年、架空）</h2>
+  <div class="body">
+    <m-diverge unit="人" min="50000" style="height:440px">
+      <script type="application/json">{
+        "items": [
+          {"label": "1 月 1 日", "value": 52300, "total": true},
+          {"label": "生まれた", "value": 310},
+          {"label": "亡くなった", "value": -720},
+          {"label": "転入", "value": 1450},
+          {"label": "転出", "value": -1620},
+          {"label": "12 月 31 日", "total": true}
+        ]
+      }</script>
+    </m-diverge>
+  </div>
+  <div class="concl"><span>→ 亡くなった人と転出が多く、580 人減った</span></div>
+</section>
+
+<section id="g-diverge-3" class="slide noconcl">
+  <h2>途中の小計と、まとめて出す（per-step="2"）</h2>
+  <div class="body">
+    <m-diverge unit="万円" per-step="2" style="height:440px">
+      <script type="application/json">{
+        "items": [
+          {"label": "予算", "value": 800, "total": true},
+          {"label": "会場費", "value": -120},
+          {"label": "講師の謝金", "value": -90},
+          {"label": "残り\n（前期）", "total": true},
+          {"label": "協賛金", "value": 60},
+          {"label": "印刷費", "value": -40},
+          {"label": "残り\n（年度末）", "value": 610, "total": true, "tone": "emph"}
+        ]
+      }</script>
+    </m-diverge>
+  </div>
 </section>
 
 <section class="slide">
-  <h2>m-bars</h2>
+  <h2>m-bars（変わった、v2.8.0）</h2>
   <div class="body">
     <p>棒をステップごとに 0 から伸ばす（縦棒・横棒・組の棒・積み上げ棒）。値の軸の上限をステップで広げて「軸を突き抜ける伸び」も見せられる</p>
     <ul>
       <li>伝えたいこと：比べる（量・特徴）・順位・時間での変化・全体と内訳</li>
       <li>見せ方：1 種類</li>
-      <li>系列：標準パーツ　見本のスライド：5 枚</li>
+      <li>内容の分野：標準パーツ　サンプルのスライド：7 枚</li>
     </ul>
   </div>
 </section>
@@ -564,173 +356,47 @@ document.addEventListener("DOMContentLoaded", function(){
   <div class="concl"><span>→ 駅前店だけが大きく減った。学年が上がるほど「はい」が増える</span></div>
 </section>
 
-<section class="slide">
-  <h2>m-boxplot</h2>
+<section id="g-bars-6" class="slide">
+  <h2>3 つの教え方の平均点（誤差棒は 95 % 信頼区間、架空）</h2>
   <div class="body">
-    <p>箱ひげ図。値を並べ、中央値・四分位数を求める手順のとおりに組み立てる。群を並べて比べる</p>
-    <ul>
-      <li>伝えたいこと：ばらつき・比べる（量・特徴）</li>
-      <li>見せ方：fade・draw</li>
-      <li>系列：数理・統計　見本のスライド：3 枚</li>
-    </ul>
-  </div>
-</section>
-
-<section id="g-boxplot-1" class="slide">
-  <h2>箱ひげ図のかき方：1 か月に読んだ本（架空の 11 人）</h2>
-  <div class="body">
-    <m-boxplot xl="冊数（冊）" xr="[0,20]" xt="[0,2,4,6,8,10,12,14,16,18,20]" style="height:440px">
-      <script type="application/json">{"groups": [{"values": [12, 5, 9, 18, 7, 3, 13, 8, 15, 6, 10]}]}</script>
-    </m-boxplot>
-  </div>
-  <div class="concl"><span>→ 小さい順に並べ、中央値と前半・後半の中央値（四分位数）で箱にする</span></div>
-</section>
-
-<section id="g-boxplot-2" class="slide">
-  <h2>3 つの組の数学の得点（架空の各 15 人）</h2>
-  <div class="body">
-    <m-boxplot orient="v" build="whole" dots="on" outliers="on" yl="得点（点）" yr="[30,100]" yt="[30,40,50,60,70,80,90,100]" style="height:440px">
-      <script type="application/json">{"groups": [
-        {"label": "A 組", "values": [42, 48, 51, 55, 57, 58, 60, 61, 63, 64, 66, 68, 70, 72, 75]},
-        {"label": "B 組", "values": [50, 56, 60, 62, 65, 67, 68, 70, 71, 73, 74, 76, 79, 82, 99]},
-        {"label": "C 組", "values": [35, 45, 52, 54, 58, 60, 61, 62, 64, 66, 67, 69, 71, 73, 80]}]}</script>
-    </m-boxplot>
-  </div>
-  <div class="concl"><span>→ B 組は箱が高い。99 点は 1.5 × 四分位範囲より外の外れ値</span></div>
-</section>
-
-<section id="g-boxplot-3" class="slide">
-  <h2>見せ方の種類（variant）</h2>
-  <div class="body">
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:0 36px">
-      <m-boxplot variant="fade" build="whole" dots="on" xl="フェード（fade、既定）" xr="[0,20]" style="height:400px">
-        <script type="application/json">{"groups": [{"label": "前", "values": [3, 5, 6, 7, 8, 9, 10, 12, 13, 15, 18]}, {"label": "後", "values": [6, 8, 9, 10, 11, 12, 12, 13, 14, 16, 17]}]}</script>
-      </m-boxplot>
-      <m-boxplot variant="draw" build="whole" dots="on" xl="線を引く（draw）" xr="[0,20]" style="height:400px">
-        <script type="application/json">{"groups": [{"label": "前", "values": [3, 5, 6, 7, 8, 9, 10, 12, 13, 15, 18]}, {"label": "後", "values": [6, 8, 9, 10, 11, 12, 12, 13, 14, 16, 17]}]}</script>
-      </m-boxplot>
-    </div>
-  </div>
-  <div class="concl"><span>→ 書かなければ最初の見せ方（fade）になる。値は架空</span></div>
-</section>
-
-<section class="slide">
-  <h2>m-cards</h2>
-  <div class="body">
-    <p>カード（番号の丸・アイコン・見出し・説明）を横一列か 2 段に並べ、ステップごとに出す。矢印で順を、枠の色で強調を見せる</p>
-    <ul>
-      <li>伝えたいこと：手順・工程・まとめる・分ける</li>
-      <li>見せ方：rise・fade・draw</li>
-      <li>系列：標準パーツ　見本のスライド：3 枚</li>
-    </ul>
-  </div>
-</section>
-
-<section id="g-cards-1" class="slide">
-  <h2>新しい窓口の進め方（架空の会社）</h2>
-  <div class="body">
-    <m-cards arrows nums style="height:330px">
+    <m-bars unit="点" digits="1" al="平均点" style="height:440px">
       <script type="application/json">{
-        "cards": [
-          {"icon": "messages", "title": "聞く", "text": "店に来た人の困りごとを 5 分で聞き取る"},
-          {"icon": "clipboard-list", "title": "まとめる", "text": "聞いたことを 1 枚の紙にまとめる"},
-          {"icon": "users", "title": "相談する", "text": "週に 1 回、担当の 3 人で話し合う"},
-          {"icon": "circle-check", "title": "返す", "text": "1 週間以内に答えを返す"}
-        ]
+        "groups": [
+          {"label": "講義だけ", "value": 61.2, "err": [57.0, 65.4]},
+          {"label": "演習あり", "value": 68.5, "err": [64.6, 72.4]},
+          {"label": "演習と\n振り返り", "value": 74.1, "err": [70.3, 77.9], "tone": "emph"}
+        ],
+        "sig": [{"from": 0, "to": 2, "label": "**"}, {"from": 0, "to": 1, "label": "*"}]
       }</script>
-    </m-cards>
+    </m-bars>
   </div>
-  <div class="concl"><span>→ 聞いてから答えるまでを 1 週間に</span></div>
+  <div class="concl"><span>→ 振り返りを加えた組の平均点が最も高い</span></div>
 </section>
 
-<section id="g-cards-2" class="slide">
-  <h2>4 つの店の工夫（架空）</h2>
+<section id="g-bars-7" class="slide noconcl">
+  <h2>点と誤差棒（mark="dot"、95 % 信頼区間、架空）</h2>
   <div class="body">
-    <m-cards layout="grid" hilite="4" style="height:420px">
+    <m-bars mark="dot" unit="%" al="正答率" per-step="0" style="height:440px">
       <script type="application/json">{
-        "cards": [
-          {"n": "A", "icon": "building-store", "title": "駅前店", "text": "朝の 30 分だけ、受け取り専用の列を作った"},
-          {"n": "B", "icon": "calendar-event", "title": "川沿い店", "text": "予約の日を前の日に電話で知らせるようにした"},
-          {"n": "C", "icon": "map-pin", "title": "山の手店", "text": "店の場所の地図を、紙で配るのをやめて看板にした"},
-          {"n": "D", "icon": "chart-bar", "title": "港町店", "text": "待ち時間を毎日数えて、壁に貼り出した。来た人の 8 割が「待ちが短くなった」と答えた", "tone": "emph"}
-        ]
+        "series": [{"label": "図あり"}, {"label": "図なし"}],
+        "groups": [
+          {"label": "問 1", "values": [72, 58], "err": [[64, 80], [49, 67]]},
+          {"label": "問 2", "values": [55, 51], "err": [[46, 64], [42, 60]]}
+        ],
+        "sig": [{"group": 0, "from": 0, "to": 1}]
       }</script>
-    </m-cards>
-  </div>
-  <div class="concl"><span>→ 数えて見せた店で、待ちが短くなったと感じる人がいちばん多い</span></div>
-</section>
-
-<section id="g-cards-3" class="slide">
-  <h2>まとめて出す（per-step="0"、見せ方 draw）</h2>
-  <div class="body">
-    <m-cards per-step="0" variant="draw" hilite="last" style="height:300px">
-      <script type="application/json">{
-        "cards": [
-          {"icon": "leaf", "title": "材料", "text": "地元の野菜を使う"},
-          {"icon": "truck", "title": "運ぶ", "text": "朝に届けて、その日のうちに売る"},
-          {"icon": "heart", "title": "残さない", "text": "売れ残りは翌日の総菜に"}
-        ]
-      }</script>
-    </m-cards>
+    </m-bars>
   </div>
 </section>
 
 <section class="slide">
-  <h2>m-ci</h2>
-  <div class="body">
-    <p>正規標本の区間を重ね、母平均を含む割合で信頼水準を説明する</p>
-    <ul>
-      <li>伝えたいこと：仕組みをモデルで見る・ばらつき</li>
-      <li>見せ方：1 種類</li>
-      <li>系列：数理・統計　見本のスライド：1 枚</li>
-    </ul>
-  </div>
-</section>
-
-<section id="g-ci-1" class="slide">
-  <h2>95 % の区間を繰り返す（シミュレーション）</h2>
-  <div class="body"><m-ci style="height:440px"><script type="application/json">{"mu":50,"sigma":10,"n":25,"reps":40,"level":0.95,"seed":2}</script></m-ci></div>
-  <div class="concl"><span>架空の標本。95 % は繰り返した区間が μ を含む割合</span></div>
-</section>
-
-<section class="slide">
-  <h2>m-code</h2>
-  <div class="body">
-    <p>短いコードを行ごとに説明し、最後に出力を見せる</p>
-    <ul>
-      <li>伝えたいこと：手順・工程・仕組みをモデルで見る</li>
-      <li>見せ方：1 種類</li>
-      <li>系列：数理・統計　見本のスライド：3 枚</li>
-    </ul>
-  </div>
-</section>
-
-<section id="g-code-1" class="slide">
-  <h2>店ごとの売上平均を計算する</h2>
-  <div class="body"><m-code style="height:440px"><script type="application/json">{"lang":"python","code":"import pandas as pd\ndf = pd.read_csv(\"sales.csv\")\ndf.groupby(\"store\")[\"sales\"].mean()","steps":[{"lines":[1],"note":"pandas を読み込む"},{"lines":[2],"note":"CSV を表として読む"},{"lines":[3],"note":"店ごとの平均"}],"output":"store\nA    120.5\nB     98.0"}</script></m-code></div>
-  <div class="concl"><span>架空の売上データ。店ごとにまとめてから平均を求める</span></div>
-</section>
-
-<section id="g-code-2" class="slide">
-  <h2>繰り返しで平均を求める</h2>
-  <div class="body"><m-code style="height:440px"><script type="application/json">{"lang":"python","code":"def mean(values):\n    total = 0\n    for value in values:\n        total += value\n    return total / len(values)\n\nprint(mean([2, 4, 6]))","steps":[{"lines":[1,2],"note":"関数を定義し、合計を 0 にする"},{"lines":[3,4],"note":"値を一つずつ合計する"},{"lines":[5,7],"note":"個数で割り、関数の結果を表示"}],"output":"4.0"}</script></m-code></div>
-  <div class="concl"><span>合計を個数で割ると平均になる</span></div>
-</section>
-
-<section id="g-code-3" class="slide">
-  <h2>交差検証のコード（scikit-learn）</h2>
-  <div class="body"><m-code style="height:420px"><script type="application/json">{"lang": "python", "code": "from sklearn.model_selection import cross_val_score\nfrom sklearn.tree import DecisionTreeClassifier\nfrom sklearn.datasets import load_iris\nX, y = load_iris(return_X_y=True)\nmodel = DecisionTreeClassifier(max_depth=3, random_state=0)\nscores = cross_val_score(model, X, y, cv=5)\nprint(scores.mean())", "steps": [{"lines": [1, 3], "note": "道具を読み込む"}, {"lines": [4], "note": "アヤメのデータ"}, {"lines": [5], "note": "決定木を用意"}, {"lines": [6, 7], "note": "5 分割で検証し平均"}], "output": "0.96"}</script></m-code></div>
-  <div class="concl"><span>データを 5 つに分け、検証する区画を替えて平均する</span></div>
-</section>
-
-<section class="slide">
-  <h2>m-codetree</h2>
+  <h2>m-codetree（変わった、v2.8.0）</h2>
   <div class="body">
     <p>ハフマン木で 2 値の系列を 1 語ずつ復号する（MH 符号）。ランは画素の升目に伸びる</p>
     <ul>
       <li>伝えたいこと：階層・分類・手順・工程</li>
       <li>見せ方：1 種類</li>
-      <li>系列：情報　見本のスライド：3 枚</li>
+      <li>内容の分野：情報　サンプルのスライド：3 枚</li>
     </ul>
   </div>
 </section>
@@ -958,13 +624,13 @@ document.addEventListener("DOMContentLoaded", function(){
 </section>
 
 <section class="slide">
-  <h2>m-collect</h2>
+  <h2>m-collect（変わった、v2.8.0）</h2>
   <div class="body">
     <p>並んだ札（回答など）が動いて縮み、少数の箱（要約）にまとまる</p>
     <ul>
       <li>伝えたいこと：まとめる・分ける</li>
       <li>見せ方：1 種類</li>
-      <li>系列：数理・統計　見本のスライド：1 枚</li>
+      <li>内容の分野：数理・統計　サンプルのスライド：1 枚</li>
     </ul>
   </div>
 </section>
@@ -987,13 +653,13 @@ document.addEventListener("DOMContentLoaded", function(){
 </section>
 
 <section class="slide">
-  <h2>m-compare</h2>
+  <h2>m-compare（変わった、v2.8.0）</h2>
   <div class="body">
     <p>2 つ（3 つまで）を横に並べて比べる表。一方の列、もう一方の列、それから行ごとの違い</p>
     <ul>
       <li>伝えたいこと：比べる（量・特徴）</li>
       <li>見せ方：fade・slide・reveal</li>
-      <li>系列：標準パーツ　見本のスライド：3 枚</li>
+      <li>内容の分野：標準パーツ　サンプルのスライド：3 枚</li>
     </ul>
   </div>
 </section>
@@ -1059,77 +725,13 @@ document.addEventListener("DOMContentLoaded", function(){
 </section>
 
 <section class="slide">
-  <h2>m-curves</h2>
-  <div class="body">
-    <p>同じ座標軸に線を 1 本ずつ引く（線の名前は凡例でなく線の端に直接書く）</p>
-    <ul>
-      <li>伝えたいこと：時間での変化</li>
-      <li>見せ方：1 種類</li>
-      <li>系列：標準パーツ　見本のスライド：4 枚</li>
-    </ul>
-  </div>
-</section>
-
-<section id="g-curves-1" class="slide">
-  <h2>予測分布と代表値</h2>
-  <div class="body">
-    <m-curves xr="[0,4]" yr="[0,0.8]" xt="[0,1,2,3,4]" yt="[0,0.2,0.4,0.6,0.8]" yf="1" xl="需要 *y*" yl="密度" style="height:420px">
-      <script type="application/json" id="pred-data">[]</script>
-    </m-curves>
-  </div>
-  <div class="concl"><span>→ 右に裾が長いと，平均は中央値より右に来る</span></div>
-</section>
-
-<section id="g-curves-2" class="slide">
-  <h2>損失関数の形</h2>
-  <div class="body">
-    <m-curves xr="[-2,2]" yr="[0,4]" xt="[-2,-1,0,1,2]" yt="[0,1,2,3,4]" xl="誤差 *u* = *y* − *a*" yl="損失" style="height:420px">
-      <script type="application/json">[
-        {"label": "二乗 *u*^2", "f": "x*x", "labelAt": 1.6, "anchor": "left", "dx": -14},
-        {"label": "絶対値 |*u*|", "f": "abs(x)", "labelAt": -2, "anchor": "right", "ly": 1.1},
-        {"label": "分位点（*τ* = 0.9）", "f": "x >= 0 ? 0.9*x : -0.1*x", "labelAt": -2, "anchor": "right", "dy": -6}
-      ]</script>
-    </m-curves>
-  </div>
-  <div class="concl"><span>→ どの損失を使うかで，最適な決定 <i>a</i> が変わる</span></div>
-</section>
-
-<section id="g-curves-3" class="slide">
-  <h2>需要が増えると（架空の例）</h2>
-  <div class="body">
-    <m-curves xr="[0,10]" yr="[0,12]" xt="[0,2,4,6,8,10]" yt="[0,3,6,9,12]" xl="数量 *Q*" yl="価格 *P*" style="height:420px">
-      <script type="application/json">[
-        {"label": "需要 D", "f": "10 - x", "tone": "term", "step": 1, "labelAt": 1.5, "anchor": "below"},
-        {"label": "供給 S", "f": "2 + x", "tone": "accent2", "step": 1, "labelAt": 8.5, "anchor": "left"},
-        {"label": "増えた需要 D′", "f": "13 - x", "tone": "emph", "step": 2, "labelAt": 2, "anchor": "right"},
-        {"label": "均衡", "pts": [[4, 0], [4, 6]], "tone": "muted", "dash": true, "step": 3, "anchor": "left", "ly": 1},
-        {"label": "新しい均衡", "pts": [[5.5, 0], [5.5, 7.5]], "tone": "emph", "dash": true, "step": 3, "anchor": "right", "ly": 1}
-      ]</script>
-    </m-curves>
-  </div>
-  <div class="concl"><span>→ 需要が増えると，価格も取引量も上がる</span></div>
-</section>
-
-<section id="g-curves-4" class="slide">
-  <h2>両側検定の棄却域</h2>
-  <div class="body">
-    <m-curves xr="[-4,4]" yr="[0,0.45]" xt="[-1.96,0,1.96]" xf="2" yt="[0,0.2,0.4]" xl="検定統計量 *z*" style="height:400px">
-      <script type="application/json">[
-        {"label": "標準正規分布", "f": "N(x, 0, 1)", "labelAt": 1, "anchor": "right", "area": [[null, -1.96], [1.96, null]], "areaLabel": "2.5 %", "tone": "term"}
-      ]</script>
-    </m-curves>
-  </div>
-  <div class="concl"><span>→ 両端の 5 % に入れば帰無仮説を棄却する</span></div>
-</section>
-
-<section class="slide">
-  <h2>m-cycle</h2>
+  <h2>m-cycle（変わった、v2.8.0）</h2>
   <div class="body">
     <p>循環の図。項目の箱を円の上に 12 時から時計回りに並べ、円に沿った矢印でつなぐ（最後から最初へ戻る矢印も）</p>
     <ul>
       <li>伝えたいこと：循環</li>
       <li>見せ方：fade・draw・grow</li>
-      <li>系列：標準パーツ　見本のスライド：3 枚</li>
+      <li>内容の分野：標準パーツ　サンプルのスライド：3 枚</li>
     </ul>
   </div>
 </section>
@@ -1193,72 +795,185 @@ document.addEventListener("DOMContentLoaded", function(){
 </section>
 
 <section class="slide">
-  <h2>m-folds</h2>
+  <h2>m-fishbone（変わった、v2.8.0）</h2>
   <div class="body">
-    <p>検証用の区画を順に替え、各分割の誤差と平均を示す</p>
+    <p>原因と結果の図（特性要因図・フィッシュボーン図）を、大骨 1 本ずつ組み立て、最後に結果（頭）を出す。座標は書かず、配置はパーツが決める</p>
     <ul>
-      <li>伝えたいこと：仕組みをモデルで見る・比べる（量・特徴）</li>
-      <li>見せ方：1 種類</li>
-      <li>系列：数理・統計　見本のスライド：1 枚</li>
+      <li>伝えたいこと：原因と結果</li>
+      <li>見せ方：fade・draw・grow</li>
+      <li>内容の分野：標準パーツ　サンプルのスライド：3 枚</li>
     </ul>
   </div>
 </section>
 
-<section id="g-folds-1" class="slide">
-  <h2>検証する区画を替える（架空データ）</h2>
-  <div class="body"><m-folds style="height:440px"><script type="application/json">{"k":5,"errors":[0.21,0.18,0.25,0.19,0.22],"labels":["1","2","3","4","5"]}</script></m-folds></div>
-  <div class="concl"><span>架空の誤差。すべての区画を 1 回ずつ検証する</span></div>
+<section id="g-fishbone-1" class="slide">
+  <h2>配送の遅れの原因（架空）</h2>
+  <div class="body">
+    <m-fishbone aria-label="配送の遅れの特性要因図" style="height:440px">
+      <script type="application/json">{
+        "effect": {"label": "配送の遅れ", "note": "1 日 12 件"},
+        "nodes": [
+          {"id": "p", "label": "人"},
+          {"id": "p1", "label": "人手が足りない", "parent": "p"},
+          {"id": "p11", "label": "繁忙期の採用が遅い", "parent": "p1"},
+          {"id": "p2", "label": "道に慣れていない", "parent": "p"},
+          {"id": "m", "label": "機械"},
+          {"id": "m1", "label": "車の故障が多い", "parent": "m"},
+          {"id": "m2", "label": "端末の反応が遅い", "parent": "m"},
+          {"id": "h", "label": "方法"},
+          {"id": "h1", "label": "積み込みの順が悪い", "parent": "h", "tone": "emph"},
+          {"id": "h2", "label": "経路を手で決めている", "parent": "h"},
+          {"id": "z", "label": "材料"},
+          {"id": "z1", "label": "伝票の記入漏れ", "parent": "z"},
+          {"id": "z2", "label": "箱の大きさがばらばら", "parent": "z"}
+        ]
+      }</script>
+    </m-fishbone>
+  </div>
+  <div class="concl"><span>→ 人・機械・方法・材料（4M）に分けて原因を洗い出す</span></div>
+</section>
+
+<section id="g-fishbone-2" class="slide">
+  <h2>植物が育たないのはなぜ（order="effect-first"）</h2>
+  <div class="body">
+    <m-fishbone order="effect-first" aria-label="植物が育たない原因" style="height:440px">
+      <script type="application/json">{
+        "effect": {"label": "植物が\n育たない"},
+        "nodes": [
+          {"id": "l", "label": "光"},
+          {"id": "l1", "label": "日当たりが悪い", "parent": "l"},
+          {"id": "l2", "label": "光の当たる時間が短い", "parent": "l"},
+          {"id": "w", "label": "水"},
+          {"id": "w1", "label": "水が足りない", "parent": "w"},
+          {"id": "w2", "label": "水のやりすぎ", "parent": "w"},
+          {"id": "w21", "label": "根が腐る", "parent": "w2"},
+          {"id": "s", "label": "土"},
+          {"id": "s1", "label": "肥料が足りない", "parent": "s"},
+          {"id": "s2", "label": "水はけが悪い", "parent": "s"},
+          {"id": "t", "label": "温度"},
+          {"id": "t1", "label": "気温が低い", "parent": "t", "note": "15 ℃ 未満"},
+          {"id": "t2", "label": "昼と夜の差が大きい", "parent": "t"}
+        ]
+      }</script>
+    </m-fishbone>
+  </div>
+  <div class="concl"><span>→ 結果を先に置き、光・水・土・温度の順に原因を足す</span></div>
+</section>
+
+<section id="g-fishbone-3" class="slide">
+  <h2>見せ方の種類（variant）</h2>
+  <div class="body">
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:28px">
+      <div><div class="vcap">箱と字、それから線（fade、既定）</div>
+      <m-fishbone variant="fade" aria-label="遅刻の原因（fade）" style="height:340px">
+        <script type="application/json">{"effect": {"label": "遅刻"}, "nodes": [{"id": "a", "label": "自分"}, {"id": "a1", "label": "寝坊", "parent": "a"}, {"id": "a2", "label": "準備が遅い", "parent": "a"}, {"id": "b", "label": "交通"}, {"id": "b1", "label": "電車の遅れ", "parent": "b"}, {"id": "b2", "label": "道の混雑", "parent": "b"}]}</script>
+      </m-fishbone></div>
+      <div><div class="vcap">線を引いてから箱と字（draw）</div>
+      <m-fishbone variant="draw" aria-label="遅刻の原因（draw）" style="height:340px">
+        <script type="application/json">{"effect": {"label": "遅刻"}, "nodes": [{"id": "a", "label": "自分"}, {"id": "a1", "label": "寝坊", "parent": "a"}, {"id": "a2", "label": "準備が遅い", "parent": "a"}, {"id": "b", "label": "交通"}, {"id": "b1", "label": "電車の遅れ", "parent": "b"}, {"id": "b2", "label": "道の混雑", "parent": "b"}]}</script>
+      </m-fishbone></div>
+      <div><div class="vcap">背骨の側から伸びる（grow）</div>
+      <m-fishbone variant="grow" aria-label="遅刻の原因（grow）" style="height:340px">
+        <script type="application/json">{"effect": {"label": "遅刻"}, "nodes": [{"id": "a", "label": "自分"}, {"id": "a1", "label": "寝坊", "parent": "a"}, {"id": "a2", "label": "準備が遅い", "parent": "a"}, {"id": "b", "label": "交通"}, {"id": "b1", "label": "電車の遅れ", "parent": "b"}, {"id": "b2", "label": "道の混雑", "parent": "b"}]}</script>
+      </m-fishbone></div>
+    </div>
+  </div>
+  <div class="concl"><span>→ 書かなければ最初の見せ方（fade）になる</span></div>
 </section>
 
 <section class="slide">
-  <h2>m-gendai</h2>
+  <h2>m-flow（変わった、v2.8.0）</h2>
   <div class="body">
-    <p>現代文の読解の図：傍線・二重傍線を引き、指示語から指す内容へ矢印、段落を役割（主張・具体例・対比）の枠で囲んで線でつなぐ</p>
+    <p>流れ図の箱と矢印をステップごとに出して、図を組み立てる</p>
     <ul>
-      <li>伝えたいこと：文章の構造</li>
+      <li>伝えたいこと：手順・工程</li>
       <li>見せ方：1 種類</li>
-      <li>系列：国語　見本のスライド：2 枚</li>
+      <li>内容の分野：標準パーツ　サンプルのスライド：3 枚</li>
     </ul>
   </div>
 </section>
 
-<section id="g-gendai-1" class="slide noconcl">
-  <h2>段落の役割と指示語（縦書き）</h2>
+<section id="g-flow-1" class="slide">
+  <h2>ベイズ決定の流れ</h2>
   <div class="body">
-    <m-gendai tate style="height:540px">
-      @具体例#p1>p3
-      駅までの道を、私は{地図アプリ|#app}に頼って歩く。画面の矢印に従えば迷うことはない。だが、{それ|>app}を閉じると、さっき通った角さえ思い出せない。
-
-      @対比#p2~p1
-      かつての旅人は、{山の形や川の流れを目印にして|#mark}道を覚えた。{そう|>mark}して得た知識は、歩いた体に刻まれていた。
-
-      @主張#p3
-      便利な道具は、私たちから==迷う機会を奪う==。だが、{迷うことこそが、土地を自分のものにする営みなのである|_A}。
-    </m-gendai>
+    <m-flow style="height:420px">
+      <script type="application/json">{
+        "nodes": [
+          {"id": "w",  "label": "観測 *w*",            "x": 0,   "y": 40,  "w": 220, "h": 80, "step": 1},
+          {"id": "p",  "tex": "p(y\\mid w)",          "x": 330, "y": 40,  "w": 240, "h": 80, "step": 1},
+          {"id": "L",  "label": "損失 *L*(*y*, *a*)\n（与えられる）", "x": 330, "y": 260, "w": 240, "h": 100, "step": 2, "tone": "muted"},
+          {"id": "r",  "tex": "r(a\\mid w)",          "x": 680, "y": 150, "w": 220, "h": 80, "step": 3},
+          {"id": "a",  "label": "決定 *a*^*",          "x": 1000, "y": 150, "w": 184, "h": 80, "step": 4, "tone": "emph"}
+        ],
+        "edges": [
+          {"from": "w", "to": "p", "step": 1, "label": "予測"},
+          {"from": "p", "to": "r", "step": 3},
+          {"from": "L", "to": "r", "step": 3, "dash": true},
+          {"from": "r", "to": "a", "step": 4, "label": "最小化", "tone": "emph"}
+        ]
+      }</script>
+    </m-flow>
   </div>
+  <div class="concl"><span>→ 予測と損失から期待損失 <i>r</i> を作り，それを最小にする <i>a</i> を選ぶ</span></div>
 </section>
 
-<section id="g-gendai-2" class="slide noconcl">
-  <h2>横書きの傍線</h2>
+<section id="g-flow-2" class="slide">
+  <h2>お金とサービスの流れ（架空）</h2>
   <div class="body">
-    <m-gendai style="height:400px">
-      @主張#q1
-      道具は、__使う人の考え方__までも形づくる。{これ|>q}は、{手で書くか打つかで文章が変わる|=,#q}ことからも分かる。
-
-      @具体例#q2>q1
-      手で書くと、書く前に考える。打つと、書きながら考える。
-    </m-gendai>
+    <m-flow style="height:420px">
+      <script type="application/json">{
+        "nodes": [
+          {"id": "co",  "label": "自社",         "x": 470, "y": 20,  "w": 240, "h": 80, "step": 1, "tone": "emph"},
+          {"id": "cu",  "label": "顧客の会社",   "x": 60,  "y": 300, "w": 260, "h": 80, "step": 1},
+          {"id": "us",  "label": "社員（使う人）", "x": 860, "y": 300, "w": 300, "h": 80, "step": 2},
+          {"id": "cl",  "label": "クラウド",     "x": 950, "y": 20,  "w": 220, "h": 80, "step": 3, "tone": "muted"}
+        ],
+        "edges": [
+          {"from": "co", "to": "cu", "kind": "service", "label": "使う権利", "shift": 14, "step": 1},
+          {"from": "cu", "to": "co", "kind": "money", "amount": "月 3 万円", "shift": 14, "step": 2, "pulse": [2, 3]},
+          {"from": "cu", "to": "us", "kind": "service", "label": "配る", "step": 2},
+          {"from": "us", "to": "co", "kind": "data", "label": "使い方の記録", "step": 3, "pulse": true},
+          {"from": "co", "to": "cl", "kind": "money", "amount": "売上の 15 %", "step": 3}
+        ]
+      }</script>
+    </m-flow>
   </div>
+  <div class="concl"><span>→ 会社が払い，社員が使い，記録が戻る</span></div>
+</section>
+
+<section id="g-flow-3" class="slide">
+  <h2>1 から <i>n</i> までの和を求める手順（判断とくり返し）</h2>
+  <div class="body">
+    <m-flow aria-label="1 から n までの和を求める流れ図" style="height:420px">
+      <script type="application/json">{
+        "nodes": [
+          {"id": "init", "label": "*S* ← 0, *i* ← 1",  "x": 0,   "y": 70,  "w": 220, "h": 80, "step": 1},
+          {"id": "dec",  "label": "*i* ≤ *n* ?",       "x": 290, "y": 40,  "w": 260, "h": 140, "step": 1, "shape": "diamond"},
+          {"id": "add",  "label": "*S* ← *S* + *i*",   "x": 640, "y": 70,  "w": 230, "h": 80, "step": 2},
+          {"id": "inc",  "label": "*i* ← *i* + 1",     "x": 950, "y": 70,  "w": 220, "h": 80, "step": 2},
+          {"id": "out",  "label": "*S* を出力",        "x": 305, "y": 300, "w": 230, "h": 80, "step": 4, "tone": "emph"}
+        ],
+        "edges": [
+          {"from": "init", "to": "dec", "step": 1},
+          {"from": "dec", "to": "add", "label": "はい", "step": 2},
+          {"from": "add", "to": "inc", "step": 2},
+          {"from": "inc", "to": "dec", "loop": "top", "label": "くり返す", "step": 3},
+          {"from": "dec", "to": "out", "label": "いいえ", "step": 4, "tone": "emph"}
+        ]
+      }</script>
+    </m-flow>
+  </div>
+  <div class="concl"><span>→ <i>i</i> が <i>n</i> をこえるまで足してから，<i>S</i> を出力する</span></div>
 </section>
 
 <section class="slide">
-  <h2>m-heatmap</h2>
+  <h2>m-heatmap（変わった、v2.8.0）</h2>
   <div class="body">
     <p>ヒートマップ。値で塗ったセルの格子（混同行列・相関行列・注意の重み）</p>
     <ul>
       <li>伝えたいこと：比べる（量・特徴）・2 つの量の関係</li>
       <li>見せ方：fade・sweep</li>
-      <li>系列：数理・統計　見本のスライド：3 枚</li>
+      <li>内容の分野：数理・統計　サンプルのスライド：3 枚</li>
     </ul>
   </div>
 </section>
@@ -1299,180 +1014,13 @@ document.addEventListener("DOMContentLoaded", function(){
 </section>
 
 <section class="slide">
-  <h2>m-hissan</h2>
-  <div class="body">
-    <p>筆算（たし算・ひき算・かけ算・わり算、小数も）。式を書けば、パーツが教科書の手順で計算して書く</p>
-    <ul>
-      <li>伝えたいこと：手順・工程</li>
-      <li>見せ方：fade・draw</li>
-      <li>系列：数理・統計　見本のスライド：3 枚</li>
-    </ul>
-  </div>
-</section>
-
-<section id="g-hissan-1" class="slide">
-  <h2>0 のあるひき算：1003−457</h2>
-  <div class="body">
-    <m-hissan expr="1003-457" style="height:400px"></m-hissan>
-  </div>
-  <div class="concl"><span>→ 十の位も百の位も 0 なので、千の位から順にくり下げる</span></div>
-</section>
-
-<section id="g-hissan-2" class="slide">
-  <h2>2 けたをかけるかけ算：38×24</h2>
-  <div class="body">
-    <m-hissan expr="38×24" style="height:420px"></m-hissan>
-  </div>
-  <div class="concl"><span>→ 38×2 の 76 は、十の位から書く</span></div>
-</section>
-
-<section id="g-hissan-3" class="slide">
-  <h2>2 けたでわるわり算：851÷23</h2>
-  <div class="body">
-    <m-hissan expr="851÷23" kari="on" style="height:440px"></m-hissan>
-  </div>
-  <div class="concl"><span>→ 仮の商が大きすぎたら、1 小さくしてやり直す</span></div>
-</section>
-
-<section class="slide">
-  <h2>m-hist</h2>
-  <div class="body">
-    <p>ヒストグラム・度数折れ線・ドットプロット。平均値・中央値・最頻値の線も</p>
-    <ul>
-      <li>伝えたいこと：ばらつき</li>
-      <li>見せ方：fade・grow</li>
-      <li>系列：数理・統計　見本のスライド：3 枚</li>
-    </ul>
-  </div>
-</section>
-
-<section id="g-hist-1" class="slide">
-  <h2>ソフトボール投げの記録（架空の 20 人）</h2>
-  <div class="body">
-    <m-hist kind="dots" marks="mean,median,mode" xl="記録（m）" unit=" m" style="height:430px">
-      <script type="application/json">{"values": [25, 31, 22, 38, 25, 16, 29, 42, 27, 25, 33, 19, 24, 36, 22, 28, 34, 25, 21, 30]}</script>
-    </m-hist>
-  </div>
-  <div class="concl"><span>→ 平均値・中央値・最頻値は、同じ記録でも違う値になる</span></div>
-</section>
-
-<section id="g-hist-2" class="slide">
-  <h2>度数を数える：通学時間（架空の 12 人）</h2>
-  <div class="body">
-    <m-hist build="values" xl="通学時間（分）" yl="人数（人）" style="height:430px">
-      <script type="application/json">{"values": [12, 25, 8, 17, 21, 14, 9, 28, 16, 19, 23, 15], "bins": {"start": 5, "width": 5}}</script>
-    </m-hist>
-  </div>
-  <div class="concl"><span>→ 1 人ずつ、記録の入る階級に積む（5 分以上 10 分未満、…）</span></div>
-</section>
-
-<section id="g-hist-3" class="slide">
-  <h2>見せ方の種類（variant）：2 組の 50 m 走</h2>
-  <div class="body">
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:0 36px">
-      <m-hist variant="fade" polygon="on" xl="フェード（fade、既定）" yl="人数（人）" style="height:420px">
-        <script type="application/json">{"series": [{"label": "1 組", "table": [{"from": 7.0, "to": 7.5, "count": 2}, {"from": 7.5, "to": 8.0, "count": 5}, {"from": 8.0, "to": 8.5, "count": 9}, {"from": 8.5, "to": 9.0, "count": 12}, {"from": 9.0, "to": 9.5, "count": 7}, {"from": 9.5, "to": 10.0, "count": 4}, {"from": 10.0, "to": 10.5, "count": 1}]}, {"label": "2 組", "table": [{"from": 7.0, "to": 7.5, "count": 0}, {"from": 7.5, "to": 8.0, "count": 2}, {"from": 8.0, "to": 8.5, "count": 6}, {"from": 8.5, "to": 9.0, "count": 10}, {"from": 9.0, "to": 9.5, "count": 11}, {"from": 9.5, "to": 10.0, "count": 7}, {"from": 10.0, "to": 10.5, "count": 4}]}]}</script>
-      </m-hist>
-      <m-hist variant="grow" polygon="on" xl="下から伸びる（grow）" yl="人数（人）" style="height:420px">
-        <script type="application/json">{"series": [{"label": "1 組", "table": [{"from": 7.0, "to": 7.5, "count": 2}, {"from": 7.5, "to": 8.0, "count": 5}, {"from": 8.0, "to": 8.5, "count": 9}, {"from": 8.5, "to": 9.0, "count": 12}, {"from": 9.0, "to": 9.5, "count": 7}, {"from": 9.5, "to": 10.0, "count": 4}, {"from": 10.0, "to": 10.5, "count": 1}]}, {"label": "2 組", "table": [{"from": 7.0, "to": 7.5, "count": 0}, {"from": 7.5, "to": 8.0, "count": 2}, {"from": 8.0, "to": 8.5, "count": 6}, {"from": 8.5, "to": 9.0, "count": 10}, {"from": 9.0, "to": 9.5, "count": 11}, {"from": 9.5, "to": 10.0, "count": 7}, {"from": 10.0, "to": 10.5, "count": 4}]}]}</script>
-      </m-hist>
-    </div>
-  </div>
-  <div class="concl"><span>→ 2 組は重ねて比べる（架空の各 40 人）</span></div>
-</section>
-
-<section class="slide">
-  <h2>m-kakijun</h2>
-  <div class="body">
-    <p>かな（ひらがな・カタカナ）の書き順。字を 1 画ずつ、書く順と向きのとおりに書いて見せる</p>
-    <ul>
-      <li>伝えたいこと：手順・工程</li>
-      <li>見せ方：draw・pen</li>
-      <li>系列：国語　見本のスライド：3 枚</li>
-    </ul>
-  </div>
-</section>
-
-<section id="g-kakijun-1" class="slide">
-  <h2>ひらがなの書き順：あさ</h2>
-  <div class="body">
-    <m-kakijun text="あさ" ends="on" style="height:400px"></m-kakijun>
-  </div>
-  <div class="concl"><span>→ 「あ」の 3 画目は、結びを作ってから右へはらう</span></div>
-</section>
-
-<section id="g-kakijun-2" class="slide">
-  <h2>濁点のあるカタカナ：ガム</h2>
-  <div class="body">
-    <m-kakijun text="ガム" style="height:400px"></m-kakijun>
-  </div>
-  <div class="concl"><span>→ 濁点は、字を書き終えてから左上から右下へ 2 つ</span></div>
-</section>
-
-<section id="g-kakijun-3" class="slide">
-  <h2>縦書きの小さい字：きょう</h2>
-  <div class="body">
-    <m-kakijun text="きょう" writing="tate" size="140" nums="off" style="height:440px"></m-kakijun>
-  </div>
-  <div class="concl"><span>→ 縦書きの「ょ」は、ます目の右上に小さく書く</span></div>
-</section>
-
-<section class="slide">
-  <h2>m-kanbun</h2>
-  <div class="body">
-    <p>白文に返り点・送り仮名を付け、訓読の順に字をたどり（返り点で上へ戻るところに弧）、書き下し文にする（縦書き）</p>
-    <ul>
-      <li>伝えたいこと：文章の構造</li>
-      <li>見せ方：1 種類</li>
-      <li>系列：国語　見本のスライド：3 枚</li>
-    </ul>
-  </div>
-</section>
-
-<section id="g-kanbun-1" class="slide">
-  <h2>孟浩然「春暁」</h2>
-  <div class="body">
-    <m-kanbun style="height:430px">
-      春眠不{=ず}レ覚(エ)レ暁(ヲ)
-      処処聞(ク)[二]啼鳥(ヲ)[一]
-      夜来風雨(ノ)声
-      花落(ツルコト)知(ル)多少
-    </m-kanbun>
-  </div>
-  <div class="concl"><span>返り点に従って下から上へ戻って読む</span></div>
-</section>
-
-<section id="g-kanbun-2" class="slide">
-  <h2>レ点・一二点・一レ点（『史記』）</h2>
-  <div class="body">
-    <m-kanbun size="56" order-by="all" style="height:430px">
-      先(ンズレバ)即(チ)制(シ)[レ]人(ヲ)、
-      後(ルレバ)則(チ)為(ル)[二]人(ノ)所(ト)[一レ]制(スル)
-    </m-kanbun>
-  </div>
-  <div class="concl"><span>一レ点は、レ点で戻ってから二へ戻る</span></div>
-</section>
-
-<section id="g-kanbun-3" class="slide">
-  <h2>再読文字と置き字（『論語』）</h2>
-  <div class="body">
-    <m-kanbun style="height:430px">
-      未(ダ|ず)[レ]知(ラ)[レ]生(ヲ)、
-      焉{いづく}(ンゾ)知(ラン)[レ]死(ヲ)
-      学(ビテ)而{-}時(ニ)習(フ)[レ]之(ヲ)
-    </m-kanbun>
-  </div>
-  <div class="concl"><span>再読文字は二度読み、置き字は読まない</span></div>
-</section>
-
-<section class="slide">
-  <h2>m-keyboard</h2>
+  <h2>m-keyboard（変わった、v2.8.0）</h2>
   <div class="body">
     <p>ピアノの鍵盤。音階・和音・半音と全音を光らせて音も鳴らす</p>
     <ul>
       <li>伝えたいこと：音楽（音の高さ・和音・リズム）</li>
       <li>見せ方：light・press・rise</li>
-      <li>系列：音楽　見本のスライド：3 枚</li>
+      <li>内容の分野：音楽　サンプルのスライド：3 枚</li>
     </ul>
   </div>
 </section>
@@ -1516,55 +1064,13 @@ document.addEventListener("DOMContentLoaded", function(){
 </section>
 
 <section class="slide">
-  <h2>m-kobun</h2>
-  <div class="body">
-    <p style="margin:0 0 10px;line-height:1.3"><span style="display:inline-block;font-size:27px;font-weight:700;color:var(--fg);border:2px dashed var(--accent2);border-radius:8px;padding:0 12px">操作できる / Interactive</span></p>
-    <p style="border:3px dashed var(--accent2);border-radius:10px;padding:10px 16px">古文を語に切り（スラッシュ）、品詞で色を分けて 1 文ずつ見せ、最後に現代語訳と並べる。助動詞を押すと活用表と意味（見る人が押して操作できる）</p>
-    <ul>
-      <li>伝えたいこと：文章の構造</li>
-      <li>見せ方：1 種類</li>
-      <li>系列：国語　見本のスライド：2 枚</li>
-    </ul>
-  </div>
-</section>
-
-<section id="g-kobun-1" class="slide noconcl">
-  <h2>『枕草子』春はあけぼの</h2>
-  <div class="body">
-    <p class="ia-badge" style="margin:0 0 10px;line-height:1.3"><span style="display:inline-block;font-size:27px;font-weight:700;color:var(--fg);border:2px dashed var(--accent2);border-radius:8px;padding:0 12px">操作できる</span></p>
-    <m-kobun style="height:470px">
-      春[名]/は[係助]/あけぼの[名]。
-      = 春は明け方（がよい）。
-      やうやう[副]/白く[形・ク・連用]/なりゆく[動・カ四・連体]/山ぎは[名]、
-      = だんだん白くなっていく山ぎわ（の空）が、
-      少し[副]/明かり[動・ラ四・連用]/て[接助]、
-      = 少し明るくなって、
-      紫だち[動・タ四・連用]/たる[助動・たり・存続・連体]/雲[名]/の[格助]/細く[形・ク・連用]/たなびき[動・カ四・連用]/たる[助動・たり・存続・連体]。
-      = 紫がかった雲が細くたなびいている（のがよい）。
-    </m-kobun>
-  </div>
-</section>
-
-<section id="g-kobun-2" class="slide noconcl">
-  <h2>縦書きの品詞分解</h2>
-  <div class="body">
-    <m-kobun tate style="height:520px">
-      春[名]/は[係助]/あけぼの[名]。
-      = 春は明け方（がよい）。
-      少し[副]/明かり[動・ラ四・連用]/て[接助]、
-      = 少し明るくなって、
-    </m-kobun>
-  </div>
-</section>
-
-<section class="slide">
-  <h2>m-kpi</h2>
+  <h2>m-kpi（変わった、v2.8.0）</h2>
   <div class="body">
     <p>大きな数字の札（KPI）をステップごとに出す。数字は数え上げ、下に増減の矢印と一言</p>
     <ul>
       <li>伝えたいこと：1 つの大事な数字</li>
       <li>見せ方：count・rise・flip・underline</li>
-      <li>系列：標準パーツ　見本のスライド：3 枚</li>
+      <li>内容の分野：標準パーツ　サンプルのスライド：3 枚</li>
     </ul>
   </div>
 </section>
@@ -1624,13 +1130,1074 @@ document.addEventListener("DOMContentLoaded", function(){
 </section>
 
 <section class="slide">
+  <h2>m-market（変わった、v2.8.0）</h2>
+  <div class="body">
+    <p>市場規模の入れ子の円（TAM / SAM / SOM）。外の円から 1 つずつ、前の円の大きさから縮んで現れる</p>
+    <ul>
+      <li>伝えたいこと：全体と内訳</li>
+      <li>見せ方：1 種類</li>
+      <li>内容の分野：ビジネス　サンプルのスライド：2 枚</li>
+    </ul>
+  </div>
+</section>
+
+<section id="g-market-1" class="slide">
+  <h2>市場の大きさ（架空）</h2>
+  <div class="body">
+    <m-market unit="億円" style="height:420px">
+      <script type="application/json">{
+        "rings": [
+          {"key": "TAM", "value": 2400, "basis": "社内文書を書くすべての時間"},
+          {"key": "SAM", "value": 520, "basis": "定型の報告書（月報・週報）"},
+          {"key": "SOM", "value": 26, "basis": "5 年で取る中堅企業 800 社"}
+        ]
+      }</script>
+    </m-market>
+  </div>
+  <div class="concl"><span>→ まず定型の報告書から始める</span></div>
+</section>
+
+<section id="g-market-2" class="slide">
+  <h2>面積を値に比例させる</h2>
+  <div class="body">
+    <m-market unit="万人" scale="area" layout="center" count="true" style="height:420px">
+      <script type="application/json">{
+        "rings": [
+          {"key": "全体", "value": 900, "basis": "架空の母集団"},
+          {"key": "対象", "value": 300, "basis": "条件に合う人"},
+          {"key": "初年度", "value": 12, "basis": "最初に届く人"}
+        ]
+      }</script>
+    </m-market>
+  </div>
+  <div class="concl"><span>→ 面積で見ると最初の一歩は小さい</span></div>
+</section>
+
+<section class="slide">
+  <h2>m-orbit（変わった、v2.8.0）</h2>
+  <div class="body">
+    <p>月の満ち欠け（金星の満ち欠け）。北極の上から見た図と地球から見た形を並べ、月を位置から位置へ動かす。形は位置から計算する</p>
+    <ul>
+      <li>伝えたいこと：仕組みをモデルで見る・循環</li>
+      <li>見せ方：1 種類</li>
+      <li>内容の分野：数理・統計　サンプルのスライド：3 枚</li>
+    </ul>
+  </div>
+</section>
+
+<section id="g-orbit-1" class="slide">
+  <h2>月の満ち欠け</h2>
+  <div class="body">
+    <m-orbit style="height:440px">
+      <script type="application/json">{}</script>
+    </m-orbit>
+  </div>
+  <div class="concl"><span>→ 月の光っている半分はいつも太陽の側。地球から見える部分が変わる</span></div>
+</section>
+
+<section id="g-orbit-2" class="slide">
+  <h2>日食と月食</h2>
+  <div class="body">
+    <m-orbit style="height:440px">
+      <script type="application/json">{"visit": [4, 0], "eclipse": true}</script>
+    </m-orbit>
+  </div>
+  <div class="concl"><span>→ 太陽・月・地球が一直線に並ぶと、影ができる</span></div>
+</section>
+
+<section id="g-orbit-3" class="slide">
+  <h2>金星の満ち欠け</h2>
+  <div class="body">
+    <m-orbit mode="venus" style="height:440px">
+      <script type="application/json">{"start": 2, "visit": [3, 5, 6]}</script>
+    </m-orbit>
+  </div>
+  <div class="concl"><span>→ 地球に近いほど大きく見え、細く欠ける</span></div>
+</section>
+
+<section class="slide">
+  <h2>m-particles（変わった、v2.8.0）</h2>
+  <div class="body">
+    <p>状態変化の粒子の並び方と間隔、化学変化で保存される原子の数を見せる</p>
+    <ul>
+      <li>伝えたいこと：仕組みをモデルで見る・手順・工程・比べる（量・特徴）</li>
+      <li>見せ方：1 種類</li>
+      <li>内容の分野：数理・統計　サンプルのスライド：4 枚</li>
+    </ul>
+  </div>
+</section>
+
+<section id="g-particles-1" class="slide">
+  <h2>水の状態変化</h2>
+  <div class="body"><m-particles style="height:440px"><script type="application/json">{"substance":"水"}</script></m-particles></div>
+  <div class="concl"><span>粒子の数と大きさは同じ。並び方と間隔が変わる</span></div>
+</section>
+
+<section id="g-particles-2" class="slide">
+  <h2>水素の燃焼</h2>
+  <div class="body"><m-particles mode="reaction" style="height:440px"><script type="application/json">{"reactants":[{"formula":"H2","n":2},{"formula":"O2","n":1}],"products":[{"formula":"H2O","n":2}]}</script></m-particles></div>
+  <div class="concl"><span>水素と酸素から水ができても、原子の数は変わらない</span></div>
+</section>
+
+<section id="g-particles-3" class="slide">
+  <h2>鉄と硫黄の化合</h2>
+  <div class="body"><m-particles mode="reaction" style="height:440px"><script type="application/json">{"reactants":[{"formula":"Fe","n":1},{"formula":"S","n":1}],"products":[{"formula":"FeS","n":1}]}</script></m-particles></div>
+  <div class="concl"><span>鉄と硫黄の原子が結び付き、硫化鉄ができる</span></div>
+</section>
+
+<section id="g-particles-4" class="slide">
+  <h2>炭素の燃焼</h2>
+  <div class="body"><m-particles mode="reaction" style="height:440px"><script type="application/json">{"reactants":[{"formula":"C","n":1},{"formula":"O2","n":1}],"products":[{"formula":"CO2","n":1}]}</script></m-particles></div>
+  <div class="concl"><span>炭素と酸素から二酸化炭素ができる</span></div>
+</section>
+
+<section class="slide">
+  <h2>m-predict（変わった、v2.8.0）</h2>
+  <div class="body">
+    <p style="margin:0 0 10px;line-height:1.3"><span style="display:inline-block;font-size:27px;font-weight:700;color:var(--fg);border:2px dashed var(--accent2);border-radius:8px;padding:0 12px">操作できる / Interactive</span></p>
+    <p style="border:3px dashed var(--accent2);border-radius:10px;padding:10px 16px">予想してから答えを開く。選択肢ごとの人数を棒で見せ、答えのステップで正解に枠（学習者が押して操作できる）</p>
+    <ul>
+      <li>伝えたいこと：予想してから確かめる</li>
+      <li>見せ方：fade・draw</li>
+      <li>内容の分野：標準パーツ　サンプルのスライド：3 枚</li>
+    </ul>
+  </div>
+</section>
+
+<section id="g-predict-1" class="slide">
+  <h2>予想してみよう：落ちる速さ</h2>
+  <div class="body">
+    <p class="ia-badge" style="margin:0 0 10px;line-height:1.3"><span style="display:inline-block;font-size:27px;font-weight:700;color:var(--fg);border:2px dashed var(--accent2);border-radius:8px;padding:0 12px">操作できる</span></p>
+    <m-predict unit="人" style="height:390px">
+      <script type="application/json">{
+        "question": "同じ高さから落とすと、重い球と軽い球のどちらが先に着く？",
+        "choices": [{"label": "重い球"}, {"label": "軽い球"}, {"label": "同時"}],
+        "answer": 2,
+        "counts": [17, 2, 11],
+        "note": "空気の抵抗が小さければ、重さによらず同時に着く（ガリレオ）"
+      }</script>
+    </m-predict>
+  </div>
+  <div class="concl"><span>→ 落ちる速さは重さで決まらない（人数は架空の例）</span></div>
+</section>
+
+<section id="g-predict-2" class="slide">
+  <h2>予想してみよう：小数のかけ算</h2>
+  <div class="body">
+    <m-predict unit="人" poll="p1" style="height:440px">
+      <script type="application/json">{
+        "question": "0.1 × 0.1 はいくつ？",
+        "choices": [{"label": "0.1"}, {"label": "0.01"}, {"label": "0.2"}, {"label": "1"}],
+        "answer": 1,
+        "counts": [12, 10, 6, 2],
+        "note": "0.1 は 10 分の 1。10 分の 1 の 10 分の 1 は 100 分の 1"
+      }</script>
+    </m-predict>
+  </div>
+  <div class="concl"><span>→ 1 より小さい数をかけると、もとの数より小さくなる（人数は架空の例）</span></div>
+</section>
+
+<section id="g-predict-3" class="slide">
+  <h2>見せ方の種類（variant）</h2>
+  <div class="body">
+    <div style="display:grid;grid-template-columns:190px 1fr;gap:20px 16px;align-items:center;font-size:27px">
+      <div>フェード<br>（fade）</div>
+      <m-predict variant="fade" unit="人" style="height:210px">
+        <script type="application/json">{"choices": [{"label": "A"}, {"label": "B"}], "answer": 0, "counts": [8, 5]}</script>
+      </m-predict>
+      <div>線を引く<br>（draw）</div>
+      <m-predict variant="draw" unit="人" style="height:210px">
+        <script type="application/json">{"choices": [{"label": "A"}, {"label": "B"}], "answer": 0, "counts": [8, 5]}</script>
+      </m-predict>
+    </div>
+  </div>
+  <div class="concl"><span>→ 書かなければ最初の見せ方（fade）になる。人数は架空</span></div>
+</section>
+
+<section class="slide">
+  <h2>m-quad（変わった、v2.8.0）</h2>
+  <div class="body">
+    <p>2 軸の位置づけ（ポジショニングマップ・SWOT 風の 4 象限）に、点をステップごとに 1 つずつ置く</p>
+    <ul>
+      <li>伝えたいこと：位置づけ（2 軸）</li>
+      <li>見せ方：1 種類</li>
+      <li>内容の分野：標準パーツ　サンプルのスライド：2 枚</li>
+    </ul>
+  </div>
+</section>
+
+<section id="g-quad-1" class="slide">
+  <h2>報告書づくりの道具の位置づけ（架空）</h2>
+  <div class="body">
+    <m-quad quads-step="1" style="height:430px">
+      <script type="application/json">{
+        "x": {"lo": "手で書く", "hi": "自動で下書き"},
+        "y": {"lo": "導入が重い", "hi": "すぐ使える"},
+        "quads": {"tr": "空いている場所", "tl": "", "bl": "", "br": "", "fill": "tr"},
+        "items": [
+          {"label": "表計算の雛形", "x": 0.14, "y": 0.78},
+          {"label": "汎用の文章 AI", "x": 0.6, "y": 0.4, "anchor": "left"},
+          {"label": "大型の業務システム", "x": 0.7, "y": 0.18},
+          {"label": "自社の製品", "x": 0.68, "y": 0.66, "self": true, "to": {"x": 0.78, "y": 0.74, "label": "次の版"}}
+        ]
+      }</script>
+    </m-quad>
+  </div>
+  <div class="concl"><span>→ すぐ使えて自動で書く場所が空いている</span></div>
+</section>
+
+<section id="g-quad-2" class="slide">
+  <h2>SWOT 風に使う（同じ段階に 2 つ）</h2>
+  <div class="body">
+    <m-quad style="height:430px">
+      <script type="application/json">{
+        "x": {"lo": "マイナス", "hi": "プラス"},
+        "y": {"lo": "内部の要因", "hi": "外部の環境"},
+        "quads": {"tr": "機会", "tl": "脅威", "bl": "弱み", "br": "強み"},
+        "items": [
+          {"label": "伸びる需要", "x": 0.72, "y": 0.8, "step": 1},
+          {"label": "人手不足", "x": 0.3, "y": 0.72, "step": 1, "at": 1.2},
+          {"label": "少ない人数", "x": 0.25, "y": 0.25, "step": 2, "tone": "term"},
+          {"label": "現場の知見", "x": 0.75, "y": 0.3, "step": 2, "at": 1.2, "self": true}
+        ]
+      }</script>
+    </m-quad>
+  </div>
+  <div class="concl"><span>→ 現場の知見を伸びる需要に向ける</span></div>
+</section>
+
+<section class="slide">
+  <h2>m-tape（変わった、v2.8.0）</h2>
+  <div class="body">
+    <p>テープ図・線分図。全体や部分を括弧で括り、わからない量は □ か ?。行から行へ「2 倍」の矢印</p>
+    <ul>
+      <li>伝えたいこと：全体と内訳・比べる（量・特徴）</li>
+      <li>見せ方：fade・grow</li>
+      <li>内容の分野：数理・統計　サンプルのスライド：4 枚</li>
+    </ul>
+  </div>
+</section>
+
+<section id="g-tape-1" class="slide">
+  <h2>2 つの量をくらべる：B のリボンは何 m？</h2>
+  <div class="body">
+    <m-tape style="height:440px">
+      <script type="application/json">{"rows": [
+          {"label": "A", "segs": [{"v": 12, "label": "12 m"}]},
+          {"label": "B", "segs": [{"v": 12, "label": "12 m"}, {"v": 5, "label": "5 m"}]}],
+        "brace": [{"row": 1, "from": 0, "to": 1, "label": "□ m", "side": "below"}]}</script>
+    </m-tape>
+  </div>
+  <div class="concl"><span>→ B は A より 5 m 長い。□ = 12 + 5 = 17</span></div>
+</section>
+
+<section id="g-tape-2" class="slide">
+  <h2>□を使った式：みかんははじめに何こ？</h2>
+  <div class="body">
+    <m-tape style="height:360px">
+      <script type="application/json">{"rows": [{"segs": [{"v": 8, "label": "食べた 8 こ"}, {"v": 15, "label": "のこり 15 こ"}]}],
+        "brace": [{"row": 0, "from": 0, "to": 1, "label": "はじめ □ こ", "side": "above"}]}</script>
+    </m-tape>
+  </div>
+  <div class="concl"><span>→ □ − 8 = 15 だから、□ = 15 + 8 = 23</span></div>
+</section>
+
+<section id="g-tape-3" class="slide">
+  <h2>B のテープは A のテープの何倍？（線分図）</h2>
+  <div class="body">
+    <m-tape kind="line" style="height:380px">
+      <script type="application/json">{"rows": [
+          {"label": "A のテープ", "segs": [{"v": 12, "label": "12 m"}]},
+          {"label": "B のテープ", "segs": [{"v": 12}, {"v": 12}, {"v": 12}]}],
+        "brace": [{"row": 1, "from": 0, "to": 2, "label": "36 m", "side": "below"}],
+        "times": [{"from": 0, "to": 1, "label": "□ 倍"}]}</script>
+    </m-tape>
+  </div>
+  <div class="concl"><span>→ B は A（12 m）の 3 つ分で 36 m。36 ÷ 12 = 3 で 3 倍</span></div>
+</section>
+
+<section id="g-tape-4" class="slide">
+  <h2>見せ方の種類（variant）</h2>
+  <div class="body">
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:0 36px">
+      <m-tape variant="fade" build="rows" style="height:400px">
+        <script type="application/json">{"rows": [{"label": "弟", "segs": [{"v": 20, "label": "20 まい"}]},
+          {"label": "兄", "segs": [{"v": 40, "unknown": "□", "label": "まい"}]}],
+          "times": [{"from": 0, "to": 1, "label": "2 倍"}]}</script>
+      </m-tape>
+      <m-tape variant="grow" build="rows" style="height:400px">
+        <script type="application/json">{"rows": [{"label": "弟", "segs": [{"v": 20, "label": "20 まい"}]},
+          {"label": "兄", "segs": [{"v": 40, "unknown": "□", "label": "まい"}]}],
+          "times": [{"from": 0, "to": 1, "label": "2 倍"}]}</script>
+      </m-tape>
+    </div>
+  </div>
+  <div class="concl"><span>→ 左はフェード（既定）、右は左から伸びる</span></div>
+</section>
+
+<section class="slide">
+  <h2>m-timeline（変わった、v2.8.0）</h2>
+  <div class="body">
+    <p>年表。出来事を時間の軸の上に 1 つずつ出す。期間は帯にして、重なる期間は段を分けて積む。end は含まない（"1912" は 1912 年の初め）</p>
+    <ul>
+      <li>伝えたいこと：年表・予定</li>
+      <li>見せ方：fade・draw・grow</li>
+      <li>内容の分野：標準パーツ　サンプルのスライド：4 枚</li>
+    </ul>
+  </div>
+</section>
+
+<section id="g-timeline-1" class="slide">
+  <h2>明治のおもな出来事</h2>
+  <div class="body">
+    <m-timeline style="height:430px">
+      <script type="application/json">{
+        "nodes": [
+          {"label": "明治維新", "when": "1868", "whenLabel": "明治元年", "note": "五箇条の御誓文"},
+          {"label": "廃藩置県", "when": "1871"},
+          {"label": "鉄道の開業", "when": "1872", "note": "新橋〜横浜"},
+          {"label": "西南戦争", "when": "1877"},
+          {"label": "憲法の発布", "when": "1889", "tone": "emph"},
+          {"label": "日清戦争", "when": "1894"},
+          {"label": "日露戦争", "when": "1904"}
+        ]
+      }</script>
+    </m-timeline>
+  </div>
+  <div class="concl"><span>→ 約 20 年で憲法をもつ国になった</span></div>
+</section>
+
+<section id="g-timeline-2" class="slide">
+  <h2>明治・大正の作家の生涯</h2>
+  <div class="body">
+    <m-timeline style="height:430px">
+      <script type="application/json">{
+        "nodes": [
+          {"label": "明治", "when": "1868", "end": "1912", "lane": "時代", "tone": "muted"},
+          {"label": "大正", "when": "1912", "end": "1926", "lane": "時代", "tone": "muted"},
+          {"label": "森鷗外", "when": "1862", "end": "1922", "lane": "作家"},
+          {"label": "夏目漱石", "when": "1867", "end": "1916", "lane": "作家"},
+          {"label": "正岡子規", "when": "1867", "end": "1902", "lane": "作家"},
+          {"label": "樋口一葉\n24 歳で没", "when": "1872", "end": "1896", "lane": "作家", "tone": "emph"},
+          {"label": "芥川龍之介", "when": "1892", "end": "1927", "lane": "作家"},
+          {"label": "宮沢賢治", "when": "1896", "end": "1933", "lane": "作家"}
+        ]
+      }</script>
+    </m-timeline>
+  </div>
+  <div class="concl"><span>→ 重なる生涯は段を分けて積む。漱石と子規は同じ年の生まれ</span></div>
+</section>
+
+<section id="g-timeline-3" class="slide">
+  <h2>アプリ開発の工程表（架空）</h2>
+  <div class="body">
+    <m-timeline unit="week" today="2026-11-02" style="height:400px">
+      <script type="application/json">{
+        "nodes": [
+          {"id": "req", "label": "要件定義", "when": "2026-10-05", "end": "2026-10-17", "lane": "設計", "progress": 100},
+          {"id": "ui", "label": "画面設計", "when": "2026-10-17", "end": "2026-11-07", "lane": "設計", "progress": 70, "after": ["req"]},
+          {"id": "dev", "label": "実装", "when": "2026-11-07", "end": "2026-12-05", "lane": "開発", "progress": 10, "after": ["ui"]},
+          {"id": "test", "label": "試験", "when": "2026-12-05", "end": "2026-12-19", "lane": "開発", "after": ["dev"]},
+          {"id": "rel", "label": "公開", "when": "2026-12-21", "lane": "開発", "tone": "emph", "after": ["test"]}
+        ]
+      }</script>
+    </m-timeline>
+  </div>
+  <div class="concl"><span>→ 矢印は「前の作業が終わってから」。画面設計の遅れは実装に響く</span></div>
+</section>
+
+<section id="g-timeline-4" class="slide">
+  <h2>見せ方の種類（variant）</h2>
+  <div class="body">
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:0 36px">
+      <div><p class="vcap">現れてから線（fade、既定）</p>
+        <m-timeline variant="fade" style="height:330px">
+          <script type="application/json">{"nodes": [{"label": "明治維新", "when": "1868"}, {"label": "明治", "when": "1868", "end": "1912"}, {"label": "憲法の発布", "when": "1889"}]}</script>
+        </m-timeline></div>
+      <div><p class="vcap">線を引いてから（draw）</p>
+        <m-timeline variant="draw" style="height:330px">
+          <script type="application/json">{"nodes": [{"label": "明治維新", "when": "1868"}, {"label": "明治", "when": "1868", "end": "1912"}, {"label": "憲法の発布", "when": "1889"}]}</script>
+        </m-timeline></div>
+      <div><p class="vcap">軸の側から大きくなる（grow）</p>
+        <m-timeline variant="grow" style="height:330px">
+          <script type="application/json">{"nodes": [{"label": "明治維新", "when": "1868"}, {"label": "明治", "when": "1868", "end": "1912"}, {"label": "憲法の発布", "when": "1889"}]}</script>
+        </m-timeline></div>
+    </div>
+  </div>
+  <div class="concl"><span>→ 書かなければ最初の見せ方（fade）になる</span></div>
+</section>
+
+<section class="slide">
+  <h2>m-timer（変わった、v2.8.0）</h2>
+  <div class="body">
+    <p style="margin:0 0 10px;line-height:1.3"><span style="display:inline-block;font-size:27px;font-weight:700;color:var(--fg);border:2px dashed var(--accent2);border-radius:8px;padding:0 12px">操作できる / Interactive</span></p>
+    <p style="border:3px dashed var(--accent2);border-radius:10px;padding:10px 16px">グループワークの進行タイマー。区切りごとに残り時間を大きく数え、区切りの一覧で今の区切りを示す（学習者が押して操作できる）</p>
+    <ul>
+      <li>伝えたいこと：時間を区切る</li>
+      <li>見せ方：fade</li>
+      <li>内容の分野：標準パーツ　サンプルのスライド：2 枚</li>
+    </ul>
+  </div>
+</section>
+
+<section id="g-timer-1" class="slide noconcl">
+  <h2>ワーク：困りごとを集める（架空の研修）</h2>
+  <div class="body">
+    <p class="ia-badge" style="margin:0 0 10px;line-height:1.3"><span style="display:inline-block;font-size:27px;font-weight:700;color:var(--fg);border:2px dashed var(--accent2);border-radius:8px;padding:0 12px">操作できる</span></p>
+    <m-timer style="height:420px">
+      <script type="application/json">{
+        "ready": {"title": "準備の確認", "text": "付箋とペン、A3 の用紙がそろっているか。\n終わらなくてよい。書けた所までを持ち帰る。"},
+        "phases": [
+          {"title": "① 付箋に書く", "short": "付箋に書く", "sec": 90, "text": "職場の困りごとを、付箋 1 枚に 1 件。\n個人で、3 枚を目安に。"},
+          {"title": "② 島で読み上げる", "short": "島で読み上げる", "sec": 15, "text": "順に読み上げて貼る。近いものを寄せる。"},
+          {"title": "③ 1 つ選ぶ", "short": "1 つ選ぶ", "sec": 20, "text": "よく起きて、手間の大きいものを 1 つ選ぶ。"}
+        ],
+        "bells": [{"left": 60, "count": 1}, {"left": 10, "count": 2}, {"left": 0, "count": 3}]
+      }</script>
+    </m-timer>
+  </div>
+</section>
+
+<section id="g-timer-2" class="slide noconcl">
+  <h2>字を変える（labels）</h2>
+  <div class="body">
+    <m-timer style="height:470px">
+      <script type="application/json">{
+        "ready": {"title": "合図を待つ", "text": "全員が席に着いたら始める。"},
+        "phases": [
+          {"title": "考える時間", "short": "1 人で考える", "sec": 20, "text": "話さずに、自分の考えをメモに書く。"},
+          {"title": "話す時間", "short": "2 人で話す", "sec": 15, "text": "隣の人と、メモを見せ合う。"}
+        ],
+        "labels": {"total": "全部で", "remaining": "あと", "done": "そこまで", "start": "合図で始める", "next": "そこまで。次へ進む", "end": "そこまで"}
+      }</script>
+    </m-timer>
+  </div>
+</section>
+
+<section class="slide">
+  <h2>m-tree（変わった、v2.8.0）</h2>
+  <div class="body">
+    <p>階層・分類の木（組織図、生物の分類など）を、根から 1 段ずつ組み立てる。座標は書かず、配置はパーツが決める</p>
+    <ul>
+      <li>伝えたいこと：階層・分類</li>
+      <li>見せ方：fade・draw・grow</li>
+      <li>内容の分野：標準パーツ　サンプルのスライド：4 枚</li>
+    </ul>
+  </div>
+</section>
+
+<section id="g-tree-1" class="slide">
+  <h2>会社の組織（架空）</h2>
+  <div class="body">
+    <m-tree aria-label="架空の会社の組織図" style="height:440px">
+      <script type="application/json">{
+        "nodes": [
+          {"id": "ceo", "label": "社長", "tone": "emph"},
+          {"id": "s", "label": "営業本部", "parent": "ceo"},
+          {"id": "d", "label": "開発本部", "parent": "ceo"},
+          {"id": "a", "label": "管理本部", "parent": "ceo"},
+          {"id": "s1", "label": "国内営業部", "parent": "s"},
+          {"id": "s2", "label": "海外営業部", "parent": "s"},
+          {"id": "d1", "label": "製品開発部", "parent": "d"},
+          {"id": "d2", "label": "品質保証部", "parent": "d"},
+          {"id": "a1", "label": "人事部", "parent": "a"},
+          {"id": "a2", "label": "経理部", "parent": "a"},
+          {"id": "d11", "label": "設計課", "parent": "d1"},
+          {"id": "d12", "label": "試作課", "parent": "d1"},
+          {"id": "d13", "label": "試験課", "parent": "d1", "note": "2026 年に新設"}
+        ]
+      }</script>
+    </m-tree>
+  </div>
+  <div class="concl"><span>→ 上から 1 段ずつ：本部、部、課</span></div>
+</section>
+
+<section id="g-tree-2" class="slide">
+  <h2>動物の分け方（orient="right"）</h2>
+  <div class="body">
+    <m-tree orient="right" aria-label="動物の分類" style="height:440px">
+      <script type="application/json">{
+        "nodes": [
+          {"id": "an", "label": "動物"},
+          {"id": "v", "label": "脊椎動物", "parent": "an", "note": "背骨がある"},
+          {"id": "i", "label": "無脊椎動物", "parent": "an", "note": "背骨がない", "tone": "muted"},
+          {"id": "f", "label": "魚類", "parent": "v"},
+          {"id": "am", "label": "両生類", "parent": "v"},
+          {"id": "r", "label": "は虫類", "parent": "v"},
+          {"id": "b", "label": "鳥類", "parent": "v"},
+          {"id": "m", "label": "哺乳類", "parent": "v", "tone": "emph"},
+          {"id": "ar", "label": "節足動物", "parent": "i", "tone": "muted"},
+          {"id": "mo", "label": "軟体動物", "parent": "i", "tone": "muted"}
+        ],
+        "edges": [
+          {"from": "r", "to": "b", "label": "近い仲間", "step": 4}
+        ]
+      }</script>
+    </m-tree>
+  </div>
+  <div class="concl"><span>→ 背骨の有無で分け、脊椎動物をさらに 5 つに分ける</span></div>
+</section>
+
+<section id="g-tree-3" class="slide">
+  <h2>見せ方の種類（variant）</h2>
+  <div class="body">
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:28px">
+      <div><div class="vcap">箱、それから線（fade、既定）</div>
+      <m-tree variant="fade" aria-label="植物の分類（fade）" style="height:330px">
+        <script type="application/json">{"nodes": [{"id": "p", "label": "植物"}, {"id": "s", "label": "種子植物", "parent": "p"}, {"id": "f", "label": "胞子植物", "parent": "p"}, {"id": "a", "label": "被子植物", "parent": "s"}, {"id": "g", "label": "裸子植物", "parent": "s"}]}</script>
+      </m-tree></div>
+      <div><div class="vcap">線を引いてから箱（draw）</div>
+      <m-tree variant="draw" aria-label="植物の分類（draw）" style="height:330px">
+        <script type="application/json">{"nodes": [{"id": "p", "label": "植物"}, {"id": "s", "label": "種子植物", "parent": "p"}, {"id": "f", "label": "胞子植物", "parent": "p"}, {"id": "a", "label": "被子植物", "parent": "s"}, {"id": "g", "label": "裸子植物", "parent": "s"}]}</script>
+      </m-tree></div>
+      <div><div class="vcap">親の側から大きくなる（grow）</div>
+      <m-tree variant="grow" aria-label="植物の分類（grow）" style="height:330px">
+        <script type="application/json">{"nodes": [{"id": "p", "label": "植物"}, {"id": "s", "label": "種子植物", "parent": "p"}, {"id": "f", "label": "胞子植物", "parent": "p"}, {"id": "a", "label": "被子植物", "parent": "s"}, {"id": "g", "label": "裸子植物", "parent": "s"}]}</script>
+      </m-tree></div>
+    </div>
+  </div>
+  <div class="concl"><span>→ 書かなければ最初の見せ方（fade）になる</span></div>
+</section>
+
+<section id="g-tree-4" class="slide">
+  <h2>確率の木：雨の日に遅れる確率（架空の値）</h2>
+  <div class="body">
+    <m-tree orient="right" aria-label="天気と遅刻の確率の木（架空の値）" style="height:440px">
+      <script type="application/json">{
+        "nodes": [
+          {"id": "s", "label": "出発"},
+          {"id": "r", "label": "雨", "parent": "s", "branch": "0.3"},
+          {"id": "f", "label": "晴れ", "parent": "s", "branch": "0.7"},
+          {"id": "rl", "label": "遅れる", "parent": "r", "branch": "0.4"},
+          {"id": "ro", "label": "間に合う", "parent": "r", "branch": "0.6"},
+          {"id": "fl", "label": "遅れる", "parent": "f", "branch": "0.1"},
+          {"id": "fo", "label": "間に合う", "parent": "f", "branch": "0.9"}
+        ],
+        "path": ["s", "r", "rl"],
+        "pathNote": "0.3 × 0.4 = 0.12"
+      }</script>
+    </m-tree>
+  </div>
+  <div class="concl"><span>→ 道に沿って枝の確率をかける：雨で遅れる確率は 0.12</span></div>
+</section>
+
+<section class="slide">
+  <h2>m-balance</h2>
+  <div class="body">
+    <p>確率の重りを置き、支点が期待値でつり合う様子を示す</p>
+    <ul>
+      <li>伝えたいこと：仕組みをモデルで見る</li>
+      <li>見せ方：1 種類</li>
+      <li>内容の分野：数理・統計　サンプルのスライド：1 枚</li>
+    </ul>
+  </div>
+</section>
+
+<section id="g-balance-1" class="slide">
+  <h2>期待値でつり合う（架空データ）</h2>
+  <div class="body"><m-balance style="height:440px"><script type="application/json">{"values":[0,1,2,3],"probs":[0.1,0.3,0.4,0.2],"name":"X"}</script></m-balance></div>
+  <div class="concl"><span>架空の分布。確率を重りとすると期待値が支点になる</span></div>
+</section>
+
+<section class="slide">
+  <h2>m-boxplot</h2>
+  <div class="body">
+    <p>箱ひげ図。値を並べ、中央値・四分位数を求める手順のとおりに組み立てる。群を並べて比べる</p>
+    <ul>
+      <li>伝えたいこと：ばらつき・比べる（量・特徴）</li>
+      <li>見せ方：fade・draw</li>
+      <li>内容の分野：数理・統計　サンプルのスライド：3 枚</li>
+    </ul>
+  </div>
+</section>
+
+<section id="g-boxplot-1" class="slide">
+  <h2>箱ひげ図のかき方：1 か月に読んだ本（架空の 11 人）</h2>
+  <div class="body">
+    <m-boxplot xl="冊数（冊）" xr="[0,20]" xt="[0,2,4,6,8,10,12,14,16,18,20]" style="height:440px">
+      <script type="application/json">{"groups": [{"values": [12, 5, 9, 18, 7, 3, 13, 8, 15, 6, 10]}]}</script>
+    </m-boxplot>
+  </div>
+  <div class="concl"><span>→ 小さい順に並べ、中央値と前半・後半の中央値（四分位数）で箱にする</span></div>
+</section>
+
+<section id="g-boxplot-2" class="slide">
+  <h2>3 つの組の数学の得点（架空の各 15 人）</h2>
+  <div class="body">
+    <m-boxplot orient="v" build="whole" dots="on" outliers="on" yl="得点（点）" yr="[30,100]" yt="[30,40,50,60,70,80,90,100]" style="height:440px">
+      <script type="application/json">{"groups": [
+        {"label": "A 組", "values": [42, 48, 51, 55, 57, 58, 60, 61, 63, 64, 66, 68, 70, 72, 75]},
+        {"label": "B 組", "values": [50, 56, 60, 62, 65, 67, 68, 70, 71, 73, 74, 76, 79, 82, 99]},
+        {"label": "C 組", "values": [35, 45, 52, 54, 58, 60, 61, 62, 64, 66, 67, 69, 71, 73, 80]}]}</script>
+    </m-boxplot>
+  </div>
+  <div class="concl"><span>→ B 組は箱が高い。99 点は 1.5 × 四分位範囲より外の外れ値</span></div>
+</section>
+
+<section id="g-boxplot-3" class="slide">
+  <h2>見せ方の種類（variant）</h2>
+  <div class="body">
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:0 36px">
+      <m-boxplot variant="fade" build="whole" dots="on" xl="フェード（fade、既定）" xr="[0,20]" style="height:400px">
+        <script type="application/json">{"groups": [{"label": "前", "values": [3, 5, 6, 7, 8, 9, 10, 12, 13, 15, 18]}, {"label": "後", "values": [6, 8, 9, 10, 11, 12, 12, 13, 14, 16, 17]}]}</script>
+      </m-boxplot>
+      <m-boxplot variant="draw" build="whole" dots="on" xl="線を引く（draw）" xr="[0,20]" style="height:400px">
+        <script type="application/json">{"groups": [{"label": "前", "values": [3, 5, 6, 7, 8, 9, 10, 12, 13, 15, 18]}, {"label": "後", "values": [6, 8, 9, 10, 11, 12, 12, 13, 14, 16, 17]}]}</script>
+      </m-boxplot>
+    </div>
+  </div>
+  <div class="concl"><span>→ 書かなければ最初の見せ方（fade）になる。値は架空</span></div>
+</section>
+
+<section class="slide">
+  <h2>m-cards</h2>
+  <div class="body">
+    <p>カード（番号の丸・アイコン・見出し・説明）を横一列か 2 段に並べ、ステップごとに出す。矢印で順を、枠の色で強調を見せる</p>
+    <ul>
+      <li>伝えたいこと：手順・工程・まとめる・分ける</li>
+      <li>見せ方：rise・fade・draw</li>
+      <li>内容の分野：標準パーツ　サンプルのスライド：3 枚</li>
+    </ul>
+  </div>
+</section>
+
+<section id="g-cards-1" class="slide">
+  <h2>新しい窓口の進め方（架空の会社）</h2>
+  <div class="body">
+    <m-cards arrows nums style="height:330px">
+      <script type="application/json">{
+        "cards": [
+          {"icon": "messages", "title": "聞く", "text": "店に来た人の困りごとを 5 分で聞き取る"},
+          {"icon": "clipboard-list", "title": "まとめる", "text": "聞いたことを 1 枚の紙にまとめる"},
+          {"icon": "users", "title": "相談する", "text": "週に 1 回、担当の 3 人で話し合う"},
+          {"icon": "circle-check", "title": "返す", "text": "1 週間以内に答えを返す"}
+        ]
+      }</script>
+    </m-cards>
+  </div>
+  <div class="concl"><span>→ 聞いてから答えるまでを 1 週間に</span></div>
+</section>
+
+<section id="g-cards-2" class="slide">
+  <h2>4 つの店の工夫（架空）</h2>
+  <div class="body">
+    <m-cards layout="grid" hilite="4" style="height:420px">
+      <script type="application/json">{
+        "cards": [
+          {"n": "A", "icon": "building-store", "title": "駅前店", "text": "朝の 30 分だけ、受け取り専用の列を作った"},
+          {"n": "B", "icon": "calendar-event", "title": "川沿い店", "text": "予約の日を前の日に電話で知らせるようにした"},
+          {"n": "C", "icon": "map-pin", "title": "山の手店", "text": "店の場所の地図を、紙で配るのをやめて看板にした"},
+          {"n": "D", "icon": "chart-bar", "title": "港町店", "text": "待ち時間を毎日数えて、壁に貼り出した。来た人の 8 割が「待ちが短くなった」と答えた", "tone": "emph"}
+        ]
+      }</script>
+    </m-cards>
+  </div>
+  <div class="concl"><span>→ 数えて見せた店で、待ちが短くなったと感じる人がいちばん多い</span></div>
+</section>
+
+<section id="g-cards-3" class="slide">
+  <h2>まとめて出す（per-step="0"、見せ方 draw）</h2>
+  <div class="body">
+    <m-cards per-step="0" variant="draw" hilite="last" style="height:300px">
+      <script type="application/json">{
+        "cards": [
+          {"icon": "leaf", "title": "材料", "text": "地元の野菜を使う"},
+          {"icon": "truck", "title": "運ぶ", "text": "朝に届けて、その日のうちに売る"},
+          {"icon": "heart", "title": "残さない", "text": "売れ残りは翌日の総菜に"}
+        ]
+      }</script>
+    </m-cards>
+  </div>
+</section>
+
+<section class="slide">
+  <h2>m-ci</h2>
+  <div class="body">
+    <p>正規標本の区間を重ね、母平均を含む割合で信頼水準を説明する</p>
+    <ul>
+      <li>伝えたいこと：仕組みをモデルで見る・ばらつき</li>
+      <li>見せ方：1 種類</li>
+      <li>内容の分野：数理・統計　サンプルのスライド：1 枚</li>
+    </ul>
+  </div>
+</section>
+
+<section id="g-ci-1" class="slide">
+  <h2>95 % の区間を繰り返す（シミュレーション）</h2>
+  <div class="body"><m-ci style="height:440px"><script type="application/json">{"mu":50,"sigma":10,"n":25,"reps":40,"level":0.95,"seed":2}</script></m-ci></div>
+  <div class="concl"><span>架空の標本。95 % は繰り返した区間が μ を含む割合</span></div>
+</section>
+
+<section class="slide">
+  <h2>m-code</h2>
+  <div class="body">
+    <p>短いコードを行ごとに説明し、最後に出力を見せる</p>
+    <ul>
+      <li>伝えたいこと：手順・工程・仕組みをモデルで見る</li>
+      <li>見せ方：1 種類</li>
+      <li>内容の分野：数理・統計　サンプルのスライド：3 枚</li>
+    </ul>
+  </div>
+</section>
+
+<section id="g-code-1" class="slide">
+  <h2>店ごとの売上平均を計算する</h2>
+  <div class="body"><m-code style="height:440px"><script type="application/json">{"lang":"python","code":"import pandas as pd\ndf = pd.read_csv(\"sales.csv\")\ndf.groupby(\"store\")[\"sales\"].mean()","steps":[{"lines":[1],"note":"pandas を読み込む"},{"lines":[2],"note":"CSV を表として読む"},{"lines":[3],"note":"店ごとの平均"}],"output":"store\nA    120.5\nB     98.0"}</script></m-code></div>
+  <div class="concl"><span>架空の売上データ。店ごとにまとめてから平均を求める</span></div>
+</section>
+
+<section id="g-code-2" class="slide">
+  <h2>繰り返しで平均を求める</h2>
+  <div class="body"><m-code style="height:440px"><script type="application/json">{"lang":"python","code":"def mean(values):\n    total = 0\n    for value in values:\n        total += value\n    return total / len(values)\n\nprint(mean([2, 4, 6]))","steps":[{"lines":[1,2],"note":"関数を定義し、合計を 0 にする"},{"lines":[3,4],"note":"値を一つずつ合計する"},{"lines":[5,7],"note":"個数で割り、関数の結果を表示"}],"output":"4.0"}</script></m-code></div>
+  <div class="concl"><span>合計を個数で割ると平均になる</span></div>
+</section>
+
+<section id="g-code-3" class="slide">
+  <h2>交差検証のコード（scikit-learn）</h2>
+  <div class="body"><m-code style="height:420px"><script type="application/json">{"lang": "python", "code": "from sklearn.model_selection import cross_val_score\nfrom sklearn.tree import DecisionTreeClassifier\nfrom sklearn.datasets import load_iris\nX, y = load_iris(return_X_y=True)\nmodel = DecisionTreeClassifier(max_depth=3, random_state=0)\nscores = cross_val_score(model, X, y, cv=5)\nprint(scores.mean())", "steps": [{"lines": [1, 3], "note": "道具を読み込む"}, {"lines": [4], "note": "アヤメのデータ"}, {"lines": [5], "note": "決定木を用意"}, {"lines": [6, 7], "note": "5 分割で検証し平均"}], "output": "0.96"}</script></m-code></div>
+  <div class="concl"><span>データを 5 つに分け、検証する区画を替えて平均する</span></div>
+</section>
+
+<section class="slide">
+  <h2>m-curves</h2>
+  <div class="body">
+    <p>同じ座標軸に線を 1 本ずつ引く（線の名前は凡例でなく線の端に直接書く）</p>
+    <ul>
+      <li>伝えたいこと：時間での変化</li>
+      <li>見せ方：1 種類</li>
+      <li>内容の分野：標準パーツ　サンプルのスライド：4 枚</li>
+    </ul>
+  </div>
+</section>
+
+<section id="g-curves-1" class="slide">
+  <h2>予測分布と代表値</h2>
+  <div class="body">
+    <m-curves xr="[0,4]" yr="[0,0.8]" xt="[0,1,2,3,4]" yt="[0,0.2,0.4,0.6,0.8]" yf="1" xl="需要 *y*" yl="密度" style="height:420px">
+      <script type="application/json" id="pred-data">[]</script>
+    </m-curves>
+  </div>
+  <div class="concl"><span>→ 右に裾が長いと，平均は中央値より右に来る</span></div>
+</section>
+
+<section id="g-curves-2" class="slide">
+  <h2>損失関数の形</h2>
+  <div class="body">
+    <m-curves xr="[-2,2]" yr="[0,4]" xt="[-2,-1,0,1,2]" yt="[0,1,2,3,4]" xl="誤差 *u* = *y* − *a*" yl="損失" style="height:420px">
+      <script type="application/json">[
+        {"label": "二乗 *u*^2", "f": "x*x", "labelAt": 1.6, "anchor": "left", "dx": -14},
+        {"label": "絶対値 |*u*|", "f": "abs(x)", "labelAt": -2, "anchor": "right", "ly": 1.1},
+        {"label": "分位点（*τ* = 0.9）", "f": "x >= 0 ? 0.9*x : -0.1*x", "labelAt": -2, "anchor": "right", "dy": -6}
+      ]</script>
+    </m-curves>
+  </div>
+  <div class="concl"><span>→ どの損失を使うかで，最適な決定 <i>a</i> が変わる</span></div>
+</section>
+
+<section id="g-curves-3" class="slide">
+  <h2>需要が増えると（架空の例）</h2>
+  <div class="body">
+    <m-curves xr="[0,10]" yr="[0,12]" xt="[0,2,4,6,8,10]" yt="[0,3,6,9,12]" xl="数量 *Q*" yl="価格 *P*" style="height:420px">
+      <script type="application/json">[
+        {"label": "需要 D", "f": "10 - x", "tone": "term", "step": 1, "labelAt": 1.5, "anchor": "below"},
+        {"label": "供給 S", "f": "2 + x", "tone": "accent2", "step": 1, "labelAt": 8.5, "anchor": "left"},
+        {"label": "増えた需要 D′", "f": "13 - x", "tone": "emph", "step": 2, "labelAt": 2, "anchor": "right"},
+        {"label": "均衡", "pts": [[4, 0], [4, 6]], "tone": "muted", "dash": true, "step": 3, "anchor": "left", "ly": 1},
+        {"label": "新しい均衡", "pts": [[5.5, 0], [5.5, 7.5]], "tone": "emph", "dash": true, "step": 3, "anchor": "right", "ly": 1}
+      ]</script>
+    </m-curves>
+  </div>
+  <div class="concl"><span>→ 需要が増えると，価格も取引量も上がる</span></div>
+</section>
+
+<section id="g-curves-4" class="slide">
+  <h2>両側検定の棄却域</h2>
+  <div class="body">
+    <m-curves xr="[-4,4]" yr="[0,0.45]" xt="[-1.96,0,1.96]" xf="2" yt="[0,0.2,0.4]" xl="検定統計量 *z*" style="height:400px">
+      <script type="application/json">[
+        {"label": "標準正規分布", "f": "N(x, 0, 1)", "labelAt": 1, "anchor": "right", "area": [[null, -1.96], [1.96, null]], "areaLabel": "2.5 %", "tone": "term"}
+      ]</script>
+    </m-curves>
+  </div>
+  <div class="concl"><span>→ 両端の 5 % に入れば帰無仮説を棄却する</span></div>
+</section>
+
+<section class="slide">
+  <h2>m-folds</h2>
+  <div class="body">
+    <p>検証用の区画を順に替え、各分割の誤差と平均を示す</p>
+    <ul>
+      <li>伝えたいこと：仕組みをモデルで見る・比べる（量・特徴）</li>
+      <li>見せ方：1 種類</li>
+      <li>内容の分野：数理・統計　サンプルのスライド：1 枚</li>
+    </ul>
+  </div>
+</section>
+
+<section id="g-folds-1" class="slide">
+  <h2>検証する区画を替える（架空データ）</h2>
+  <div class="body"><m-folds style="height:440px"><script type="application/json">{"k":5,"errors":[0.21,0.18,0.25,0.19,0.22],"labels":["1","2","3","4","5"]}</script></m-folds></div>
+  <div class="concl"><span>架空の誤差。すべての区画を 1 回ずつ検証する</span></div>
+</section>
+
+<section class="slide">
+  <h2>m-gendai</h2>
+  <div class="body">
+    <p>現代文の読解の図：傍線・二重傍線を引き、指示語から指す内容へ矢印、段落を役割（主張・具体例・対比）の枠で囲んで線でつなぐ</p>
+    <ul>
+      <li>伝えたいこと：文章の構造</li>
+      <li>見せ方：1 種類</li>
+      <li>内容の分野：国語　サンプルのスライド：2 枚</li>
+    </ul>
+  </div>
+</section>
+
+<section id="g-gendai-1" class="slide noconcl">
+  <h2>段落の役割と指示語（縦書き）</h2>
+  <div class="body">
+    <m-gendai tate style="height:540px">
+      @具体例#p1>p3
+      駅までの道を、私は{地図アプリ|#app}に頼って歩く。画面の矢印に従えば迷うことはない。だが、{それ|>app}を閉じると、さっき通った角さえ思い出せない。
+
+      @対比#p2~p1
+      かつての旅人は、{山の形や川の流れを目印にして|#mark}道を覚えた。{そう|>mark}して得た知識は、歩いた体に刻まれていた。
+
+      @主張#p3
+      便利な道具は、私たちから==迷う機会を奪う==。だが、{迷うことこそが、土地を自分のものにする営みなのである|_A}。
+    </m-gendai>
+  </div>
+</section>
+
+<section id="g-gendai-2" class="slide noconcl">
+  <h2>横書きの傍線</h2>
+  <div class="body">
+    <m-gendai style="height:400px">
+      @主張#q1
+      道具は、__使う人の考え方__までも形づくる。{これ|>q}は、{手で書くか打つかで文章が変わる|=,#q}ことからも分かる。
+
+      @具体例#q2>q1
+      手で書くと、書く前に考える。打つと、書きながら考える。
+    </m-gendai>
+  </div>
+</section>
+
+<section class="slide">
+  <h2>m-hissan</h2>
+  <div class="body">
+    <p>筆算（たし算・ひき算・かけ算・わり算、小数も）。式を書けば、パーツが教科書の手順で計算して書く</p>
+    <ul>
+      <li>伝えたいこと：手順・工程</li>
+      <li>見せ方：fade・draw</li>
+      <li>内容の分野：数理・統計　サンプルのスライド：3 枚</li>
+    </ul>
+  </div>
+</section>
+
+<section id="g-hissan-1" class="slide">
+  <h2>0 のあるひき算：1003−457</h2>
+  <div class="body">
+    <m-hissan expr="1003-457" style="height:400px"></m-hissan>
+  </div>
+  <div class="concl"><span>→ 十の位も百の位も 0 なので、千の位から順にくり下げる</span></div>
+</section>
+
+<section id="g-hissan-2" class="slide">
+  <h2>2 けたをかけるかけ算：38×24</h2>
+  <div class="body">
+    <m-hissan expr="38×24" style="height:420px"></m-hissan>
+  </div>
+  <div class="concl"><span>→ 38×2 の 76 は、十の位から書く</span></div>
+</section>
+
+<section id="g-hissan-3" class="slide">
+  <h2>2 けたでわるわり算：851÷23</h2>
+  <div class="body">
+    <m-hissan expr="851÷23" kari="on" style="height:440px"></m-hissan>
+  </div>
+  <div class="concl"><span>→ 仮の商が大きすぎたら、1 小さくしてやり直す</span></div>
+</section>
+
+<section class="slide">
+  <h2>m-hist</h2>
+  <div class="body">
+    <p>ヒストグラム・度数折れ線・ドットプロット。平均値・中央値・最頻値の線も</p>
+    <ul>
+      <li>伝えたいこと：ばらつき</li>
+      <li>見せ方：fade・grow</li>
+      <li>内容の分野：数理・統計　サンプルのスライド：3 枚</li>
+    </ul>
+  </div>
+</section>
+
+<section id="g-hist-1" class="slide">
+  <h2>ソフトボール投げの記録（架空の 20 人）</h2>
+  <div class="body">
+    <m-hist kind="dots" marks="mean,median,mode" xl="記録（m）" unit=" m" style="height:430px">
+      <script type="application/json">{"values": [25, 31, 22, 38, 25, 16, 29, 42, 27, 25, 33, 19, 24, 36, 22, 28, 34, 25, 21, 30]}</script>
+    </m-hist>
+  </div>
+  <div class="concl"><span>→ 平均値・中央値・最頻値は、同じ記録でも違う値になる</span></div>
+</section>
+
+<section id="g-hist-2" class="slide">
+  <h2>度数を数える：通学時間（架空の 12 人）</h2>
+  <div class="body">
+    <m-hist build="values" xl="通学時間（分）" yl="人数（人）" style="height:430px">
+      <script type="application/json">{"values": [12, 25, 8, 17, 21, 14, 9, 28, 16, 19, 23, 15], "bins": {"start": 5, "width": 5}}</script>
+    </m-hist>
+  </div>
+  <div class="concl"><span>→ 1 人ずつ、記録の入る階級に積む（5 分以上 10 分未満、…）</span></div>
+</section>
+
+<section id="g-hist-3" class="slide">
+  <h2>見せ方の種類（variant）：2 組の 50 m 走</h2>
+  <div class="body">
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:0 36px">
+      <m-hist variant="fade" polygon="on" xl="フェード（fade、既定）" yl="人数（人）" style="height:420px">
+        <script type="application/json">{"series": [{"label": "1 組", "table": [{"from": 7.0, "to": 7.5, "count": 2}, {"from": 7.5, "to": 8.0, "count": 5}, {"from": 8.0, "to": 8.5, "count": 9}, {"from": 8.5, "to": 9.0, "count": 12}, {"from": 9.0, "to": 9.5, "count": 7}, {"from": 9.5, "to": 10.0, "count": 4}, {"from": 10.0, "to": 10.5, "count": 1}]}, {"label": "2 組", "table": [{"from": 7.0, "to": 7.5, "count": 0}, {"from": 7.5, "to": 8.0, "count": 2}, {"from": 8.0, "to": 8.5, "count": 6}, {"from": 8.5, "to": 9.0, "count": 10}, {"from": 9.0, "to": 9.5, "count": 11}, {"from": 9.5, "to": 10.0, "count": 7}, {"from": 10.0, "to": 10.5, "count": 4}]}]}</script>
+      </m-hist>
+      <m-hist variant="grow" polygon="on" xl="下から伸びる（grow）" yl="人数（人）" style="height:420px">
+        <script type="application/json">{"series": [{"label": "1 組", "table": [{"from": 7.0, "to": 7.5, "count": 2}, {"from": 7.5, "to": 8.0, "count": 5}, {"from": 8.0, "to": 8.5, "count": 9}, {"from": 8.5, "to": 9.0, "count": 12}, {"from": 9.0, "to": 9.5, "count": 7}, {"from": 9.5, "to": 10.0, "count": 4}, {"from": 10.0, "to": 10.5, "count": 1}]}, {"label": "2 組", "table": [{"from": 7.0, "to": 7.5, "count": 0}, {"from": 7.5, "to": 8.0, "count": 2}, {"from": 8.0, "to": 8.5, "count": 6}, {"from": 8.5, "to": 9.0, "count": 10}, {"from": 9.0, "to": 9.5, "count": 11}, {"from": 9.5, "to": 10.0, "count": 7}, {"from": 10.0, "to": 10.5, "count": 4}]}]}</script>
+      </m-hist>
+    </div>
+  </div>
+  <div class="concl"><span>→ 2 組は重ねて比べる（架空の各 40 人）</span></div>
+</section>
+
+<section class="slide">
+  <h2>m-kakijun</h2>
+  <div class="body">
+    <p>かな（ひらがな・カタカナ）の書き順。字を 1 画ずつ、書く順と向きのとおりに書いて見せる</p>
+    <ul>
+      <li>伝えたいこと：手順・工程</li>
+      <li>見せ方：draw・pen</li>
+      <li>内容の分野：国語　サンプルのスライド：3 枚</li>
+    </ul>
+  </div>
+</section>
+
+<section id="g-kakijun-1" class="slide">
+  <h2>ひらがなの書き順：あさ</h2>
+  <div class="body">
+    <m-kakijun text="あさ" ends="on" style="height:400px"></m-kakijun>
+  </div>
+  <div class="concl"><span>→ 「あ」の 3 画目は、結びを作ってから右へはらう</span></div>
+</section>
+
+<section id="g-kakijun-2" class="slide">
+  <h2>濁点のあるカタカナ：ガム</h2>
+  <div class="body">
+    <m-kakijun text="ガム" style="height:400px"></m-kakijun>
+  </div>
+  <div class="concl"><span>→ 濁点は、字を書き終えてから左上から右下へ 2 つ</span></div>
+</section>
+
+<section id="g-kakijun-3" class="slide">
+  <h2>縦書きの小さい字：きょう</h2>
+  <div class="body">
+    <m-kakijun text="きょう" writing="tate" size="140" nums="off" style="height:440px"></m-kakijun>
+  </div>
+  <div class="concl"><span>→ 縦書きの「ょ」は、ます目の右上に小さく書く</span></div>
+</section>
+
+<section class="slide">
+  <h2>m-kanbun</h2>
+  <div class="body">
+    <p>白文に返り点・送り仮名を付け、訓読の順に字をたどり（返り点で上へ戻るところに弧）、書き下し文にする（縦書き）</p>
+    <ul>
+      <li>伝えたいこと：文章の構造</li>
+      <li>見せ方：1 種類</li>
+      <li>内容の分野：国語　サンプルのスライド：3 枚</li>
+    </ul>
+  </div>
+</section>
+
+<section id="g-kanbun-1" class="slide">
+  <h2>孟浩然「春暁」</h2>
+  <div class="body">
+    <m-kanbun style="height:430px">
+      春眠不{=ず}レ覚(エ)レ暁(ヲ)
+      処処聞(ク)[二]啼鳥(ヲ)[一]
+      夜来風雨(ノ)声
+      花落(ツルコト)知(ル)多少
+    </m-kanbun>
+  </div>
+  <div class="concl"><span>返り点に従って下から上へ戻って読む</span></div>
+</section>
+
+<section id="g-kanbun-2" class="slide">
+  <h2>レ点・一二点・一レ点（『史記』）</h2>
+  <div class="body">
+    <m-kanbun size="56" order-by="all" style="height:430px">
+      先(ンズレバ)即(チ)制(シ)[レ]人(ヲ)、
+      後(ルレバ)則(チ)為(ル)[二]人(ノ)所(ト)[一レ]制(スル)
+    </m-kanbun>
+  </div>
+  <div class="concl"><span>一レ点は、レ点で戻ってから二へ戻る</span></div>
+</section>
+
+<section id="g-kanbun-3" class="slide">
+  <h2>再読文字と置き字（『論語』）</h2>
+  <div class="body">
+    <m-kanbun style="height:430px">
+      未(ダ|ず)[レ]知(ラ)[レ]生(ヲ)、
+      焉{いづく}(ンゾ)知(ラン)[レ]死(ヲ)
+      学(ビテ)而{-}時(ニ)習(フ)[レ]之(ヲ)
+    </m-kanbun>
+  </div>
+  <div class="concl"><span>再読文字は二度読み、置き字は読まない</span></div>
+</section>
+
+<section class="slide">
+  <h2>m-kobun</h2>
+  <div class="body">
+    <p style="margin:0 0 10px;line-height:1.3"><span style="display:inline-block;font-size:27px;font-weight:700;color:var(--fg);border:2px dashed var(--accent2);border-radius:8px;padding:0 12px">操作できる / Interactive</span></p>
+    <p style="border:3px dashed var(--accent2);border-radius:10px;padding:10px 16px">古文を語に切り（スラッシュ）、品詞で色を分けて 1 文ずつ見せ、最後に現代語訳と並べる。助動詞を押すと活用表と意味（学習者が押して操作できる）</p>
+    <ul>
+      <li>伝えたいこと：文章の構造</li>
+      <li>見せ方：1 種類</li>
+      <li>内容の分野：国語　サンプルのスライド：2 枚</li>
+    </ul>
+  </div>
+</section>
+
+<section id="g-kobun-1" class="slide noconcl">
+  <h2>『枕草子』春はあけぼの</h2>
+  <div class="body">
+    <p class="ia-badge" style="margin:0 0 10px;line-height:1.3"><span style="display:inline-block;font-size:27px;font-weight:700;color:var(--fg);border:2px dashed var(--accent2);border-radius:8px;padding:0 12px">操作できる</span></p>
+    <m-kobun style="height:470px">
+      春[名]/は[係助]/あけぼの[名]。
+      = 春は明け方（がよい）。
+      やうやう[副]/白く[形・ク・連用]/なりゆく[動・カ四・連体]/山ぎは[名]、
+      = だんだん白くなっていく山ぎわ（の空）が、
+      少し[副]/明かり[動・ラ四・連用]/て[接助]、
+      = 少し明るくなって、
+      紫だち[動・タ四・連用]/たる[助動・たり・存続・連体]/雲[名]/の[格助]/細く[形・ク・連用]/たなびき[動・カ四・連用]/たる[助動・たり・存続・連体]。
+      = 紫がかった雲が細くたなびいている（のがよい）。
+    </m-kobun>
+  </div>
+</section>
+
+<section id="g-kobun-2" class="slide noconcl">
+  <h2>縦書きの品詞分解</h2>
+  <div class="body">
+    <m-kobun tate style="height:520px">
+      春[名]/は[係助]/あけぼの[名]。
+      = 春は明け方（がよい）。
+      少し[副]/明かり[動・ラ四・連用]/て[接助]、
+      = 少し明るくなって、
+    </m-kobun>
+  </div>
+</section>
+
+<section class="slide">
   <h2>m-map-japan</h2>
   <div class="body">
     <p>日本の 47 都道府県の地図。地域の強調、統計の塗り分け、点、矢印、経度・緯度の重ね描きをステップごとに出す</p>
     <ul>
       <li>伝えたいこと：場所・地図</li>
       <li>見せ方：fade・sweep・draw</li>
-      <li>系列：地図（社会）　見本のスライド：5 枚</li>
+      <li>内容の分野：地図（社会）　サンプルのスライド：5 枚</li>
     </ul>
   </div>
 </section>
@@ -1744,7 +2311,7 @@ document.addEventListener("DOMContentLoaded", function(){
     <ul>
       <li>伝えたいこと：場所・地図</li>
       <li>見せ方：fade・sweep・draw</li>
-      <li>系列：地図（社会）　見本のスライド：3 枚</li>
+      <li>内容の分野：地図（社会）　サンプルのスライド：3 枚</li>
     </ul>
   </div>
 </section>
@@ -1814,7 +2381,7 @@ document.addEventListener("DOMContentLoaded", function(){
     <ul>
       <li>伝えたいこと：仕組みをモデルで見る・まとめる・分ける</li>
       <li>見せ方：1 種類</li>
-      <li>系列：数理・統計　見本のスライド：4 枚</li>
+      <li>内容の分野：数理・統計　サンプルのスライド：4 枚</li>
     </ul>
   </div>
 </section>
@@ -1844,58 +2411,14 @@ document.addEventListener("DOMContentLoaded", function(){
 </section>
 
 <section class="slide">
-  <h2>m-market</h2>
-  <div class="body">
-    <p>市場規模の入れ子の円（TAM / SAM / SOM）。外の円から 1 つずつ、前の円の大きさから縮んで現れる</p>
-    <ul>
-      <li>伝えたいこと：全体と内訳</li>
-      <li>見せ方：1 種類</li>
-      <li>系列：ビジネス　見本のスライド：2 枚</li>
-    </ul>
-  </div>
-</section>
-
-<section id="g-market-1" class="slide">
-  <h2>市場の大きさ（架空）</h2>
-  <div class="body">
-    <m-market unit="億円" style="height:420px">
-      <script type="application/json">{
-        "rings": [
-          {"key": "TAM", "value": 2400, "basis": "社内文書を書くすべての時間"},
-          {"key": "SAM", "value": 520, "basis": "定型の報告書（月報・週報）"},
-          {"key": "SOM", "value": 26, "basis": "5 年で取る中堅企業 800 社"}
-        ]
-      }</script>
-    </m-market>
-  </div>
-  <div class="concl"><span>→ まず定型の報告書から始める</span></div>
-</section>
-
-<section id="g-market-2" class="slide">
-  <h2>面積を値に比例させる</h2>
-  <div class="body">
-    <m-market unit="万人" scale="area" layout="center" count="true" style="height:420px">
-      <script type="application/json">{
-        "rings": [
-          {"key": "全体", "value": 900, "basis": "架空の母集団"},
-          {"key": "対象", "value": 300, "basis": "条件に合う人"},
-          {"key": "初年度", "value": 12, "basis": "最初に届く人"}
-        ]
-      }</script>
-    </m-market>
-  </div>
-  <div class="concl"><span>→ 面積で見ると最初の一歩は小さい</span></div>
-</section>
-
-<section class="slide">
   <h2>m-menu</h2>
   <div class="body">
     <p style="margin:0 0 10px;line-height:1.3"><span style="display:inline-block;font-size:27px;font-weight:700;color:var(--fg);border:2px dashed var(--accent2);border-radius:8px;padding:0 12px">操作できる / Interactive</span></p>
-    <p style="border:3px dashed var(--accent2);border-radius:10px;padding:10px 16px">スライドへのリンクの札を格子に並べる（目次・単元の選び方）。札はふつうの &lt;a href="#&lt;スライドの id&gt;"&gt;、行ったスライドの札に「見た」の印（見る人が押して操作できる）</p>
+    <p style="border:3px dashed var(--accent2);border-radius:10px;padding:10px 16px">スライドへのリンクの札を格子に並べる（目次・単元の選び方）。札はふつうの &lt;a href="#&lt;スライドの id&gt;"&gt;、行ったスライドの札に「見た」の印（学習者が押して操作できる）</p>
     <ul>
       <li>伝えたいこと：目次</li>
       <li>見せ方：1 種類</li>
-      <li>系列：標準パーツ　見本のスライド：4 枚</li>
+      <li>内容の分野：標準パーツ　サンプルのスライド：4 枚</li>
     </ul>
   </div>
 </section>
@@ -1954,7 +2477,7 @@ document.addEventListener("DOMContentLoaded", function(){
     <ul>
       <li>伝えたいこと：比べる（量・特徴）</li>
       <li>見せ方：fade・draw</li>
-      <li>系列：数理・統計　見本のスライド：4 枚</li>
+      <li>内容の分野：数理・統計　サンプルのスライド：4 枚</li>
     </ul>
   </div>
 </section>
@@ -2014,55 +2537,13 @@ document.addEventListener("DOMContentLoaded", function(){
 </section>
 
 <section class="slide">
-  <h2>m-orbit</h2>
-  <div class="body">
-    <p>月の満ち欠け（金星の満ち欠け）。北極の上から見た図と地球から見た形を並べ、月を位置から位置へ動かす。形は位置から計算する</p>
-    <ul>
-      <li>伝えたいこと：仕組みをモデルで見る・循環</li>
-      <li>見せ方：1 種類</li>
-      <li>系列：数理・統計　見本のスライド：3 枚</li>
-    </ul>
-  </div>
-</section>
-
-<section id="g-orbit-1" class="slide">
-  <h2>月の満ち欠け</h2>
-  <div class="body">
-    <m-orbit style="height:440px">
-      <script type="application/json">{}</script>
-    </m-orbit>
-  </div>
-  <div class="concl"><span>→ 月の光っている半分はいつも太陽の側。地球から見える部分が変わる</span></div>
-</section>
-
-<section id="g-orbit-2" class="slide">
-  <h2>日食と月食</h2>
-  <div class="body">
-    <m-orbit style="height:440px">
-      <script type="application/json">{"visit": [4, 0], "eclipse": true}</script>
-    </m-orbit>
-  </div>
-  <div class="concl"><span>→ 太陽・月・地球が一直線に並ぶと、影ができる</span></div>
-</section>
-
-<section id="g-orbit-3" class="slide">
-  <h2>金星の満ち欠け</h2>
-  <div class="body">
-    <m-orbit mode="venus" style="height:440px">
-      <script type="application/json">{"start": 2, "visit": [3, 5, 6]}</script>
-    </m-orbit>
-  </div>
-  <div class="concl"><span>→ 地球に近いほど大きく見え、細く欠ける</span></div>
-</section>
-
-<section class="slide">
   <h2>m-pie</h2>
   <div class="body">
     <p>円グラフとドーナツグラフ。切れの名前と値・割合は、大きい切れなら中に、小さい切れなら外に引き出し線で書く</p>
     <ul>
       <li>伝えたいこと：全体と内訳</li>
       <li>見せ方：fade・sweep・grow</li>
-      <li>系列：標準パーツ　見本のスライド：3 枚</li>
+      <li>内容の分野：標準パーツ　サンプルのスライド：3 枚</li>
     </ul>
   </div>
 </section>
@@ -2124,76 +2605,13 @@ document.addEventListener("DOMContentLoaded", function(){
 </section>
 
 <section class="slide">
-  <h2>m-predict</h2>
-  <div class="body">
-    <p style="margin:0 0 10px;line-height:1.3"><span style="display:inline-block;font-size:27px;font-weight:700;color:var(--fg);border:2px dashed var(--accent2);border-radius:8px;padding:0 12px">操作できる / Interactive</span></p>
-    <p style="border:3px dashed var(--accent2);border-radius:10px;padding:10px 16px">予想してから答えを開く。選択肢ごとの人数を棒で見せ、答えのステップで正解に枠（見る人が押して操作できる）</p>
-    <ul>
-      <li>伝えたいこと：予想してから確かめる</li>
-      <li>見せ方：fade・draw</li>
-      <li>系列：標準パーツ　見本のスライド：3 枚</li>
-    </ul>
-  </div>
-</section>
-
-<section id="g-predict-1" class="slide">
-  <h2>予想してみよう：落ちる速さ</h2>
-  <div class="body">
-    <p class="ia-badge" style="margin:0 0 10px;line-height:1.3"><span style="display:inline-block;font-size:27px;font-weight:700;color:var(--fg);border:2px dashed var(--accent2);border-radius:8px;padding:0 12px">操作できる</span></p>
-    <m-predict unit="人" style="height:390px">
-      <script type="application/json">{
-        "question": "同じ高さから落とすと、重い球と軽い球のどちらが先に着く？",
-        "choices": [{"label": "重い球"}, {"label": "軽い球"}, {"label": "同時"}],
-        "answer": 2,
-        "counts": [17, 2, 11],
-        "note": "空気の抵抗が小さければ、重さによらず同時に着く（ガリレオ）"
-      }</script>
-    </m-predict>
-  </div>
-  <div class="concl"><span>→ 落ちる速さは重さで決まらない（人数は架空の例）</span></div>
-</section>
-
-<section id="g-predict-2" class="slide">
-  <h2>予想してみよう：小数のかけ算</h2>
-  <div class="body">
-    <m-predict unit="人" poll="p1" style="height:440px">
-      <script type="application/json">{
-        "question": "0.1 × 0.1 はいくつ？",
-        "choices": [{"label": "0.1"}, {"label": "0.01"}, {"label": "0.2"}, {"label": "1"}],
-        "answer": 1,
-        "counts": [12, 10, 6, 2],
-        "note": "0.1 は 10 分の 1。10 分の 1 の 10 分の 1 は 100 分の 1"
-      }</script>
-    </m-predict>
-  </div>
-  <div class="concl"><span>→ 1 より小さい数をかけると、もとの数より小さくなる（人数は架空の例）</span></div>
-</section>
-
-<section id="g-predict-3" class="slide">
-  <h2>見せ方の種類（variant）</h2>
-  <div class="body">
-    <div style="display:grid;grid-template-columns:190px 1fr;gap:20px 16px;align-items:center;font-size:27px">
-      <div>フェード<br>（fade）</div>
-      <m-predict variant="fade" unit="人" style="height:210px">
-        <script type="application/json">{"choices": [{"label": "A"}, {"label": "B"}], "answer": 0, "counts": [8, 5]}</script>
-      </m-predict>
-      <div>線を引く<br>（draw）</div>
-      <m-predict variant="draw" unit="人" style="height:210px">
-        <script type="application/json">{"choices": [{"label": "A"}, {"label": "B"}], "answer": 0, "counts": [8, 5]}</script>
-      </m-predict>
-    </div>
-  </div>
-  <div class="concl"><span>→ 書かなければ最初の見せ方（fade）になる。人数は架空</span></div>
-</section>
-
-<section class="slide">
   <h2>m-sampling</h2>
   <div class="body">
     <p>母集団から標本を取り、比率・平均の標本分布を積む</p>
     <ul>
       <li>伝えたいこと：仕組みをモデルで見る・ばらつき</li>
       <li>見せ方：1 種類</li>
-      <li>系列：数理・統計　見本のスライド：3 枚</li>
+      <li>内容の分野：数理・統計　サンプルのスライド：3 枚</li>
     </ul>
   </div>
 </section>
@@ -2223,7 +2641,7 @@ document.addEventListener("DOMContentLoaded", function(){
     <ul>
       <li>伝えたいこと：2 つの量の関係</li>
       <li>見せ方：fade・sweep・grow</li>
-      <li>系列：標準パーツ　見本のスライド：3 枚</li>
+      <li>内容の分野：標準パーツ　サンプルのスライド：3 枚</li>
     </ul>
   </div>
 </section>
@@ -2285,7 +2703,7 @@ document.addEventListener("DOMContentLoaded", function(){
     <ul>
       <li>伝えたいこと：音楽（音の高さ・和音・リズム）</li>
       <li>見せ方：light</li>
-      <li>系列：音楽　見本のスライド：4 枚</li>
+      <li>内容の分野：音楽　サンプルのスライド：4 枚</li>
     </ul>
   </div>
 </section>
@@ -2337,7 +2755,7 @@ document.addEventListener("DOMContentLoaded", function(){
     <ul>
       <li>伝えたいこと：ばらつき</li>
       <li>見せ方：1 種類</li>
-      <li>系列：数理・統計　見本のスライド：1 枚</li>
+      <li>内容の分野：数理・統計　サンプルのスライド：1 枚</li>
     </ul>
   </div>
 </section>
@@ -2359,7 +2777,7 @@ document.addEventListener("DOMContentLoaded", function(){
     <ul>
       <li>伝えたいこと：パラメータを動かす</li>
       <li>見せ方：1 種類</li>
-      <li>系列：数理・統計　見本のスライド：3 枚</li>
+      <li>内容の分野：数理・統計　サンプルのスライド：3 枚</li>
     </ul>
   </div>
 </section>
@@ -2398,7 +2816,7 @@ document.addEventListener("DOMContentLoaded", function(){
     <ul>
       <li>伝えたいこと：文章の構造</li>
       <li>見せ方：fade・draw</li>
-      <li>系列：英語　見本のスライド：3 枚</li>
+      <li>内容の分野：英語　サンプルのスライド：3 枚</li>
     </ul>
   </div>
 </section>
@@ -2436,221 +2854,13 @@ document.addEventListener("DOMContentLoaded", function(){
 </section>
 
 <section class="slide">
-  <h2>m-tape</h2>
-  <div class="body">
-    <p>テープ図・線分図。全体や部分を括弧で括り、わからない量は □ か ?。行から行へ「2 倍」の矢印</p>
-    <ul>
-      <li>伝えたいこと：全体と内訳・比べる（量・特徴）</li>
-      <li>見せ方：fade・grow</li>
-      <li>系列：数理・統計　見本のスライド：4 枚</li>
-    </ul>
-  </div>
-</section>
-
-<section id="g-tape-1" class="slide">
-  <h2>2 つの量をくらべる：B のリボンは何 m？</h2>
-  <div class="body">
-    <m-tape style="height:440px">
-      <script type="application/json">{"rows": [
-          {"label": "A", "segs": [{"v": 12, "label": "12 m"}]},
-          {"label": "B", "segs": [{"v": 12, "label": "12 m"}, {"v": 5, "label": "5 m"}]}],
-        "brace": [{"row": 1, "from": 0, "to": 1, "label": "□ m", "side": "below"}]}</script>
-    </m-tape>
-  </div>
-  <div class="concl"><span>→ B は A より 5 m 長い。□ = 12 + 5 = 17</span></div>
-</section>
-
-<section id="g-tape-2" class="slide">
-  <h2>□を使った式：みかんははじめに何こ？</h2>
-  <div class="body">
-    <m-tape style="height:360px">
-      <script type="application/json">{"rows": [{"segs": [{"v": 8, "label": "食べた 8 こ"}, {"v": 15, "label": "のこり 15 こ"}]}],
-        "brace": [{"row": 0, "from": 0, "to": 1, "label": "はじめ □ こ", "side": "above"}]}</script>
-    </m-tape>
-  </div>
-  <div class="concl"><span>→ □ − 8 = 15 だから、□ = 15 + 8 = 23</span></div>
-</section>
-
-<section id="g-tape-3" class="slide">
-  <h2>B のテープは A のテープの何倍？（線分図）</h2>
-  <div class="body">
-    <m-tape kind="line" style="height:380px">
-      <script type="application/json">{"rows": [
-          {"label": "A のテープ", "segs": [{"v": 12, "label": "12 m"}]},
-          {"label": "B のテープ", "segs": [{"v": 12}, {"v": 12}, {"v": 12}]}],
-        "brace": [{"row": 1, "from": 0, "to": 2, "label": "36 m", "side": "below"}],
-        "times": [{"from": 0, "to": 1, "label": "□ 倍"}]}</script>
-    </m-tape>
-  </div>
-  <div class="concl"><span>→ B は A（12 m）の 3 つ分で 36 m。36 ÷ 12 = 3 で 3 倍</span></div>
-</section>
-
-<section id="g-tape-4" class="slide">
-  <h2>見せ方の種類（variant）</h2>
-  <div class="body">
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:0 36px">
-      <m-tape variant="fade" build="rows" style="height:400px">
-        <script type="application/json">{"rows": [{"label": "弟", "segs": [{"v": 20, "label": "20 まい"}]},
-          {"label": "兄", "segs": [{"v": 40, "unknown": "□", "label": "まい"}]}],
-          "times": [{"from": 0, "to": 1, "label": "2 倍"}]}</script>
-      </m-tape>
-      <m-tape variant="grow" build="rows" style="height:400px">
-        <script type="application/json">{"rows": [{"label": "弟", "segs": [{"v": 20, "label": "20 まい"}]},
-          {"label": "兄", "segs": [{"v": 40, "unknown": "□", "label": "まい"}]}],
-          "times": [{"from": 0, "to": 1, "label": "2 倍"}]}</script>
-      </m-tape>
-    </div>
-  </div>
-  <div class="concl"><span>→ 左はフェード（既定）、右は左から伸びる</span></div>
-</section>
-
-<section class="slide">
-  <h2>m-timeline</h2>
-  <div class="body">
-    <p>年表。出来事を時間の軸の上に 1 つずつ出す。期間は帯にして、重なる期間は段を分けて積む。end は含まない（"1912" は 1912 年の初め）</p>
-    <ul>
-      <li>伝えたいこと：年表・予定</li>
-      <li>見せ方：fade・draw・grow</li>
-      <li>系列：標準パーツ　見本のスライド：4 枚</li>
-    </ul>
-  </div>
-</section>
-
-<section id="g-timeline-1" class="slide">
-  <h2>明治のおもな出来事</h2>
-  <div class="body">
-    <m-timeline style="height:430px">
-      <script type="application/json">{
-        "nodes": [
-          {"label": "明治維新", "when": "1868", "whenLabel": "明治元年", "note": "五箇条の御誓文"},
-          {"label": "廃藩置県", "when": "1871"},
-          {"label": "鉄道の開業", "when": "1872", "note": "新橋〜横浜"},
-          {"label": "西南戦争", "when": "1877"},
-          {"label": "憲法の発布", "when": "1889", "tone": "emph"},
-          {"label": "日清戦争", "when": "1894"},
-          {"label": "日露戦争", "when": "1904"}
-        ]
-      }</script>
-    </m-timeline>
-  </div>
-  <div class="concl"><span>→ 約 20 年で憲法をもつ国になった</span></div>
-</section>
-
-<section id="g-timeline-2" class="slide">
-  <h2>明治・大正の作家の生涯</h2>
-  <div class="body">
-    <m-timeline style="height:430px">
-      <script type="application/json">{
-        "nodes": [
-          {"label": "明治", "when": "1868", "end": "1912", "lane": "時代", "tone": "muted"},
-          {"label": "大正", "when": "1912", "end": "1926", "lane": "時代", "tone": "muted"},
-          {"label": "森鷗外", "when": "1862", "end": "1922", "lane": "作家"},
-          {"label": "夏目漱石", "when": "1867", "end": "1916", "lane": "作家"},
-          {"label": "正岡子規", "when": "1867", "end": "1902", "lane": "作家"},
-          {"label": "樋口一葉\n24 歳で没", "when": "1872", "end": "1896", "lane": "作家", "tone": "emph"},
-          {"label": "芥川龍之介", "when": "1892", "end": "1927", "lane": "作家"},
-          {"label": "宮沢賢治", "when": "1896", "end": "1933", "lane": "作家"}
-        ]
-      }</script>
-    </m-timeline>
-  </div>
-  <div class="concl"><span>→ 重なる生涯は段を分けて積む。漱石と子規は同じ年の生まれ</span></div>
-</section>
-
-<section id="g-timeline-3" class="slide">
-  <h2>アプリ開発の工程表（架空）</h2>
-  <div class="body">
-    <m-timeline unit="week" today="2026-11-02" style="height:400px">
-      <script type="application/json">{
-        "nodes": [
-          {"id": "req", "label": "要件定義", "when": "2026-10-05", "end": "2026-10-17", "lane": "設計", "progress": 100},
-          {"id": "ui", "label": "画面設計", "when": "2026-10-17", "end": "2026-11-07", "lane": "設計", "progress": 70, "after": ["req"]},
-          {"id": "dev", "label": "実装", "when": "2026-11-07", "end": "2026-12-05", "lane": "開発", "progress": 10, "after": ["ui"]},
-          {"id": "test", "label": "試験", "when": "2026-12-05", "end": "2026-12-19", "lane": "開発", "after": ["dev"]},
-          {"id": "rel", "label": "公開", "when": "2026-12-21", "lane": "開発", "tone": "emph", "after": ["test"]}
-        ]
-      }</script>
-    </m-timeline>
-  </div>
-  <div class="concl"><span>→ 矢印は「前の作業が終わってから」。画面設計の遅れは実装に響く</span></div>
-</section>
-
-<section id="g-timeline-4" class="slide">
-  <h2>見せ方の種類（variant）</h2>
-  <div class="body">
-    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:0 36px">
-      <div><p class="vcap">現れてから線（fade、既定）</p>
-        <m-timeline variant="fade" style="height:330px">
-          <script type="application/json">{"nodes": [{"label": "明治維新", "when": "1868"}, {"label": "明治", "when": "1868", "end": "1912"}, {"label": "憲法の発布", "when": "1889"}]}</script>
-        </m-timeline></div>
-      <div><p class="vcap">線を引いてから（draw）</p>
-        <m-timeline variant="draw" style="height:330px">
-          <script type="application/json">{"nodes": [{"label": "明治維新", "when": "1868"}, {"label": "明治", "when": "1868", "end": "1912"}, {"label": "憲法の発布", "when": "1889"}]}</script>
-        </m-timeline></div>
-      <div><p class="vcap">軸の側から大きくなる（grow）</p>
-        <m-timeline variant="grow" style="height:330px">
-          <script type="application/json">{"nodes": [{"label": "明治維新", "when": "1868"}, {"label": "明治", "when": "1868", "end": "1912"}, {"label": "憲法の発布", "when": "1889"}]}</script>
-        </m-timeline></div>
-    </div>
-  </div>
-  <div class="concl"><span>→ 書かなければ最初の見せ方（fade）になる</span></div>
-</section>
-
-<section class="slide">
-  <h2>m-timer</h2>
-  <div class="body">
-    <p style="margin:0 0 10px;line-height:1.3"><span style="display:inline-block;font-size:27px;font-weight:700;color:var(--fg);border:2px dashed var(--accent2);border-radius:8px;padding:0 12px">操作できる / Interactive</span></p>
-    <p style="border:3px dashed var(--accent2);border-radius:10px;padding:10px 16px">グループワークの進行タイマー。区切りごとに残り時間を大きく数え、区切りの一覧で今の区切りを示す（見る人が押して操作できる）</p>
-    <ul>
-      <li>伝えたいこと：時間を区切る</li>
-      <li>見せ方：fade</li>
-      <li>系列：標準パーツ　見本のスライド：2 枚</li>
-    </ul>
-  </div>
-</section>
-
-<section id="g-timer-1" class="slide noconcl">
-  <h2>ワーク：困りごとを集める（架空の研修）</h2>
-  <div class="body">
-    <p class="ia-badge" style="margin:0 0 10px;line-height:1.3"><span style="display:inline-block;font-size:27px;font-weight:700;color:var(--fg);border:2px dashed var(--accent2);border-radius:8px;padding:0 12px">操作できる</span></p>
-    <m-timer style="height:420px">
-      <script type="application/json">{
-        "ready": {"title": "準備の確認", "text": "付箋とペン、A3 の用紙がそろっているか。\n終わらなくてよい。書けた所までを持ち帰る。"},
-        "phases": [
-          {"title": "① 付箋に書く", "short": "付箋に書く", "sec": 90, "text": "職場の困りごとを、付箋 1 枚に 1 件。\n個人で、3 枚を目安に。"},
-          {"title": "② 島で読み上げる", "short": "島で読み上げる", "sec": 15, "text": "順に読み上げて貼る。近いものを寄せる。"},
-          {"title": "③ 1 つ選ぶ", "short": "1 つ選ぶ", "sec": 20, "text": "よく起きて、手間の大きいものを 1 つ選ぶ。"}
-        ],
-        "bells": [{"left": 60, "count": 1}, {"left": 10, "count": 2}, {"left": 0, "count": 3}]
-      }</script>
-    </m-timer>
-  </div>
-</section>
-
-<section id="g-timer-2" class="slide noconcl">
-  <h2>字を変える（labels）</h2>
-  <div class="body">
-    <m-timer style="height:470px">
-      <script type="application/json">{
-        "ready": {"title": "合図を待つ", "text": "全員が席に着いたら始める。"},
-        "phases": [
-          {"title": "考える時間", "short": "1 人で考える", "sec": 20, "text": "話さずに、自分の考えをメモに書く。"},
-          {"title": "話す時間", "short": "2 人で話す", "sec": 15, "text": "隣の人と、メモを見せ合う。"}
-        ],
-        "labels": {"total": "全部で", "remaining": "あと", "done": "そこまで", "start": "合図で始める", "next": "そこまで。次へ進む", "end": "そこまで"}
-      }</script>
-    </m-timer>
-  </div>
-</section>
-
-<section class="slide">
   <h2>m-venn</h2>
   <div class="body">
     <p>2 つか 3 つの集合の円（ベン図）。集合を 1 つずつ出し、最後に重なりを強めてその中の項目を出す</p>
     <ul>
       <li>伝えたいこと：重なり</li>
       <li>見せ方：fade・draw</li>
-      <li>系列：標準パーツ　見本のスライド：3 枚</li>
+      <li>内容の分野：標準パーツ　サンプルのスライド：3 枚</li>
     </ul>
   </div>
 </section>
