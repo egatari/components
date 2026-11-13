@@ -110,6 +110,39 @@
   <div class="concl"><span>→ 駅前店だけが大きく減った。学年が上がるほど「はい」が増える</span></div>
 </section>
 
+<section class="slide">
+  <h2>3 つの教え方の平均点（誤差棒は 95 % 信頼区間、架空）</h2>
+  <div class="body">
+    <m-bars unit="点" digits="1" al="平均点" style="height:440px">
+      <script type="application/json">{
+        "groups": [
+          {"label": "講義だけ", "value": 61.2, "err": [57.0, 65.4]},
+          {"label": "演習あり", "value": 68.5, "err": [64.6, 72.4]},
+          {"label": "演習と\n振り返り", "value": 74.1, "err": [70.3, 77.9], "tone": "emph"}
+        ],
+        "sig": [{"from": 0, "to": 2, "label": "**"}, {"from": 0, "to": 1, "label": "*"}]
+      }</script>
+    </m-bars>
+  </div>
+  <div class="concl"><span>→ 振り返りを加えた組の平均点が最も高い</span></div>
+</section>
+
+<section class="slide noconcl">
+  <h2>点と誤差棒（mark="dot"、95 % 信頼区間、2 系列、架空）</h2>
+  <div class="body">
+    <m-bars mark="dot" unit="%" al="正答率" per-step="0" style="height:440px">
+      <script type="application/json">{
+        "series": [{"label": "図あり"}, {"label": "図なし"}],
+        "groups": [
+          {"label": "問 1", "values": [72, 58], "err": [[64, 80], [49, 67]]},
+          {"label": "問 2", "values": [55, 51], "err": [[46, 64], [42, 60]]}
+        ],
+        "sig": [{"group": 0, "from": 0, "to": 1}]
+      }</script>
+    </m-bars>
+  </div>
+</section>
+
 </div>
 </body>
 </html>

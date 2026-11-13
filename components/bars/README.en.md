@@ -14,14 +14,17 @@ props:
   zoom: scale-change seconds
   al: axis title
   stack: stack values; "percent" = 100 %
+  mark: bar or dot (a point with its error bar)
 example: {"series": [{"label": "Sales"}], "groups": [{"label": "Year 1", "value": 1.2}, {"label": "Year 2", "value": 3.4}]}
 ---
 
 For quantities shown and compared one at a time: yearly sales, ranked answers, before/after.
 
-Child JSON: `{"series": [...], "groups": [...], "scale": [...]}`.
+Child JSON: `{"series": [...], "groups": [...], "scale": [...], "sig": [...]}`.
 
 - group: `label` (`\n` = 2 lines), `value` or `values` (one per series), `step`, `at` (start s), `tone` (bar and value colour)
+- err: ± number or `[low, high]` (interval ends); per series for `values`. Values are written beyond the error bar's end
+- sig: `[{"from": 0, "to": 2, "label": "**"}]` brackets two groups (with `group`, two series in that group); vertical, unstacked bars only
 - series: `label` (2+ series: on the first group's bars; no legend), `tone` (default `--series-1..4`)
 - scale: `[{"step": 3, "max": 27, "at": 0.4}]`: the max moves to `max` over `zoom` s; the old range stays as a faint band; taller bars stop at the top and grow as it widens
 <!-- llm: omit -->
