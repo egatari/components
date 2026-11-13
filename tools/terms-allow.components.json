@@ -14,6 +14,12 @@
       "reason": "The name of Natural Earth's dataset ne_10m_admin_0_countries_jpn (the Japan point-of-view edition of the data), not a software version; kept with standards' approval (2026-11-13)."
     },
     {
+      "file": "components/menu/README.md",
+      "pattern": "どこから見るか",
+      "term": "play-sample",
+      "reason": "A slide title the author might write (choose where to start), not the 再生 button; Studio's make-llm-guide.mjs PACK_EDITS quotes this README sentence verbatim, so changing it breaks Studio's gen."
+    },
+    {
       "file": "tools/gallery.mjs",
       "pattern": "not a components manifest \\(version, components, files\\)",
       "term": "part",

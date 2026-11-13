@@ -9,7 +9,7 @@ purposes: contents
 props: cols, per-step, size, fade, stagger, visited
 ---
 
-目次、授業の単元の選び方、「どこから始めるか」を選ばせる 1 枚に使う。
+目次、授業の単元の選び方、「どこから見るか」を選ばせる 1 枚に使う。
 <!-- llm: omit -->
 札は子に書いたふつうのリンクで、パーツは見た目（格子・丸の字・副題・印）を整えるだけ。押したときの動きは実行系（`kit/deck.js`）が受け持つ
 （[format spec §9.1A](https://github.com/egatari/egatari-spec/blob/main/egatari-1.0.md#91a-links-to-slides)、`docs/contract.md` §9）。
