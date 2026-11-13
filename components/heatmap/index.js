@@ -11,7 +11,7 @@
 // 2.0（Egatari spec §6.1 の部品）：base の MotionElement・el・prog・variant・previewOpacity と、計算は heatmap-core（1.x の
 // static calc）を使い、プレイヤーのグローバルは使わない。書き方やデータの知らせ（1.x の console.warn）は mount で ctx.report に。
 // 言語は ctx.lang（mount で読む）。凡例のグラデーションの id は heatmap-2-0-2-legend-<n>（1.x は m-heatmap-legend-<n>）
-egatariParts.define({name: "heatmap", version: "2.1.0", requires: {base: "1.2.0", "heatmap-core": "1.0.0"}, element: "m-heatmap"}, function(deps){
+egatariParts.define({name: "heatmap", version: "2.1.1", requires: {base: "1.2.0", "heatmap-core": "1.0.0"}, element: "m-heatmap"}, function(deps){
 "use strict";
 var base = deps.base;
 // ---- 計算（heatmap-core。tools/test-heatmap.mjs がブラウザなしで試す） ----
@@ -38,7 +38,7 @@ function clip(s, w, C){
 }
 var ON = function(v){ return /^(on|true|yes)$/i.test(String(v || "").trim()); };
 var TONES = ["term", "emph", "accent2"];
-var ID = "heatmap-2-1-0-";   // name and version of this part, dots replaced (spec §6.1 Identifiers)
+var ID = "heatmap-2-1-1-";   // name and version of this part, dots replaced (spec §6.1 Identifiers)
 var SEQ = 0;   // 凡例のグラデーションの id（ページの中で部品ごとに別。mount は 1 回だけ。このパーツだけの数え）
 return class extends base.MotionElement {
   static partName = "heatmap";   // the registry name (define meta name), for report prefixes
@@ -221,7 +221,7 @@ return class extends base.MotionElement {
       var st = pl.cell[r][c], pos = order[st].findIndex(function(o){ return o[0] === r && o[1] === c; }), n = order[st].length;
       var pt = paint(C.frac(pl.val[r][c], pl.kind, pl.dom));
       var g = D.el("g", {opacity: 0}, gCell);
-      D.el("rect", {x: f1(X(c) + gap), y: f1(Y(r) + gap), width: f1(cs - 2 * gap), height: f1(cs - 2 * gap), fill: pt.fill}, g);
+      D.el("rect", {x: f1(X(c) + gap), y: f1(Y(r) + gap), width: f1(Math.max(0, cs - 2 * gap)), height: f1(Math.max(0, cs - 2 * gap)), fill: pt.fill}, g);
       if (nf){
         var tx = this.texts(r, c); if (lines === 1 && tx.length === 2) tx = [tx[1]];
         tx.forEach(function(s, j){
@@ -237,7 +237,7 @@ return class extends base.MotionElement {
     }
     // 枠（対角は --fg、強調は --emph）：地の色の太い線の上に色の線（濃いセルの上でも明るいセルの上でも見える）
     var frame = function(r, c, col, st, at){
-      var g = D.el("g", {opacity: 0}, gOut), a = {x: f1(X(c) + 1), y: f1(Y(r) + 1), width: f1(cs - 2), height: f1(cs - 2), fill: "none"};
+      var g = D.el("g", {opacity: 0}, gOut), a = {x: f1(X(c) + 1), y: f1(Y(r) + 1), width: f1(Math.max(0, cs - 2)), height: f1(Math.max(0, cs - 2)), fill: "none"};
       D.el("rect", Object.assign({stroke: "var(--bg)", "stroke-width": 8}, a), g);
       D.el("rect", Object.assign({stroke: col, "stroke-width": 4}, a), g);
       items.push({el: g, st: st, at: at, len: dur * 0.5});

@@ -8,7 +8,7 @@
 // 点は既定で 1 つ = 1 段階（step で直接、at で段階の中の開始秒）。self の点は強調の色で大きく、着いたときに輪が広がる
 // to は移動先：to.step（既定は点の次の段階）に、点が破線の跡を引きながら滑る
 // 2.0（Egatari spec §6.1 の部品）：base の MotionElement・el・prog・lerp・clamp・previewOpacity を使い、プレイヤーのグローバルは使わない
-egatariParts.define({name: "quad", version: "2.1.0", requires: {base: "1.2.0"}, element: "m-quad"}, function(deps){
+egatariParts.define({name: "quad", version: "2.1.1", requires: {base: "1.2.0"}, element: "m-quad"}, function(deps){
 "use strict";
 var base = deps.base;
 return class extends base.MotionElement {
@@ -68,7 +68,7 @@ return class extends base.MotionElement {
                   bl: [x0, cy, cx - x0, y1 - cy, x0 + 16, y1 - 16, "start"], br: [cx, cy, x1 - cx, y1 - cy, x1 - 16, y1 - 16, "end"]};
     ["tr", "tl", "bl", "br"].forEach(function(key){
       var c = corner[key];
-      if (q.fill === key) D.el("rect", {x: c[0], y: c[1], width: c[2], height: c[3], fill: "var(--term-tint)"}, gQ);
+      if (q.fill === key) D.el("rect", {x: c[0], y: c[1], width: Math.max(0, c[2]), height: Math.max(0, c[3]), fill: "var(--term-tint)"}, gQ);
     });
     // 軸（両向きの矢印）と両端の言葉。横軸の言葉は軸の下、縦軸の言葉は軸の上端・下端の外
     var ax = D.el("g", {}, svg), K = "var(--fg)";

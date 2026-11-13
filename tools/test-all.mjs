@@ -71,7 +71,9 @@
 //  12. shape            wrong-shaped data and refused expressions: inline placeholder and DECK.componentErrors, no exception (tools/test-shape.mjs)
 //  13. default-variant the default (first) variant of every component with variants is pixel-identical to the last release (tools/test-default-variant.mjs)
 //      same-paint      m-flow, m-tree, m-fishbone, m-quad paint the same pixels as the last release in every theme and a dark one (tools/test-same-paint.mjs)
-//      zero-size       parts hardened for a 0-px element (m-particles) mount at 0 wide and 0 × 0: no hang, page error or negative SVG size (tools/test-zero-size.mjs)
+//      zero-size       parts hardened for a 0-px element (m-particles and the parts clamped in 2.9.0) mount at 0 wide and 0 × 0: no hang, page error or negative SVG size (tools/test-zero-size.mjs)
+//      tex-width       a TeX label in m-tree and m-fishbone stays inside its box, also with wide symbols (tools/test-tex-width.mjs)
+//      terms           the public docs use Studio's glossary: Studio's lint-terms --prose at tools/studio.json termsCommit, with tools/terms-allow.components.json (tools/test-terms.mjs)
 //      preview        answers under preview: with ctx.preview a part draws its later steps at --preview-opacity, or declares static preview = "none"
 //                     and draws exactly the same; lecture-view screenshots (tools/test-preview.mjs)
 //  14. duration        every step is complete when its declared length ends (tools/test-duration.mjs)
@@ -162,6 +164,8 @@ const TESTS = [
   ['test-default-variant', ['tools/test-default-variant.mjs', path.join(tmp, 'default-variant')]],
   ['test-same-paint', ['tools/test-same-paint.mjs', path.join(tmp, 'same-paint')]],
   ['test-zero-size', ['tools/test-zero-size.mjs']],
+  ['test-tex-width', ['tools/test-tex-width.mjs']],
+  ['test-terms', ['tools/test-terms.mjs']],
   ['test-preview', ['tools/test-preview.mjs', path.join(tmp, 'preview')]],
   ['test-duration', ['tools/test-duration.mjs']],
   ['test-contrast', ['tools/test-contrast.mjs']],

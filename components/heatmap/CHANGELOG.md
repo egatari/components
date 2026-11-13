@@ -2,6 +2,10 @@
 
 The part's own versions (Egatari spec §6.1). Releases of the whole library are in the repository's CHANGELOG.md.
 
+## 2.1.1 (components 2.9.0)
+
+- Hardening: an element too small for its drawing (0 px wide, or 0 × 0) no longer gives the cells a negative SVG size (Chrome logged "A negative value is not valid"); the sizes are clamped at 0. Drawing at normal sizes is unchanged (tools/test-same-paint.mjs, 4 themes). Checked by tools/test-zero-size.mjs.
+
 ## 2.1.0 (components 2.7.0)
 
 - Colour ramps (spec §8.4 `--ramp-1` … `--ramp-5`): with scale="sequential" and no `tone` attribute, cells and the legend band use the theme's ramp (base `ramp`). Every stop falls back to the 2.0.2 colour, so themes without ramps give the same colours. A `tone` the author wrote keeps that role; diverging keeps its two roles. Text colour and halo are chosen from the resolved ramp colour. Uses base 1.2.0 (ramp, rampStops). Ids heatmap-2-1-0-.

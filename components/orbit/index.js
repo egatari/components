@@ -11,7 +11,7 @@
 // 字は部品の中の表から授業の言語（ctx.lang）で選ぶ。データの labels・notes で位置ごとに上書きできる（null は表のまま、"" は字なし）。
 // eclipse（月だけ）：新月と満月の位置で、太陽・月・地球がそろったときの影（日食・月食）を描く。月の軌道の傾きは描かない（README）。
 // 2.0（Egatari spec §6.1 の部品）：base の MotionElement・el・prog・lerp だけを使い、プレイヤーのグローバルは使わない。
-egatariParts.define({name: "orbit", version: "2.0.5", requires: {base: "1.2.0"}, element: "m-orbit"}, function(deps){
+egatariParts.define({name: "orbit", version: "2.0.6", requires: {base: "1.2.0"}, element: "m-orbit"}, function(deps){
 "use strict";
 var base = deps.base;
 var TAU = 2 * Math.PI;
@@ -175,7 +175,7 @@ var Part = class extends base.MotionElement {
     } else {
       // 金星：太陽が中心、地球の軌道 RE。地球は下、名前は右の図だけ
       // 地球の名前を地球の下に置く分（34px）を下にあける
-      var RE = Math.min(topW / 2 - 12, (areaH - 34) / 2 - 12) / (1 + P.earth * 0.5);
+      var RE = Math.max(0, Math.min(topW / 2 - 12, (areaH - 34) / 2 - 12) / (1 + P.earth * 0.5));
       L.R = RE; L.cx = topW / 2; L.cy = areaTop + (areaH - 34) / 2; L.er = RE * P.earth * 0.5; L.mr = L.er * P.moon * 1.4; L.sr = RE * 0.14;
       if (RE < 80) why.push("the orbit is " + Math.round(RE) + "px");
     }

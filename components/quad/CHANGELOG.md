@@ -2,6 +2,10 @@
 
 The part's own versions (Egatari spec §6.1). Releases of the whole library are in the repository's CHANGELOG.md.
 
+## 2.1.1 (components 2.9.0)
+
+- Hardening: an element too small for its drawing (0 px wide, or 0 × 0) no longer gives the quadrant fills a negative SVG size (Chrome logged "A negative value is not valid"); the sizes are clamped at 0. Drawing at normal sizes is unchanged (tools/test-same-paint.mjs, 4 themes). Checked by tools/test-zero-size.mjs.
+
 ## 2.1.0 (components 2.8.0)
 
 - Marks what it draws for Studio's geometry check (as m-flow 2.1.0): each point's circle has `data-part="mark"` and `data-part-id="p<n>"` (n = its place in `items`, from 1); its name and its move target's name have `data-part="label"`, the same id, `data-part-of="mark"` and `data-part-at="outside"`; a move is a `<g data-part="edge">` from `p<n>` to `@moved` holding the dashed line (`data-part-line`) and the arrowhead. Axes and quadrant names are not marked. Drawing is unchanged.

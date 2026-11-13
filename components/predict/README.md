@@ -1,6 +1,6 @@
 ---
 name: m-predict
-version: 2.1.0
+version: 2.1.1
 series: common
 tier: standard
 summary: 予想してから答えを開く。選択肢ごとの人数を棒で見せ、答えのステップで正解に枠

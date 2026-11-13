@@ -1,14 +1,14 @@
 // node tools/test-zero-size.mjs [--only particles,kpi]: a part whose element is 0 px wide (a hidden panel, a collapsed preview) or
 // 0 × 0 must still mount and draw: its demo, with every part in it squeezed to that size, gets ready within 30 s (no hang), throws
 // no page error, and sets no negative SVG size (Chrome logs "A negative value is not valid" for <rect width> or <circle r>).
-// Each step is drawn mid-step and final. The list is the parts hardened so far (components 2.8.0: m-particles); add a part when
+// Each step is drawn mid-step and final; after each draw the SVG sizes are also read from the DOM (the console message can come late). The list is the parts hardened so far (components 2.8.0: m-particles); add a part when
 // its sizes are clamped.
 import fs from 'node:fs';
 import path from 'node:path';
 import { ROOT, studio } from './studio.mjs';
 import { LAUNCH } from './shot-helpers.mjs';
 
-const HARDENED = ['particles', 'diverge', 'checklist', 'callout'];
+const HARDENED = ['particles', 'codetree', 'collect', 'compare', 'heatmap', 'keyboard', 'kpi', 'market', 'orbit', 'predict', 'quad', 'tape', 'timer', 'diverge', 'checklist', 'callout'];
 const oi = process.argv.indexOf('--only'), NAMES = oi >= 0 ? process.argv.splice(oi, 2)[1].split(',') : HARDENED;
 const READY_MS = 30000;
 const S = await studio();
@@ -30,7 +30,13 @@ for (const name of NAMES) {
       try {
         await p.goto(S.browser.fileUrl(out), { timeout: READY_MS });
         await p.waitForFunction(() => window.DECK && DECK.ready, null, { timeout: READY_MS });
-        await p.evaluate(() => DECK.slides.forEach((s, i) => { for (let k = 0; k <= s._max; k++) { DECK.seek(i, k, 0.3); DECK.seek(i, k, Infinity); } }));
+        // Chrome's console message can arrive after the page is closed, so the sizes are also read from the DOM after every seek
+        const neg = await p.evaluate(() => {
+          const bad = [], scan = () => { for (const el of document.querySelectorAll('svg rect, svg circle, svg ellipse, svg image')) for (const a of ['width', 'height', 'r', 'rx', 'ry']) { const v = el.getAttribute(a); if (v !== null && parseFloat(v) < 0) bad.push(`<${el.localName}> ${a}="${v}"`); } };
+          DECK.slides.forEach((s, i) => { for (let k = 0; k <= s._max; k++) { DECK.seek(i, k, 0.3); scan(); DECK.seek(i, k, Infinity); scan(); } });
+          return [...new Set(bad)];
+        });
+        neg.forEach((x) => errs.push('negative size: ' + x));
       } catch (e) { errs.push('not ready within 30 s (hang?): ' + String(e.message).split('\n')[0]); }
       await p.close().catch(() => {});
     } catch (e) { errs.push('build: ' + String(e.message).split('\n')[0]); }

@@ -2,6 +2,10 @@
 
 The part's own versions (Egatari spec §6.1). Releases of the whole library are in the repository's CHANGELOG.md.
 
+## 2.0.5 (components 2.9.0)
+
+- Hardening: an element too small for its drawing (0 px wide, or 0 × 0) no longer gives the phase rows a negative SVG size (Chrome logged "A negative value is not valid"); the sizes are clamped at 0. Drawing at normal sizes is unchanged (tools/test-same-paint.mjs, 4 themes). Checked by tools/test-zero-size.mjs.
+
 ## 2.0.4 (components 2.7.0)
 
 - Fix: the aria-live announcement at the end of a phase joined the title and "done" with a hardcoded full-width colon even when `ctx.lang` was not `ja` (e.g. "Warm-up：Time's up"); it now follows `ctx.lang` like the rest of the part ("Warm-up: Time's up"). Style id timer-2-0-4-css.

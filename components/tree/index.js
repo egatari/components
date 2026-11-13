@@ -19,9 +19,64 @@
 // 式（tex）は組み立てのときに KaTeX で描く（spec §6.2）：build.fields の nodes[].tex を作り手が描いて texHtml を足し、
 // この部品は markup-reader で決まった要素と属性だけを読んで置く（再生のときに KaTeX は動かない）。描いた結果がなければ tex を字のまま出して知らせる。
 // 入らないときは ctx.report("size", "[tree] …") で知らせる（1.x の console.warn の代わり）
-egatariParts.define({name: "tree", version: "2.1.0", requires: {base: "1.2.0", "markup-reader": "1.0.2"}, element: "m-tree"}, function(deps){
+egatariParts.define({name: "tree", version: "2.1.1", requires: {base: "1.2.0", "markup-reader": "1.0.2"}, element: "m-tree"}, function(deps){
 "use strict";
 var base = deps.base, MR = deps["markup-reader"];
+// KaTeX の式のおよその幅（em）。\text{…} などの中は字ごとに、命令は表から（ない命令は 1 em）、^ と _ の中は 0.7 倍
+var TEX_WIDE = {Longleftrightarrow: 1.86, longleftrightarrow: 1.86, Longrightarrow: 1.64, longrightarrow: 1.64, Longleftarrow: 1.64, longleftarrow: 1.64,
+  longmapsto: 1.64, leftrightarrow: 1.0, Leftrightarrow: 1.0, rightarrow: 1.0, leftarrow: 1.0, Rightarrow: 1.0, Leftarrow: 1.0, to: 1.0, mapsto: 1.0,
+  iff: 2.42, implies: 2.2, impliedby: 2.2, sum: 1.06, prod: 0.95, int: 0.56, quad: 1.0, qquad: 2.0, cdots: 1.17, ldots: 1.17, dots: 1.17, infty: 1.0,
+  le: 1.06, ge: 1.06, leq: 1.06, geq: 1.06, ne: 1.06, neq: 1.06, approx: 1.06, equiv: 1.06, times: 1.0, div: 1.0, pm: 1.0, cdot: 0.5,
+  alpha: 0.64, beta: 0.57, gamma: 0.52, delta: 0.45, theta: 0.47, lambda: 0.58, mu: 0.6, pi: 0.57, sigma: 0.57, omega: 0.62, Sigma: 0.72, Delta: 0.83, Omega: 0.72,
+  ",": 0.17, ":": 0.22, ";": 0.28, "!": 0, " ": 0.33};
+var TEX_SKIP = /^(left|right|big|Big|bigg|Bigg|displaystyle|textstyle|mathit|mathcal|mathbb|boldsymbol|hat|bar|vec|tilde|dot|overline|underline)$/;
+function texCharEm(c){
+  if (/[WM]/.test(c)) return 1.03;
+  if (/[A-Z]/.test(c)) return 0.76;
+  if (/[mw]/.test(c)) return 0.84;
+  if (/[a-z]/.test(c)) return 0.53;
+  if (/[0-9]/.test(c)) return 0.5;
+  if (/[+=<>\-]/.test(c)) return 1.0;
+  if (/[()\[\]|\/]/.test(c)) return 0.42;
+  if (/[.,;:!' ]/.test(c)) return 0.3;
+  return /[　-鿿＀-￯]/.test(c) ? 1.0 : 0.6;
+}
+// s の i 番目の { から対応する } の後ろまで
+function texGroup(s, i){ var d = 0, j = i; do { var c = s.charAt(j); if (c === "{") d++; else if (c === "}") d--; j++; } while (d > 0 && j < s.length); return {inner: s.slice(i + 1, j - 1), end: j}; }
+function texEm(src){
+  var s = String(src || ""), i = 0, w = 0;
+  while (i < s.length){
+    var c = s.charAt(i);
+    if (c === "\\"){
+      var m = /^\\([a-zA-Z]+|.)/.exec(s.slice(i)), cmd = m ? m[1] : "";
+      i += m ? m[0].length : 1;
+      if (/^(text|textrm|textbf|mathrm|mathbf|operatorname|mbox)$/.test(cmd) && s.charAt(i) === "{"){
+        var g = texGroup(s, i);
+        for (var k = 0; k < g.inner.length; k++) w += texCharEm(g.inner.charAt(k));
+        i = g.end; continue;
+      }
+      if (/^(frac|dfrac|tfrac)$/.test(cmd) && s.charAt(i) === "{"){
+        var a = texGroup(s, i), b = s.charAt(a.end) === "{" ? texGroup(s, a.end) : {inner: "", end: a.end};
+        w += Math.max(texEm(a.inner), texEm(b.inner)) * (cmd === "dfrac" ? 1 : 0.8) + 0.24;
+        i = b.end; continue;
+      }
+      if (cmd === "sqrt"){ w += 0.85; continue; }
+      if (TEX_SKIP.test(cmd)) continue;
+      w += TEX_WIDE[cmd] !== undefined ? TEX_WIDE[cmd] : 1.0;
+      continue;
+    }
+    if (c === "^" || c === "_"){
+      i++;
+      if (s.charAt(i) === "{"){ var sg = texGroup(s, i); w += texEm(sg.inner) * 0.7; i = sg.end; }
+      else if (s.charAt(i) === "\\"){ var m2 = /^\\([a-zA-Z]+|.)/.exec(s.slice(i)); w += texEm(m2 ? m2[0] : "") * 0.7; i += m2 ? m2[0].length : 1; }
+      else { w += texCharEm(s.charAt(i)) * 0.7; i++; }
+      continue;
+    }
+    if (c === "{" || c === "}"){ i++; continue; }
+    w += texCharEm(c); i++;
+  }
+  return w;
+}
 // 形の要素ごとに、書き直すと形が作り直される属性（render の終わりで使う）
 var SHAPE_GEOM = {rect: "width", circle: "r", ellipse: "rx", path: "d", line: "x1", polyline: "points", polygon: "points"};
 // 複数行の名前の行の位置（1 行目からの下がり、px）と、上下に足す余白。base 1.1.0 で mtext の下付き・上付きは 24px 以上になり、
@@ -122,6 +177,10 @@ var Part = class extends base.MotionElement {
     // 字の幅の見積もり（字の大きさ 1 あたり。base の textWidth：テーマの字で測った幅。*斜体* などの記号は数えない）
     var est = function(s){ return D.textWidth(s, 1, {font: self, mark: true}); };
     var texEst = function(s){ return Math.max(1, String(s).replace(/\\[a-zA-Z]+/g, "x").replace(/[{}^_\\ ]/g, "").length) * 0.62; };
+    // TeX の式の幅（px）：KaTeX の字の幅（em）から見積もる。画面で測らない（KaTeX の字が読み込まれる前に測ると狭く出て、
+    // 測る時刻で箱の大きさが変わるため）。長い矢印や W のような幅の広い記号も数え、これまでの見積もり（字数 × 0.62 字）より狭くはしない
+    // （components 2.9.0。前は \Longleftrightarrow や \text{WWWWWWWW} が箱から 9〜63 px はみ出した）
+    var texW = function(n, s){ return Math.max(texEm(n.tex), texEst(n.tex)) * s; };
     var NS = 24, NLH = 30;   // 注（note）の字の大きさと行の高さ
     var levels = 0;
     pl.nodes.forEach(function(o){ levels = Math.max(levels, o.depth + 1); });
@@ -157,7 +216,7 @@ var Part = class extends base.MotionElement {
       pl.nodes.forEach(function(o){
         var n = o.n, lines = n.tex ? [n.tex] : String(n.label || "").split("\n");
         if (wrapOn && !n.tex && lines.length === 1){ var w2 = wrap2(lines[0]); if (w2) lines = w2; }
-        var tw = n.tex ? texEst(n.tex) * s : Math.max.apply(null, lines.map(est)) * s;
+        var tw = n.tex ? texW(n, s) : Math.max.apply(null, lines.map(est)) * s;
         o.lines = lines;
         var ys0 = n.tex ? null : lineYs(lines, s * 1.25, s);
         o.w = Math.max(s * 2.4, tw + s * 1.3);
@@ -277,7 +336,9 @@ var Part = class extends base.MotionElement {
       var nid = String(n.id), lb = {"data-part": "label", "data-part-id": nid, "data-part-of": "box"};
       D.el("rect", {class: "box", x: o.x.toFixed(1), y: o.y.toFixed(1), width: o.w.toFixed(1), height: o.h.toFixed(1), rx: 10, fill: c[1], stroke: c[0], "stroke-width": n.tone === "emph" ? 3 : 2.2, "data-part": "box", "data-part-id": nid}, o.g);
       if (n.tex){ var tf = MR.texFrame(o.g, o.cx, o.cy + s * 0.36, n, "tex", {size: s, anchor: "middle", color: c[2], w: o.w, h: o.h}, sk);
-        tf.firstChild.style.verticalAlign = "top"; for (var k in lb) tf.setAttribute(k, lb[k]); }
+        tf.firstChild.style.verticalAlign = "top"; for (var k in lb) tf.setAttribute(k, lb[k]);
+        // 式の枠は箱の幅にし、中で中央に寄せる（KaTeX の字が読み込まれた後の幅で中央になる。texFrame は読み込む前の幅で位置を決めるため）
+        tf.setAttribute("x", (o.cx - o.w / 2).toFixed(1)); tf.setAttribute("width", o.w.toFixed(1)); tf.style.textAlign = "center"; }
       else {
         var ys = lineYs(o.lines, s * 1.25, s), y0 = o.cy - ys[ys.length - 1] / 2 + s * 0.36 + (ys.top - ys.bottom) / 2;
         o.lines.forEach(function(t, j){ D.mtext(o.g, o.cx, y0 + ys[j], t, Object.assign({"text-anchor": "middle", "font-size": s, fill: c[2]}, lb)); });

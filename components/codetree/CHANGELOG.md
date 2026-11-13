@@ -2,6 +2,10 @@
 
 The part's own versions (Egatari spec §6.1). Releases of the whole library are in the repository's CHANGELOG.md.
 
+## 2.0.6 (components 2.9.0)
+
+- Hardening: an element too small for its drawing (0 px wide, or 0 × 0) no longer gives the scan line's cells a negative SVG size (Chrome logged "A negative value is not valid"); the sizes are clamped at 0. Drawing at normal sizes is unchanged (tools/test-same-paint.mjs, 4 themes). Checked by tools/test-zero-size.mjs.
+
 ## 2.0.5 (components 2.7.0)
 
 - Fix: the built-in labels (tree/leaf names, the right-corner notes, the "so far" crumb, the run-length "+"/"=" and the "Code" heading above the bit sequence) were always Japanese regardless of `ctx.lang`; they now follow it (`ja` gets the Japanese table, anything else English), as the header comment always said. A child JSON `labels` still overrides them. The lookup moved from the memoized `model()` (built once, before `ctx` exists) to `mount(ctx)` (`this.Lb`), since `ctx.lang` is only known there.

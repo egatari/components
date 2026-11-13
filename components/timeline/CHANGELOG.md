@@ -2,6 +2,10 @@
 
 The part's own versions (Egatari spec §6.1). Releases of the whole library are in the repository's CHANGELOG.md.
 
+## 2.0.4 (components 2.9.0)
+
+- Fix: a TeX label is sized from KaTeX's glyph widths (long arrows, W and M, `\text{…}`, fractions, sub- and superscripts), never narrower than 0.62 em per character, instead of being measured at mount: KaTeX's fonts may not have loaded then, so the measured width was too small (by up to 21 px with wide symbols) and depended on when the fonts loaded. The formula is placed in a frame of that width and aligned in it by CSS. Demos without TeX draw the same pixels as before. Checked by tools/test-tex-width.mjs.
+
 ## 2.0.3 (components 2.7.0)
 
 - Requires base 1.2.0 and markup-reader 1.0.2 (mtext keeps a lone `*` literal and draws `\*` `\_` `\^` as the character).

@@ -2,6 +2,10 @@
 
 The part's own versions (Egatari spec §6.1). Releases of the whole library are in the repository's CHANGELOG.md.
 
+## 2.1.1 (components 2.9.0)
+
+- Hardening: an element too small for its drawing (0 px wide, or 0 × 0) no longer gives the rows and bars a negative SVG size (Chrome logged "A negative value is not valid"); the sizes are clamped at 0. Drawing at normal sizes is unchanged (tools/test-same-paint.mjs, 4 themes). Checked by tools/test-zero-size.mjs.
+
 ## 2.1.0 (components 2.7.0)
 
 - Every built-in UI text (the correct mark, the live poll heading, the pick/count aria-labels, the −1/+1 aria-labels, the note's right/wrong prefix and the aria-live announcements) now follows `ctx.lang` (TEXT.ja / TEXT.en in index.js); only `ja` gets the Japanese text, anything else (including no `lang`) gets English. Question, choice labels and `note` stay the author's own text either way.

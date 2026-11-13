@@ -12,10 +12,10 @@
 // 2.0（Egatari spec §6.1 の部品）：base の MotionElement・el・prog を使い、プレイヤーのグローバルは使わない。
 //   延長を戻すのは ctx.entered だけ（1.x の deck:pos の代わりはない）。日本語かどうかは mount の ctx.lang、動画かどうかは ctx.mode。
 //   要素の大きさの問題は ctx.report("size", …)。印刷の前後は document.defaultView の beforeprint・afterprint
-egatariParts.define({name: "timer", version: "2.0.4", requires: {base: "1.2.0"}, element: "m-timer"}, function(deps){
+egatariParts.define({name: "timer", version: "2.0.5", requires: {base: "1.2.0"}, element: "m-timer"}, function(deps){
 "use strict";
 var base = deps.base;
-var CSS_ID = "timer-2-0-4-css";   // the style element this part writes, named with its name and version (spec §6.1 Identifiers)
+var CSS_ID = "timer-2-0-5-css";   // the style element this part writes, named with its name and version (spec §6.1 Identifiers)
 var JA = {ready: "準備の確認", total: "合計", remaining: "残り", done: "時間", start: "準備ができたら　→ キーでスタート", next: "終了　→ キーで次へ", end: "終了",
           min: "分", sec: "秒", plus: "＋1 分", minus: "−1 分"};
 var EN = {ready: "Ready?", total: "Total", remaining: "Remaining", done: "Time's up", start: "When ready, press → to start", next: "Time's up. Press → for the next", end: "Time's up",
@@ -146,7 +146,7 @@ return class extends base.MotionElement {
     if (rh < 34) ctx.report("size", "[timer] " + n + " phases do not fit in the list (make the element taller or use fewer phases)");
     this.rows = this.P.map(function(p, j){
       var y = top + j * rh, s = (j + 1) + (self.ja ? "　" : "  ") + self.span(p.sec) + (self.ja ? "　" : "  ") + (p.short || p.title);
-      var box = D.el("rect", {x: RX, y: y, width: W - RX, height: rh - 6, rx: 8, fill: "none", stroke: "none", "stroke-width": 2.5}, svg);
+      var box = D.el("rect", {x: RX, y: y, width: Math.max(0, W - RX), height: Math.max(0, rh - 6), rx: 8, fill: "none", stroke: "none", "stroke-width": 2.5}, svg);
       var tx = D.el("text", {x: RX + 14, y: y + rh / 2 + 7, "font-size": fit(s, W - RX - 28, F(28), "phase list entry")}, svg);
       tx.textContent = s;
       return {box: box, tx: tx};
