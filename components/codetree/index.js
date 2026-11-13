@@ -24,7 +24,7 @@
 // 復号の規則は codetree-core（試験は tools/test-codetree.mjs）
 // 2.0（Egatari spec §6.1 の部品）：base の MotionElement・el・prog・lerp・previewOpacity と、表・木・復号の codetree-core を使い、
 // プレイヤーのグローバルは使わない
-egatariParts.define({name: "codetree", version: "2.0.5", requires: {base: "1.2.0", "codetree-core": "1.0.0"}, element: "m-codetree"}, function(deps){
+egatariParts.define({name: "codetree", version: "2.0.6", requires: {base: "1.2.0", "codetree-core": "1.0.0"}, element: "m-codetree"}, function(deps){
 "use strict";
 var base = deps.base;
 var D = base;
@@ -354,7 +354,7 @@ return class extends base.MotionElement {
     var G = this.G, sx0 = 70, total = m.runs.reduce(function(a, r){ return a + r.len; }, 0);
     var sl = D2.el("text", {x: 0, y: G.scanY + 22, "font-size": 24, fill: "var(--muted)"}, root);
     sl.textContent = Lb.scan;
-    var sc = total ? Math.min(20, (this.W - sx0) / total) : 0;
+    var sc = total ? Math.max(0, Math.min(20, (this.W - sx0) / total)) : 0;
     this.S = {x0: sx0, sc: sc, total: total};
     var gS = D2.el("g", {"data-mark": MK + "-scan"}, root);
     D2.el("line", {x1: sx0, x2: sx0 + total * sc, y1: G.scanY + 28, y2: G.scanY + 28, stroke: "var(--line)", "stroke-width": 2}, gS);

@@ -8,7 +8,7 @@
 // 見せ方（docs/conventions.md §1）：count（数え上げ、既定）・rise（最後の値のまま少し小さい大きさから戻る）・flip（右の桁から 1 桁ずつ
 // めくれて止まる）・underline（出たあと数字の下に線を引く）。段階の数・長さ・合図・最後の中身はどれも同じ
 // 2.0（Egatari spec §6.1 の部品）：base の MotionElement・el・mtext・prog・lerp・clamp・variant・previewOpacity を使い、プレイヤーのグローバルは使わない
-egatariParts.define({name: "kpi", version: "2.0.3", requires: {base: "1.2.0"}, element: "m-kpi"}, function(deps){
+egatariParts.define({name: "kpi", version: "2.0.4", requires: {base: "1.2.0"}, element: "m-kpi"}, function(deps){
 "use strict";
 var base = deps.base;
 return class extends base.MotionElement {
@@ -69,7 +69,7 @@ return class extends base.MotionElement {
       }).join(ja ? "、" : "; "));
     }
     var n = pl.length || 1, cols = P.cols || Math.min(4, n), rows = Math.ceil(n / cols), gap = 28;
-    var cw = (W - gap * (cols - 1)) / cols, ch = (H - gap * (rows - 1)) / rows;
+    var cw = Math.max(0, (W - gap * (cols - 1)) / cols), ch = Math.max(0, (H - gap * (rows - 1)) / rows);
     var size = P.size || Math.max(48, Math.min(84, ch * 0.3, cw * 0.24));
     // 字の幅（base の textWidth：テーマの字で測った幅。mk：mtext で書く字で、*_^ は数えない）
     var est = function(s, sz, mk){ return D.textWidth(s, sz, {font: self, mark: !!mk}); };

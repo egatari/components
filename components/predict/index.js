@@ -15,7 +15,7 @@
 // 2.0（Egatari spec §6.1 の部品）：base の MotionElement・el・mtext・prog・variant を使い、プレイヤーのグローバルは使わない。
 //   見る人の入力を戻すのは ctx.entered だけ（1.x の deck:pos の代わりはない）。動画かどうかは mount の ctx.mode。
 //   要素の大きさの問題は ctx.report("size", …)。印刷の前後は document.defaultView の beforeprint・afterprint
-egatariParts.define({name: "predict", version: "2.1.0", requires: {base: "1.2.0"}, element: "m-predict"}, function(deps){
+egatariParts.define({name: "predict", version: "2.1.1", requires: {base: "1.2.0"}, element: "m-predict"}, function(deps){
 "use strict";
 var base = deps.base;
 // 表示の文字（ctx.lang、見る人の言語ではなく文書の言語）。correct は子の JSON の labels.correct で上書きできる
@@ -53,7 +53,7 @@ var TEXT = {
     answerAnnounce: function(label, note){ return "Answer: " + label + (note ? ". " + note : ""); },
   }
 };
-var CSS_ID = "predict-2-1-0-css";   // the style element this part writes, named with its name and version (spec §6.1 Identifiers)
+var CSS_ID = "predict-2-1-1-css";   // the style element this part writes, named with its name and version (spec §6.1 Identifiers)
 var CSS = [
   "m-predict .pd-say{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}",
   "m-predict .pd-pick{position:absolute;background:transparent;border:0;border-radius:10px;cursor:pointer;padding:0;margin:0}",
@@ -178,7 +178,7 @@ return class extends base.MotionElement {
     };
     if (d.question) fitText(D.mtext(svg, 0, 36, d.question, {"font-size": 30, "font-weight": 700}), d.question, W - 8, 30, "question", true);
     // 答えの枠（行の後ろ）
-    this.frame = D.el("rect", {x: 2, y: 0, width: Math.max(0, W - cw - 12), height: rh - 8, rx: 10, fill: "none", stroke: "var(--emph)", "stroke-width": 3, opacity: 0}, svg);
+    this.frame = D.el("rect", {x: 2, y: 0, width: Math.max(0, W - cw - 12), height: Math.max(0, rh - 8), rx: 10, fill: "none", stroke: "var(--emph)", "stroke-width": 3, opacity: 0}, svg);
     this.frameLen = 2 * (W - cw - 12 + rh - 8);
     // 目盛り（数の軸の上限は数で決まるので、render で置き直す。入れ物は先に作る）
     var gT = D.el("g", {}, svg);
@@ -188,7 +188,7 @@ return class extends base.MotionElement {
     });
     if (P.ticks){ var z = D.el("text", {"font-size": 24, "text-anchor": "middle", x: G.x0, y: G.y1 + 30}, gT); z.textContent = "0"; }
     D.el("line", {x1: G.x0, y1: G.y0 + 4, x2: G.x0, y2: G.y1, stroke: "var(--fg)", "stroke-width": 1.5}, svg);
-    var bw = Math.min(46, rh * 0.56);
+    var bw = Math.max(0, Math.min(46, rh * 0.56));
     this.rows = ch.map(function(c, i){
       var cy = G.y0 + rh * (i + 0.5), col = tone(c.tone);
       var r = {cy: cy, col: col,

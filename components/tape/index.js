@@ -9,7 +9,7 @@
 // 見せ方（docs/conventions.md §1）：fade（フェード、既定）・grow（テープが左から伸び、括弧と矢印は線を引く）
 // 2.0（Egatari spec §6.1 の部品）：base の MotionElement・el・mtext・prog・variant・previewOpacity を使い、プレイヤーのグローバルは使わない。
 // データや大きさの問題は ctx.report で知らせる（1.x の console.warn の代わり）
-egatariParts.define({name: "tape", version: "2.0.3", requires: {base: "1.2.0"}, element: "m-tape"}, function(deps){
+egatariParts.define({name: "tape", version: "2.0.4", requires: {base: "1.2.0"}, element: "m-tape"}, function(deps){
 "use strict";
 var base = deps.base;
 // 字の幅（base の textWidth：font の要素の字で測った幅。字は mtext で書くので *_^ は数えない）
@@ -162,7 +162,7 @@ return class extends base.MotionElement {
       r.segs.forEach(function(g, j){
         var at = grow ? dur * 0.75 * j / n : 0, len = grow ? dur * 0.75 / n : dur * 0.7;
         if (!line){
-          var rect = D.el("rect", {x: g.x.toFixed(1), y: r.top.toFixed(1), width: g.w.toFixed(1), height: r.tapeH, fill: col, "fill-opacity": 0.14, stroke: "var(--fg)", "stroke-width": 2.5, opacity: 0}, gS);
+          var rect = D.el("rect", {x: g.x.toFixed(1), y: r.top.toFixed(1), width: Math.max(0, g.w).toFixed(1), height: r.tapeH, fill: col, "fill-opacity": 0.14, stroke: "var(--fg)", "stroke-width": 2.5, opacity: 0}, gS);
           add(rect, {st: st, at: at, len: len, kind: "seg", w: g.w});
         } else {
           add(D.el("line", {x1: g.x.toFixed(1), x2: (g.x + g.w).toFixed(1), y1: r.cy.toFixed(1), y2: r.cy.toFixed(1), stroke: col, "stroke-width": 4, opacity: 0}, gS), {st: st, at: at, len: len, kind: "line"});
@@ -215,7 +215,7 @@ return class extends base.MotionElement {
       var e = it.st < k ? 1 : it.st > k ? (lecture ? -1 : 0) : D.prog(t, it.at, it.len), op;
       if (e < 0){ op = FAINT; e = 1; } else op = e;
       if (grow && it.kind === "seg"){
-        it.el.setAttribute("width", (it.w * e).toFixed(1));
+        it.el.setAttribute("width", Math.max(0, it.w * e).toFixed(1));
         op = e > 0 ? (op === FAINT && it.st > k ? FAINT : 1) : 0;
       } else if (grow && it.kind === "line"){
         it.el.setAttribute("stroke-dasharray", e >= 1 ? "none" : e.toFixed(4) + " 2");

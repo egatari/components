@@ -6,7 +6,7 @@
 // 円の大きさ：scale="fixed"（既定。見やすい決まった比）か "area"（面積を値に比例。小さすぎる円は最小の大きさにする）
 // 配置：layout="bottom"（既定。下端をそろえる）か "center"（同心）。円の名前・値・根拠（basis）は右に引き出し線で書く
 // 2.0（Egatari spec §6.1 の部品）：base の MotionElement・el・mtext・prog・lerp・previewOpacity を使い、プレイヤーのグローバルは使わない
-egatariParts.define({name: "market", version: "2.0.3", requires: {base: "1.2.0"}, element: "m-market"}, function(deps){
+egatariParts.define({name: "market", version: "2.0.4", requires: {base: "1.2.0"}, element: "m-market"}, function(deps){
 "use strict";
 var base = deps.base;
 return class extends base.MotionElement {
@@ -32,7 +32,7 @@ return class extends base.MotionElement {
     var W = this.clientWidth, H = this.clientHeight;
     var svg = D.el("svg", {viewBox: "0 0 " + W + " " + H, width: W, height: H, style: "display:block;overflow:visible"}, this);
     // 円は左の 4 割ほど、名前と数字は右
-    var big = Math.min(H / 2 - 6, W * 0.22), cx = 6 + big, bottom = H / 2 + big;
+    var big = Math.max(0, Math.min(H / 2 - 6, W * 0.22)), cx = 6 + big, bottom = H / 2 + big;
     var fixed = [1, 0.64, 0.34, 0.16];
     // area は値がすべて正で、外の円から順に小さくなるときだけ（そうでなければ円が要素の外にはみ出すか、半径が NaN になる）。
     // そうでなければ知らせて、この図は fixed の比で描く

@@ -13,7 +13,7 @@
 // 2.0（Egatari spec §6.1 の部品）：base の MotionElement・el・prog・variant・previewOpacity を使い、プレイヤーのグローバルは使わない。
 // 段階の数は ctx にも言語にもよらない（spec §8.4）：既定の鍵盤の名前（日本語ならドレミ、ほかは CDE）は plan() ではなく mount で選ぶ。
 // レッスンのデータや要素の大きさの問題は ctx.report で知らせる（1.x の console.warn("m-keyboard: …") の代わり）
-egatariParts.define({name: "keyboard", version: "2.0.4", requires: {base: "1.2.0"}, element: "m-keyboard"}, function(deps){
+egatariParts.define({name: "keyboard", version: "2.0.5", requires: {base: "1.2.0"}, element: "m-keyboard"}, function(deps){
 "use strict";
 var base = deps.base;
 // ---- 鍵盤の名前と形（DOM を使わない。tools/test-keyboard.mjs が試す） ----
@@ -186,7 +186,7 @@ return class extends base.MotionElement {
     var hasLabel = pl.steps.some(function(s){ return s.o.label; });
     // 光る黒鍵の名前の行：となりの名前に重なるなら 2 行目へ（どの段階でも同じ置き場所）
     var LFS = 30, NFS = 26, BFS = 24;
-    var unitW = Math.min((W - 6) / kb.n, 96);
+    var unitW = Math.max(0, Math.min((W - 6) / kb.n, 96));
     var x0 = (W - unitW * kb.n) / 2;
     var bl = {};
     pl.steps.forEach(function(s){ s.keys.forEach(function(k){ if (!k.white && names !== "none") bl[k.midi + "|" + k.acc] = k; }); });
@@ -214,7 +214,7 @@ return class extends base.MotionElement {
     });
     var labH = hasLabel ? 46 + (labRows - 1) * 40 : 0, bnH = nRows * 32, namesH = names === "none" ? 0 : 40, gapTop = nRows ? 8 : (hasLabel ? 10 : 0);
     var avail = H - labH - bnH - gapTop - namesH - 8;
-    var keyH = Math.min(avail, unitW * 4.4);
+    var keyH = Math.max(0, Math.min(avail, unitW * 4.4));
     if (avail < 110) ctx.report("size", "[keyboard] the element (" + W + "×" + H + " px) leaves only " + Math.round(avail) + " px for the keys; make it taller (about " + Math.ceil(H + 110 - avail) + " px)");
     if (unitW < 40) ctx.report("size", "[keyboard] white keys are " + unitW.toFixed(0) + " px wide; the names under them may not fit (use a narrower range or a wider element)");
     var used = labH + bnH + gapTop + keyH + namesH, top0 = Math.max(0, (H - used) / 2);
@@ -230,10 +230,10 @@ return class extends base.MotionElement {
       D.el("rect", {x: x.toFixed(1), y: keyTop.toFixed(1), width: w.toFixed(1), height: h.toFixed(1), rx: white ? 4 : 3,
         fill: white ? "var(--bg)" : "var(--fg)", stroke: "var(--fg)", "stroke-width": white ? 2 : 1.5}, g);
       var ins = white ? 3 : 4;
-      var lit = D.el("rect", {x: (x + ins).toFixed(1), y: (keyTop + (white ? 2 : 0)).toFixed(1), width: (w - 2 * ins).toFixed(1), height: (h - ins - (white ? 2 : 0)).toFixed(1), rx: 2, opacity: 0}, g);
+      var lit = D.el("rect", {x: (x + ins).toFixed(1), y: (keyTop + (white ? 2 : 0)).toFixed(1), width: Math.max(0, w - 2 * ins).toFixed(1), height: Math.max(0, h - ins - (white ? 2 : 0)).toFixed(1), rx: 2, opacity: 0}, g);
       var cx = x + w / 2, r = white ? Math.min(9, w * 0.16) : Math.min(7, w * 0.2), cy = keyTop + h - (white ? 14 + r : 10 + r);
       var dot = D.el("circle", {cx: cx.toFixed(1), cy: cy.toFixed(1), r: r.toFixed(1), opacity: 0}, g);
-      K[key.midi] = {key: key, g: g, lit: lit, dot: dot, y: keyTop + (white ? 2 : 0), h: h - ins - (white ? 2 : 0), white: white, nm: null, bn: {}};
+      K[key.midi] = {key: key, g: g, lit: lit, dot: dot, y: keyTop + (white ? 2 : 0), h: Math.max(0, h - ins - (white ? 2 : 0)), white: white, nm: null, bn: {}};
     });
     // 白鍵の名前（鍵盤の下）
     if (names !== "none") kb.whites.forEach(function(key){

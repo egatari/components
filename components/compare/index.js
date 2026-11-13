@@ -10,7 +10,7 @@
 // reveal（列の中を上の行から 1 行ずつ）。どれも動く距離（16 px）と長さ（dur）は同じで、段階の数・長さ・最後の中身は変わらない
 // 2.0（Egatari spec §6.1 の部品）：base の MotionElement・el・mtext・prog・lerp・variant・previewOpacity を使い、プレイヤーのグローバルは使わない。
 // 違いの列の既定の見出しの言語は ctx.lang（mount で読む）。収まらない表は ctx.report で知らせる（1.x の console.warn の代わり）
-egatariParts.define({name: "compare", version: "2.0.3", requires: {base: "1.2.0"}, element: "m-compare"}, function(deps){
+egatariParts.define({name: "compare", version: "2.0.4", requires: {base: "1.2.0"}, element: "m-compare"}, function(deps){
 "use strict";
 var base = deps.base;
 return class extends base.MotionElement {
@@ -89,7 +89,7 @@ return class extends base.MotionElement {
         var anyLabel = rows.some(function(r){ return r.label; });
         var lw = anyLabel ? Math.min(W * 0.24, Math.max(W * 0.1, Math.max.apply(null, rows.map(function(r){ return est(r.label || "", fs, true); })) + padX * 2)) : 0;
         var dw = hasDiffCol ? Math.min(W * 0.3, Math.max(W * 0.18, Math.max.apply(null, rows.map(function(r){ return est(r.diff || "", fs, true); })) + padX * 2)) : 0;
-        var cw = (W - lw - dw - gap * (n - 1 + (lw ? 1 : 0) + (dw ? 1 : 0))) / n;
+        var cw = Math.max(0, (W - lw - dw - gap * (n - 1 + (lw ? 1 : 0) + (dw ? 1 : 0))) / n);
         var heads = sides.map(function(s){ var w = wrap(s.label, cw - padX * 2, hs, true); over = over || w.over; return w.lines; });
         var cells = rows.map(function(r){
           var lab = wrap(r.label || "", lw - padX * 2, fs, true), dif = wrap(r.diff || "", dw - padX * 2, fs, true);
@@ -168,7 +168,7 @@ return class extends base.MotionElement {
           if (hasD) block(g, c.dif, colX.diff + padX, ys[j] + c.h / 2, "start", {"font-weight": 700, fill: "var(--emph)"}, L.lh);
           D.el("line", {x1: colX.diff + 10, x2: colX.diff + L.dw - 10, y1: ys[j], y2: ys[j], stroke: "var(--line)", "stroke-width": 1.5}, g);
         }
-        if (hasB) D.el("rect", {x: colX.sides[r.better] + 5, y: ys[j] + 5, width: L.cw - 10, height: c.h - 10, rx: 9, fill: "none", stroke: "var(--emph)", "stroke-width": 3}, g);
+        if (hasB) D.el("rect", {x: colX.sides[r.better] + 5, y: ys[j] + 5, width: Math.max(0, L.cw - 10), height: Math.max(0, c.h - 10), rx: 9, fill: "none", stroke: "var(--emph)", "stroke-width": 3}, g);
       });
     }
     this.pieces = pieces; this.m = m;

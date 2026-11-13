@@ -1,6 +1,6 @@
 ---
 name: m-keyboard
-version: 2.0.4
+version: 2.0.5
 series: music
 tier: specialized
 set: music

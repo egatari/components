@@ -7,7 +7,7 @@
 // 2.0（Egatari spec §6.1 の部品）：base の MotionElement・el・mtext・prog・lerp・previewOpacity を使い、プレイヤーのグローバルは使わない。
 // 式（tex）は組み立てのときに KaTeX で描く（spec §6.2）：build.fields の targets[].tex を作り手が描いて texHtml を足し、
 // この部品は markup-reader で決まった要素と属性だけを読んで置く（再生のときに KaTeX は動かない）。描いた結果がなければ tex を字のまま出して知らせる
-egatariParts.define({name: "collect", version: "2.0.3", requires: {base: "1.2.0", "markup-reader": "1.0.2"}, element: "m-collect"}, function(deps){
+egatariParts.define({name: "collect", version: "2.0.4", requires: {base: "1.2.0", "markup-reader": "1.0.2"}, element: "m-collect"}, function(deps){
 "use strict";
 var base = deps.base, MR = deps["markup-reader"];
 return class extends base.MotionElement {
@@ -40,7 +40,7 @@ return class extends base.MotionElement {
     var tone = {term: ["var(--term)", "var(--term-tint)"], emph: ["var(--emph)", "var(--emph-tint)"], muted: ["var(--muted)", "var(--bg)"]};
     // 札の並び：上の段に cols 列で並べる
     var C = data.chips || [], n = C.length, cols = data.cols || n, rows = Math.ceil(n / cols), gap = 14;
-    var cw = P["chip-w"] || Math.min(220, (W - gap * (cols - 1)) / cols), ch = P["chip-h"];
+    var cw = P["chip-w"] || Math.max(0, Math.min(220, (W - gap * (cols - 1)) / cols)), ch = P["chip-h"];
     var gx = (W - (cw * cols + gap * (cols - 1))) / 2;
     // 箱の並び：下の段に等間隔（x, y を書けばその位置。中心の座標）
     var T = data.targets || [], bw = P["box-w"], bh = P["box-h"];

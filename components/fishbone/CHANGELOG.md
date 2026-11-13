@@ -2,6 +2,10 @@
 
 The part's own versions (Egatari spec §6.1). Releases of the whole library are in the repository's CHANGELOG.md.
 
+## 2.1.1 (components 2.9.0)
+
+- Fix: a TeX label's box is sized from KaTeX's glyph widths (long arrows, W and M, `\text{…}`, fractions, sub- and superscripts), never narrower than before, and the formula is centred in its box after KaTeX's fonts load. Before, wide symbols stuck out of the box by up to 63 px (Studio's geometry check, geoLabelOutsideBox). Nothing is measured on screen, so the layout does not depend on when the fonts load. Demos without TeX draw the same pixels as 2.1.0. Checked by tools/test-tex-width.mjs.
+
 ## 2.1.0 (components 2.8.0)
 
 - Marks what it draws for Studio's geometry check (as m-flow 2.1.0). Boxes: the effect's `<rect>` is `data-part="box"` with `data-part-id="@head"`, each main bone's box has its node id. Edges (`<g data-part="edge">` with `data-part-id`, `-from`, `-to`; each line `<path>` has `data-part-line`): the spine `@tail→@head` (with its arrowhead), each main bone `<id>→@spine`, each cause `<id>→<parent id>` (a sub-cause's slanted line is in its first sub-cause's edge), and the other connections. Texts: box names (and TeX frames) are `data-part="label"` of their box, box notes add `data-part-at="outside"`, a cause's text (and note, TeX) is the label of its own edge. Ids starting with `@` are kept for these marks: a node id that starts with `@` is reported (`data`). Drawing is unchanged.
