@@ -13,7 +13,7 @@
 // 負の値（積み上げでない棒）：値の軸に 0 を含め、0 の基線から下（横棒は左）へ伸ばす。値の数字は棒の端の外側（下・左）に書く
 // 2.0（Egatari spec §6.1 の部品）：base の MotionElement・el・mtext・prog・lerp・previewOpacity を使い、プレイヤーのグローバルは使わない。
 // 要素が小さすぎるときは ctx.report で知らせる（1.x の console.warn("m-bars: …") の代わり）
-egatariParts.define({name: "bars", version: "2.0.3", requires: {base: "1.2.0"}, element: "m-bars"}, function(deps){
+egatariParts.define({name: "bars", version: "2.1.0", requires: {base: "1.2.0"}, element: "m-bars"}, function(deps){
 "use strict";
 var base = deps.base;
 return class extends base.MotionElement {
@@ -22,7 +22,8 @@ return class extends base.MotionElement {
   static shape = {
     schema: {type: "object", additionalProperties: false, required: ["groups"], properties: {
       groups: {type: "array", minItems: 1, items: {type: "object", anyOf: [{required: ["value"]}, {required: ["values"]}], properties: {
-        label: {type: "string"}, value: {type: "number"}, values: {type: "array", items: {type: "number"}}, step: {type: "integer"}, at: {type: "number"}, tone: {type: "string"}}}},
+        label: {type: "string"}, value: {type: "number"}, values: {type: "array", items: {type: "number"}}, err: {type: ["number", "array"]}, step: {type: "integer"}, at: {type: "number"}, tone: {type: "string"}}}},
+      sig: {type: "array", items: {type: "object", required: ["from", "to"], properties: {from: {type: "integer"}, to: {type: "integer"}, group: {type: "integer"}, label: {type: "string"}, step: {type: "integer"}}}},
       series: {type: "array", items: {type: "object", properties: {label: {type: "string"}, tone: {type: "string"}}}},
       scale: {type: "array", items: {type: "object", required: ["step"], properties: {step: {type: "integer"}, max: {type: "number"}, at: {type: "number"}}}},
       max: {type: "number"}}},
@@ -41,12 +42,14 @@ return class extends base.MotionElement {
     zoom:       {type: "number", default: 1.6, doc: "scale で上限を動かす秒数"},
     al:         {type: "string", default: "", doc: "値の軸の名前"},
     stack:      {type: "bool", default: false, doc: "組の値を 1 本に積み上げる（積み上げ棒）。\"percent\" なら各組を 100 % にそろえる"},
+    mark:       {type: "string", default: "bar", doc: "bar（棒）か dot（点。平均と誤差棒を、0 からの棒にせずに見せる）"},
   };
   get steps(){
     if (this.getAttribute("steps") !== null) return +this.getAttribute("steps");
     var m = 0;
     this.plan().groups.forEach(function(g){ m = Math.max(m, g.step); });
     (this.plan().scale).forEach(function(s){ m = Math.max(m, s.step); });
+    (this.plan().sig).forEach(function(s){ m = Math.max(m, s.step); });
     return m;
   }
   // 組の段階と開始時刻、上限の動き（mount の前にも steps が要るので、データだけから決める）
@@ -57,11 +60,29 @@ return class extends base.MotionElement {
       var vals = Array.isArray(g.values) ? g.values : [g.value];
       var step = g.step !== undefined ? g.step : per > 0 ? Math.floor(i / per) + 1 : 1;
       var j = seen[step] = (seen[step] || 0) + 1;
-      return {g: g, vals: vals.map(Number), step: step, at: g.at !== undefined ? g.at : +((j - 1) * P.stagger).toFixed(3)};
+      var o = {g: g, vals: vals.map(Number), step: step, at: g.at !== undefined ? g.at : +((j - 1) * P.stagger).toFixed(3)};
+      // 誤差棒：err は数（± その値）か [下, 上]（区間の端そのもの）。values の組では系列ごとの並び（数 1 つなら全部の系列に）
+      if (g.err !== undefined && g.err !== null){
+        var ePer = Array.isArray(g.values) ? (Array.isArray(g.err) ? g.err : o.vals.map(function(){ return g.err; })) : [g.err];
+        o.errs = o.vals.map(function(v, k){
+          var x = ePer[k];
+          if (x === undefined || x === null) return null;
+          if (Array.isArray(x)) return x.length === 2 && isFinite(+x[0]) && isFinite(+x[1]) ? [Math.min(+x[0], +x[1]), Math.max(+x[0], +x[1])] : null;
+          return isFinite(+x) ? [v - Math.abs(+x), v + Math.abs(+x)] : null;
+        });
+      }
+      return o;
     });
     var scale = (d.scale || []).map(function(s){ return {step: s.step, max: +s.max, at: s.at || 0}; })
       .sort(function(a, b){ return a.step - b.step; });
-    return (this._plan = {groups: groups, scale: scale});
+    // 有意差の括弧の段階と出る時刻：既定は、つなぐ組のうち後に出る組の段階で、その棒の値が出てから
+    var sig = (Array.isArray(d.sig) && !P.stack ? d.sig : []).map(function(sg){
+      var gi = sg.group !== undefined ? [sg.group] : [sg.from, sg.to], gs = gi.map(function(i){ return groups[i]; }).filter(Boolean);
+      var step = sg.step !== undefined ? sg.step : Math.max.apply(null, gs.map(function(g){ return g.step; }).concat([1]));
+      var at = Math.max.apply(null, gs.filter(function(g){ return g.step === step; }).map(function(g){ return g.at + 0.1 * (g.vals.length - 1); }).concat([0])) + P.dur + 0.35;
+      return {sg: sg, step: step, at: +at.toFixed(3)};
+    });
+    return (this._plan = {groups: groups, scale: scale, sig: sig});
   }
   mount(ctx){
     var P = this.props, D = base, self = this, d = this.data || {}, pl = this.plan();
@@ -74,7 +95,10 @@ return class extends base.MotionElement {
     var st = P.stack, sum = function(g){ return g.vals.reduce(function(a, v){ return a + Math.max(0, v); }, 0); };
     // stack="percent"：各組を 100 % にそろえる
     var pct = this.pct = st && this.getAttribute("stack") === "percent";
-    var tops = function(g){ return pct ? [100] : st ? [sum(g)] : g.vals; };
+    var tops = function(g){ return pct ? [100] : st ? [sum(g)] : g.errs ? g.vals.concat([].concat.apply([], g.errs.filter(Boolean))) : g.vals; };
+    var dot = P.mark === "dot" && !st, sigs = !st && !hor && Array.isArray(d.sig) ? d.sig : [];
+    if (st && (P.mark === "dot" || pl.groups.some(function(g){ return g.errs; }))) ctx.report("data", "[bars] err and mark=\"dot\" are for unstacked bars; they are not drawn on stacked bars");
+    if ((st || hor) && Array.isArray(d.sig) && d.sig.length) ctx.report("data", "[bars] sig brackets are drawn on vertical, unstacked bars only");
     var all = [].concat.apply([], pl.groups.map(tops));
     // 軸の上限：scale の最初の段階より前に出る棒が収まるように
     var first = pl.scale.length ? pl.scale[0].step : Infinity;
@@ -102,6 +126,7 @@ return class extends base.MotionElement {
     var serW = Math.max.apply(null, series.map(function(sr){ return est(sr.label || "", 24, true); }).concat([0]));
     if (st && hor && ns > 1) m.t = Math.max(m.t, P.al ? 40 : 36);
     if (st && !hor){ m.t = 44; if (ns > 1 && serW) m.r = serW + 30; }
+    if (sigs.length){ m.t += 44 * sigs.length; this.y0 = m.t; }
     this.x0 = m.l; this.x1 = W - m.r; this.y0 = m.t; this.y1 = H - m.b;
     // 要素が小さすぎる（高さを書き忘れて 0 px など）：大きさが負にならないように、枠を 0 にして知らせる
     if (this.x1 < this.x0 || this.y1 < this.y0){
@@ -151,7 +176,7 @@ return class extends base.MotionElement {
       if (hor) D.mtext(svg, this.x1, this.y0 - 14, P.al, {"text-anchor": "end", fill: "var(--muted)"});
       else D.mtext(svg, 20, (this.y0 + this.y1) / 2, P.al, {"text-anchor": "middle", fill: "var(--muted)", transform: "rotate(-90 20 " + (this.y0 + this.y1) / 2 + ")"});
     }
-    var gB = D.el("g", {}, svg), gL = D.el("g", {}, svg);
+    var gB = D.el("g", {}, svg), gE = pl.groups.some(function(g){ return g.errs; }) || dot ? D.el("g", {}, svg) : null, gL = D.el("g", {}, svg);
     if (hor) this.baseL = D.el("line", {x1: this.x0, y1: this.y0, x2: this.x0, y2: this.y1, stroke: "var(--fg)", "stroke-width": 1.5}, svg);
     else this.baseL = D.el("line", {x1: this.x0, y1: this.y1, x2: this.x1, y2: this.y1, stroke: "var(--fg)", "stroke-width": 1.5}, svg);
     // 組と棒の位置（組の幅は枠の 64%、棒は組の幅を系列で分ける）
@@ -202,6 +227,10 @@ return class extends base.MotionElement {
         var b = {o: o, v: v, j: j, c: c + off, col: col,
           rect: D.el("rect", {rx: 3, fill: col}, gB),
           val: D.el("text", {"font-size": 26, "font-weight": 700, "text-anchor": hor ? (v < 0 ? "end" : "start") : "middle", fill: o.g.tone ? col : "var(--fg)", style: "font-variant-numeric:tabular-nums"}, gL)};
+        // 誤差棒（--fg の線と両端の短い横線）と点（mark="dot"：棒の代わりに値の位置の円）
+        var er = o.errs && o.errs[j];
+        if (er) b.err = {lo: er[0], hi: er[1], path: D.el("path", {d: "", fill: "none", stroke: "var(--fg)", "stroke-width": 2.5, "stroke-linecap": "round"}, gE)};
+        if (dot){ b.dot = D.el("circle", {r: 11, fill: col, stroke: "var(--bg)", "stroke-width": 2}, gE); b.rect.setAttribute("display", "none"); }
         // 系列の名前は最初の組の棒の上（横棒なら右）に直接書く（凡例は作らない）
         if (i === 0 && ns > 1 && series[j] && series[j].label) b.ser = D.mtext(gL, 0, 0, series[j].label, {"text-anchor": hor ? (v < 0 ? "end" : "start") : "middle", "font-size": 24, "font-weight": 700, fill: col});
         self.bars.push(b);
@@ -210,6 +239,18 @@ return class extends base.MotionElement {
     });
     this.bw = bw;
     this.hor = hor;
+    // 有意差の括弧：組 from と to（group を書けば、その組の中の系列 from と to）の棒の上に、括弧と印（既定は *）
+    var G = pl.groups;
+    this.sigs = sigs.map(function(sg, si){
+      var pick = function(gi, j){ return self.bars.filter(function(b){ return b.o === G[gi] && (j === undefined || b.j === j); }); };
+      var A = sg.group !== undefined ? pick(sg.group, sg.from) : pick(sg.from), B = sg.group !== undefined ? pick(sg.group, sg.to) : pick(sg.to);
+      if (!A.length || !B.length){ ctx.report("data", "[bars] sig " + JSON.stringify(sg) + " names a group or series that is not there"); return null; }
+      var lo = sg.group !== undefined ? G[sg.group] : G[Math.min(sg.from, sg.to)], hi2 = sg.group !== undefined ? G[sg.group] : G[Math.max(sg.from, sg.to)];
+      var inBetween = self.bars.filter(function(b){ var i = G.indexOf(b.o); return i >= G.indexOf(lo) && i <= G.indexOf(hi2); });
+      return {a: A, b: B, span: inBetween, step: pl.sig[si].step, at: pl.sig[si].at,
+        path: D.el("path", {d: "", fill: "none", stroke: "var(--fg)", "stroke-width": 2.5}, gL),
+        text: (function(){ var t = D.el("text", {"font-size": 28, "font-weight": 700, "text-anchor": "middle"}, gL); t.textContent = sg.label !== undefined ? sg.label : "*"; return t; })()};
+    }).filter(Boolean);
     // 読み上げ：最後の形（すべての組の値）を 1 文で。作者の aria-label があればそれを使う（上書きしない）
     if (this._aria === undefined) this._aria = this.getAttribute("aria-label");
     this.setAttribute("role", "img");
@@ -232,6 +273,8 @@ return class extends base.MotionElement {
       var raw = o.vals.reduce(function(a, v){ return a + Math.max(0, v); }, 0);
       var vs = o.vals.map(function(v, j){
         var x = pct ? self.fmt(raw > 0 ? Math.max(0, v) / raw * 100 : 0, undefined, "%") : self.fmt(st ? Math.max(0, v) : v);
+        var er = !st && o.errs && o.errs[j];
+        if (er) x += ja ? "（" + self.fmt(er[0]) + "〜" + self.fmt(er[1]) + "）" : " (" + self.fmt(er[0]) + " to " + self.fmt(er[1]) + ")";
         return (o.vals.length > 1 && series[j] && series[j].label ? series[j].label + " " : "") + x;
       });
       var lab = String(o.g.label || "").replace(/\s*\n\s*/g, " ");
@@ -239,7 +282,13 @@ return class extends base.MotionElement {
     };
     var gs = pl.groups.slice(0, 12).map(one);
     if (pl.groups.length > 12) gs.push(ja ? "…（全 " + pl.groups.length + " 組）" : "… (" + pl.groups.length + " groups)");
-    return head + (ja ? "：" : ": ") + gs.join(ja ? "、" : "; ");
+    // 有意差の括弧：「1 組と 2 組の差 *」
+    var name = function(gi, j){ var g = pl.groups[gi]; if (!g) return "?"; var l = String(g.g.label || "").replace(/\s*\n\s*/g, " "); return j !== undefined && series[j] && series[j].label ? (l ? l + " " : "") + series[j].label : l; };
+    var sg = st || P.orient === "h" ? [] : pl.sig.map(function(x){
+      var a = x.sg.group !== undefined ? name(x.sg.group, x.sg.from) : name(x.sg.from), b = x.sg.group !== undefined ? name(x.sg.group, x.sg.to) : name(x.sg.to);
+      return ja ? a + "と" + b + "の差 " + (x.sg.label !== undefined ? x.sg.label : "*") : "difference between " + a + " and " + b + " " + (x.sg.label !== undefined ? x.sg.label : "*");
+    });
+    return head + (ja ? "：" : ": ") + gs.join(ja ? "、" : "; ") + (sg.length ? (ja ? "。" : ". ") + sg.join(ja ? "、" : "; ") : "");
   }
   // 数の書き方：3 桁ごとのカンマ、小数桁、単位
   fmt(v, digits, unit){
@@ -264,6 +313,7 @@ return class extends base.MotionElement {
     // 積み上げ棒の区切りの値と系列の名前は count でも伸びきってから 0.35 秒で出るので、その分も段階に含める
     this.plan().groups.forEach(function(o){ if (o.step === k) d = Math.max(d, o.at + (P.stack ? 0 : 0.1 * (o.vals.length - 1)) + P.dur + (P.count && !P.stack ? 0 : 0.35)); });
     this.plan().scale.forEach(function(s){ if (s.step === k) d = Math.max(d, s.at + P.zoom + 0.3); });
+    if (!this.props.stack && this.props.orient !== "h") this.plan().sig.forEach(function(s){ if (s.step === k) d = Math.max(d, s.at + 0.35); });
     return d;
   }
   render(k, t, ctx){
@@ -318,19 +368,55 @@ return class extends base.MotionElement {
       } else if (hor){ b.rect.setAttribute("x", self.x0); b.rect.setAttribute("width", Math.max(0, p - self.x0).toFixed(1)); b.rect.setAttribute("y", (b.c - w / 2).toFixed(1)); b.rect.setAttribute("height", w.toFixed(1)); }
       else { b.rect.setAttribute("x", (b.c - w / 2).toFixed(1)); b.rect.setAttribute("width", w.toFixed(1)); b.rect.setAttribute("y", p.toFixed(1)); b.rect.setAttribute("height", Math.max(0, self.y1 - p).toFixed(1)); }
       b.rect.setAttribute("opacity", ahead(o, b.v) ? PV : e > 0 ? 1 : 0);
+      if (b.dot){
+        var dp = pos(b.v);
+        b.dot.setAttribute("cx", (hor ? dp : b.c).toFixed(1)); b.dot.setAttribute("cy", (hor ? b.c : dp).toFixed(1));
+        b.dot.setAttribute("opacity", (ahead(o, b.v) ? PV : o.step < k ? 1 : o.step > k ? 0 : D.prog(t, at, P.dur)).toFixed(3));
+      }
       // 値の数字：既定は伸びきってから。count なら伸びに合わせて
       var vo = ahead(o, b.v) ? PV : P.count ? (e > 0 ? 1 : 0) : o.step < k ? 1 : o.step > k ? 0 : D.prog(t, at + P.dur, 0.35);
       b.val.textContent = self.fmt(P.count ? v : b.v);
       var pe = P.count ? p : pos(b.v), dn = b.v < 0;
+      // 誤差棒があれば値の数字はその端の外、点なら点の外
+      if (b.err) pe = pos(dn ? b.err.lo : b.err.hi);
+      else if (b.dot) pe = pos(b.v) + (hor ? (dn ? -10 : 10) : (dn ? 10 : -10));
+      if (b.err){
+        var yl = pos(b.err.lo), yh = pos(b.err.hi), cw = Math.min(14, w * 0.3), c = b.c;
+        b.err.path.setAttribute("d", hor ? "M" + yl.toFixed(1) + "," + (c - cw).toFixed(1) + "V" + (c + cw).toFixed(1) + "M" + yl.toFixed(1) + "," + c.toFixed(1) + "H" + yh.toFixed(1) + "M" + yh.toFixed(1) + "," + (c - cw).toFixed(1) + "V" + (c + cw).toFixed(1)
+          : "M" + (c - cw).toFixed(1) + "," + yl.toFixed(1) + "H" + (c + cw).toFixed(1) + "M" + c.toFixed(1) + "," + yl.toFixed(1) + "V" + yh.toFixed(1) + "M" + (c - cw).toFixed(1) + "," + yh.toFixed(1) + "H" + (c + cw).toFixed(1));
+        b.err.path.setAttribute("opacity", (ahead(o, b.v) ? PV : o.step < k ? 1 : o.step > k ? 0 : D.prog(t, at + P.dur, 0.35)).toFixed(3));
+      }
       // 値の数字は棒の端の外側：正なら上（右）、負なら下（左）
       if (hor){ b.val.setAttribute("x", (dn ? pe - 10 : pe + 10).toFixed(1)); b.val.setAttribute("y", (b.c + 9).toFixed(1)); }
       else { b.val.setAttribute("x", b.c.toFixed(1)); b.val.setAttribute("y", (dn ? pe + 32 : pe - 12).toFixed(1)); }
       b.val.setAttribute("opacity", vo.toFixed(3));
       if (b.ser){
-        if (hor){ b.ser.setAttribute("x", (dn ? pos(b.v) - 24 - self.fmt(b.v).length * 15 : pos(b.v) + 24 + self.fmt(b.v).length * 15).toFixed(1)); b.ser.setAttribute("y", (b.c + 8).toFixed(1)); }
-        else { b.ser.setAttribute("x", b.c.toFixed(1)); b.ser.setAttribute("y", (dn ? pos(b.v) + 62 : pos(b.v) - 44).toFixed(1)); }
+        var sv = b.err ? (dn ? b.err.lo : b.err.hi) : b.v;
+        if (hor){ b.ser.setAttribute("x", (dn ? pos(sv) - 24 - self.fmt(b.v).length * 15 : pos(sv) + 24 + self.fmt(b.v).length * 15).toFixed(1)); b.ser.setAttribute("y", (b.c + 8).toFixed(1)); }
+        else { b.ser.setAttribute("x", b.c.toFixed(1)); b.ser.setAttribute("y", (dn ? pos(sv) + 62 : pos(sv) - 44).toFixed(1)); }
         b.ser.setAttribute("opacity", vo.toFixed(3));
       }
+    });
+    this.renderSig(k, t, pos, PV, preview);
+  }
+  // 有意差の括弧：つなぐ棒の間の、いちばん高い値の数字（と系列の名前）より上に。横に重なる括弧は 44 px ずつ上へ（内側の短い括弧から）
+  renderSig(k, t, pos, PV, preview){
+    if (!this.sigs || !this.sigs.length) return;
+    var D = base, self = this, placed = [];
+    var top = function(b){ var v = b.err ? b.err.hi : b.v; return pos(Math.max(0, v)) - (b.dot && !b.err ? 22 : 12) - 26 - (b.ser ? 34 : 0); };
+    var mid = function(bs){ return bs.reduce(function(a, b){ return a + b.c; }, 0) / bs.length; };
+    this.sigs.slice().sort(function(a, b){ return Math.abs(mid(a.b) - mid(a.a)) - Math.abs(mid(b.b) - mid(b.a)); }).forEach(function(sg){
+      var x1 = mid(sg.a), x2 = mid(sg.b), l = Math.min(x1, x2), r = Math.max(x1, x2);
+      var y = Math.min.apply(null, sg.span.map(top)) - 10;
+      for (var moved = true; moved;){
+        moved = false;
+        placed.forEach(function(q){ if (q.l < r + 20 && l < q.r + 20 && y > q.y - 44){ y = q.y - 44; moved = true; } });
+      }
+      placed.push({l: l, r: r, y: y});
+      sg.path.setAttribute("d", "M" + x1.toFixed(1) + "," + (y + 14).toFixed(1) + "V" + y.toFixed(1) + "H" + x2.toFixed(1) + "V" + (y + 14).toFixed(1));
+      sg.text.setAttribute("x", ((x1 + x2) / 2).toFixed(1)); sg.text.setAttribute("y", (y - 8).toFixed(1));
+      var op = preview && sg.step > k ? PV : sg.step < k ? 1 : sg.step > k ? 0 : D.prog(t, sg.at, 0.35);
+      sg.path.setAttribute("opacity", op.toFixed(3)); sg.text.setAttribute("opacity", op.toFixed(3));
     });
   }
   // 積み上げ棒：棒の先が 0 から合計まで伸び、下の系列から順に色が満ちる。値の数字は伸びきってから
