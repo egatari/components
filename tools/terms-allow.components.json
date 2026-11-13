@@ -12,6 +12,18 @@
       "pattern": "日本の見解版",
       "term": "software-version",
       "reason": "The name of Natural Earth's dataset ne_10m_admin_0_countries_jpn (the Japan point-of-view edition of the data), not a software version; kept with standards' approval (2026-11-13)."
+    },
+    {
+      "file": "tools/gallery.mjs",
+      "pattern": "not a components manifest \\(version, components, files\\)",
+      "term": "part",
+      "reason": "A CLI error for whoever builds the gallery: components is this repository's name (egatari/components) and a manifest field, not the word for a part."
+    },
+    {
+      "file": "tools/gallery.mjs",
+      "pattern": "the pack does not match",
+      "term": "instructions",
+      "reason": "A CLI error: the pack is the release tarball (or its unpacked folder), not the AI instruction pack."
     }
   ]
 }

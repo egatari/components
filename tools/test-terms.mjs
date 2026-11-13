@@ -1,4 +1,5 @@
-// node tools/test-terms.mjs: this repository's public docs (part READMEs, CATALOG.md, README*.md, CONTRIBUTING*.md) use Studio's
+// node tools/test-terms.mjs: this repository's public docs (part READMEs, CATALOG.md, README*.md, CONTRIBUTING*.md) and the
+// gallery's own text (tools/gallery.mjs) use Studio's
 // glossary. Runs Egatari Studio's own checker (tools/lint-terms.mjs --prose, with Studio's docs/terms.json) at a pinned commit, with
 // this repository's allow list (tools/terms-allow.components.json). Fails on any avoid word and on an allow entry that is no longer used.
 // The commit is STUDIO_TERMS_SHA, or termsCommit in tools/studio.json (the same pin as the site's CI). Code, fences and comments are
@@ -23,7 +24,7 @@ if (!have) {
   run(['-c', 'advice.detachedHead=false', 'checkout', '--quiet', '--detach', 'FETCH_HEAD']);
   if (run(['rev-parse', 'HEAD']) !== sha) { console.log(`FAIL test-terms: fetched ${run(['rev-parse', 'HEAD'])}, not ${sha}`); process.exit(1); }
 }
-const globs = ['components/*/README*.md', 'CATALOG.md', 'README*.md', 'CONTRIBUTING*.md'].flatMap((g) => ['--glob', g]);
+const globs = ['components/*/README*.md', 'CATALOG.md', 'README*.md', 'CONTRIBUTING*.md', 'tools/gallery.mjs'].flatMap((g) => ['--glob', g]);
 const r = spawnSync(process.execPath, [path.join(dir, 'tools', 'lint-terms.mjs'), '--root', dir, '--prose', ROOT, ...globs,
   '--allow', path.join(ROOT, 'tools', 'terms-allow.components.json')], { encoding: 'utf8' });
 const out = (r.stdout + r.stderr).trim();
