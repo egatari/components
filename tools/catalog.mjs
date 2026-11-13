@@ -20,7 +20,7 @@ for (const name of componentNames()) {
   const key = f.tier === 'specialized' ? `specialized:${f.set}` : f.tier;
   if (!byTier.has(key)) byTier.set(key, []);
   byTier.get(key).push(`\`<${f.name}>\`` + (f.display ? `（${f.display}）` : ''));
-  rows.push(`| [\`<${cell(f.name)}>\`](components/${name}/README.md)${f.display ? ` ${cell(f.display)}` : ''}${fl.interactive ? ' 「操作できる」' : ''}${fl.group === 'tool' ? ' 「道具」' : ''} | ${cell(tierText(f))} | ${cell(SERIES_LABEL[f.series] ? `${SERIES_LABEL[f.series]}（${f.series}）` : f.series)} | ${cell(f.summary)}${fl.viewerInput ? '（入力あり）' : ''} | ${cell(f.steps)} | ${cell(list(f.purposes).join(', '))} | ${cell(list(f.variants).join(', ') || '—')} | ${cell(f.props)} | ${demo} |`);
+  rows.push(`| [\`<${cell(f.name)}>\`](components/${name}/README.md)${f.display ? ` ${cell(f.display)}` : ''}${fl.interactive ? ' 「操作できる」' : ''}${fl.group === 'tool' ? ' 「ツール」' : ''} | ${cell(tierText(f))} | ${cell(SERIES_LABEL[f.series] ? `${SERIES_LABEL[f.series]}（${f.series}）` : f.series)} | ${cell(f.summary)}${fl.viewerInput ? '（入力あり）' : ''} | ${cell(f.steps)} | ${cell(list(f.purposes).join(', '))} | ${cell(list(f.variants).join(', ') || '—')} | ${cell(f.props)} | ${demo} |`);
 }
 const md = `# Components / パーツの一覧
 

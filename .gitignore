@@ -2,6 +2,7 @@ node_modules/
 .DS_Store
 **/out/
 .studio/
+.studio-terms/
 dist/
 tools/map/.cache/
 data/kana/font
