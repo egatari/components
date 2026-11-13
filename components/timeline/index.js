@@ -20,7 +20,7 @@
 // この部品は markup-reader で決まった要素と属性だけを読んで置く（再生のときに KaTeX は動かない）。描いた結果がなければ tex を字のまま出して知らせる。
 // データと属性の問題、入らないときは ctx.report で知らせる（1.x の console.warn の代わり）。言語は ctx.lang（mount で this.ja）。
 // 配置を決める内部の関数は arrange(size)（1.x の layout(size)。2.0 の layout(ctx) は再生器が呼ぶので名前を分けた）
-egatariParts.define({name: "timeline", version: "2.0.3", requires: {base: "1.2.0", "markup-reader": "1.0.2"}, element: "m-timeline"}, function(deps){
+egatariParts.define({name: "timeline", version: "2.0.4", requires: {base: "1.2.0", "markup-reader": "1.0.2"}, element: "m-timeline"}, function(deps){
 "use strict";
 var base = deps.base, MR = deps["markup-reader"];
 var Part = class extends base.MotionElement {
@@ -420,7 +420,14 @@ var Part = class extends base.MotionElement {
       var text = function(x, yc, anchor, lh){
         var nl = o.labs.length, y0 = yc - (nl - 1) * lh / 2 + size * 0.36;
         o.labs.forEach(function(l, j){
-          if (l.tex){ MR.texFrame(lg, x, y0 + j * lh, l.src, "tex", {size: size, anchor: anchor, color: "var(--fg)", w: o.tw + 8, h: size * 1.6}, self.texSink).firstChild.style.verticalAlign = "top"; return; }
+          if (l.tex){
+            // 式の枠は見積もった幅にし、anchor の側に寄せる（読み込む前の幅で位置を決めない）
+            var fo = MR.texFrame(lg, x, y0 + j * lh, l.src, "tex", {size: size, anchor: anchor, color: "var(--fg)", w: o.tw + 8, h: size * 1.6}, self.texSink), fw = o.tw + 8;
+            fo.firstChild.style.verticalAlign = "top"; fo.setAttribute("width", fw.toFixed(1));
+            fo.setAttribute("x", (anchor === "middle" ? x - fw / 2 : anchor === "end" ? x - fw : x).toFixed(1));
+            fo.style.textAlign = anchor === "middle" ? "center" : anchor === "end" ? "right" : "left";
+            return;
+          }
           var t = D.mtext(lg, x, y0 + j * lh, l.text, {"text-anchor": anchor, "font-size": size, fill: "var(--fg)"});
           if (j === nl - 1){
             noteSpan(t);
@@ -662,11 +669,66 @@ function tint(c, p){ return "color-mix(in srgb," + c + " " + p + "%,var(--bg))";
 // 字の幅（px）：base の textWidth（font の要素の字で測った幅）。mtext の *_^ は数えない（plain：mtext を通らない字）
 function est(s, fs, font, plain){ return base.textWidth(s, fs, {font: font, mark: !plain}); }
 // KaTeX の式の幅：一度置いて測る
-function texWidth(el, l){
-  var g = base.el("g", {opacity: 0}, el.svg), fo = MR.texFrame(g, 0, 0, l.src, "tex", {size: l.size, anchor: "start"}, el.texSink);
-  var w = Math.max(0, (+fo.getAttribute("width") || 4) - 4);
-  el.svg.removeChild(g);
+// KaTeX の式のおよその幅（em）。\text{…} などの中は字ごとに、命令は表から（ない命令は 1 em）、^ と _ の中は 0.7 倍
+var TEX_WIDE = {Longleftrightarrow: 1.86, longleftrightarrow: 1.86, Longrightarrow: 1.64, longrightarrow: 1.64, Longleftarrow: 1.64, longleftarrow: 1.64,
+  longmapsto: 1.64, leftrightarrow: 1.0, Leftrightarrow: 1.0, rightarrow: 1.0, leftarrow: 1.0, Rightarrow: 1.0, Leftarrow: 1.0, to: 1.0, mapsto: 1.0,
+  iff: 2.42, implies: 2.2, impliedby: 2.2, sum: 1.06, prod: 0.95, int: 0.56, quad: 1.0, qquad: 2.0, cdots: 1.17, ldots: 1.17, dots: 1.17, infty: 1.0,
+  le: 1.06, ge: 1.06, leq: 1.06, geq: 1.06, ne: 1.06, neq: 1.06, approx: 1.06, equiv: 1.06, times: 1.0, div: 1.0, pm: 1.0, cdot: 0.5,
+  alpha: 0.64, beta: 0.57, gamma: 0.52, delta: 0.45, theta: 0.47, lambda: 0.58, mu: 0.6, pi: 0.57, sigma: 0.57, omega: 0.62, Sigma: 0.72, Delta: 0.83, Omega: 0.72,
+  ",": 0.17, ":": 0.22, ";": 0.28, "!": 0, " ": 0.33};
+var TEX_SKIP = /^(left|right|big|Big|bigg|Bigg|displaystyle|textstyle|mathit|mathcal|mathbb|boldsymbol|hat|bar|vec|tilde|dot|overline|underline)$/;
+function texCharEm(c){
+  if (/[WM]/.test(c)) return 1.03;
+  if (/[A-Z]/.test(c)) return 0.76;
+  if (/[mw]/.test(c)) return 0.84;
+  if (/[a-z]/.test(c)) return 0.53;
+  if (/[0-9]/.test(c)) return 0.5;
+  if (/[+=<>\-]/.test(c)) return 1.0;
+  if (/[()\[\]|\/]/.test(c)) return 0.42;
+  if (/[.,;:!' ]/.test(c)) return 0.3;
+  return /[　-鿿＀-￯]/.test(c) ? 1.0 : 0.6;
+}
+// s の i 番目の { から対応する } の後ろまで
+function texGroup(s, i){ var d = 0, j = i; do { var c = s.charAt(j); if (c === "{") d++; else if (c === "}") d--; j++; } while (d > 0 && j < s.length); return {inner: s.slice(i + 1, j - 1), end: j}; }
+function texEm(src){
+  var s = String(src || ""), i = 0, w = 0;
+  while (i < s.length){
+    var c = s.charAt(i);
+    if (c === "\\"){
+      var m = /^\\([a-zA-Z]+|.)/.exec(s.slice(i)), cmd = m ? m[1] : "";
+      i += m ? m[0].length : 1;
+      if (/^(text|textrm|textbf|mathrm|mathbf|operatorname|mbox)$/.test(cmd) && s.charAt(i) === "{"){
+        var g = texGroup(s, i);
+        for (var k = 0; k < g.inner.length; k++) w += texCharEm(g.inner.charAt(k));
+        i = g.end; continue;
+      }
+      if (/^(frac|dfrac|tfrac)$/.test(cmd) && s.charAt(i) === "{"){
+        var a = texGroup(s, i), b = s.charAt(a.end) === "{" ? texGroup(s, a.end) : {inner: "", end: a.end};
+        w += Math.max(texEm(a.inner), texEm(b.inner)) * (cmd === "dfrac" ? 1 : 0.8) + 0.24;
+        i = b.end; continue;
+      }
+      if (cmd === "sqrt"){ w += 0.85; continue; }
+      if (TEX_SKIP.test(cmd)) continue;
+      w += TEX_WIDE[cmd] !== undefined ? TEX_WIDE[cmd] : 1.0;
+      continue;
+    }
+    if (c === "^" || c === "_"){
+      i++;
+      if (s.charAt(i) === "{"){ var sg = texGroup(s, i); w += texEm(sg.inner) * 0.7; i = sg.end; }
+      else if (s.charAt(i) === "\\"){ var m2 = /^\\([a-zA-Z]+|.)/.exec(s.slice(i)); w += texEm(m2 ? m2[0] : "") * 0.7; i += m2 ? m2[0].length : 1; }
+      else { w += texCharEm(s.charAt(i)) * 0.7; i++; }
+      continue;
+    }
+    if (c === "{" || c === "}"){ i++; continue; }
+    w += texCharEm(c); i++;
+  }
   return w;
+}
+// TeX の式の幅（px）：KaTeX の字の幅（em）から見積もる（components 2.9.0）。前は式を一度置いて測っていたが、mount のときは KaTeX の字が
+// まだ読み込まれていないことがあり、狭く出て（178 px のはずが 201 px）測る時刻で箱が変わった。字数 × 0.62 字の見積もりより狭くはしない
+function texWidth(el, l){
+  var est62 = Math.max(1, String(l.tex).replace(/\\[a-zA-Z]+/g, "x").replace(/[{}^_\\ ]/g, "").length) * 0.62;
+  return Math.max(texEm(l.tex), est62) * l.size;
 }
 function labelLines(n, size, fill){
   fill = fill || "var(--fg)";
@@ -686,7 +748,9 @@ function boxSize(el, lines){
 }
 function boxDraw(el, g, x, y, bs){
   bs.lines.forEach(function(l){
-    if (l.tex) MR.texFrame(g, x + bs.w / 2, y + l.y, l.src, "tex", {size: l.size, anchor: "middle", color: l.fill, w: l.w + 8, h: l.size * 1.6}, el.texSink).firstChild.style.verticalAlign = "top";
+    // 式の枠は見積もった幅にし、中で中央に寄せる（KaTeX の字が読み込まれた後の幅で中央になる）
+    if (l.tex){ var fo = MR.texFrame(g, x + bs.w / 2, y + l.y, l.src, "tex", {size: l.size, anchor: "middle", color: l.fill, w: l.w + 8, h: l.size * 1.6}, el.texSink);
+      fo.firstChild.style.verticalAlign = "top"; fo.setAttribute("x", (x + bs.w / 2 - (l.w + 8) / 2).toFixed(1)); fo.setAttribute("width", (l.w + 8).toFixed(1)); fo.style.textAlign = "center"; }
     else base.mtext(g, x + bs.w / 2, y + l.y, l.text, {"text-anchor": "middle", "font-size": l.size, fill: l.fill, "font-weight": l.weight || 400});
   });
 }

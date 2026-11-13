@@ -23,9 +23,9 @@ egatariParts.define({name: "tree", version: "2.1.1", requires: {base: "1.2.0", "
 "use strict";
 var base = deps.base, MR = deps["markup-reader"];
 // KaTeX の式のおよその幅（em）。\text{…} などの中は字ごとに、命令は表から（ない命令は 1 em）、^ と _ の中は 0.7 倍
-var TEX_WIDE = {Longleftrightarrow: 1.64, longleftrightarrow: 1.64, Longrightarrow: 1.64, longrightarrow: 1.64, Longleftarrow: 1.64, longleftarrow: 1.64,
+var TEX_WIDE = {Longleftrightarrow: 1.86, longleftrightarrow: 1.86, Longrightarrow: 1.64, longrightarrow: 1.64, Longleftarrow: 1.64, longleftarrow: 1.64,
   longmapsto: 1.64, leftrightarrow: 1.0, Leftrightarrow: 1.0, rightarrow: 1.0, leftarrow: 1.0, Rightarrow: 1.0, Leftarrow: 1.0, to: 1.0, mapsto: 1.0,
-  iff: 1.92, implies: 1.92, impliedby: 1.92, sum: 1.06, prod: 0.95, int: 0.56, quad: 1.0, qquad: 2.0, cdots: 1.17, ldots: 1.17, dots: 1.17, infty: 1.0,
+  iff: 2.42, implies: 2.2, impliedby: 2.2, sum: 1.06, prod: 0.95, int: 0.56, quad: 1.0, qquad: 2.0, cdots: 1.17, ldots: 1.17, dots: 1.17, infty: 1.0,
   le: 1.06, ge: 1.06, leq: 1.06, geq: 1.06, ne: 1.06, neq: 1.06, approx: 1.06, equiv: 1.06, times: 1.0, div: 1.0, pm: 1.0, cdot: 0.5,
   alpha: 0.64, beta: 0.57, gamma: 0.52, delta: 0.45, theta: 0.47, lambda: 0.58, mu: 0.6, pi: 0.57, sigma: 0.57, omega: 0.62, Sigma: 0.72, Delta: 0.83, Omega: 0.72,
   ",": 0.17, ":": 0.22, ";": 0.28, "!": 0, " ": 0.33};
