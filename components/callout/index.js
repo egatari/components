@@ -53,11 +53,12 @@ return class extends base.MotionElement {
     img.style.display = "none";
     var src = img.getAttribute("src") || "", alt = (img.getAttribute("alt") || "").trim();
     if (!alt) ctx.report("data", "[callout] the <img> needs alt: say what the screen is (it is read aloud and shown when the image cannot be)");
-    // 埋め込んだ画像（data:）の大きさ。base64 なら 4 字で 3 バイト
+    // 埋め込んだ画像（data:）の大きさ。base64 なら 4 字で 3 バイト。知らせの終わりの [image bytes=N] は、Studio の教材全体の画像の
+    // 確かめ（backlog #207）が同じ画像を 2 度知らせないための目印（ctx.report には文しか渡せない）
     var m = /^data:[^,]*?(;base64)?,/i.exec(src);
     if (m){
       var bytes = m[1] ? Math.floor((src.length - m[0].length) * 3 / 4) : src.length - m[0].length;
-      if (bytes > BIG) ctx.report("size", "[callout] the screenshot is " + (bytes / BIG).toFixed(1) + " MiB inside the lesson file; crop it to the part that matters, or save it smaller (JPEG or WebP, about 1600 px wide)");
+      if (bytes > BIG) ctx.report("size", "[callout] the screenshot is " + (bytes / BIG).toFixed(1) + " MiB inside the lesson file; crop it to the part that matters, or save it smaller (JPEG or WebP, about 1600 px wide) [image bytes=" + bytes + "]");
     }
     var iw = +img.getAttribute("width"), ih = +img.getAttribute("height");
     if (!(iw > 0 && ih > 0)){ ctx.report("data", "[callout] the <img> needs width and height (the screenshot's pixel size), so the callouts land in the right place"); iw = 16; ih = 10; }
