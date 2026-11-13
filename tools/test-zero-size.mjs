@@ -8,7 +8,7 @@ import path from 'node:path';
 import { ROOT, studio } from './studio.mjs';
 import { LAUNCH } from './shot-helpers.mjs';
 
-const HARDENED = ['particles'];
+const HARDENED = ['particles', 'checklist', 'callout'];
 const oi = process.argv.indexOf('--only'), NAMES = oi >= 0 ? process.argv.splice(oi, 2)[1].split(',') : HARDENED;
 const READY_MS = 30000;
 const S = await studio();
