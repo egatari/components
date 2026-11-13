@@ -1,6 +1,6 @@
 # m-particles changelog
 
-## 2.0.2 (components 2.8.x)
+## 2.0.2 (components 2.8.0)
 
 - Hardening: an m-particles element narrower than about 45 px no longer hangs the page (only an author's own layout can make it that narrow; Studio's panes and windows can't). The solid lattice keeps at least one column; it looped forever with a negative column count.
 - The layout box's width and height are at least 0, so a container too small for it draws no negative-size rectangle.

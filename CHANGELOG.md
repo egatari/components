@@ -8,6 +8,36 @@ Versions follow [README.md § Releases and versions](README.md#releases-and-vers
 
 - `m-compare` `by="row"`; an "outside every set" region for `m-venn`; planned-vs-actual bars for `m-timeline`
 
+## 2.8.0 - 2026-11-13
+
+Marks for Studio's geometry check in four diagram parts, tests that hold drawing still, purposes labels and READMEs in Studio's glossary, a hardening of `m-particles`, and a link to samples in the gallery. Drawing is unchanged in every part. Studio vendors it from v0.6.12.
+
+### Added
+
+- **`m-flow` 2.1.0, `m-tree` 2.1.0, `m-fishbone` 2.1.0, `m-quad` 2.1.0:** what each part draws is marked for Studio's geometry check: boxes and marks (`data-part="box"` / `"mark"`, `data-part-id`), edges (`data-part="edge"` with `data-part-from` / `-to`, the line with `data-part-line`) and labels (`data-part="label"`, `data-part-of`, `data-part-at="outside"` for notes and point names). Edge ids are `from→to`, with `#2`, `#3` … for repeats; ids starting with `@` are kept for marks (`@head`, `@spine`, `@moved`), and an `m-fishbone` node id starting with `@` is reported. See each part's CHANGELOG.
+- `tools/test-data-part.mjs`: every mark the four parts draw is checked against the spec's attributes.
+- `tools/test-same-paint.mjs`: the four marked parts paint the same pixels as v2.7.0 on every theme and frame (`--only` takes any parts). A run that times out is reported as "aborted", apart from a pixel mismatch.
+- `tools/test-zero-size.mjs`: hardened parts become ready within 30 s at 0 px wide and at 0 × 0, with no page error and no negative-size console error (now `m-particles`).
+- `tools/gallery.mjs --pack`: `--samples-href '<…{tag}…>' --samples-tags m-a,m-b` adds a 「このパーツを使ったサンプル / Samples that use this part」 link under the listed parts' intro (both options or neither; `{tag}` is URL-encoded; `javascript:`, `data:` and `vbscript:` are refused; unknown tags are named on stderr).
+
+### Changed
+
+- `purposes.json`: the cycle "steps" label is 「順を追って 1 つずつ」 and the model label 「全体、それから動きを 1 つずつ」 (ステップ means a click forward; the English labels are unchanged).
+- READMEs, CATALOG and `tools/catalog.mjs` use the rest of Studio's glossary: サンプル (not 見本), バージョン (not 版), パーツ, 内容の分野, ステップの数, 既定のステップ; `m-flow` `[ステップ, …]`, `m-menu` `<ステップの鍵>`. 系列 (a data series), 段階 in code and 「日本の見解版」 are kept.
+- `tools/gallery.mjs --previous`: 「サンプルが変わった」 compares `demo.html` only.
+
+### Fixed
+
+- **`m-particles` 2.0.2 (hardening):** an `m-particles` element narrower than about 45 px no longer hangs the page (only an author's own layout can make it that narrow; Studio's panes and windows can't). The solid lattice keeps at least one column, and the layout box's width and height are at least 0. Drawing at normal sizes is the same as 2.0.1 (4 themes × 55 frames).
+
+### For Studio
+
+- Studio's geometry check (#201) on this release's gallery (45 parts, 202 slides): 0 geo findings, with marks measured on 12 slides. On seeded slides made with these parts, all four codes fire (geoEdgeThroughBox 4, geoLineOverLabel 11, geoLabelOverlap 7, geoLabelOutsideBox 7), and clean controls report 0.
+- en ≤ ja holds for every part (Studio's own `gen` check with this release's parts swapped in: ok).
+- Pack bytes (`node tools/pack-bytes.mjs --base v2.7.0`, ja): m-flow +6, m-menu +6, the rest unchanged.
+- **Changed without a version bump:** 30 parts' README.md only (サンプル / バージョン wording; index.js and its hash unchanged): balance, bars, cards, ci, code, codetree, collect, compare, curves, cycle, folds, gendai, icons, kanbun, kobun, kpi, map-japan, map-world, market, menu, orbit, pie, sampling, scatter, score, seq, sweep, syntax, timeline, venn.
+- Known, not new in 2.8.0: `m-tree` and `m-fishbone` size a TeX label by an estimate that is too small for wide symbols, so such a label can stick out of its box (Studio's check warns `geoLabelOutsideBox`). To be fixed in 2.8.1.
+
 ## 2.7.0 - 2026-11-12
 
 Colour ramps from the theme (Egatari spec §8.4), built-in UI text that follows the lesson language, syntax colouring in `m-code`, and READMEs and docs in Studio's glossary. Lessons pinned to 2.6.x keep their drawing; on themes without ramps every part paints the same colours as 2.6.2. Studio vendors it from v0.6.11.
