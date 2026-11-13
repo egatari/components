@@ -8,6 +8,38 @@ Versions follow [README.md § Releases and versions](README.md#releases-and-vers
 
 - `m-compare` `by="row"`; an "outside every set" region for `m-venn`; planned-vs-actual bars for `m-timeline`
 
+## 2.9.0 - 2026-11-14
+
+A waterfall part, error bars and significance brackets in `m-bars`, a manual set for training and how-to guides (`m-checklist`, `m-callout`), no negative SVG sizes in 12 parts at 0 px, TeX labels that fit their boxes, and a glossary check in the tests. Studio vendors it from v0.6.13.
+
+### Added
+
+- **`m-diverge` 2.0.0 (new):** a waterfall. Total bars rise from 0 (or from `min`, which cuts the axis and draws a break mark), change bars from the running total; signed values above the bars, dotted links at the running total. A later total's `value` that differs from the running total is a `data` report. Totals `--term`, increases `--accent2`, decreases `--emph`.
+- **`m-bars` 2.1.0:** `err` (± a number or `[low, high]`, per series for `values`), `mark="dot"`, and `sig` brackets (`[{from, to, group?, label, step}]`; vertical, unstacked bars only). The spoken name covers the intervals and brackets. Without these fields every demo paints the same pixels as 2.0.3 (4 themes × 76 frames).
+- **`m-checklist` 2.0.0 (new):** items listed (or revealed by step), one mark per step: ✓ (`--term`), × (`--emph`) or none. The marks are the author's slide content; nothing a viewer does is stored.
+- **`m-callout` 2.0.0 (new):** screen steps on a child `<img src alt width height>` (a missing alt, width or height is a `data` report): numbered circles, leader lines that never cross, labels beside the image. An inlined image over 1 MiB is a `size` report ending with `[image bytes=N]`, for Studio's lesson-wide image check (#207). The README says, in bold, that screenshots must not show real personal data.
+- `purposes.json`: `deviation` (差・増減) is no longer reserved: tile `none`, icon `bars` (served by `m-diverge`).
+- `tools/test-tex-width.mjs`: a TeX label in `m-tree`, `m-fishbone`, `m-cycle` and `m-timeline` stays inside its box, also with wide symbols.
+- `tools/test-terms.mjs`: the public docs and `tools/gallery.mjs`'s text pass Studio's `lint-terms --prose` at `tools/studio.json` `termsCommit` (6ec2815; `STUDIO_TERMS_SHA` overrides). Kept wordings are listed with their reasons in `tools/terms-allow.components.json` (5 entries, among them `m-menu`'s 「どこから見るか」, which Studio's pack edits quote).
+
+### Changed
+
+- The tools set and group are called ツール (not 道具) in CATALOG, the gallery and the READMEs; 塗りの形 in `m-icons`' notes.
+- `tools/gallery.mjs`: its own text uses パーツ, サンプル, ステップ, バージョン and 内容の分野.
+- `tools/test-zero-size.mjs`: sizes are read from the DOM after each seek; it now covers the 16 hardened parts.
+
+### Fixed
+
+- **No negative SVG sizes at 0 px (hardening, patch bumps):** `m-codetree` 2.0.6, `m-collect` 2.0.4, `m-compare` 2.0.4, `m-heatmap` 2.1.1, `m-keyboard` 2.0.5, `m-kpi` 2.0.4, `m-market` 2.0.4, `m-orbit` 2.0.6, `m-predict` 2.1.1, `m-quad` 2.1.1, `m-tape` 2.0.4, `m-timer` 2.0.5. Before, 21 checks failed in these 12 parts; now 0. Drawing at normal sizes is unchanged (same pixels, 4 themes).
+- **TeX labels fit their boxes:** `m-tree` 2.1.1, `m-fishbone` 2.1.1, `m-cycle` 2.0.5, `m-timeline` 2.0.4 size a TeX label from KaTeX's glyph widths (long arrows up to 1.86 em; never narrower than 0.62 em per character) instead of an estimate or a measurement at mount, and align it by CSS. Before, wide symbols stuck out by up to 63 px (Studio's geoLabelOutsideBox); the 2.8.0 known issue is closed. Demos without TeX paint the same pixels.
+
+### For Studio
+
+- New parts start at 2.0.0 (the 2.x part line). The new parts and `m-bars`' props docs change the AI instruction pack (`node tools/pack-bytes.mjs --base v2.8.0`, ja): m-bars +1334, m-callout 2464 (new), m-checklist 1735 (new), m-diverge 2527 (new); the rest unchanged.
+- en ≤ ja holds for every part (Studio's own `gen` check with this release's parts swapped in: ok).
+- Whether `deviation` gets a new-deck tile is left to Studio (now `tile: "none"`).
+- **Changed without a version bump:** `m-icons` README.md only (塗りの形; index.js unchanged).
+
 ## 2.8.0 - 2026-11-13
 
 Marks for Studio's geometry check in four diagram parts, tests that hold drawing still, purposes labels and READMEs in Studio's glossary, a hardening of `m-particles`, and a link to samples in the gallery. Drawing is unchanged in every part. Studio vendors it from v0.6.12.
