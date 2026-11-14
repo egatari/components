@@ -14,10 +14,10 @@ A waterfall part, error bars and significance brackets in `m-bars`, a manual set
 
 ### Added
 
-- **`m-diverge` 2.0.0 (new):** a waterfall. Total bars rise from 0 (or from `min`, which cuts the axis and draws a break mark), change bars from the running total; signed values above the bars, dotted links at the running total. A later total's `value` that differs from the running total is a `data` report. Totals `--term`, increases `--accent2`, decreases `--emph`.
+- **`m-diverge` 2.0.0 (new, specialized, set business):** a waterfall. Total bars rise from 0 (or from `min`, which cuts the axis and draws a break mark), change bars from the running total; signed values above the bars, dotted links at the running total. A later total's `value` that differs from the running total is a `data` report. Totals `--term`, increases `--accent2`, decreases `--emph`.
 - **`m-bars` 2.1.0:** `err` (± a number or `[low, high]`, per series for `values`), `mark="dot"`, and `sig` brackets (`[{from, to, group?, label, step}]`; vertical, unstacked bars only). The spoken name covers the intervals and brackets. Without these fields every demo paints the same pixels as 2.0.3 (4 themes × 76 frames).
-- **`m-checklist` 2.0.0 (new):** items listed (or revealed by step), one mark per step: ✓ (`--term`), × (`--emph`) or none. The marks are the author's slide content; nothing a viewer does is stored.
-- **`m-callout` 2.0.0 (new):** screen steps on a child `<img src alt width height>` (a missing alt, width or height is a `data` report): numbered circles, leader lines that never cross, labels beside the image. An inlined image over 1 MiB is a `size` report ending with `[image bytes=N]`, for Studio's lesson-wide image check (#207). The README says, in bold, that screenshots must not show real personal data.
+- **`m-checklist` 2.0.0 (new, specialized, set tools):** items listed (or revealed by step), one mark per step: ✓ (`--term`), × (`--emph`) or none. The marks are the author's slide content; nothing a viewer does is stored.
+- **`m-callout` 2.0.0 (new, specialized, set tools):** screen steps on a child `<img src alt width height>` (a missing alt, width or height is a `data` report): numbered circles, leader lines that never cross, labels beside the image. An inlined image over 1 MiB is a `size` report ending with `[image bytes=N]`, for Studio's lesson-wide image check (#207). The README says, in bold, that screenshots must not show real personal data.
 - `purposes.json`: `deviation` (差・増減) is no longer reserved: tile `none`, icon `bars` (served by `m-diverge`).
 - `tools/test-tex-width.mjs`: a TeX label in `m-tree`, `m-fishbone`, `m-cycle` and `m-timeline` stays inside its box, also with wide symbols.
 - `tools/test-terms.mjs`: the public docs and `tools/gallery.mjs`'s text pass Studio's `lint-terms --prose` at `tools/studio.json` `termsCommit` (6ec2815; `STUDIO_TERMS_SHA` overrides). Kept wordings are listed with their reasons in `tools/terms-allow.components.json` (5 entries, among them `m-menu`'s 「どこから見るか」, which Studio's pack edits quote).
@@ -35,7 +35,8 @@ A waterfall part, error bars and significance brackets in `m-bars`, a manual set
 
 ### For Studio
 
-- New parts start at 2.0.0 (the 2.x part line). The new parts and `m-bars`' props docs change the AI instruction pack (`node tools/pack-bytes.mjs --base v2.8.0`, ja): m-bars +1334, m-callout 2464 (new), m-checklist 1735 (new), m-diverge 2527 (new); the rest unchanged.
+- New parts start at 2.0.0 (the 2.x part line). They are specialized parts in the business and tools sets, so the free standard pack carries only `m-bars`' new lines. Pack bytes (`node tools/pack-bytes.mjs --base v2.8.0`, ja): m-bars +567, m-callout 2107 (new), m-checklist 1735 (new), m-diverge 2197 (new); the rest unchanged.
+- Studio's `make-llm-guide.mjs` on v0.6.12-comp280 with this release: exit 0; en free standard paste 30657 (cap 31000; 2.8.0: 30333); ja paid every set 148.9 KB (cap 150; 2.8.0: 141.5). The ja free standard warning (37.6 KB, target 35) was there on 2.8.0 too (37.0).
 - en ≤ ja holds for every part (Studio's own `gen` check with this release's parts swapped in: ok).
 - Whether `deviation` gets a new-deck tile is left to Studio (now `tile: "none"`).
 - **Changed without a version bump:** `m-icons` README.md only (塗りの形; index.js unchanged).

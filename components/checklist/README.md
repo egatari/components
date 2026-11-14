@@ -3,7 +3,8 @@ name: m-checklist
 display: 確かめる一覧 / Checklist
 version: 2.0.0
 series: common
-tier: standard
+tier: specialized
+set: tools
 summary: 確かめる項目を並べ、ステップごとに 1 つずつ印（✓・×）を描く。印はスライドの中身で、見ている人の操作を保存しない
 steps: 項目の step の最大（既定は項目 1 つ = 1 ステップ。per-step で n 個ずつ）
 purposes: process
