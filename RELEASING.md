@@ -29,7 +29,7 @@ Only the maintainer releases. To withdraw a release, add it to `yanked.json` und
    ```bash
    gh release download vX.Y.Z -D /tmp/check && shasum -a 256 /tmp/check/*.tar.gz && grep -A2 '"tarball"' /tmp/check/manifest.json
    ```
-5. In Egatari Studio: `npm run components:update -- vX.Y.Z`, then Studio's tests, then a pull request there.
+5. In Egatari Studio: `node tools/components2-update.mjs vX.Y.Z --default` (`npm run components:update` is the 1.x importer), then Studio's tests, then a pull request there.
 
 The tarball is deterministic (`tools/tar.mjs`: sorted entries, fixed modes and times, no user names, fixed gzip header), so `node tools/release.mjs X.Y.Z` on the tagged commit gives the same file again (with the same Node major version; zlib may compress differently in another). The manifest's per-file sha256 values do not depend on compression.
 

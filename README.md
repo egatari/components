@@ -14,10 +14,10 @@ The list is in **[CATALOG.md](CATALOG.md)**. Each part lives in `components/<nam
 
 ## Using them
 
-You do not install anything from here. Each Studio release carries a copy of the parts it was tested with (`vendor/components/<name>/<version>/`, pinned in `components.lock.json`). Studio maintainers bring in a new release with
+You do not install anything from here. Each Studio release carries a copy of the parts it was tested with (`vendor/components/<name>/<version>/`, pinned in `components2.lock.json`). Studio maintainers bring in a new release with
 
 ```bash
-npm run components:update -- v1.0.0
+node tools/components2-update.mjs v2.9.0 --default
 ```
 
 which downloads the release tarball, checks it against `manifest.json` and keeps every version it has ever brought in, so that a lesson built with an older version can still be rebuilt exactly.

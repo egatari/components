@@ -25,7 +25,7 @@
 //                                               per-file sha256, since it may skip releases)}
 // Per-file and component sha256 values are identity hashes (line endings normalized for text files, Egatari spec §6); the tarball's is byte-exact.
 // The tarball is deterministic (tools/tar.mjs): the same files give the same bytes.
-// Egatari Studio's `npm run components:update -- v1.0.0` downloads both, checks the tarball's sha256 against the manifest
+// Egatari Studio's `node tools/components2-update.mjs vX.Y.Z` downloads both, checks the tarball's sha256 against the manifest
 // and every file against its sha256, and copies the components to vendor/components/<name>/1.0.0/.
 import fs from 'node:fs';
 import path from 'node:path';
