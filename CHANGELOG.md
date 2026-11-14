@@ -14,12 +14,12 @@ A new-deck tile for 差・増減 and corrected import docs. No part changes: eve
 
 ### Changed
 
-- `purposes.json`: `deviation` (差・増減) has its own new-deck tile (`tile: "own"`, icon `bars`; label 差・増減 / Increase / decrease; example ウォーターフォール / waterfall). `m-diverge` is the only part under it. This was the owner's decision, made 2026-11-15.
+- `purposes.json`: `deviation` (差・増減) has its own new-deck tile (`tile: "own"`, icon `waterfall`; label 差・増減 / Increase / decrease; example ウォーターフォール / waterfall). `m-diverge` is the only part under it. This was the owner's decision, made 2026-11-15.
 - README, README.ja and RELEASING now say that Studio imports a 2.x release with `node tools/components2-update.mjs vX.Y.Z --default`, pinned in `components2.lock.json`. `npm run components:update` is the 1.x importer.
 
 ### For Studio
 
-- The new tile's icon is the existing `bars` drawing. A dedicated waterfall drawing would be a Studio ICONS entry.
+- The tile's icon key is `waterfall`, added to Studio's ICONS in v0.6.13. An older Studio that does not know the key draws the `other` icon.
 
 ## 2.9.0 - 2026-11-14
 
