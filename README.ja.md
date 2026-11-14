@@ -14,10 +14,10 @@
 
 ## 使い方
 
-ここから何かを入れる必要はありません。Studio の各バージョンは、試験を通したパーツの写しを持っています（`vendor/components/<名前>/<バージョン>/`、バージョンは `components.lock.json` で固定）。Studio の管理者が新しいバージョンを取り込むには
+ここから何かを入れる必要はありません。Studio の各バージョンは、試験を通したパーツの写しを持っています（`vendor/components/<名前>/<バージョン>/`、バージョンは `components2.lock.json` で固定）。Studio の管理者が新しいバージョンを取り込むには
 
 ```bash
-npm run components:update -- v1.0.0
+node tools/components2-update.mjs v2.9.0 --default
 ```
 
 を使います。リリースの tarball を取ってきて `manifest.json` と照らし、取り込んだバージョンをすべて残します（古いバージョンで組んだ教材も、そのとおりに組み直せるように）。
