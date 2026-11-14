@@ -4,13 +4,22 @@ Versions follow [README.md § Releases and versions](README.md#releases-and-vers
 
 ## Unreleased
 
-### Changed
-
-- `purposes.json`: `deviation` (差・増減) has its own new-deck tile (`tile: "own"`, icon `bars`; label 差・増減 / Increase / decrease; example ウォーターフォール / waterfall). `m-diverge` is the part under it (owner decision, 2026-11-15).
-
 ### Later (candidates, not in this release)
 
 - `m-compare` `by="row"`; an "outside every set" region for `m-venn`; planned-vs-actual bars for `m-timeline`
+
+## 2.9.1 - 2026-11-15
+
+A new-deck tile for 差・増減 and corrected import docs. No part changes: every part's code, version and hash are the same as 2.9.0. Studio vendors it in v0.6.13.
+
+### Changed
+
+- `purposes.json`: `deviation` (差・増減) has its own new-deck tile (`tile: "own"`, icon `bars`; label 差・増減 / Increase / decrease; example ウォーターフォール / waterfall). `m-diverge` is the only part under it. This was the owner's decision, made 2026-11-15.
+- README, README.ja and RELEASING now say that Studio imports a 2.x release with `node tools/components2-update.mjs vX.Y.Z --default`, pinned in `components2.lock.json`. `npm run components:update` is the 1.x importer.
+
+### For Studio
+
+- The new tile's icon is the existing `bars` drawing. A dedicated waterfall drawing would be a Studio ICONS entry.
 
 ## 2.9.0 - 2026-11-14
 
