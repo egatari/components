@@ -4,6 +4,10 @@ Versions follow [README.md § Releases and versions](README.md#releases-and-vers
 
 ## Unreleased
 
+### Changed
+
+- `purposes.json`: `deviation` (差・増減) has its own new-deck tile (`tile: "own"`, icon `bars`; label 差・増減 / Increase / decrease; example ウォーターフォール / waterfall). `m-diverge` is the part under it (owner decision, 2026-11-15).
+
 ### Later (candidates, not in this release)
 
 - `m-compare` `by="row"`; an "outside every set" region for `m-venn`; planned-vs-actual bars for `m-timeline`
