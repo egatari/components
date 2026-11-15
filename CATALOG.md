@@ -86,6 +86,7 @@ Components 2.0 (alpha, not for lessons yet): parts other parts require (Egatari 
 |---|---|---|---|
 | [`base`](components/base/README.md) | 1.2.0 | 2.0 の要素のパーツが使う土台（基底のクラス MotionElement と、SVG・時間・見せ方の補助）。データの形は mount の前に確かめる。教材の作者が直接は書かない | shape@1.0.0 |
 | [`boxplot-core`](components/boxplot-core/README.md) | 1.0.0 | m-boxplot の四分位数の計算（中央値、教科書の求め方 jp と表計算の inc・exc の四分位数、1.5×四分位範囲の外れ値）。教材の作者が直接は書かない | — |
+| [`code-core`](components/code-core/README.md) | 1.0.0 | m-code と m-trace のコードの描き方（等幅の幅、色の役割、説明の折り返し、長い行の折り返し、動く窓）。教材の作者が直接は書かない | base@1.2.0 |
 | [`codetree-core`](components/codetree-core/README.md) | 1.0.0 | 符号表からハフマン木を作り、2 値の系列を復号する（ファクシミリの MH 符号：白と黒のランを交互に読む）。m-codetree が使う。教材の作者が直接は書かない | — |
 | [`expr`](components/expr/README.md) | 1.0.0 | 2.0 のパーツが属性やデータに書かれた式を計算するための、算術だけの安全な式の評価器（コードとしては動かさない）。教材の作者が直接は書かない | — |
 | [`heatmap-core`](components/heatmap-core/README.md) | 1.0.0 | m-heatmap の計算（行ごとの割合、色の範囲と混ぜる割合、セルの字の色と縁、名前の間引きとセルの大きさ、ステップ）。教材の作者が直接は書かない | — |

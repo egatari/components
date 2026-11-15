@@ -24,7 +24,7 @@ const context = vm.createContext({HTMLElement: Node, console,
   document: {createElementNS: (_, tag) => new Node(tag), createElement: (tag) => new Node(tag)},
   egatariParts: {define: (meta, factory) => { registry[meta.name] = factory(Object.fromEntries(Object.keys(meta.requires || {}).map((n) => [n, registry[n]]))); }}
 });
-for (const name of ['shape', 'base', 'code']) vm.runInContext(fs.readFileSync(path.join(ROOT, 'components', name, 'index.js'), 'utf8'), context);
+for (const name of ['shape', 'base', 'code-core', 'code']) vm.runInContext(fs.readFileSync(path.join(ROOT, 'components', name, 'index.js'), 'utf8'), context);
 const Part = registry.code, example = JSON.parse(JSON.stringify(Part.shape.example));
 const make = (data = example, attrs = {}, dims = {}, lang = 'ja') => {
   const el = new Part(); Object.assign(el, dims); el.setAttribute('lang', lang);
@@ -73,14 +73,15 @@ for (const outputPos of ['below', 'right', 'auto']) {
 const below = make({code: 'x = 1\n'.repeat(8) + 'print(x)', steps: [], output: '1'}, {}, {clientHeight: 800});
 ok(!below.el.geometry.right && !below.reports.length, 'auto uses below for longer program');
 const overflow = make({code: Array.from({length: 20}, () => 'x'.repeat(100)).join('\n'), steps: [], output: Array.from({length: 10}, () => 'output').join('\n')}, {outputPos: 'right'}, {clientHeight: 900});
-ok(overflow.reports.filter((r) => r.code === 'layout').length === 3 && overflow.el.numbers.length === 16 && texts(overflow.el.codeLayer).some((n) => n.textContent.includes('…')) && texts(overflow.el.outputLayer).some((n) => n.textContent.includes('…')), 'line count, width and output report separately; visible text has ellipses');
+ok(overflow.el.fit && overflow.el.geometry.windowed && overflow.reports.length === 1 && /output exceeds/.test(overflow.reports[0].msg) && !texts(overflow.el.codeLayer).some((n) => n.textContent.includes('…')) && overflow.el.vrows.length > 20, '2.2.0 fit: 20 long lines wrap and window (no cut); only the 10-line output reports');
 ok(overflow.el.children.find((n) => n.localName === 'pre').textContent.includes('x'.repeat(100)), 'truncation preserves full accessible program');
 range.render(range.steps, range.props.dur / 2);
 ok(+range.bands[1].getAttribute('opacity') > 0 && range.notes[0].labels[0].getAttribute('style').includes('--muted'), 'without output, the last note still highlights its lines during its step');
 range.render(range.steps, Infinity);
 ok(range.bands.every((b) => b.getAttribute('opacity') === '0') && range.notes.every((n) => n.labels.every((e) => e.getAttribute('style').includes('--fg'))), 'without output, completed final state has all notes and no bands');
 const clippedHeight = make({code: 'x = 1\n'.repeat(15) + 'print(x)', steps: []});
-ok(clippedHeight.reports.some((r) => r.code === 'layout') && clippedHeight.el.numbers.length < 16 && texts(clippedHeight.el.codeLayer).some((n) => n.textContent.includes('…')), 'height truncation reports and marks the last visible line');
+clippedHeight.el.render(1, Infinity);
+ok(clippedHeight.el.fit && !clippedHeight.reports.length && clippedHeight.el.markBottom.textContent.startsWith('⋮（ほか ') && clippedHeight.el.markTop.textContent === '', '2.2.0 fit: 16 lines at 440px window from the top with a ⋮ marker below, no report');
 const tiny = make(example, {}, {clientWidth: 80, clientHeight: 40}); tiny.el.render(5, Infinity);
 ok(tiny.reports.some((r) => r.code === 'size') && tiny.el.codeLayer.textContent.includes('…') && tiny.el.svg.getAttribute('style').includes('overflow:hidden'), 'unusable box reports size and retains a clipped ellipsis');
 const noRoom = make({code: 'pass', steps: Array.from({length: 10}, () => ({lines: [1], note: 'Note'}))});
@@ -106,9 +107,9 @@ bandEn.render(2, .3);
 ok(bandEn.notes[0].g.textContent.includes('lines 3–4'), 'English band has a line-range marker');
 const withOutput = {...python, output: '0.91\n0.92'};
 const outputBelow = make(withOutput, {outputPos: 'below'});
-ok(!outputBelow.el.geometry.right && outputBelow.reports.some((r) => /7 lines; this height fits 4 \(more than a slide body under a heading \(about 440 px\) holds; 440 px fits 4 lines.*split the slide\)/.test(r.msg)), 'explicit below output: needs 520px, more than a slide body, so the report names lines, not a height');
+ok(!outputBelow.el.geometry.right && outputBelow.el.fit && !outputBelow.reports.some((r) => r.code === 'layout'), '2.2.0 fit: explicit below output at 440px windows the code instead of reporting');
 const lower = make(withOutput, {outputPos: 'below'}, {clientHeight: 380});
-ok(lower.reports.some((r) => /7 lines; this height fits 2 .*440 px fits 4 lines/.test(r.msg)) && !lower.reports.some((r) => /give the element/.test(r.msg)), '380px with below output: capacity, and lines at 440px instead of a height');
+ok(lower.el.fit && lower.reports.length === 1 && lower.reports[0].code === 'size' && /needs at least \d+ px height/.test(lower.reports[0].msg), '2.2.0 fit: 380px with output below is too small for 3 code rows: one size report with the height');
 const sixty = make({...python, code: Array(7).fill('x'.repeat(60)).join('\n')});
 ok(!sixty.reports.length && sixty.el.noteLayout === 'band' && !sixty.el.codeLayer.textContent.includes('…'), '60-character lines use the band width without truncation');
 const enoughBelow = make(withOutput, {outputPos: 'below'}, {clientHeight: 520});
@@ -126,21 +127,21 @@ for (const [height, n] of table) {
   ok(!r.reports.length && r.el.numbers.length === n, 'documented height ' + height + 'px fits ' + n + ' band-mode lines with output right');
 }
 const sixteen = make({...medium, code: Array(16).fill('x'.repeat(45)).join('\n')});
-ok(sixteen.reports.some((r) => r.msg === '[code] 16 lines; this height fits 9 (more than a slide body under a heading (about 440 px) holds; 440 px fits 9 lines with these notes: show fewer lines, shorten notes or split the slide)') && sixteen.el.numbers.length === 9, '16 lines at 440px: capacity, no height beyond a slide body');
+ok(sixteen.el.fit && !sixteen.reports.length && sixteen.el.geometry.slots >= 8, '2.2.0 fit: 16 lines at 440px, windowed, no report');
 const wide = make({code: 'x'.repeat(90), steps: [{lines: [1], note: 'Short'}]});
-ok(wide.reports.length === 1 && /longest line is 90 characters; this width fits 77 at 24px/.test(wide.reports[0].msg) && wide.el.codeLayer.textContent.includes('…'), '90-character code reports numeric width capacity and remains drawn');
+ok(wide.el.fit && !wide.reports.length && wide.el.vrows.length === 2 && wide.el.vrows[1].num.textContent === '↪' && !wide.el.codeLayer.textContent.includes('…'), '2.2.0 fit: a 90-character line wraps under ↪, no report');
 const longNote = make({...python, steps: [{lines: [1], note: '長い説明'.repeat(50)}]});
-ok(longNote.reports.some((r) => /note 1 is too long for the band \(\d+ px of \d+\); shorten it to about \d+ characters/.test(r.msg)) && longNote.el.notes[0].g.textContent.endsWith('…'), 'long band note reports index, measured width, capacity and target length; draws ellipsis');
+ok(longNote.reports.some((r) => /note 1 needs \d+ rows in the band \(2 fit\)/.test(r.msg)) && longNote.el.notes[0].labels.length === 2 && longNote.el.notes[0].g.textContent.endsWith('…'), '2.2.0 fit: a note longer than 2 band rows reports and ends with …');
 const manyNotes = make({...python, steps: Array.from({length: 30}, (_, i) => ({lines: [1], note: '説明その' + i}))}, {}, {clientHeight: 380});
 manyNotes.el.render(manyNotes.el.steps, Infinity);
-ok(manyNotes.reports.some((r) => /30 final notes need \d+ band rows \(\d+ px\); this height fits \d+ .*showing the last note/.test(r.msg)) && manyNotes.el.finalNotes.textContent.includes('1：説明その29') && !manyNotes.el.finalNotes.textContent.includes('説明その0'), 'final list overflow reports required band height and keeps only the last note');
+ok(!manyNotes.reports.length && manyNotes.el.getAttribute('data-fit') === 'last-note' && manyNotes.el.finalNotes.textContent.includes('1：説明その29') && !manyNotes.el.finalNotes.textContent.includes('説明その0'), '2.2.0: final list overflow keeps the last note, data-fit="last-note", no report');
 // Eval C: one height formula for code + final list + output; advice never exceeds a slide body.
 const sideOut = make({...python, output: '[0.93 0.95 0.91 0.96 0.94]'});
 const so = sideOut.el.outputLayer.children[0];
 ok(!sideOut.reports.length && sideOut.el.geometry.side && +so.getAttribute('y') > sideOut.el.geometry.codeH && +so.getAttribute('x') > sideOut.el.notes[0].g.children[0].getAttribute('width'), 'auto output under wide code sits beside the note band (7 lines + 1 output row fit 440px)');
 const eight = {...python, code: python.code + '\nprint(len(scores))', steps: [{lines: [1, 2], note: '道具を読み込む'}, {lines: [3, 4], note: 'モデルを作る'}, {lines: [5], note: '5 分割で検証'}, {lines: [6, 8], note: '結果を表示'}], output: '[0.93 0.95 0.91 0.96 0.94]\n0.938'};
 const e8 = make(eight, {}, {clientHeight: 380});
-ok(e8.reports.length && e8.reports.every((r) => !/give the element about (\d+)/.test(r.msg) || +RegExp.$1 <= 440), '8 lines + 4 notes + output: no advice beyond 440px: ' + e8.reports.map((r) => r.msg).join(' | '));
+ok(e8.reports.every((r) => !/give the element about (\d+)/.test(r.msg) || +RegExp.$1 <= 440), '8 lines + 4 notes + output: no advice beyond 440px: ' + e8.reports.map((r) => r.msg).join(' | '));
 const six = {lang: 'python', code: Array.from({length: 6}, (_, i) => 'total = total + values[' + i + '] * weights[' + i + ']  # add step').join('\n'), steps: Array.from({length: 6}, (_, i) => ({lines: [i + 1], note: '合計に ' + (i + 1) + ' 個目を足す処理'}))};
 let checked = 0;
 for (const data of [python, six, {...python, output: '0.91'}, {...six, output: '21'}, {...six, steps: six.steps.slice(0, 3)}])
@@ -153,7 +154,9 @@ for (const data of [python, six, {...python, output: '0.91'}, {...six, output: '
         checked++;
       }
     }
-ok(checked >= 6, 'height advice checked in ' + checked + ' cases');
+let fitted = 0;
+for (const data of [python, six, {...python, output: '0.91'}, {...six, output: '21'}]) for (const lang of ['ja', 'en']) for (const h of [300, 340, 380]) { const r = make(data, {}, {clientHeight: h}, lang); if (!r.reports.some((x) => x.code === 'layout')) fitted++; }
+ok(fitted === 24, '2.2.0: no layout report for these at 300–380px (classic or fit): ' + fitted + '/24');
 const sixR = make(six, {}, {clientHeight: 440});
 sixR.el.render(sixR.el.steps, Infinity);
 ok(!sixR.reports.length && sixR.el.noteLayout === 'band' && sixR.el.geometry.listRows >= 2 && sixR.el.finalNotes.textContent.includes('6：'), '6 lines + 6 notes fit 440px with a multi-row final list (' + sixR.el.geometry.listRows + ' rows)');
@@ -190,9 +193,13 @@ const twoRanges = make({...example, steps: [{lines: [[1, 2], [3, 3]], note: '二
 ok(twoRanges.reports.filter((r) => r.code === 'range').length === 1 && /one range per step/.test(twoRanges.reports[0].msg ?? JSON.stringify(twoRanges.reports[0])) && !twoRanges.el.notes[0].valid, 'two nested ranges: one range report');
 const en = make(example, {}, {}, 'en').el;
 ok(en.getAttribute('aria-label').startsWith('Python: 3 lines of code and output') && en.outputLayer.textContent.includes('Output') && en.outputLayer.textContent.includes('▶ Run'), 'English label, output and run label');
-for (const data of [null, {}, {code: 1, steps: []}, {code: 'pass', steps: [{lines: ['1'], note: 'Bad'}]}, {code: 'pass', steps: [{lines: [1, 2, 3], note: 'Bad'}]}, {...example, extra: 1}]) {
+for (const data of [null, {}, {code: 1, steps: []}, {code: 'pass', steps: [{lines: ['1'], note: 'Bad'}]}, {...example, extra: 1}]) {
   const r = make(data); ok(r.el.steps === 0 && r.reports.length === 1 && r.reports[0].code === 'data', 'invalid shape rejected: ' + JSON.stringify(data));
 }
+const listed = make({lang: 'python', code: Array.from({length: 9}, (_, i) => 'x' + i + ' = ' + i).join('\n'), steps: [{lines: [2, 5, 9], note: '飛び飛びの行'}]});
+listed.el.render(2, .3);
+ok(listed.el.fit && !listed.reports.length && listed.el.notes[0].g.textContent.includes('2, 5, 9 行目') && listed.el.vrows.filter((o) => o.num.getAttribute('style').includes('--emph')).length === 3, 'lines with 3+ integers: exactly those lines, marked 2, 5, 9 行目');
+ok(listed.el.children.find((n) => n.localName === 'pre').getAttribute('data-readable') === '', 'the readable pre carries data-readable');
 let deterministic = true, finite = true, duration = true;
 for (let k = 0; k <= c.steps; k++) for (const t of [0, .3, Infinity]) for (const ctx of [{}, {preview: true}, {mode: 'lecture'}]) {
   c.render(k, t, ctx); const html = c.innerHTML;
