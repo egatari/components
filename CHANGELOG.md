@@ -8,6 +8,51 @@ Versions follow [README.md § Releases and versions](README.md#releases-and-vers
 
 - `m-compare` `by="row"`; an "outside every set" region for `m-venn`; planned-vs-actual bars for `m-timeline`
 
+## 2.13.0 - 2026-11-15
+
+This release adds:
+- vectors and 2 × 2 matrices for university mathematics (set `univ`);
+- classification pictures from scikit-learn and contour plots with gradient descent (set `ml`), on a new library part `contour-core`;
+- per-sample cross-validation splits in `m-folds`;
+- `tools/sk2ega.py`, which writes these parts' JSON from scikit-learn.
+
+### Added
+
+- **`m-vector` 2.0.0 (new, specialized, set univ):** plane vectors and 2 × 2 matrices, step by step, with a formula panel beside the plane.
+  - Ops: sum (tip to tail, then the resultant), difference, scalar multiple, projection (the perpendicular, then the shadow), dot product (with the component formula).
+  - `matrix`: the grid, the unit square and the vectors move from I to M; the determinant and eigenvector spans. Complex eigenvalues report `data`.
+  - `basis`: the new basis grid and each vector's coordinates in it.
+  - The part computes; values written in the data are checked.
+- **`m-classify2d` 2.0.0 (new, specialized, set ml):** 2-D classification drawn from scikit-learn's output, with no model maths in the part.
+  - Regions from `predict` over a meshgrid, with the staircase boundary (or the smooth contour when a field is given).
+  - Probability and decision-function contours with level labels; support-vector rings.
+  - Voronoi cells computed from seed points (1-NN).
+  - Decision-tree splits one per step inside their parent cells, then the leaves; node ids shared with m-tree.
+  - k-means assignment and update steps; the centroids' Voronoi cells follow the moving centroids. Assignments and means are checked.
+- **`m-contour` 2.0.0 (new, specialized, set ml):** contours of f(x, y) level by level, gradient arrows with optional tangents, and a descent path one iterate per step, with f per iterate beside the plot. `f` is an arithmetic formula (expr; never run as code) or a script's `grid`; `monotone` reports a rise.
+- **`contour-core` 1.0.0 (new library part):** marching squares, joined polylines and label points.
+- **`tools/sk2ega.py`:** one subcommand per scikit-learn module (`linear_model`, `svm`, `neighbors`, `tree`, `ensemble`, `cluster`, `model_selection`).
+  - `--fit` builds the estimator from its name and literal keyword arguments only, and fits on the CSV. This is the documented way.
+  - `--model` loads a pickle, with a warning that loading a pickle runs code.
+  - `tree --tree-out` also writes m-tree data with the same node ids.
+
+### Changed
+
+- **`m-folds` 2.1.0: per-sample splits.** With `splits` (and `samples`), each sample is a cell and each row one split from a scikit-learn splitter: KFold, StratifiedKFold (クラスの比率を保つ KFold), GroupKFold, TimeSeriesSplit, ShuffleSplit or a holdout.
+  - Class colours and names, group runs, the time at both ends; unused samples in a dashed outline.
+  - Checks per splitter: each sample tested once (KFold types), groups kept together, training before the test (time series), stratified class counts, one holdout split.
+  - The k mode draws exactly as 2.0.1. The new docs are under `llm: omit` (no pack growth).
+
+### Wording
+
+- Rule 6b in READMEs and one demo, no code change: ビルドのときに (m-callout), ツール (m-cards), ステップのキー (m-menu), 比較のためのコピー (m-particles), プレーヤー (m-timer), キー (m-venn), 試しに導入 (m-kpi demo). These are phrases Studio's JA_WORDS rewrites in the ja pack; those entries can go.
+
+### For Studio
+
+- Import after 2.12.0, with `node tools/components2-update.mjs v2.13.0 --default`.
+- Sets: `univ` gains m-vector; `ml` gains m-classify2d and m-contour.
+- Packs measured on a scratch Studio with the local-tier stand-in: every set fits. en free standard+data is at 30,982 of 31,000 paste units.
+
 ## 2.12.0 - 2026-11-15
 
 This release adds:
