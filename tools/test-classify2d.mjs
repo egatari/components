@@ -31,7 +31,7 @@ const pts = [[0, 0], [0, 1], [4, 0], [4, 1]];
 const km = {iters: [{centroids: [[0, 0], [1, 1]], assign: [0, 1, 1, 1]}, {centroids: [[0, 0], [8 / 3, 2 / 3]], assign: [0, 0, 1, 1]}, {centroids: [[0, 0.5], [4, 0.5]], assign: [0, 0, 1, 1]}]};
 const k = make({axes: ex.axes, points: pts, kmeans: km}, {}, dims);
 ok(k.reports.length === 0 && k.el.steps === 6, 'k-means: points + assign/update ×2 + assign = 6 steps: ' + JSON.stringify(k.reports));
-k.el.render(2, Infinity); ok(k.el.ptEls[1].getAttribute('style') === 'fill:var(--series-2)', 'assign step colours points by cluster');
+k.el.render(2, Infinity); ok(k.el.ptEls[1].getAttribute('style') === 'fill:var(--series-3)', 'assign step colours points by cluster (the second class colour is --series-3; --series-2 is not used)');
 ok(bad({axes: ex.axes, points: pts, kmeans: {iters: [{centroids: [[0, 0], [1, 1]], assign: [1, 1, 1, 1]}]}}, 'not the nearest centroid'), 'a wrong assignment reports');
 ok(bad({axes: ex.axes, points: pts, kmeans: {iters: [km.iters[0], {...km.iters[1], centroids: [[0, 0], [3, 3]]}]}}, 'should be the mean'), 'a wrong mean reports');
 for (const b2 of [null, {}, {axes: ex.axes}, {...ex, extra: 1}]) { const r = make(b2); ok(r.el.steps === 0 && r.reports.length === 1 && r.reports[0].code === 'data', 'shape rejects ' + JSON.stringify(b2)); }
