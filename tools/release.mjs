@@ -5,7 +5,7 @@
 //   dist/manifest.json                       {name, version, tag, repository, license, tarball: {file, sha256, bytes},
 //                                             purposes: [{id, ja, en, steps: {ja, en}, reserved?}] (purposes.json's list),
 //                                             components: {<name>: {kind: "element", tag, version (the part's own version, README frontmatter version:),
-//                                               tier ("standard" | "specialized" | "extra", README frontmatter tier:), set (specialized parts only: stats, math,
+//                                               tier ("standard" | "specialized" | "extra" | "local", README frontmatter tier:), set (specialized parts only: stats, math,
 //                                               maps, kokugo, english, music, business, tools), display? (README frontmatter display:,
 //                                               "<ja> / <en>", when the part has a name other than its tag), build? and glyphs? (the class's
 //                                               static build and glyphs, Egatari spec §6.2: fields to render, data to subset, characters

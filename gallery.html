@@ -61,10 +61,10 @@ document.addEventListener("DOMContentLoaded", function(){
 <div id="stage">
 
 <section class="slide">
-  <h2>パーツの一覧（51 個、209 枚）</h2>
+  <h2>パーツの一覧（52 個、213 枚）</h2>
   <div class="body">
     <p>パーツごとに、説明の 1 枚とサンプルのスライドが続く。→ でステップを進める。</p>
-    <p>m-ctable（新しい）　m-nnet（新しい）　m-code（変わった）　m-folds（変わった）　m-map-japan（変わった）　m-map-world（変わった）　m-menu（変わった）　m-network（変わった）　m-quad（変わった）　m-balance　m-bars　m-boxplot　m-callout　m-cards　m-checklist　m-ci　m-codetree　m-collect　m-compare　m-curves　m-cycle　m-diverge　m-fishbone　m-flow　m-gendai　m-heatmap　m-hissan　m-hist　m-kakijun　m-kanbun　m-keyboard　m-kobun　m-kpi　m-mapping　m-market　m-numberline　m-orbit　m-particles　m-pie　m-predict　m-sampling　m-scatter　m-score　m-seq　m-sweep　m-syntax　m-tape　m-timeline　m-timer　m-tree　m-venn</p>
+    <p>m-ctable（新しい）　m-nnet（新しい）　m-trace（新しい）　m-code（変わった）　m-folds（変わった）　m-map-japan（変わった）　m-map-world（変わった）　m-menu（変わった）　m-network（変わった）　m-quad（変わった）　m-balance　m-bars　m-boxplot　m-callout　m-cards　m-checklist　m-ci　m-codetree　m-collect　m-compare　m-curves　m-cycle　m-diverge　m-fishbone　m-flow　m-gendai　m-heatmap　m-hissan　m-hist　m-kakijun　m-kanbun　m-keyboard　m-kobun　m-kpi　m-mapping　m-market　m-numberline　m-orbit　m-particles　m-pie　m-predict　m-sampling　m-scatter　m-score　m-seq　m-sweep　m-syntax　m-tape　m-timeline　m-timer　m-tree　m-venn</p>
   </div>
 </section>
 
@@ -144,6 +144,48 @@ document.addEventListener("DOMContentLoaded", function(){
       <script type="application/json">{"layers": [{"n": 3, "label": "入力層", "names": ["*x*_1", "*x*_2", "*x*_3"]}, {"n": 4, "label": "隠れ層 1", "act": "relu"}, {"n": 4, "label": "隠れ層 2", "act": "relu"}, {"n": 2, "label": "出力層", "act": "sigmoid", "names": ["*y*_1", "*y*_2"]}], "weights": [[[0.1, -0.11, 0.51], [0.08, -0.43, 0.29], [1.04, 0.76, -0.56], [-1.01, -0.5, 0.03]], [[-1.86, -0.18, -1.0, -0.59], [-0.44, -0.25, 0.33, 0.83], [-0.1, 1.09, -0.53, 0.28], [0.72, 0.08, -0.59, -0.74]], [[-0.37, 0.18, -0.81, -0.17], [-0.13, 0.43, 0.17, 0.28]]], "biases": [[-0.2, -0.04, 0.24, 0.45], [-0.38, 0.45, 0.4, 0.23], [0.08, -0.09]], "values": {"x": [0.5, -1.2, 0.8], "z": [[0.39, 0.75, -0.6, 0.57], [-1.58, 0.56, 1.34, 0.15], [-0.93, 0.42]], "a": [[0.39, 0.75, 0.0, 0.57], [0.0, 0.56, 1.34, 0.15], [0.28, 0.6]]}, "steps": [{"show": "x"}, {"layer": 1, "phase": "a"}, {"open": 2, "note": "隠れ層 2 を Σ と ReLU に分けて見る"}, {"layer": 2, "phase": "z"}, {"focus": [2, 0]}, {"layer": 2, "phase": "a"}, {"layer": 3, "phase": "a"}]}</script>
     </m-nnet>
   </div>
+</section>
+
+<section class="slide">
+  <h2>m-trace（新しい、v2.11.0）</h2>
+  <div class="body">
+    <p>短いコードを 1 行ずつ実行した記録を見せる。今の行に印、変わった変数に印、その時点までの出力</p>
+    <ul>
+      <li>伝えたいこと：手順・工程・仕組みをモデルで見る</li>
+      <li>見せ方：1 種類</li>
+      <li>内容の分野：情報　サンプルのスライド：3 枚</li>
+    </ul>
+  </div>
+</section>
+
+<section id="g-trace-1" class="slide">
+  <h2>for 文で合計を求める流れを 1 行ずつ追う</h2>
+  <div class="body">
+    <m-trace style="height:320px">
+      <script type="application/json">{"lang": "python", "code": "scores = [3, 1, 2]\ntotal = 0\nfor s in scores:\n    total += s\nprint(total)", "source": {"tool": "egatari-trace 0.1", "python": "3.13.18", "sha256": "454a15f5915a1bcfe331381852453b431b39b29f778dc5a20ea7546fc0cd2aaa", "truncated": false}, "steps": [{"line": 1, "vars": {"scores": [3, 1, 2]}, "note": "点数のリストを作る"}, {"line": 2, "vars": {"scores": [3, 1, 2], "total": 0}, "note": "合計 total を 0 から始める"}, {"line": 3, "vars": {"scores": [3, 1, 2], "total": 0, "s": 3}, "note": "s に最初の値 3 が入る"}, {"line": 4, "vars": {"scores": [3, 1, 2], "total": 3, "s": 3}, "note": "total に s を足して 3"}, {"line": 3, "vars": {"scores": [3, 1, 2], "total": 3, "s": 1}, "note": "s に次の値 1"}, {"line": 4, "vars": {"scores": [3, 1, 2], "total": 4, "s": 1}, "note": "足して 4"}, {"line": 3, "vars": {"scores": [3, 1, 2], "total": 4, "s": 2}, "note": "s に次の値 2"}, {"line": 4, "vars": {"scores": [3, 1, 2], "total": 6, "s": 2}, "note": "足して 6"}, {"line": 3, "vars": {"scores": [3, 1, 2], "total": 6, "s": 2}, "note": "値が残っていないので、繰り返しを終える"}, {"line": 5, "vars": {"scores": [3, 1, 2], "total": 6, "s": 2}, "out": "6\n", "note": "合計を表示する"}]}</script>
+    </m-trace>
+  </div>
+  <div class="concl"><span>for の行は、値を取り出すたびと、終わるときに通る</span></div>
+</section>
+
+<section id="g-trace-2" class="slide">
+  <h2>辞書で単語を数えるとき、counts はこう変わる</h2>
+  <div class="body">
+    <m-trace style="height:320px">
+      <script type="application/json">{"lang": "python", "code": "words = [\"りんご\", \"みかん\", \"りんご\"]\ncounts = {}\nfor w in words:\n    counts[w] = counts.get(w, 0) + 1\nprint(counts)", "source": {"tool": "egatari-trace 0.1", "python": "3.13.18", "sha256": "64512f36b35eda15e9ca05ae2353893f096efe4d99803c5811fc37ac81f4c4ca", "truncated": false}, "steps": [{"line": 1, "vars": {"words": ["りんご", "みかん", "りんご"]}}, {"line": 2, "vars": {"words": ["りんご", "みかん", "りんご"], "counts": {}}}, {"line": 3, "vars": {"words": ["りんご", "みかん", "りんご"], "counts": {}, "w": "りんご"}}, {"line": 4, "vars": {"words": ["りんご", "みかん", "りんご"], "counts": {"りんご": 1}, "w": "りんご"}}, {"line": 3, "vars": {"words": ["りんご", "みかん", "りんご"], "counts": {"りんご": 1}, "w": "みかん"}}, {"line": 4, "vars": {"words": ["りんご", "みかん", "りんご"], "counts": {"りんご": 1, "みかん": 1}, "w": "みかん"}}, {"line": 3, "vars": {"words": ["りんご", "みかん", "りんご"], "counts": {"りんご": 1, "みかん": 1}, "w": "りんご"}}, {"line": 4, "vars": {"words": ["りんご", "みかん", "りんご"], "counts": {"りんご": 2, "みかん": 1}, "w": "りんご"}}, {"line": 3, "vars": {"words": ["りんご", "みかん", "りんご"], "counts": {"りんご": 2, "みかん": 1}, "w": "りんご"}}, {"line": 5, "vars": {"words": ["りんご", "みかん", "りんご"], "counts": {"りんご": 2, "みかん": 1}, "w": "りんご"}, "out": "{'りんご': 2, 'みかん': 1}\n"}]}</script>
+    </m-trace>
+  </div>
+  <div class="concl"><span>まだない単語は get の既定値 0 から数え始める</span></div>
+</section>
+
+<section id="g-trace-3" class="slide">
+  <h2>バブルソートで xs の並びが変わる様子</h2>
+  <div class="body">
+    <m-trace by="time" rate="3" style="height:320px">
+      <script type="application/json">{"lang": "python", "code": "xs = [4, 2, 3, 1]\nn = len(xs)\nfor i in range(n - 1):\n    for j in range(n - 1 - i):\n        if xs[j] > xs[j + 1]:\n            xs[j], xs[j + 1] = xs[j + 1], xs[j]\nprint(xs)", "source": {"tool": "egatari-trace 0.1", "python": "3.13.18", "sha256": "fe4998f67377508a5520e13f090c5911da3e27ace2ac2b534ca6eed197928e9f", "truncated": false}, "show": ["xs", "i", "j"], "steps": [{"line": 1, "vars": {"xs": [4, 2, 3, 1]}}, {"line": 2, "vars": {"xs": [4, 2, 3, 1]}}, {"line": 3, "vars": {"xs": [4, 2, 3, 1], "i": 0}}, {"line": 4, "vars": {"xs": [4, 2, 3, 1], "i": 0, "j": 0}}, {"line": 5, "vars": {"xs": [4, 2, 3, 1], "i": 0, "j": 0}}, {"line": 6, "vars": {"xs": [2, 4, 3, 1], "i": 0, "j": 0}}, {"line": 4, "vars": {"xs": [2, 4, 3, 1], "i": 0, "j": 1}}, {"line": 5, "vars": {"xs": [2, 4, 3, 1], "i": 0, "j": 1}}, {"line": 6, "vars": {"xs": [2, 3, 4, 1], "i": 0, "j": 1}}, {"line": 4, "vars": {"xs": [2, 3, 4, 1], "i": 0, "j": 2}}, {"line": 5, "vars": {"xs": [2, 3, 4, 1], "i": 0, "j": 2}}, {"line": 6, "vars": {"xs": [2, 3, 1, 4], "i": 0, "j": 2}}, {"line": 4, "vars": {"xs": [2, 3, 1, 4], "i": 0, "j": 2}}, {"line": 3, "vars": {"xs": [2, 3, 1, 4], "i": 1, "j": 2}}, {"line": 4, "vars": {"xs": [2, 3, 1, 4], "i": 1, "j": 0}}, {"line": 5, "vars": {"xs": [2, 3, 1, 4], "i": 1, "j": 0}}, {"line": 4, "vars": {"xs": [2, 3, 1, 4], "i": 1, "j": 1}}, {"line": 5, "vars": {"xs": [2, 3, 1, 4], "i": 1, "j": 1}}, {"line": 6, "vars": {"xs": [2, 1, 3, 4], "i": 1, "j": 1}}, {"line": 4, "vars": {"xs": [2, 1, 3, 4], "i": 1, "j": 1}}, {"line": 3, "vars": {"xs": [2, 1, 3, 4], "i": 2, "j": 1}}, {"line": 4, "vars": {"xs": [2, 1, 3, 4], "i": 2, "j": 0}}, {"line": 5, "vars": {"xs": [2, 1, 3, 4], "i": 2, "j": 0}}, {"line": 6, "vars": {"xs": [1, 2, 3, 4], "i": 2, "j": 0}}, {"line": 4, "vars": {"xs": [1, 2, 3, 4], "i": 2, "j": 0}}, {"line": 3, "vars": {"xs": [1, 2, 3, 4], "i": 2, "j": 0}}, {"line": 7, "vars": {"xs": [1, 2, 3, 4], "i": 2, "j": 0}, "out": "[1, 2, 3, 4]\n"}]}</script>
+    </m-trace>
+  </div>
+  <div class="concl"><span>隣どうしを比べて入れ替え、大きい値から右端に決まる</span></div>
 </section>
 
 <section class="slide">

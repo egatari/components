@@ -32,9 +32,10 @@ export const SERIES = ['common', 'academic', 'business', 'kokugo', 'info', 'soci
 // `kokugo` 国語 / Japanese, `music` 音楽 / Music, `english` 英語 / English (subject series, like kokugo)
 // Tiers of element parts (parts-tiers-2026-10-27 §1, owner decision): standard parts are always offered, specialized ones
 // in sets (chosen by scene and words), extra ones only when a lesson clearly needs them (read their README). Library parts
-// have no tier. The ids never change; TIER_LABEL and SET_LABEL are how CATALOG.md names them.
-export const TIERS = ['standard', 'specialized', 'extra'];
-export const TIER_LABEL = { standard: '標準', specialized: '専門', extra: '特殊' };
+// have no tier. Local parts (design-trace-network §0) are in no chat pack: they need a local tool's output (m-trace: a tracer
+// script), so only the Claude Code skill references carry them. The ids never change; TIER_LABEL and SET_LABEL are how CATALOG.md names them.
+export const TIERS = ['standard', 'specialized', 'extra', 'local'];
+export const TIER_LABEL = { standard: '標準', specialized: '専門', extra: '特殊', local: 'ローカル' };
 export const SETS = ['stats', 'data', 'math', 'science', 'maps', 'kokugo', 'english', 'music', 'business', 'tools', 'algo', 'ml', 'univ'];
 export const SET_LABEL = { stats: '統計', data: '情報・データサイエンス', math: '数学', science: '理科', maps: '地図', kokugo: '国語', english: '英語', music: '音楽', business: 'ビジネス', tools: 'ツール', algo: 'アルゴリズム', ml: '機械学習', univ: '大学の統計・数理' };
 export const DISPLAY_RE = /^[^/]+ \/ [^/]+$/;

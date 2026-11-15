@@ -60,6 +60,7 @@ const WRONG = {
   'm-diverge': '<script type="application/json">{"items": [{"label": "前年", "value": "120", "total": true}]}</script>',
   'm-checklist': '<script type="application/json">{"items": [{"label": "手を洗った", "mark": "ok"}]}</script>',
   'm-ctable': '<script type="application/json">{"kind": "chart"}</script>',
+  'm-trace': '<script type="application/json">{"code": "x = 1"}</script>',
   'm-nnet': '<script type="application/json">{"layers": [{"n": "2"}, {"n": 1}]}</script>',
   'm-network': '<script type="application/json">{"nodes": [{"id": "A", "x": "0", "y": 0}], "steps": [{}]}</script>',
   'm-callout': '<img src="data:image/gif;base64,R0lGODlhAQABAAAAACw=" alt="画面" width="1" height="1"><script type="application/json">{"callouts": [{"x": "0.5", "y": 0.5, "text": "押す"}]}</script>',

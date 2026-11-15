@@ -34,7 +34,9 @@ ${rows.join('\n')}
 ## By tier / 段から
 
 Standard (標準): offered for every lesson. Specialized (専門): offered by set when the scene or the title calls for it. Extra (特殊):
-not offered; used when a lesson clearly needs one (read its README). The set is how specialized parts are loaded and evaluated together.
+not offered; used when a lesson clearly needs one (read its README). Local (ローカル): in no chat pack; its data comes from a local
+tool (m-trace: a tracer script), so only Claude Code and local authoring use it. The set is how specialized parts are loaded and
+evaluated together.
 標準はどの教材にも出す道具。専門は場面やタイトルから束ごとにすすめる。特殊は一覧に出さず、材料がはっきり要るときに README を読んで使う。
 
 | 段 | 束 | パーツ |

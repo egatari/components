@@ -18,7 +18,10 @@ class SvgNode {
   get outerHTML() { return `<${this.localName} ${JSON.stringify(this.attrs)}>${this._text}${this.innerHTML}</${this.localName}>`; }
   get innerHTML() { return this.children.map((n) => n.outerHTML).join(''); }
 }
-export function harness(name, example) {
+// opts.libs: library parts the part requires beyond shape, base and plot; opts.role: 'figure' for a part whose readable layer
+// holds a pre or table (an img's children are not read)
+export function harness(name, example, opts = {}) {
+  const role = opts.role || 'img';
   let fails = 0;
   const ok = (value, msg) => { console.log((value ? 'ok   ' : 'FAIL ') + msg); if (!value) fails++; };
   const registry = {};
@@ -27,7 +30,7 @@ export function harness(name, example) {
     document: {createElementNS: (_, tag) => new SvgNode(tag), createElement: (tag) => new SvgNode(tag)},
     egatariParts: {define: (meta, factory) => { registry[meta.name] = factory(Object.fromEntries(Object.keys(meta.requires || {}).map((n) => [n, registry[n]]))); }}
   });
-  for (const part of ['shape', 'base', 'plot', name]) vm.runInContext(fs.readFileSync(path.join(ROOT, 'components', part, 'index.js'), 'utf8'), context);
+  for (const part of ['shape', 'base', 'plot', ...(opts.libs || []), name]) vm.runInContext(fs.readFileSync(path.join(ROOT, 'components', part, 'index.js'), 'utf8'), context);
   const make = (data = example, attrs = {}, dims = {}, lang = 'ja') => {
     const el = new registry[name](); el.localName = 'm-' + name; el.tagName = el.localName.toUpperCase();
     Object.assign(el, dims); el.setAttribute('lang', lang);
@@ -37,7 +40,7 @@ export function harness(name, example) {
     return {el, reports, ctx};
   };
   const common = (el, label, sample = example) => {
-    ok(el.getAttribute('role') === 'img' && el.svg.getAttribute('aria-hidden') === 'true', label + ': image role and hidden SVG');
+    ok(el.getAttribute('role') === role && el.svg.getAttribute('aria-hidden') === 'true', label + ': image role and hidden SVG');
     ok(make(sample, {'aria-label': 'Author description'}).el.getAttribute('aria-label') === 'Author description', label + ': author label preserved');
     ok(walk(el.svg).filter((e) => e.localName === 'text').every((e) => +e.getAttribute('font-size') >= 24), label + ': all text ≥24px');
     ok(make(sample, {}, {clientWidth: 280, clientHeight: 120}).reports.some((r) => r.code === 'size'), label + ': small box reports size');
@@ -53,13 +56,13 @@ export function harness(name, example) {
     ok(deterministic && finite && complete && preview && JSON.stringify(el.model) === model, label + ': deterministic seeking, finite geometry, durations complete, immutable model and no answer preview');
   };
   const finish = async () => {
-    if (!process.argv.includes('--node')) await browserCheck(name, ok);
+    if (!process.argv.includes('--node')) await browserCheck(name, ok, role);
     console.log(fails ? `\nFAIL: ${fails}` : `\ntest-${name}${process.argv.includes('--node') ? ' (Node model and SVG)' : ''}: ok`);
     process.exitCode = fails ? 1 : 0;
   };
   return {ok, make, common, finish, Part: registry[name]};
 }
-async function browserCheck(name, ok) {
+async function browserCheck(name, ok, role = 'img') {
   const S = await studio();
   const work = path.resolve(process.argv[2] || path.join(ROOT, 'components', name, 'out', 'test'));
   fs.mkdirSync(work, {recursive: true});
@@ -92,7 +95,7 @@ async function browserCheck(name, ok) {
         return {history, problems, role: c.getAttribute('role'), aria: c.getAttribute('aria-label'), finite: !/NaN|undefined|Infinity/.test(c.svg.outerHTML)};
       }), name);
       for (const [i, r] of results.entries()) {
-        ok(r.history && r.finite && r.role === 'img' && !!r.aria && !r.problems.length, `browser ${lang} ${i}: deterministic, accessible, contained ≥24px, no overlaps: ${r.problems.join('; ')}`);
+        ok(r.history && r.finite && r.role === role && !!r.aria && !r.problems.length, `browser ${lang} ${i}: deterministic, accessible, contained ≥24px, no overlaps: ${r.problems.join('; ')}`);
         await page.evaluate(({i, name}) => DECK.seek(i, document.querySelectorAll('m-' + name)[i].steps, Infinity), {i, name});
         await page.screenshot({path: path.join(work, `final-${lang}-${i}.png`)});
       }
