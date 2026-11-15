@@ -8,7 +8,7 @@ props:
 example: {"nodes": [{"id": "A", "x": 0, "y": 0}, {"id": "B", "x": 4, "y": 0}], "edges": [{"from": "A", "to": "B", "w": 4}], "steps": [{"current": "A", "frontier": ["B"]}, {"current": "B", "take": [["A", "B"]], "total": 4}]}
 ---
 
-From a script; 440px alone, 380px under text. Unset fields persist; `[["C", 3]]` keyed; `take`/`drop` edit chosen edges. `total`: path to `current` if `parent`, else Σ taken `w` (`w` at its precision); a count etc.: `total.check: false`.
+From a script; 440px alone, 380px under text. Unset fields persist; `[["C", 3]]` keyed; `take`/`drop` edit chosen edges. `total`: path to `current` if `parent`, else Σ taken `w` (`w` at its precision); counts: `total.check: false`.
 <!-- llm: omit -->
 - Child JSON: node `id` `x` `y` (your units, y down) `label`; edge `from` `to` `w`; `directed: true`. Step: `current`, `visited`, `frontier`, `parent` (`{"C": "A"}`), `take`/`drop` (`[["A", "C"]]`), `total`, `note`. `frontierKind` queue, stack, pq, set; `total` `{"label", "unit"}`.
 - Omitted fields carry over (`current: null` clears); `parent` accumulates (`null` removes); `take`/`drop` change the chosen edges. `complete: true`: a complete graph with no edges drawn (tours).
