@@ -3,7 +3,7 @@ name: m-menu
 version: 2.0.3
 series: common
 tier: standard
-summary: スライドへのリンクのカードを格子に並べる（目次・単元の選び方）。カードはふつうの <a href="#<スライドの id>">、行ったスライドのカードに「見た」の印
+summary: スライドへのリンクのカードを格子に並べる（目次・単元の選び方）。カードは <a href="#<スライドの id>">、行ったスライドに「見た」の印
 steps: ceil(カードの数 / per-step)（既定の per-step="0" なら 0：初めから全部）
 purposes: contents
 props: cols, per-step, size, fade, stagger, visited
@@ -31,7 +31,10 @@ props: cols, per-step, size, fade, stagger, visited
 - 「見た」の印：このセッションでカードの行き先のスライドを開いたら、カードの右上に ✓（保存しない。開き直すと消える）。動画では付けず、印刷に出ない。
   見ている人の側の状態で、画面の決まり (i, k, t) の外（`m-kobun` のポップアップと同じ扱い）。`visited="false"` で付けない
 <!-- llm: end -->
-- ステップ：`per-step="n"` ならカードが n 枚ずつステップごとに出る（`data-from` から。同じステップの中は `stagger` 秒ずつずれる）。まだ出ていないカードは押せず、Tab でも選べず、読み上げない。
+- ステップ：`per-step="n"` ならカードが n 枚ずつステップごとに出る（`data-from` から。同じステップの中は `stagger` 秒ずつずれる）。
+  <!-- llm: omit -->
+  まだ出ていないカードは押せず、Tab でも選べず、読み上げない。
+  <!-- llm: end -->
   `per-step="0"`（既定）なら初めから全部（ステップを使わない）。ステップは (k, t) だけで決まる
 - 並び：`cols`（既定はカードの数から：3 枚までは 1 行、4 枚は 2 列、それより多ければ 3 列）。カードの高さの下限は CSS の `--mm-h`（既定 104px）、間は `--mm-gap`（18px）。
   本文いっぱいに置いて縦の真ん中にそろえるなら `style="height:100%;align-content:center;--mm-h:150px"`

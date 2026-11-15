@@ -13,11 +13,11 @@ props: cols, digits, per-step, dur, stagger, count, size
 表紙の直後の「掴みの数字」、試験導入の結果、市場規模の要約など、少数の数字を大きく見せるときに使う
 （motion-slides スキル §6「数字を見せる」）。
 
-子の JSON：`{"cards": [{"label", "value", "digits", "unit", "prefix", "from", "tone", "delta", "note", "step", "at"}, …]}`。
+子の JSON：`{"cards": [...]}`。カードごとに `step`・`at` も書ける。
 
 - `label`：カードの上の名前。`value`：数字（`digits` 桁、3 桁ごとにカンマ）。`unit`：数字の後ろの単位（小さめの字）。`prefix`：数字の前の記号（`+` `約` など）。負の `value` は自分で − が付くので、`prefix` に `−` を重ねない（`"prefix": "−"` と `-12` は「−−12」）。減った量を正の数で見せるときだけ `value` を正にして `prefix: "−"`
 - `from`：数え上げを始める値（既定 0。「20 分 → 7.5 分」のように減らす数も見せられる）
-- `tone`：数字とカードの上の色の線の色（`term`（既定）・`emph`・`accent2`・`series-1..4`）
+- `tone`：数字とカードの上の線の色（`term`（既定）・`emph`・`accent2`・`series-1..4`）
 - `delta`：`{"dir": "up" | "down", "text": "前の期から 4 社", "good": true}`。▲ / ▼ と一言を数字の下に出す。良い向き（`good`、既定は `up` なら良い）なら `--term`、悪い向きなら `--emph`
 - `note`：カードの下端の一言（`--muted`）
 <!-- llm: omit -->
