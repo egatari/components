@@ -9,7 +9,7 @@
 // 格子：x は range を nx 点、y は ny 点に等分した点（両端を含む。numpy の linspace と meshgrid）。labels と fields の値は行ごと
 // （行 0 が y の最小）。labels は 2 次元の配列か「クラス*個数」を空白で区切った行の順の続け書き。
 // 色：クラスごとに --series-1..4 と点の形（○・□・△・◇。色だけに頼らない）、領域はその色の薄い塗り、境界と等高線 --fg、
-// サポートベクトルの輪 --emph、k 平均法の重心は × の印。
+// サポートベクトルの輪 --fg（クラスの色と --emph が近いテーマでも紛れない）、k 平均法の重心は × の印。
 egatariParts.define({name: "classify2d", version: "2.0.0", requires: {base: "1.2.0", "contour-core": "1.0.0"}, element: "m-classify2d"}, function(deps){
 "use strict";
 var base = deps.base, D = base, K = deps["contour-core"], clipN = 0;
@@ -269,7 +269,7 @@ return class extends base.MotionElement {
     var ptG = this.ptG = D.el("g", {opacity: 0}, svg);
     this.ptEls = d.points.map(function(p){ return self.marker(ptG, X(p[0]), Y(p[1]), pl.km ? -1 : pl.cls[p[2]], pl.km ? "var(--muted)" : colOf(p[2]), mr); });
     this.svG = D.el("g", {opacity: 0}, svg);
-    (d.sv || []).forEach(function(n){ var p = d.points[n]; if (p) D.el("circle", {cx: X(p[0]), cy: Y(p[1]), r: mr + 7, fill: "none", stroke: "var(--emph)", "stroke-width": 3}, self.svG); });
+    (d.sv || []).forEach(function(n){ var p = d.points[n]; if (p) D.el("circle", {cx: X(p[0]), cy: Y(p[1]), r: mr + 7, fill: "none", stroke: "var(--fg)", "stroke-width": 3}, self.svG); });
     if (pl.km) this.cEls = pl.km[0].centroids.map(function(_, c){ var g = D.el("g", {opacity: 0}, svg); D.el("path", {d: "M-12 -12L12 12M-12 12L12 -12", stroke: "var(--bg)", "stroke-width": 9, "stroke-linecap": "round"}, g); D.el("path", {d: "M-12 -12L12 12M-12 12L12 -12", stroke: "var(--series-" + (c + 1) + ")", "stroke-width": 5, "stroke-linecap": "round"}, g); return g; });
     if (d.points.length * Math.PI * mr * mr > pw * ph * 0.35) ctx.report("layout", "[classify2d] " + d.points.length + " points cover more than a third of the plot at marker " + mr + " px; use a smaller marker or fewer points");
   }

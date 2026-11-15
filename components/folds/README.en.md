@@ -22,3 +22,7 @@ General: f=text px, L=1.45f+4, R=max(32,ceil(1.2f)); minimum=ceil(2L+16+kR+foote
 
 ctx.lang selects ja/en. Font boxes ≥1.43em plus gap. Image role, final summary; preserve author label, hide SVG. No answer preview. Fictional demo.
 <!-- llm: end -->
+
+<!-- llm: omit -->
+Per-sample splits (2.1.0): `splits` (`test`, `train` indices) and `samples` (`class`, `group`, `t`) from `uv run tools/sk2ega.py model_selection`. `splitter`: KFold, StratifiedKFold, GroupKFold, TimeSeriesSplit, ShuffleSplit, holdout. Checks: KFold-type splitters test each sample once; groups stay together; time series train on the past; stratified class counts within 1; one holdout split. Up to 60 samples and 10 splits.
+<!-- llm: end -->

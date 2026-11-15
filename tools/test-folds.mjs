@@ -52,4 +52,24 @@ ok(labels.reports.some((r) => r.code === 'size' && /label 1 needs \d+ px; block 
 const legend = make(data, {}, {clientWidth: 280});
 ok(legend.reports.some((r) => /legend needs \d+ px width; element has 280 px/.test(r.msg)), 'legend reports numeric required and actual width');
 ok(walk(c.svg).filter((e) => e.localName === 'rect').every((e) => +e.getAttribute('width') > 0), 'all blocks have positive widths');
+// 2.1.0: per-sample splits
+const strat = {samples: [0, 0, 0, 1, 0, 0, 0, 1].map((c) => ({class: c})), classes: [{id: 0, label: 'A'}, {id: 1, label: 'B'}], splitter: 'StratifiedKFold',
+  splits: [{test: [0, 1, 2, 3]}, {test: [4, 5, 6, 7]}]};
+const sm = make(strat, {}, {clientWidth: 1100, clientHeight: 400});
+ok(sm.reports.length === 0 && sm.el.steps === 3 && sm.el.sm.role[0].join('') === '22221111', 'samples mode: test cells and the train complement: ' + JSON.stringify(sm.reports));
+const smBad = (data, s) => make(data, {}, {clientWidth: 1100, clientHeight: 400}).reports.some((r) => r.code === 'data' && r.msg.includes(s));
+ok(smBad({...strat, splits: [{test: [0, 1, 2, 3]}, {test: [3, 4, 5, 6, 7]}]}, 'sample 3 is in the test set of 2 splits'), 'KFold types: a sample tested twice reports');
+ok(smBad({...strat, splits: [{test: [0, 1, 2, 4]}, {test: [3, 5, 6, 7]}]}, 'StratifiedKFold keeps about 1'), 'stratified: class counts off by 1 or more report');
+ok(smBad({samples: ['P', 'P', 'Q', 'Q'].map((g) => ({group: g})), splitter: 'GroupKFold', splits: [{test: [0, 2]}, {test: [1, 3]}]}, 'group "P" is in both'), 'GroupKFold: a split group reports');
+ok(smBad({samples: [1, 2, 3, 4].map((t) => ({t})), splitter: 'TimeSeriesSplit', splits: [{test: [1], train: [2]}]}, 'trains on the past'), 'TimeSeriesSplit: training after the test reports');
+ok(!smBad({samples: [1, 2, 3, 4].map((t) => ({t})), splitter: 'TimeSeriesSplit', splits: [{test: [2], train: [0, 1]}, {test: [3], train: [0, 1, 2]}]}, 'test set'), 'TimeSeriesSplit: unused samples allowed');
+ok(smBad({...strat, splits: [{test: [0, 1, 2, 3, 99]}]}, 'samples 0–7'), 'an index out of range reports');
+common(sm.el, 'samples', strat);
+if (!process.argv.includes('--no-helper')) {
+  const {execFileSync} = await import('node:child_process');
+  let lines = null;
+  try { lines = execFileSync('uv', ['run', '-q', 'tools/folds-demo.py'], {encoding: 'utf8'}).trim().split('\n').map((l) => JSON.parse(l)); } catch (e) { lines = null; }
+  if (lines) ok(lines.length === 3 && lines.every((d) => make(d, {}, {clientWidth: 1100, clientHeight: 400}).reports.length === 0), 'sk2ega model_selection: StratifiedKFold, GroupKFold, TimeSeriesSplit pass the checks');
+  else console.log('skip sk2ega (uv not available)');
+}
 await finish();

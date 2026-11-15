@@ -1,7 +1,7 @@
 ---
 name: m-folds
 display: 交差検証 / Cross-validation
-version: 2.0.1
+version: 2.1.0
 series: academic
 tier: specialized
 set: data
@@ -31,4 +31,15 @@ errors・labels の長さが k と違う、誤差が負、k が範囲外なら d
 一般に f = 指定文字 px（既定 26）、L = 1.45f + 4、最小行高 R = max(32, ceil(1.2f))。最小高は ceil(2L + 16 + kR + フッター + 4)、フッターは誤差ありなら L + 0.4f、なければ 0。高さ不足は k・必要高・現在高・内訳、幅不足は凡例の必要幅と現在幅、フォールド名の番号・必要幅と使える幅を数値付き size で報告する。
 
 表示文は ctx.lang の日英に従う。role="img" と最終状態の aria-label を付け、作者のラベルを保ち、SVG は読み上げ対象外。先の計算結果はプレビューで見せない。英語も文字の箱 1.43em と余白を確保する。サンプルは架空データ・シミュレーション。
+<!-- llm: end -->
+
+<!-- llm: omit -->
+標本ごとの分割（2.1.0）：`splits`（分割ごとの `test` と `train` の番号）と `samples`（標本ごとの `class`・`group`・`t`）を書くと、列が標本、行が分割になる。値は `uv run tools/sk2ega.py model_selection data.csv --fit "StratifiedKFold(n_splits=4, shuffle=True, random_state=0)" --label class` の出力。
+
+- `splitter`：`KFold`（`shuffle=True` で順を混ぜる）、`StratifiedKFold`（クラスの比率を保つ KFold）、`GroupKFold`（同じグループを分けない）、`TimeSeriesSplit`（過去で訓練し、その後で検証）、`ShuffleSplit`、`holdout`（1 回だけ分ける）
+- 検証の標本は `--emph` の枠と淡色、訓練は `--term` の淡色、どちらにも使わない標本は破線の枠
+- `classes`（4 個まで）：上の行にクラスの色と名前。`group`：同じグループの続きを枠で囲む。`t`：両端に最初と最後の時刻
+- 確かめること：KFold の仲間は、どの標本もちょうど 1 回だけ検証に入るか。GroupKFold は同じグループが訓練と検証に分かれていないか。TimeSeriesSplit は訓練が検証より前か。StratifiedKFold は各クラスの検証の数が「全体 ÷ 分割数」から 1 未満のずれか。holdout は分割が 1 つか
+- `errors` は分割ごとに 1 つ
+- 標本は 60 個まで、分割は 10 個まで
 <!-- llm: end -->
