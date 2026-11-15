@@ -143,6 +143,7 @@ const TESTS = [
   ['test-folds', ['tools/test-folds.mjs', path.join(tmp, 'folds')]],
   ['test-balance', ['tools/test-balance.mjs', path.join(tmp, 'balance')]],
   ['test-network', ['tools/test-network.mjs', path.join(tmp, 'network')]],
+  ['test-nnet', ['tools/test-nnet.mjs', path.join(tmp, 'nnet')]],
   ['test-mapping', ['tools/test-mapping.mjs', path.join(tmp, 'mapping')]],
   ['test-orbit', ['tools/test-orbit.mjs', path.join(tmp, 'orbit')]],
   ['test-kanbun-num', ['tools/test-kanbun-num.mjs', path.join(tmp, 'kanbun-num')]],
