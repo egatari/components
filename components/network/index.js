@@ -34,7 +34,7 @@ return class extends base.MotionElement {
       complete: {type: "boolean"},
       stochastic: {type: "boolean"},
       frontierKind: {type: "string", enum: ["queue", "stack", "pq", "set"]},
-      total: {type: "object", additionalProperties: false, properties: {label: {type: "string"}, unit: {type: "string"}, digits: {type: "integer"}, check: {type: "boolean"}}},
+      total: {type: "object", additionalProperties: false, properties: {label: {type: "string"}, unit: {type: "string"}, digits: {type: "integer"}, check: {type: "boolean"}, of: {type: "string", enum: ["path", "taken"]}}},
       nodes: {type: "array", minItems: 1, maxItems: 24, items: {type: "object", additionalProperties: false, required: ["id", "x", "y"], properties: {
         id: ID, x: {type: "number"}, y: {type: "number"}, label: {type: "string"}}}},
       edges: {type: "array", maxItems: 60, items: {type: "object", additionalProperties: false, required: ["from", "to"], properties: {
@@ -117,11 +117,26 @@ return class extends base.MotionElement {
       });
       if (s.total !== undefined){
         n.total = s.total;
-        var ks = Object.keys(n.chosen);
-        if (check && ks.length && ks.every(function(k){ return edges[k] && typeof edges[k].w === "number"; })){
-          var sum = ks.reduce(function(a, k){ return a + edges[k].w; }, 0);
-          if (Math.abs(sum - s.total) > 1e-9 * Math.max(1, Math.abs(sum)))
-            bad.push(w + ".total is " + s.total + " but the chosen edges' weights sum to " + +sum.toFixed(9) + " (total.check: false if the total is something else)");
+        // 何の合計か：total.of、なければ parent があるときは出発点から current までの道のり（探索）、ないときは選んだ辺の w の和（経路・巡回路）
+        var of = d.total && d.total.of ? d.total.of : Object.keys(n.parent).length ? "path" : "taken", ws = null, what = "";
+        if (of === "path" && n.current){
+          ws = []; var c = n.current, seen = {};
+          while (n.parent[c] !== undefined && !seen[c]){ seen[c] = 1; var e = edges[self.key(n.parent[c], c)]; if (!e || typeof e.w !== "number"){ ws = null; break; } ws.push(e.w); c = n.parent[c]; }
+          what = "the path to " + n.current + " along parent";
+        } else if (of === "taken"){
+          var ks = Object.keys(n.chosen);
+          ws = ks.length && ks.every(function(k){ return edges[k] && typeof edges[k].w === "number"; }) ? ks.map(function(k){ return edges[k].w; }) : null;
+          what = "the chosen edges' weights";
+        }
+        if (check && ws && ws.length){
+          var sum = ws.reduce(function(a, x){ return a + x; }, 0);
+          // 見せている桁の分だけ許す：辺の数 × ½·10^−d（d は w の小数の桁の最大）
+          var dec = ws.reduce(function(m, x){ var f = String(x).split(".")[1]; return Math.max(m, f ? f.length : 0); }, 0);
+          // total が w より細かい桁で書かれているときだけ（w を丸めて書いたとき）。同じ桁なら正確に合うはず
+          var decT = (String(s.total).split(".")[1] || "").length, exact = 1e-9 * Math.max(1, Math.abs(sum));
+          var tol = decT > dec ? Math.max(exact, ws.length * 0.5 * Math.pow(10, -dec) + 1e-12) : exact;
+          if (Math.abs(sum - s.total) > tol)
+            bad.push(w + ".total is " + s.total + " but " + what + " sums to " + +sum.toFixed(9) + " (total.of: \"path\" or \"taken\"; total.check: false if the total is something else)");
         }
       }
       states.push(n); st = n;

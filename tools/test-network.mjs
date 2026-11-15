@@ -23,7 +23,7 @@ ok(Object.values(c.chosen).every((x) => x.el.getAttribute('opacity') === '1.000'
 ok(c.duration(3) === 0.6 * 2 && c.duration(1) === 0.3, 'durations: two edges × dur; state change = dur/2');
 ok(c.getAttribute('aria-label').includes('A–B') && c.getAttribute('aria-label').includes('経路の長さ 9 km'), 'accessible summary has chosen edges and total');
 const wrong = make({...data, steps: [...data.steps.slice(0, 2), {...data.steps[2], total: 8}]});
-ok(wrong.reports.some((r) => r.code === 'data' && r.msg.includes('sum to 9')), 'total ≠ weight sum reports data');
+ok(wrong.reports.some((r) => r.code === 'data' && r.msg.includes('sums to 9')), 'total ≠ weight sum reports data');
 const nocheck = make({...data, total: {...data.total, check: false}, steps: [...data.steps.slice(0, 2), {...data.steps[2], total: 8}]});
 ok(!nocheck.reports.some((r) => r.code === 'data'), 'total.check false skips the sum check');
 const unknown = make({...data, steps: [{current: 'Z', take: [['A', 'D']], drop: [['A', 'B']]}]});
@@ -57,6 +57,16 @@ common(mk.el, 'markov', markov);
 const badSum = make({...markov, edges: markov.edges.map((e) => e.from === 'R' && e.to === 'R' ? {...e, w: 0.3} : e)});
 ok(badSum.reports.some((r) => r.code === 'data' && r.msg.includes('edges from R sum to 0.9')), 'stochastic: a row not summing to 1 reports data');
 ok(make({...markov, directed: false}).reports.some((r) => r.msg.includes('stochastic needs directed')), 'stochastic needs a directed graph');
+const dij = {nodes: [{id: 'A', x: 0, y: 0}, {id: 'B', x: 4, y: 0}, {id: 'C', x: 2, y: 3}],
+  edges: [{from: 'A', to: 'B', w: 4}, {from: 'A', to: 'C', w: 1}, {from: 'C', to: 'B', w: 2}],
+  steps: [{current: 'A', parent: {B: 'A', C: 'A'}, total: 0}, {current: 'C', total: 1}, {current: 'B', parent: {B: 'C'}, total: 3}]};
+ok(!make(dij).reports.some((r) => r.code === 'data'), 'search with parent: total is the path length to current (0, 1, 3), not the tree sum');
+ok(make({...dij, steps: [...dij.steps.slice(0, 2), {current: 'B', parent: {B: 'C'}, total: 4}]}).reports.some((r) => r.msg.includes('the path to B along parent sums to 3')), 'wrong path length reports along the parent chain');
+const tsp1 = {nodes: [{id: 'P', x: 0, y: 0}, {id: 'Q', x: 2, y: 1}, {id: 'R', x: 0, y: 2}], edges: [{from: 'P', to: 'Q', w: 2.2}, {from: 'Q', to: 'R', w: 2.2}, {from: 'R', to: 'P', w: 2}],
+  steps: [{take: [['P', 'Q'], ['Q', 'R'], ['R', 'P']], total: 6.4721}]};
+ok(!make(tsp1).reports.some((r) => r.code === 'data'), 'rounded w (1 decimal) with an exact total: within 3 × 0.05');
+ok(make({...tsp1, steps: [{...tsp1.steps[0], total: 6.7}]}).reports.some((r) => r.code === 'data'), 'beyond the shown precision still reports');
+ok(!make({...dij, total: {of: 'taken'}, steps: [{current: 'A', parent: {B: 'A'}, take: [['A', 'C'], ['C', 'B']], total: 3}]}).reports.some((r) => r.code === 'data'), 'total.of taken overrides the parent default');
 const attrs = make(data, {dur: -1, size: 20});
 ok(attrs.reports.filter((r) => r.code === 'attr').length === 2 && attrs.el.props.size === 24, 'bad props report/default');
 for (const lang of ['ja', 'en']) {
