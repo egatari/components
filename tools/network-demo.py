@@ -100,7 +100,44 @@ def markov():
             "edges": [{"from": a, "to": b, "w": w} for a in states for b, w in P[a].items()],
             "total": {"label": "この道筋の確率", "check": False}, "steps": steps}
 
+def path_diagram():
+    # a fictional path diagram: one latent factor (ellipse) measured by three observed scores (shaded boxes), a second latent
+    # factor pointing at it, and latent confounding (bi) between the second factor and an observed background variable
+    nodes = [{"id": "意欲", "x": 0, "y": 1, "shape": "ellipse"}, {"id": "学力", "x": 4, "y": 1, "shape": "ellipse"},
+             {"id": "国語", "x": 8, "y": 0, "shape": "box", "observed": True}, {"id": "数学", "x": 8, "y": 1, "shape": "box", "observed": True},
+             {"id": "英語", "x": 8, "y": 2, "shape": "box", "observed": True}, {"id": "家庭", "x": 0, "y": 3, "shape": "box", "observed": True}]
+    edges = [{"from": "意欲", "to": "学力", "w": 0.45}, {"from": "学力", "to": "国語", "w": 0.82}, {"from": "学力", "to": "数学", "w": 0.75},
+             {"from": "学力", "to": "英語", "w": 0.79}, {"from": "家庭", "to": "意欲", "w": 0.3, "bi": True}]
+    steps = [{"current": "学力", "note": "楕円は潜在変数（直接は測れない）"}, {"current": "数学", "note": "塗った四角は観測した変数。矢印の数は係数（架空）"},
+             {"current": "家庭", "note": "両向きの破線は、測っていない共通の原因（交絡）"}]
+    return {"directed": True, "nodes": nodes, "edges": edges, "steps": steps}
+
+def plate():
+    nodes = [{"id": "θ", "x": 0, "y": 0, "shape": "circle"}, {"id": "x", "x": 3, "y": 0, "label": "*x*_i", "observed": True}]
+    return {"directed": True, "nodes": nodes, "edges": [{"from": "θ", "to": "x"}], "plates": [{"nodes": ["x"], "label": "N"}],
+            "steps": [{"current": "θ", "note": "θ（パラメータ）は観測しない"}, {"current": "x", "note": "枠は「同じものが N 個」。*x*_1 … *x*_N が θ から出る"}]}
+
+def hmm():
+    # Viterbi on a fictional 2-state weather HMM; the trellis draws states × time, the path is taken edge by edge
+    S = ["晴", "雨"]; T = 4
+    A = {"晴": {"晴": 0.7, "雨": 0.3}, "雨": {"晴": 0.4, "雨": 0.6}}
+    B = {"晴": {"散歩": 0.6, "読書": 0.4}, "雨": {"散歩": 0.1, "読書": 0.9}}
+    pi = {"晴": 0.6, "雨": 0.4}; obs = ["散歩", "読書", "読書", "散歩"]
+    V = [{s: pi[s] * B[s][obs[0]] for s in S}]; back = [{}]
+    for t in range(1, T):
+        V.append({}); back.append({})
+        for s in S:
+            best = max(S, key=lambda r: V[t - 1][r] * A[r][s])
+            V[t][s] = V[t - 1][best] * A[best][s] * B[s][obs[t]]; back[t][s] = best
+    last = max(S, key=lambda s: V[T - 1][s]); path = [last]
+    for t in range(T - 1, 0, -1): path.append(back[t][path[-1]])
+    path.reverse()
+    steps = [{"current": path[0] + "@1", "note": "観測：" + "・".join(obs) + "。いちばん確からしい天気の並び（ビタビ）"}]
+    for t in range(1, T):
+        steps.append({"current": path[t] + "@" + str(t + 1), "take": [[path[t - 1] + "@" + str(t), path[t] + "@" + str(t + 1)]], "note": f"時刻 {t + 1}：{path[t]}（{obs[t]}）"})
+    return {"layout": "trellis", "states": S, "T": T, "transitions": [{"from": a, "to": b, "w": A[a][b]} for a in S for b in S], "steps": steps}
+
 for cities in pick_cities():
     t = tsp()
     if any("drop" in st for st in t["steps"]): break
-print(json.dumps({"bfs": bfs("A"), "dijkstra": dijkstra("A", "F"), "tsp": t, "markov": markov()}, ensure_ascii=False))
+print(json.dumps({"bfs": bfs("A"), "dijkstra": dijkstra("A", "F"), "tsp": t, "markov": markov(), "path": path_diagram(), "plate": plate(), "hmm": hmm()}, ensure_ascii=False))

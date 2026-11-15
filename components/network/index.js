@@ -14,7 +14,7 @@
 // 色：今の頂点 --emph（太い輪）、候補 --accent2（点線の輪と下の帯）、訪れた頂点 --muted の塗り、選んだ辺と探索の木 --term、ほかの辺 --line。
 // 確かめること（data）：知らない id、ない辺の take（complete のときを除く）、選んでいない辺の drop、
 // 選んだ辺がすべて重みを持つときに total が重みの和と合わないこと（total.check: false で確かめない）
-egatariParts.define({name: "network", version: "2.0.0", requires: {base: "1.2.0"}, element: "m-network"}, function(deps){
+egatariParts.define({name: "network", version: "2.1.0", requires: {base: "1.2.0"}, element: "m-network"}, function(deps){
 "use strict";
 var base = deps.base;
 var ID = {type: "string"};
@@ -29,16 +29,21 @@ return class extends base.MotionElement {
   static partName = "network";
   static preview = "none";
   static shape = {
-    schema: {type: "object", additionalProperties: false, required: ["nodes", "steps"], properties: {
+    schema: {type: "object", additionalProperties: false, required: ["steps"], anyOf: [{required: ["nodes"]}, {required: ["layout"]}], properties: {
       directed: {type: "boolean"},
       complete: {type: "boolean"},
       stochastic: {type: "boolean"},
       frontierKind: {type: "string", enum: ["queue", "stack", "pq", "set"]},
       total: {type: "object", additionalProperties: false, properties: {label: {type: "string"}, unit: {type: "string"}, digits: {type: "integer"}, check: {type: "boolean"}, of: {type: "string", enum: ["path", "taken"]}}},
       nodes: {type: "array", minItems: 1, maxItems: 24, items: {type: "object", additionalProperties: false, required: ["id", "x", "y"], properties: {
-        id: ID, x: {type: "number"}, y: {type: "number"}, label: {type: "string"}}}},
+        id: ID, x: {type: "number"}, y: {type: "number"}, label: {type: "string"}, shape: {type: "string", enum: ["circle", "ellipse", "box"]}, observed: {type: "boolean"}}}},
       edges: {type: "array", maxItems: 60, items: {type: "object", additionalProperties: false, required: ["from", "to"], properties: {
-        from: ID, to: ID, w: {type: "number"}}}},
+        from: ID, to: ID, w: {type: "number"}, bi: {type: "boolean"}}}},
+      plates: {type: "array", maxItems: 4, items: {type: "object", additionalProperties: false, required: ["nodes"], properties: {nodes: {type: "array", minItems: 1, items: ID}, label: {type: "string"}}}},
+      layout: {type: "string", enum: ["trellis"]},
+      states: {type: "array", minItems: 1, maxItems: 6, items: ID},
+      T: {type: "integer"},
+      transitions: {type: "array", maxItems: 36, items: {type: "object", additionalProperties: false, required: ["from", "to"], properties: {from: ID, to: ID, w: {type: "number"}}}},
       steps: {type: "array", minItems: 1, maxItems: 40, items: {type: "object", additionalProperties: false, properties: {
         current: {type: ["string", "null"]},
         visited: {type: "array", items: ID},
@@ -60,12 +65,25 @@ return class extends base.MotionElement {
     if (this.getAttribute("steps") !== null) return +this.getAttribute("steps");
     return ((this.data || {}).steps || []).length;
   }
+  // 書いたデータ。layout: "trellis"（隠れマルコフモデルの格子）なら、状態 × 時刻の頂点（id は "状態@時刻"）と、隣の時刻への遷移の辺に広げる
+  get net(){
+    if (this._net !== undefined) return this._net;
+    var d = this.data || {};
+    if (d.layout !== "trellis") return (this._net = d);
+    var S = d.states || [], T = Math.max(1, Math.min(8, d.T || 1)), nodes = [], edges = [];
+    for (var t = 1; t <= T; t++) S.forEach(function(s, i){ nodes.push({id: s + "@" + t, x: (t - 1) * 3, y: i * 1.6, label: s}); });
+    for (var t2 = 1; t2 < T; t2++) (d.transitions || []).forEach(function(e){ edges.push({from: e.from + "@" + t2, to: e.to + "@" + (t2 + 1), w: e.w}); });
+    return (this._net = Object.assign({}, d, {nodes: nodes, edges: edges, directed: true, trellisT: T}));
+  }
   // 辺の鍵：向きのないグラフでは [A, B] と [B, A] を同じ辺にする
   key(a, b){ return this.directed || a < b ? a + "\u0000" + b : b + "\u0000" + a; }
   // ステップ 0..N の状態と、確かめた結果。データだけから決める（mount の前にも steps が要る）
   plan(){
     if (this._plan) return this._plan;
-    var self = this, d = this.data || {}, bad = [];
+    var self = this, d = this.net || {}, bad = [];
+    if (!(d.nodes || []).length) bad.push("nodes (or layout: \"trellis\" with states and T) are needed");
+    if (d.layout === "trellis" && !(this.data.states || []).length) bad.push("layout: \"trellis\" needs states");
+    (d.plates || []).forEach(function(pt, i){ (pt.nodes || []).forEach(function(id){ if (!(d.nodes || []).some(function(n){ return n.id === id; })) bad.push("plates[" + i + "]: unknown node \"" + id + "\""); }); });
     this.directed = !!d.directed;
     var ids = {}, edges = {};
     (d.nodes || []).forEach(function(n){ if (ids[n.id]) bad.push("node id \"" + n.id + "\" is used twice"); ids[n.id] = n; });
@@ -151,7 +169,7 @@ return class extends base.MotionElement {
       hasNote: states.some(function(s){ return s.note; })});
   }
   mount(ctx){
-    var P = this.props, D = base, self = this, pl = this.plan(), d = this.data, ja = /^ja\b/i.test(ctx.lang || "ja");
+    var P = this.props, D = base, self = this, pl = this.plan(), d = this.net, ja = /^ja\b/i.test(ctx.lang || "ja");
     this.ja = ja;
     this.style.display = "block"; this.style.position = "relative";
     var W = this.clientWidth, H = this.clientHeight;
@@ -160,17 +178,23 @@ return class extends base.MotionElement {
     if (!(P.size >= 24)){ ctx.report("attr", "[network] size must be ≥ 24 (got " + this.getAttribute("size") + "); using 24"); P.size = 24; }
     pl.bad.forEach(function(m){ ctx.report("data", "[network] " + m); });
     var fs = P.size, tw = function(s){ return D.textWidth(s, fs, {font: self}); };
+    // mtext の記法（*x*_i など）があるときだけ mtext で書く（ない字はこれまでどおり）。幅は記号を除いて測る
+    var MARK = /\*[^*\s][^*]*\*|[_^]\S/, plain = function(s){ return s.replace(/\*([^*\s][^*]*)\*/g, "$1").replace(/[_^](\S)/g, "$1"); };
+    this.MARK = MARK;
     // 下の帯：1 段目は候補の並びと合計、2 段目はステップの説明
     var rowH = Math.ceil(fs * 1.75), rows = (pl.hasFrontier || pl.hasTotal ? 1 : 0) + (pl.hasNote ? 1 : 0);
     var band = rows ? rows * rowH + 10 : 0;
     // 頂点の大きさ：字の幅 + 余白。短い名前は円、長い名前は角の丸い箱
     var nh = Math.ceil(fs * 1.75), nodes = d.nodes.map(function(n){
       var lab = n.label !== undefined ? n.label : n.id;
-      return {n: n, lab: lab, w: Math.max(nh, Math.ceil(tw(lab)) + 24), h: nh};
+      var sh = n.shape || "circle", lw = tw(MARK.test(lab) ? plain(lab) : lab);
+      return {n: n, lab: lab, sh: sh, w: sh === "ellipse" ? Math.max(Math.ceil(nh * 1.5), Math.ceil(lw) + 36) : Math.max(nh, Math.ceil(lw) + 24), h: nh};
     });
     var pad = 8, gx0 = pad, gx1 = W - pad, gy0 = pad, gy1 = H - band - pad;
     var hasLoop = Object.keys(pl.edges).some(function(k){ return pl.edges[k].from === pl.edges[k].to; });
-    var mw = Math.max.apply(null, nodes.map(function(o){ return o.w; })) / 2 + 6 + (hasLoop ? nh * 1.6 : 0), mh = nh / 2 + 6 + (hasLoop ? nh * 1.6 : 0);
+    var plateM = (d.plates || []).length ? Math.ceil(fs * 1.3) + 18 : 0, timeRow = d.trellisT ? Math.ceil(fs * 1.5) : 0;
+    gy0 += timeRow;
+    var mw = Math.max.apply(null, nodes.map(function(o){ return o.w; })) / 2 + 6 + (hasLoop ? nh * 1.6 : 0) + plateM, mh = nh / 2 + 6 + (hasLoop ? nh * 1.6 : 0) + plateM;
     var xs = d.nodes.map(function(n){ return n.x; }), ys = d.nodes.map(function(n){ return n.y; });
     var x0 = Math.min.apply(null, xs), x1 = Math.max.apply(null, xs), y0 = Math.min.apply(null, ys), y1 = Math.max.apply(null, ys);
     var aw = gx1 - gx0 - 2 * mw, ah = gy1 - gy0 - 2 * mh;
@@ -194,7 +218,8 @@ return class extends base.MotionElement {
     }
     // 辺の形：点の列（頂点の縁から縁まで）。直線、向きの逆の辺もあるときの弧、自己ループ
     var cutAt = function(o, ux, uy){
-      if (o.w <= o.h + 0.5) return o.h / 2;
+      if (o.sh === "ellipse") return 1 / Math.sqrt(Math.pow(ux / (o.w / 2), 2) + Math.pow(uy / (o.h / 2), 2));
+      if (o.w <= o.h + 0.5 && o.sh !== "box") return o.h / 2;
       var tx = Math.abs(ux) > 1e-9 ? (o.w / 2) / Math.abs(ux) : Infinity, ty = Math.abs(uy) > 1e-9 ? (o.h / 2) / Math.abs(uy) : Infinity;
       return Math.min(tx, ty);
     };
@@ -268,6 +293,24 @@ return class extends base.MotionElement {
       var L = Math.hypot(p.x - o.x, p.y - o.y) || 1;
       return {x: q[n - 1].x, y: q[n - 1].y, ux: (p.x - o.x) / L, uy: (p.y - o.y) / L};
     };
+    // 板（plate）：頂点の組を囲む角の丸い枠、右下の隅に N。いちばん下の層に
+    var gPl = D.el("g", {}, svg);
+    this.plateLabels = [];
+    (d.plates || []).forEach(function(pt){
+      var os = (pt.nodes || []).map(function(id){ return at[id]; }).filter(Boolean);
+      if (!os.length) return;
+      var x0 = Math.min.apply(null, os.map(function(o){ return o.x - o.w / 2; })) - 14, x1 = Math.max.apply(null, os.map(function(o){ return o.x + o.w / 2; })) + 14;
+      var y0 = Math.min.apply(null, os.map(function(o){ return o.y - o.h / 2; })) - 14, y1 = Math.max.apply(null, os.map(function(o){ return o.y + o.h / 2; })) + (pt.label ? Math.ceil(fs * 1.3) + 10 : 14);
+      D.el("rect", {x: x0.toFixed(1), y: y0.toFixed(1), width: (x1 - x0).toFixed(1), height: (y1 - y0).toFixed(1), rx: 12, fill: "none", stroke: "var(--fg)", "stroke-width": 1.5}, gPl);
+      if (pt.label){ var lt = D.el("text", {x: (x1 - 10).toFixed(1), y: (y1 - 10).toFixed(1), "font-size": fs, "text-anchor": "end", fill: "var(--fg)"}, gPl); lt.textContent = pt.label; self.plateLabels.push(lt); }
+    });
+    // 格子（trellis）：列の上に時刻
+    if (d.trellisT) for (var tt = 1; tt <= d.trellisT; tt++){
+      var col = nodes.filter(function(o){ return /@(\d+)$/.exec(o.n.id) && +/@(\d+)$/.exec(o.n.id)[1] === tt; });
+      if (!col.length) continue;
+      var ty = Math.min.apply(null, col.map(function(o){ return o.y - o.h / 2; })) - 12, tl = D.el("text", {x: col[0].x.toFixed(1), y: ty.toFixed(1), "font-size": fs, "text-anchor": "middle", fill: "var(--muted)"}, gPl);
+      tl.textContent = "t = " + tt;
+    }
     var gE = D.el("g", {}, svg), gT = D.el("g", {}, svg), gC = D.el("g", {}, svg), gN = D.el("g", {}, svg), gW = D.el("g", {}, svg), gB = D.el("g", {}, svg);
     var headD = this.headD = function(pts, f, wd){
       var e = at2(pts, f), s = 10 + wd, x = e.x, y = e.y, px = -e.uy, py = e.ux;
@@ -283,8 +326,10 @@ return class extends base.MotionElement {
     this.wlabels = [];
     Object.keys(pl.edges).forEach(function(k){
       var e = pl.edges[k], pts = geom(e.from, e.to);
-      D.el("path", {d: pathD(pts), fill: "none", stroke: "var(--line)", "stroke-width": 2.5}, gE);
-      if (self.directed) arrow(gE, pts, "var(--line)", 2.5);
+      // 双方向の辺（bi：潜在の交絡）は破線で両端に矢じり
+      D.el("path", Object.assign({d: pathD(pts), fill: "none", stroke: "var(--line)", "stroke-width": 2.5}, e.bi ? {"stroke-dasharray": "8 6"} : {}), gE);
+      if (self.directed || e.bi) arrow(gE, pts, "var(--line)", 2.5);
+      if (e.bi) arrow(gE, pts.slice().reverse(), "var(--line)", 2.5);
       if (!P.weights || typeof e.w !== "number") return;
       var s = fmt(e.w, decimals(e.w)), w = tw(s) + 8, h = fs + 6, best = null, loop = e.from === e.to;
       (loop ? [0.5] : [0.5, 0.38, 0.62, 0.28, 0.72]).some(function(f){
@@ -324,14 +369,16 @@ return class extends base.MotionElement {
     nodes.forEach(function(o){
       var rect = function(grow, attrs){
         var w = o.w + 2 * grow, h = o.h + 2 * grow;
-        return D.el("rect", Object.assign({x: (o.x - w / 2).toFixed(1), y: (o.y - h / 2).toFixed(1), width: w.toFixed(1), height: h.toFixed(1), rx: (h / 2).toFixed(1)}, attrs), gN);
+        var shp = o.sh === "ellipse" ? {rx: (w / 2).toFixed(1), ry: (h / 2).toFixed(1)} : o.sh === "box" ? {rx: 6} : {rx: (h / 2).toFixed(1)};
+        return D.el("rect", Object.assign({x: (o.x - w / 2).toFixed(1), y: (o.y - h / 2).toFixed(1), width: w.toFixed(1), height: h.toFixed(1)}, shp, attrs), gN);
       };
-      rect(0, {fill: "var(--bg)", stroke: "var(--fg)", "stroke-width": 2});
+      // 観測した変数（observed）は塗る（グラフィカルモデルの習わし）
+      rect(0, {fill: o.n.observed ? "var(--line)" : "var(--bg)", stroke: "var(--fg)", "stroke-width": 2});
       o.vis = rect(0, {fill: "var(--muted)", opacity: 0});
       o.fr = rect(6, {fill: "none", stroke: "var(--accent2)", "stroke-width": 4, "stroke-dasharray": "8 6", opacity: 0});
       o.cur = rect(4, {fill: "none", stroke: "var(--emph)", "stroke-width": 7, opacity: 0});
-      var t = D.el("text", {x: o.x.toFixed(1), y: (o.y + fs * 0.36).toFixed(1), "font-size": fs, "text-anchor": "middle", fill: "var(--fg)"}, gN);
-      t.textContent = o.lab;
+      if (MARK.test(o.lab)) D.mtext(gN, o.x, o.y + fs * 0.36, o.lab, {"font-size": fs, "text-anchor": "middle", fill: "var(--fg)"});
+      else { var t = D.el("text", {x: o.x.toFixed(1), y: (o.y + fs * 0.36).toFixed(1), "font-size": fs, "text-anchor": "middle", fill: "var(--fg)"}, gN); t.textContent = o.lab; }
     });
     this.nodes = nodes;
     // 下の帯
@@ -360,6 +407,9 @@ return class extends base.MotionElement {
     }
     if (pl.hasNote){
       this.noteText = D.el("text", {x: 4, y: this.band.y2.toFixed(1), "font-size": fs, fill: "var(--fg)", opacity: 0}, gB);
+      // 記法のある説明は、その説明ごとに mtext で作っておき、そのステップで出す
+      this.markNotes = {};
+      pl.states.forEach(function(st2, k2){ if (st2.note && MARK.test(st2.note)) self.markNotes[k2] = D.mtext(gB, 4, self.band.y2, st2.note, {"font-size": fs, fill: "var(--fg)", opacity: 0}); });
       var long = [];
       pl.states.forEach(function(s, k){ if (s.note && tw(s.note) > W - 8) long.push(k); });
       if (long.length) ctx.report("layout", "[network] the note of step " + long.join(", ") + " is wider than the element (" + W + " px); shorten it (it is cut with …)");
@@ -378,12 +428,12 @@ return class extends base.MotionElement {
     function decimals(v){ var x = String(v).split(".")[1]; return x ? Math.min(3, x.length) : 0; }
   }
   totalString(v){
-    var u = this.data.total && this.data.total.unit ? this.data.total.unit : "";
+    var u = this.net.total && this.net.total.unit ? this.net.total.unit : "";
     return this.totalLabel + " " + fmt(v, this.plan().digits) + (u ? " " + u : "");
   }
   // 読み上げ：頂点と辺の数、最後に選んだ辺、合計
   summary(ja){
-    var pl = this.plan(), d = this.data, last = pl.states[pl.states.length - 1], self = this;
+    var pl = this.plan(), d = this.net, last = pl.states[pl.states.length - 1], self = this;
     var ne = Object.keys(pl.edges).length;
     var s = ja ? "グラフ（頂点 " + d.nodes.length + "、辺 " + ne + "）" : "Graph (" + d.nodes.length + " nodes, " + ne + " edges)";
     var ch = Object.keys(last.chosen).map(function(k){ return last.chosen[k].join(self.directed ? "→" : "–"); });
@@ -484,8 +534,10 @@ return class extends base.MotionElement {
       });
     }
     if (this.noteText){
-      this.noteText.textContent = cur.note ? this.fit(cur.note, this.band.W - 8) : "";
-      this.noteText.setAttribute("opacity", cur.note ? (k === 0 ? 1 : D.prog(t, 0, tm.fade)).toFixed(3) : 0);
+      var mk = this.markNotes[k], no = cur.note ? (k === 0 ? 1 : D.prog(t, 0, tm.fade)).toFixed(3) : 0;
+      this.noteText.textContent = cur.note && !mk ? this.fit(cur.note, this.band.W - 8) : "";
+      this.noteText.setAttribute("opacity", mk ? 0 : no);
+      for (var mkk in this.markNotes) this.markNotes[mkk].setAttribute("opacity", +mkk === k ? no : 0);
     }
     function decimals(v){ var x = String(v).split(".")[1]; return x ? Math.min(3, x.length) : 0; }
   }

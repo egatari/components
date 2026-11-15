@@ -1,7 +1,7 @@
 ---
 name: m-network
 display: グラフの探索 / Graph search
-version: 2.0.0
+version: 2.1.0
 series: info
 tier: specialized
 set: algo
@@ -11,7 +11,7 @@ purposes: process, model
 props: dur, size, weights
 ---
 
-状態と合計は、探索を走らせたスクリプトの出力を書く。高さは本文がこの図だけなら 440px、上に文があれば 380px。書かない欄は前のステップのまま。優先度付きの `frontier` は `[["C", 3]]`、`take`・`drop` は選んだ辺を増減する。`total` は `parent` があれば `current` までの道のり、なければ選んだ辺の `w` の和（`w` は `total` と同じ桁で書く）。数など和でない `total` には `total.check: false`。
+状態と合計は、探索を走らせたスクリプトの出力を書く。高さは本文がこの図だけなら 440px、上に文があれば 380px。書かない欄は前のステップのまま。優先度付きの `frontier` は `[["C", 3]]`、`take`・`drop` は選んだ辺を増減する。`total` は `parent` があれば `current` までの道のり、なければ選んだ辺の `w` の和（`w` は `total` と同じ桁で書く）。数など和でない `total` には `total.check: false`。グラフィカルモデル・パス図：node の `shape`（`ellipse`・`box`）と `observed`、辺の `bi`、`plates`。HMM の格子は `layout: "trellis"`。
 
 <!-- llm: omit -->
 幅優先探索・深さ優先探索・ダイクストラ法・巡回セールスマン問題の近似（最近傍法、2-opt）など、グラフの上で手順を 1 つずつ進める様子を見せるときに使う。
@@ -30,6 +30,9 @@ props: dur, size, weights
 - 色：今の頂点 `--emph` の太い輪、候補 `--accent2` の点線の輪（グラフの下の行にも並べる）、訪れた頂点 `--muted` の塗り、選んだ辺と探索の木（`parent`、矢印）`--term`、ほかの辺 `--line`。色だけに頼らず、輪の形と下の行で区別できる
 - 時間：`drop` が消え（`dur` の半分）、`take` を書いた順に 1 本ずつ端から端へ引く。頂点の色は `dur` の半分で変わる。合計はステップの間に数え上げる
 - 上限：頂点 24、辺 60、ステップ 40。頂点が重なる・重みの置き場がない・説明が長いときは layout、枠が小さいときは size で知らせる
+- グラフィカルモデル・パス図（2.1.0）：node の `shape` は `circle`（既定）・`ellipse`（潜在変数）・`box`（観測した変数）。`observed: true` で塗る（グラフィカルモデルの習わし）。辺の `bi: true` は両端に矢じりの破線（測っていない共通の原因、交絡）。`plates: [{"nodes": [...], "label": "N"}]` はその頂点を囲む角の丸い枠と、右下の隅の N
+- HMM の格子（2.1.0）：`layout: "trellis"`、`states`（状態の名前）、`T`（時刻の数）、`transitions`（`from`・`to`・`w`）で、座標を書かずに状態 × 時刻に並べる。頂点の id は `"状態@時刻"`（steps の `take` などで使う）。列の上に「t = 1」…
+- 頂点の名前と説明は mtext の記法（`*x*_i`）が使える
 - 先のステップは薄く見せない（答えになるので）
 <!-- llm: end -->
 

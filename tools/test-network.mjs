@@ -67,6 +67,22 @@ const tsp1 = {nodes: [{id: 'P', x: 0, y: 0}, {id: 'Q', x: 2, y: 1}, {id: 'R', x:
 ok(!make(tsp1).reports.some((r) => r.code === 'data'), 'rounded w (1 decimal) with an exact total: within 3 × 0.05');
 ok(make({...tsp1, steps: [{...tsp1.steps[0], total: 6.7}]}).reports.some((r) => r.code === 'data'), 'beyond the shown precision still reports');
 ok(!make({...dij, total: {of: 'taken'}, steps: [{current: 'A', parent: {B: 'A'}, take: [['A', 'C'], ['C', 'B']], total: 3}]}).reports.some((r) => r.code === 'data'), 'total.of taken overrides the parent default');
+const pgm = {directed: true, nodes: [{id: 'Z', x: 0, y: 0, shape: 'ellipse'}, {id: 'X', x: 4, y: 0, shape: 'box', observed: true}, {id: 'U', x: 2, y: 3, shape: 'box'}],
+  edges: [{from: 'Z', to: 'X', w: 0.8}, {from: 'U', to: 'Z', bi: true}], plates: [{nodes: ['X'], label: 'N'}], steps: [{current: 'Z'}]};
+const pg = make(pgm, {}, {clientHeight: 480});
+ok(pg.reports.length === 0, 'graphical model: shapes, observed, bidirected edge and a plate draw without reports: ' + JSON.stringify(pg.reports));
+const Z = pg.el.at.Z, X = pg.el.at.X;
+ok(Z.w > Z.h && Z.sh === 'ellipse' && X.sh === 'box', 'ellipse is wider than tall; box shape kept');
+ok(pg.el.plateLabels.length === 1 && pg.el.plateLabels[0].textContent === 'N', 'plate drawn with its label');
+ok(make({...pgm, plates: [{nodes: ['Q']}]}).reports.some((r) => r.msg.includes('plates[0]: unknown node "Q"')), 'plate with an unknown node reports data');
+const tr = {layout: 'trellis', states: ['H', 'R'], T: 3, transitions: [{from: 'H', to: 'H', w: 0.7}, {from: 'H', to: 'R', w: 0.3}, {from: 'R', to: 'H', w: 0.4}, {from: 'R', to: 'R', w: 0.6}],
+  steps: [{current: 'H@1'}, {current: 'R@2', take: [['H@1', 'R@2']]}]};
+const tg = make(tr, {}, {clientHeight: 480});
+ok(tg.reports.length === 0 && tg.el.nodes.length === 6 && Object.keys(tg.el.plan().edges).length === 8, 'trellis: 2 states × 3 times, 4 transitions × 2 gaps: ' + JSON.stringify(tg.reports));
+ok(tg.el.at['H@1'].x < tg.el.at['H@2'].x && tg.el.at['H@1'].y < tg.el.at['R@1'].y, 'trellis: time to the right, states down');
+ok(make({layout: 'trellis', T: 3, steps: [{}]}).reports.some((r) => r.msg.includes('needs states')), 'trellis without states reports data');
+common(pg.el, 'graphical model', pgm);
+common(tg.el, 'trellis', tr);
 const attrs = make(data, {dur: -1, size: 20});
 ok(attrs.reports.filter((r) => r.code === 'attr').length === 2 && attrs.el.props.size === 24, 'bad props report/default');
 for (const lang of ['ja', 'en']) {

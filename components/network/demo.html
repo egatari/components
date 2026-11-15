@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>m-network の見本</title>
-<!-- 組み方：node kit/build.mjs components/network/demo.html -o components/network/out/demo.html（グラフと数値は架空。状態・合計・確率は python3 tools/network-demo.py の出力） -->
+<!-- 組み方：node kit/build.mjs components/network/demo.html -o components/network/out/demo.html（グラフと数値は架空。状態・合計・確率・係数は python3 tools/network-demo.py の出力） -->
 <style>
 </style>
 </head>
@@ -104,6 +104,68 @@
             {"current": "曇", "take": [["曇", "曇"]], "total": 0.12, "note": "曇 → 曇（確率 0.4）", "drop": [["晴", "曇"]]},
             {"current": "曇", "take": [["曇", "曇"]], "total": 0.048, "note": "曇 → 曇（確率 0.4）", "drop": [["曇", "曇"]]},
             {"current": "雨", "take": [["曇", "雨"]], "total": 0.0096, "note": "曇 → 雨（確率 0.2）", "drop": [["曇", "曇"]]}
+          ]
+        }
+      </script>
+    </m-network>
+  </div>
+</section>
+
+<section class="slide noconcl">
+  <h2>パス図：潜在変数と観測した変数（架空）</h2>
+  <div class="body">
+    <m-network style="height:540px">
+      <script type="application/json">
+        {
+          "directed": true,
+          "nodes": [{"id": "意欲", "x": 0, "y": 1, "shape": "ellipse"}, {"id": "学力", "x": 4, "y": 1, "shape": "ellipse"}, {"id": "国語", "x": 8, "y": 0, "shape": "box", "observed": true}, {"id": "数学", "x": 8, "y": 1, "shape": "box", "observed": true}, {"id": "英語", "x": 8, "y": 2, "shape": "box", "observed": true}, {"id": "家庭", "x": 0, "y": 3, "shape": "box", "observed": true}],
+          "edges": [{"from": "意欲", "to": "学力", "w": 0.45}, {"from": "学力", "to": "国語", "w": 0.82}, {"from": "学力", "to": "数学", "w": 0.75}, {"from": "学力", "to": "英語", "w": 0.79}, {"from": "家庭", "to": "意欲", "w": 0.3, "bi": true}],
+          "steps": [
+            {"current": "学力", "note": "楕円は潜在変数（直接は測れない）"},
+            {"current": "数学", "note": "塗った四角は観測した変数。矢印の数は係数（架空）"},
+            {"current": "家庭", "note": "両向きの破線は、測っていない共通の原因（交絡）"}
+          ]
+        }
+      </script>
+    </m-network>
+  </div>
+</section>
+
+<section class="slide noconcl">
+  <h2>プレート表記：同じものが N 個</h2>
+  <div class="body">
+    <m-network style="height:360px;width:640px;margin:0 auto">
+      <script type="application/json">
+        {
+          "directed": true,
+          "nodes": [{"id": "θ", "x": 0, "y": 0, "shape": "circle"}, {"id": "x", "x": 3, "y": 0, "label": "*x*_i", "observed": true}],
+          "edges": [{"from": "θ", "to": "x"}],
+          "plates": [{"nodes": ["x"], "label": "N"}],
+          "steps": [
+            {"current": "θ", "note": "θ（パラメータ）は観測しない"},
+            {"current": "x", "note": "枠は「同じものが N 個」。*x*_1 … *x*_N が θ から出る"}
+          ]
+        }
+      </script>
+    </m-network>
+  </div>
+</section>
+
+<section class="slide noconcl">
+  <h2>隠れマルコフモデルの格子とビタビ（架空）</h2>
+  <div class="body">
+    <m-network style="height:540px">
+      <script type="application/json">
+        {
+          "layout": "trellis",
+          "states": ["晴", "雨"],
+          "T": 4,
+          "transitions": [{"from": "晴", "to": "晴", "w": 0.7}, {"from": "晴", "to": "雨", "w": 0.3}, {"from": "雨", "to": "晴", "w": 0.4}, {"from": "雨", "to": "雨", "w": 0.6}],
+          "steps": [
+            {"current": "晴@1", "note": "観測：散歩・読書・読書・散歩。いちばん確からしい天気の並び（ビタビ）"},
+            {"current": "雨@2", "take": [["晴@1", "雨@2"]], "note": "時刻 2：雨（読書）"},
+            {"current": "雨@3", "take": [["雨@2", "雨@3"]], "note": "時刻 3：雨（読書）"},
+            {"current": "晴@4", "take": [["雨@3", "晴@4"]], "note": "時刻 4：晴（散歩）"}
           ]
         }
       </script>
