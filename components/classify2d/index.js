@@ -8,7 +8,7 @@
 // （JSON の終わり）</m-classify2d>
 // 格子：x は range を nx 点、y は ny 点に等分した点（両端を含む。numpy の linspace と meshgrid）。labels と fields の値は行ごと
 // （行 0 が y の最小）。labels は 2 次元の配列か「クラス*個数」を空白で区切った行の順の続け書き。
-// 色：クラスごとに --series-1..4 と点の形（○・□・△・◇。色だけに頼らない）、領域はその色の薄い塗り、境界と等高線 --fg、
+// 色：クラスごとに CLASS_COLORS（--series-1・--series-3・--fg・--series-4）と点の形（○・□・△・◇。色だけに頼らない）、領域はその色の薄い塗り、境界と等高線 --fg、
 // サポートベクトルの輪 --fg（クラスの色と --emph が近いテーマでも紛れない）、k 平均法の重心は × の印。
 egatariParts.define({name: "classify2d", version: "2.0.0", requires: {base: "1.2.0", "contour-core": "1.0.0"}, element: "m-classify2d"}, function(deps){
 "use strict";
@@ -16,6 +16,9 @@ var base = deps.base, D = base, K = deps["contour-core"], clipN = 0;
 var NUM = {type: "number"}, PT = {type: "array", minItems: 2, maxItems: 3, items: {type: ["number", "null"]}};
 var CAP = {classes: 4, points: 300, nx: 160, ny: 120, seeds: 40, nodes: 31, iters: 10, levels: 5};
 var SHAPES = ["circle", "square", "triangle", "diamond"];
+// クラスの色の並び（m-folds の classes と同じ。1 つの意味に 1 つの色）：--series-2 は印の色 --emph と同じテーマがあるので使わない。
+// 既定のテーマでは --series-3 = --accent2、--series-4 = --muted なので、3 つ目は --fg（4 つ目の --muted は、k 平均法のまだ割り当てていない点と同じ色）
+var CLASS_COLORS = ["var(--series-1)", "var(--series-3)", "var(--fg)", "var(--series-4)"];
 var T = {
   ja: {summary: function(c, n){ return "分類の図：クラス " + c.join("・") + "、点 " + n + " 個"; }, regions: "領域", tree: "決定木の分割", kmeans: function(n){ return "k 平均法（" + n + " 回の繰り返し）"; }, sv: "サポートベクトル"},
   en: {summary: function(c, n){ return "Classification: classes " + c.join(", ") + "; " + n + " points"; }, regions: "regions", tree: "decision tree splits", kmeans: function(n){ return "k-means (" + n + " iterations)"; }, sv: "support vectors"}
@@ -55,7 +58,7 @@ return class extends base.MotionElement {
     points: {type: "array", minItems: 1, maxItems: 300, items: PT},
     grid: {type: "object", additionalProperties: false, required: ["nx", "ny"], properties: {nx: {type: "integer"}, ny: {type: "integer"}, labels: {type: ["string", "array"]}}},
     fields: {type: "array", maxItems: 2, items: {type: "object", additionalProperties: false, required: ["values", "levels"], properties: {
-      name: {type: "string"}, values: {type: "array"}, levels: {type: "array", minItems: 1, maxItems: 5, items: NUM}, style: {type: "array", items: {type: "string", enum: ["solid", "dash"]}}, labels: {type: "boolean"}}}},
+      name: {type: "string"}, class: {type: "integer"}, values: {type: "array"}, levels: {type: "array", minItems: 1, maxItems: 5, items: NUM}, style: {type: "array", items: {type: "string", enum: ["solid", "dash"]}}, labels: {type: "boolean"}}}},
     sv: {type: "array", items: {type: "integer"}},
     voronoi: {type: "object", additionalProperties: false, required: ["seeds"], properties: {seeds: {type: "array", minItems: 1, maxItems: 40, items: PT}}},
     tree: {type: "object", additionalProperties: false, required: ["nodes"], properties: {nodes: {type: "array", minItems: 1, maxItems: 31, items: {type: "object", additionalProperties: false, required: ["id"], properties: {
@@ -94,6 +97,7 @@ return class extends base.MotionElement {
     var fields = (d.fields || []).map(function(f, i){
       var ok = d.grid && Array.isArray(f.values) && f.values.length === d.grid.ny && f.values.every(function(r){ return Array.isArray(r) && r.length === d.grid.nx && r.every(function(v){ return typeof v === "number"; }); });
       if (!ok) bad.push("fields[" + i + "].values must be ny × nx numbers (a grid is needed)");
+      if (f.class !== undefined && !known(f.class)) bad.push("fields[" + i + "].class: " + f.class + " is not in classes");
       return ok ? f : null;
     }).filter(Boolean);
     (d.sv || []).forEach(function(n){ if (!(n >= 0 && n < pts.length)) bad.push("sv: " + n + " is not a point index (0–" + (pts.length - 1) + ")"); });
@@ -173,7 +177,7 @@ return class extends base.MotionElement {
     if (pw < 200 || ph < 150) ctx.report("size", "[classify2d] element is " + W + " × " + H + " px; allow at least " + Math.ceil(m.l + m.r + 200) + " × " + Math.ceil(m.t + m.b + 150) + " px");
     var X = function(x){ return px + (x - rx[0]) / (rx[1] - rx[0]) * pw; }, Y = function(y){ return py + (ry[1] - y) / (ry[1] - ry[0]) * ph; };
     this.geo = {X: X, Y: Y, px: px, py: py, pw: pw, ph: ph, rect: [rx[0], rx[1], ry[0], ry[1]]};
-    var colOf = function(c){ var i = pl.cls[c]; return i === undefined ? "var(--muted)" : "var(--series-" + (i + 1) + ")"; };
+    var colOf = function(c){ var i = pl.cls[c]; return i === undefined ? "var(--muted)" : CLASS_COLORS[i]; };
     this.colOf = colOf;
     this.setAttribute("role", "img");
     if (this._aria === undefined) this._aria = this.getAttribute("aria-label");
@@ -264,13 +268,13 @@ return class extends base.MotionElement {
     });
     pl.leaves.forEach(function(lf){ D.el("rect", {x: X(lf.r[0]), y: Y(lf.r[3]), width: X(lf.r[1]) - X(lf.r[0]), height: Y(lf.r[2]) - Y(lf.r[3]), fill: colOf(lf.cls), "fill-opacity": 0.2}, self.leafG); });
     // k 平均法のセル（重心のボロノイ図。描くたびに重心から計算）
-    if (pl.km){ this.kmCells = pl.km[0].centroids.map(function(_, c){ return D.el("path", {fill: "var(--series-" + (c + 1) + ")", "fill-opacity": 0.18, stroke: "var(--fg)", "stroke-width": 2, opacity: 0}, self.kmG); }); }
+    if (pl.km){ this.kmCells = pl.km[0].centroids.map(function(_, c){ return D.el("path", {fill: CLASS_COLORS[c], "fill-opacity": 0.18, stroke: "var(--fg)", "stroke-width": 2, opacity: 0}, self.kmG); }); }
     // 点
     var ptG = this.ptG = D.el("g", {opacity: 0}, svg);
     this.ptEls = d.points.map(function(p){ return self.marker(ptG, X(p[0]), Y(p[1]), pl.km ? -1 : pl.cls[p[2]], pl.km ? "var(--muted)" : colOf(p[2]), mr); });
     this.svG = D.el("g", {opacity: 0}, svg);
     (d.sv || []).forEach(function(n){ var p = d.points[n]; if (p) D.el("circle", {cx: X(p[0]), cy: Y(p[1]), r: mr + 7, fill: "none", stroke: "var(--fg)", "stroke-width": 3}, self.svG); });
-    if (pl.km) this.cEls = pl.km[0].centroids.map(function(_, c){ var g = D.el("g", {opacity: 0}, svg); D.el("path", {d: "M-12 -12L12 12M-12 12L12 -12", stroke: "var(--bg)", "stroke-width": 9, "stroke-linecap": "round"}, g); D.el("path", {d: "M-12 -12L12 12M-12 12L12 -12", stroke: "var(--series-" + (c + 1) + ")", "stroke-width": 5, "stroke-linecap": "round"}, g); return g; });
+    if (pl.km) this.cEls = pl.km[0].centroids.map(function(_, c){ var g = D.el("g", {opacity: 0}, svg); D.el("path", {d: "M-12 -12L12 12M-12 12L12 -12", stroke: "var(--bg)", "stroke-width": 9, "stroke-linecap": "round"}, g); D.el("path", {d: "M-12 -12L12 12M-12 12L12 -12", stroke: CLASS_COLORS[c], "stroke-width": 5, "stroke-linecap": "round"}, g); return g; });
     if (d.points.length * Math.PI * mr * mr > pw * ph * 0.35) ctx.report("layout", "[classify2d] " + d.points.length + " points cover more than a third of the plot at marker " + mr + " px; use a smaller marker or fewer points");
   }
   // クラスの印：○・□・△・◇（クラスの順）。i < 0 は印なしの○
@@ -311,7 +315,7 @@ return class extends base.MotionElement {
       var first = ph(0) > 0 ? 1 : 0;
       this.cEls.forEach(function(g, j){ var c = cs[j]; g.setAttribute("transform", "translate(" + G.X(c[0]).toFixed(1) + " " + G.Y(c[1]).toFixed(1) + ")"); g.setAttribute("opacity", first); });
       this.kmCells.forEach(function(p, j){ var poly = cell(cs, j, G.rect); p.setAttribute("d", poly.length > 2 ? "M" + poly.map(function(v){ return G.X(v[0]).toFixed(1) + " " + G.Y(v[1]).toFixed(1); }).join("L") + "Z" : ""); p.setAttribute("opacity", showCells.toFixed(3)); });
-      this.ptEls.forEach(function(e, n){ e.setAttribute("style", "fill:" + (assign ? "var(--series-" + (assign[n] + 1) + ")" : "var(--muted)")); });
+      this.ptEls.forEach(function(e, n){ e.setAttribute("style", "fill:" + (assign ? CLASS_COLORS[assign[n]] : "var(--muted)")); });
     }
   }
 };

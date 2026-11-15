@@ -11,9 +11,9 @@ example: {"axes":{"x":{"label":"x₁","range":[0,4]},"y":{"label":"x₂","range"
 From `uv run tools/sk2ega.py <module> data.csv --fit "Est(args)"`.
 <!-- llm: omit -->
 - Modules: linear_model, svm, neighbors, tree, ensemble, cluster. `--fit` reads names and literals only; `--model` loads a pickle (runs code; your own files only).
-- `grid.labels`: predict over linspace/meshgrid, row 0 = min y. `fields`: proba or decision with `levels`. `sv`: point indices.
+- `grid.labels`: predict over linspace/meshgrid, row 0 = min y. `fields`: proba or decision with `levels`; `class` is the class the values are for (the positive side for decision). With 2 classes sk2ega.py writes the probability of the second class in sorted order (`predict_proba[:, 1]`) and says so in `class` and `name` (e.g. `P(defective)`). `sv`: point indices.
 - `voronoi` seeds: cells computed by the part. `tree`: splits drawn in parent cells, ids as in m-tree. `kmeans`: assignments and means checked.
-- Classes: series colours and marker shapes. No preview of later steps.
+- Classes: `--series-1`, `--series-3`, `--fg`, `--series-4` in that order (the same order as m-folds; `--series-2`, close to the marker colour `--emph`, is not used) and marker shapes. No preview of later steps.
 <!-- llm: end -->
 
 Demo: `demo.html` (fictional data from `tools/classify2d-demo.py`).

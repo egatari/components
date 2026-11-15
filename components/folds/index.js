@@ -12,7 +12,7 @@ var TEXT = {
 };
 function set(e, a, v){ e.setAttribute(a, String(v)); }
 function fmt(v){ return v.toFixed(2); }
-var PAL = ["var(--series-1)", "var(--series-3)", "var(--series-4)", "var(--accent2)"];
+var PAL = ["var(--series-1)", "var(--series-3)", "var(--fg)", "var(--series-4)"];   // m-classify2d の CLASS_COLORS と同じ並び
 return class extends base.MotionElement {
   static partName = "folds";
   static preview = "none";
@@ -111,7 +111,7 @@ return class extends base.MotionElement {
     set(this.finalLayer, "opacity", phase(this.model.k + 1));
   }
   // 標本のモード（2.1.0）：列が標本、行が分割。データの確かめと描き方。クラスの色は --emph（検証の枠）と同じ色にならないよう
-  // --series-2 を飛ばす（1 つの意味に 1 つの色）
+  // --series-2 を飛ばす（1 つの意味に 1 つの色）。m-classify2d の CLASS_COLORS と同じ並び
   mountSamples(ctx){
     var self = this, d = this.data, T = this.T, sp = d.splits, kind = d.splitter || "";
     var n = d.samples ? d.samples.length : 1 + Math.max.apply(null, [].concat.apply([], sp.map(function(s){ return s.test.concat(s.train || []); })).concat([0]));

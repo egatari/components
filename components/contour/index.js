@@ -112,13 +112,15 @@ return class extends base.MotionElement {
     tx.ticks.forEach(function(v){ D.el("line", {x1: X(v), y1: py, x2: X(v), y2: py + ph, stroke: "var(--line)", "stroke-width": 1, opacity: 0.6}, gridG); });
     ty.ticks.forEach(function(v){ D.el("line", {x1: px, y1: Y(v), x2: px + pw, y2: Y(v), stroke: "var(--line)", "stroke-width": 1, opacity: 0.6}, gridG); });
     D.el("rect", {x: px, y: py, width: pw, height: ph, fill: "none", stroke: "var(--muted)", "stroke-width": 2}, svg);
-    var xLabW = d.axes && d.axes.x ? tw(d.axes.x.replace(/[*_^]/g, "")) + 12 : 0;
+    // 軸の名前は、添え字（*w*_1）があれば 32px 以上で組む（mtext の添え字は 24px より小さくしないので、本文が 24px だと同じ大きさに見える）
+    var axFs = function(t){ return /(^|[^\\])[_^]./.test(t) ? Math.max(fs, 32) : fs; };
+    var xLabW = d.axes && d.axes.x ? base.textWidth(d.axes.x.replace(/[*_^]/g, ""), axFs(d.axes.x), {font: self}) + 12 : 0;
     tx.ticks.forEach(function(v){ var s = fmt(v, tx.step); if (X(v) + tw(s) / 2 > px + pw - xLabW) return; D.el("text", {x: X(v), y: py + ph + fs + 2, "font-size": fs, "text-anchor": "middle", fill: "var(--muted)"}, svg).textContent = s; });
     ty.ticks.forEach(function(v){ if (v === ty.ticks[0] && Math.abs(v - ry[0]) < 1e-9 * (ry[1] - ry[0])) return; D.el("text", {x: px - 8, y: Y(v) + fs * 0.35, "font-size": fs, "text-anchor": "end", fill: "var(--muted)"}, svg).textContent = fmt(v, ty.step); });
-    if (d.axes && d.axes.x) D.mtext(svg, px + pw, py + ph + fs + 2, d.axes.x, {"font-size": fs, "text-anchor": "end", fill: "var(--fg)"});
-    if (d.axes && d.axes.y) D.mtext(svg, px, top - fs * 0.35, d.axes.y, {"font-size": fs, fill: "var(--fg)"});
+    if (d.axes && d.axes.x) D.mtext(svg, px + pw, py + ph + fs + 2, d.axes.x, {"font-size": axFs(d.axes.x), "text-anchor": "end", fill: "var(--fg)"});
+    if (d.axes && d.axes.y) D.mtext(svg, px, top - fs * 0.35, d.axes.y, {"font-size": axFs(d.axes.y), fill: "var(--fg)"});
     // 上の行：右に関数の名前（label）、反復の値はそこに替わる
-    var yLabW = d.axes && d.axes.y ? tw(d.axes.y.replace(/[*_^]/g, "")) + 24 : 0;
+    var yLabW = d.axes && d.axes.y ? base.textWidth(d.axes.y.replace(/[*_^]/g, ""), axFs(d.axes.y), {font: self}) + 24 : 0;
     this.titleG = D.el("g", {}, svg); this.side = side; this.iterRows = [];
     if (side){
       var sx0 = px + pw + 32, sw = W - sx0 - m.r, row = Math.ceil(fs * 1.5), y0 = py + fs;

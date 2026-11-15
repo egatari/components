@@ -24,5 +24,5 @@ ctx.lang selects ja/en. Font boxes ≥1.43em plus gap. Image role, final summary
 <!-- llm: end -->
 
 <!-- llm: omit -->
-Per-sample splits (2.1.0): `splits` (`test`, `train` indices) and `samples` (`class`, `group`, `t`) from `uv run tools/sk2ega.py model_selection`. `splitter`: KFold, StratifiedKFold, GroupKFold, TimeSeriesSplit, ShuffleSplit, holdout. Checks: KFold-type splitters test each sample once; groups stay together; time series train on the past; stratified class counts within 1; one holdout split. Up to 60 samples and 10 splits.
+Per-sample splits (2.1.0): `splits` (`test`, `train` indices) and `samples` (`class`, `group`, `t`) from `uv run tools/sk2ega.py model_selection`. `splitter`: KFold, StratifiedKFold, GroupKFold, TimeSeriesSplit, ShuffleSplit, holdout. Checks: KFold-type splitters test each sample once; groups stay together; time series train on the past; stratified class counts within 1; one holdout split. Class colours: `--series-1`, `--series-3`, `--fg`, `--series-4` in that order, as in m-classify2d. Up to 60 samples and 10 splits.
 <!-- llm: end -->

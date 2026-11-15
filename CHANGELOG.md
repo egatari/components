@@ -42,6 +42,10 @@ This release adds:
   - Class colours and names, group runs, the time at both ends; unused samples in a dashed outline.
   - Checks per splitter: each sample tested once (KFold types), groups kept together, training before the test (time series), stratified class counts, one holdout split.
   - The k mode draws exactly as 2.0.1. The new docs are under `llm: omit` (no pack growth).
+- **One class colour order in m-classify2d and m-folds:** `--series-1`, `--series-3`, `--fg`, `--series-4`. `--series-2` (the marker colour `--emph` in the default theme) is not used, and the default theme's `--series-3` = `--accent2` and `--series-4` = `--muted` no longer give two classes one colour.
+- **Subscripts that read as subscripts:** m-vector's labels (the default basis names *b*₁, *b*₂) and m-contour's axis names with `_` or `^` are set at 32 px or more, so the 24 px subscript is smaller than the letter.
+- **`tools/sk2ega.py`:** a probability or decision field says which class it is for, in `class` (the id) and `name` (e.g. `P(B)`): with 2 classes, the second in sorted order (`predict_proba[:, 1]`). m-classify2d accepts `class` in a field and checks it is a class.
+- **m-contour README:** a size guide for `equal` with a square range (about 740 px wide for 440 px high).
 
 ### Wording
 

@@ -213,7 +213,8 @@ return class extends base.MotionElement {
     Object.keys(pl.vec).forEach(function(k){ if (pl.vec[k].base) self.arrows[k] = mk("var(--term)"); });
     this.labG = D.el("g", {}, svg);
     this.labels = {};
-    var mkLab = function(t){ var g = D.el("g", {opacity: 0}, self.labG); D.mtext(g, 0, 0, t, {"font-size": fs, "text-anchor": "middle", fill: "var(--fg)"}); labs.push(g); return g; };
+    // 添え字（_1・^2）のある名前は 32px 以上で組む：mtext の添え字は 24px より小さくしないので、本文が 24〜26px だと同じ大きさに見える
+    var mkLab = function(t){ var g = D.el("g", {opacity: 0}, self.labG); D.mtext(g, 0, 0, t, {"font-size": /(^|[^\\])[_^]./.test(t) ? Math.max(fs, 32) : fs, "text-anchor": "middle", fill: "var(--fg)"}); labs.push(g); return g; };
     Object.keys(pl.vec).forEach(function(k){ if (pl.vec[k].base) self.labels[k] = mkLab(pl.vec[k].label); });
     // ステップごとの補助と結果
     this.opG = pl.steps.map(function(st){

@@ -38,7 +38,7 @@ errors・labels の長さが k と違う、誤差が負、k が範囲外なら d
 
 - `splitter`：`KFold`（`shuffle=True` で順を混ぜる）、`StratifiedKFold`（クラスの比率を保つ KFold）、`GroupKFold`（同じグループを分けない）、`TimeSeriesSplit`（過去で訓練し、その後で検証）、`ShuffleSplit`、`holdout`（1 回だけ分ける）
 - 検証の標本は `--emph` の枠と淡色、訓練は `--term` の淡色、どちらにも使わない標本は破線の枠
-- `classes`（4 個まで）：上の行にクラスの色と名前。`group`：同じグループの続きを枠で囲む。`t`：両端に最初と最後の時刻
+- `classes`（4 個まで）：上の行にクラスの色と名前。色は `--series-1`・`--series-3`・`--fg`・`--series-4` の順（m-classify2d と同じ並び。`--emph` に近い `--series-2` は使わない）。`group`：同じグループの続きを枠で囲む。`t`：両端に最初と最後の時刻
 - 確かめること：KFold の仲間は、どの標本もちょうど 1 回だけ検証に入るか。GroupKFold は同じグループが訓練と検証に分かれていないか。TimeSeriesSplit は訓練が検証より前か。StratifiedKFold は各クラスの検証の数が「全体 ÷ 分割数」から 1 未満のずれか。holdout は分割が 1 つか
 - `errors` は分割ごとに 1 つ
 - 標本は 60 個まで、分割は 10 個まで

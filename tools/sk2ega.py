@@ -18,7 +18,9 @@ first three columns). --fit builds the estimator from its name and literal keywo
 it on data.csv and never loads a file. --model model.pkl loads your own fitted model instead: loading a pickle RUNS CODE,
 so use it only for files you made. Common options: --grid 120x80 (the meshgrid for predict and the fields), --range
 "x0,x1,y0,y1" (default: the data range plus 10 %), --out file.json. Classes are the sorted labels; their names are the
-labels as written.
+labels as written. With 2 classes, the field is for the second class in sorted order: "proba" is predict_proba[:, 1],
+the probability of that class, and "decision" is positive on its side; the JSON says which in the field's "class" (its
+id) and "name" (e.g. "P(defective)").
 """
 import argparse
 import ast
@@ -237,13 +239,15 @@ def main():
             if a.module == "svm" and hasattr(model, "decision_function") and len(names) == 2:
                 lv = [float(v) for v in a.levels.split(",")] if a.levels else [-1.0, 0.0, 1.0]
                 vals = model.decision_function(G).reshape(ny, nx)
-                fields.append({"name": "decision", "values": [[r4(v) for v in row] for row in vals], "levels": lv,
+                # decision_function > 0 is classes_[1], the second class in sorted order
+                fields.append({"name": f"decision ({names[1]} > 0)", "class": 1, "values": [[r4(v) for v in row] for row in vals], "levels": lv,
                                "style": ["solid" if v == 0 else "dash" for v in lv]})
                 data["sv"] = [int(i) for i in model.support_]
             elif hasattr(model, "predict_proba") and len(names) == 2 and a.module in ("linear_model", "ensemble") or a.levels:
                 lv = [float(v) for v in a.levels.split(",")] if a.levels else [0.5]
                 vals = model.predict_proba(G)[:, 1].reshape(ny, nx)
-                fields.append({"name": "proba", "values": [[r4(v) for v in row] for row in vals], "levels": lv,
+                # predict_proba[:, 1] is the probability of classes_[1], the second class in sorted order
+                fields.append({"name": f"P({names[1]})", "class": 1, "values": [[r4(v) for v in row] for row in vals], "levels": lv,
                                "style": ["solid" if v == 0.5 else "dash" for v in lv]})
             if fields:
                 data["fields"] = fields
