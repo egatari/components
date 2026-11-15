@@ -8,6 +8,35 @@ Versions follow [README.md § Releases and versions](README.md#releases-and-vers
 
 - `m-compare` `by="row"`; an "outside every set" region for `m-venn`; planned-vs-actual bars for `m-timeline`
 
+## 2.10.0 - 2026-11-15
+
+A new part for graph search, tours and Markov chains, in a new set `algo` (アルゴリズム / Algorithms). No other part changes.
+
+### Added
+
+- **`m-network` 2.0.0 (new, specialized, set algo):** a graph with nodes at author coordinates and edges with optional weights and direction.
+  - Each step sets the current node, the visited nodes and the frontier. The frontier is also shown as a queue, stack or priority-queue row under the graph.
+  - Steps can add search-tree parents (drawn as arrows) and take or drop chosen edges, which are drawn end to end, with arrowheads in a directed graph. A running total counts up.
+  - Self-loops are drawn outside the node, facing away from its other edges. Opposite directed edges are drawn as two arcs. `complete: true` draws no edges, for tours.
+  - Checks, reported as `data`:
+    - unknown ids;
+    - `take` of a missing edge;
+    - `drop` of an edge that was not chosen;
+    - when every chosen edge has a weight, the total must equal their sum (`total.check: false` turns this off);
+    - with `stochastic: true`, each node's outgoing weights must sum to 1.
+  - Layout checks (`layout`): overlapping nodes, no room for a weight, a note too long. There is no answer preview.
+  - The demo has BFS, Dijkstra, nearest neighbour + 2-opt, and a weather Markov chain. Every state, total and probability comes from `tools/network-demo.py`; the graphs and numbers are fictional.
+- **Set `algo`** in `tools/lint.mjs` (`SETS`, `SET_LABEL` アルゴリズム). The data set and its packs are unchanged.
+
+### Removed
+
+- Stray test output under `--node/` (5 HTML files committed by accident in 2.6.2). It was never in the tarball.
+
+### For Studio
+
+- Studio's make-llm-guide needs `tools/llm-guide/sets/algo.md` and `algo.ja.md` before importing 2.10.0. Without them it stops with "the part set algo is in manifest". New… also needs the set label and the recommend words (探索・最短経路・巡回セールスマン・グラフ・アルゴリズム).
+- Import with `node tools/components2-update.mjs v2.10.0 --default`.
+
 ## 2.9.1 - 2026-11-15
 
 A new-deck tile for 差・増減 and corrected import docs. No part changes: every part's code, version and hash are the same as 2.9.0. Studio vendors it in v0.6.13.
