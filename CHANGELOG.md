@@ -8,6 +8,67 @@ Versions follow [README.md § Releases and versions](README.md#releases-and-vers
 
 - `m-compare` `by="row"`; an "outside every set" region for `m-venn`; planned-vs-actual bars for `m-timeline`
 
+## 2.11.0 - 2026-11-15
+
+This release adds:
+- code that fits its box in `m-code` (on the new library part `code-core`);
+- a new part for neural networks in a new set `ml` (機械学習 / Machine learning);
+- island names and points on the maps only when needed;
+- wording that uses established terms.
+
+### Added
+
+- **`m-nnet` 2.0.0 (new, specialized, set ml):** a neural network laid out in columns from the neuron counts, with no coordinates to write.
+  - Neurons are drawn whole, or split into Σ (the weighted sum z) and f (the activation a, shown by its name). Activation curves are left to m-curves.
+  - The forward pass goes layer by layer. `open` widens a layer into Σ | f, and `focus` shows one neuron's incoming weights and its weighted sum.
+  - Edges can show |w| as width and the sign as solid or dashed. A wide layer shows its first neurons, "⋮", and its last ones.
+  - Checks: the shapes, z = W·a + b and a = f(z), within the precision written. The backpropagation phases are reserved.
+  - The demo values come from `tools/nnet-demo.py` (numpy).
+- **`code-core` 1.0.0 (new library part):** code drawing shared by m-code and the coming m-trace. The helpers moved verbatim from m-code 2.1.0; `softWrap` and `windowFor` are new.
+- **Set `ml`** in `tools/lint.mjs`.
+
+### Changed
+
+- **`m-code` 2.2.0: fit to the box.** When the 2.1.0 layout fits, the pixels are the same as 2.1.0. Same-paint against v2.9.1 passed on the demo, on 15 classic cases and on the 5 nightly decks that had no report.
+  - Where 2.1.0 reported, it now draws a fit layout instead:
+    - notes in the 説明欄, up to 2 rows each;
+    - long lines wrapped under a "↪" gutter;
+    - each step's lines shown by scrolling, with 「⋮（ほか n 行）」 for the hidden ones;
+    - output beside the notes when there is room.
+  - `lines` with 3 or more integers highlights exactly those lines.
+  - A final note list that does not fit keeps the last note, with `data-fit="last-note"` instead of a report.
+  - The full source and output are in `pre[data-readable]` for the readable layer.
+  - The pack text now gives a size budget instead of the height formula.
+- **`m-map-japan` 2.2.0 and `m-map-world` 2.2.0: island names and points only when needed** (owner decision, docs/map-design.md §4.5.1). Both take the new attribute `territory-islands="auto|show|hide"`.
+  - m-map-japan: the default inset layout no longer writes the names of 竹島 and 尖閣諸島. Names are written with `layout="true"`, in the 小笠原諸島 inset, or with `"show"`.
+  - m-map-world: the four island points are not drawn at world scale unless `"show"`.
+  - The readable layers list these islands only when they are shown.
+  - With `"show"`, both maps paint the same pixels as 2.1.0 (same-paint, 4 themes).
+
+### Wording
+
+All of these are owner rules, relayed by standards.
+- **Established terms:**
+  - 「ライブラリ」「訓練用・テスト用」「正解率」「交差検証」;
+  - scrolling instead of 窓;
+  - 「バージョン」;
+  - 「はめ込み図」 (m-map-japan);
+  - 「日本の見解のデータ」 (m-map-world);
+  - 「組み立てのツール」 (m-score);
+  - 「ツール」 (m-quad).
+- **Rule 6b (no coined words):**
+  - 札 → カード, ラベル, エラーの表示, ポップアップ, 言語名, タイル;
+  - 帯 → 説明欄, カラーバー, 「カードの上の色の線」, 「薄く塗って残す」, 「細長い形の真ん中」, 「名前の行」;
+  - m-timeline periods are 期間;
+  - m-folds blocks are フォールド (「データを k 個に分けた 1 つ（フォールド）」);
+  - 手元 is gone.
+- None of these change a part's code. README and demo text only.
+
+### For Studio
+
+- Import with `node tools/components2-update.mjs v2.11.0 --default`, in the same Studio release as the readable-layer hook for `[data-readable]` (#216). Without the hook, scrolled code would be missing from the book.
+- make-llm-guide needs `tools/llm-guide/sets/ml.md` and `ml.ja.md`, the label 機械学習 / Machine learning, and recommend words for the New… set chooser.
+
 ## 2.10.0 - 2026-11-15
 
 A new part for graph search, tours and Markov chains, in a new set `algo` (アルゴリズム / Algorithms). No other part changes.
