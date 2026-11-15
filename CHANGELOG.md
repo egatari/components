@@ -22,7 +22,7 @@ A new part for graph search, tours and Markov chains, in a new set `algo` (ã‚¢ãƒ
     - unknown ids;
     - `take` of a missing edge;
     - `drop` of an edge that was not chosen;
-    - when every chosen edge has a weight, the total must equal their sum (`total.check: false` turns this off);
+    - the total must match: with parents (a search), the path length from the source to the current node along them; otherwise (a path or tour), the sum of the chosen edges' weights. `total.of` sets this explicitly, a total written with more decimals than the weights may differ by their rounding, and `total.check: false` turns the check off;
     - with `stochastic: true`, each node's outgoing weights must sum to 1.
   - Layout checks (`layout`): overlapping nodes, no room for a weight, a note too long. There is no answer preview.
   - The demo has BFS, Dijkstra, nearest neighbour + 2-opt, and a weather Markov chain. Every state, total and probability comes from `tools/network-demo.py`; the graphs and numbers are fictional.
