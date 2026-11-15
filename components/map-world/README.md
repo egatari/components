@@ -23,7 +23,9 @@ data-credit: 地図データ：Natural Earth（パブリックドメイン）を
 
 継ぎ目は 30°W（大西洋を横切る矢印は描けない）。
 
-地図データ：Natural Earth（パブリックドメイン）を加工。
+<!-- llm: omit -->
+地図データ：Natural Earth（パブリックドメイン）を加工（フロントマターの data-credit と同じ）。
+<!-- llm: end -->
 
 <!-- llm: omit -->
 注意

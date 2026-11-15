@@ -161,7 +161,7 @@ return class extends base.MotionElement {
   };
   static props = {
     labels: {type: "string", default: "focus", doc: "名前：focus（regions に書いた地域だけ）・all（名前が中に入る国すべて）・none"},
-    "territory-islands": {type: "string", default: "auto", doc: "竹島・尖閣諸島・沖ノ鳥島・南鳥島の点：auto（世界の縮尺では描かない）・show（描く）・hide（描かない）"},
+    "territory-islands": {type: "string", default: "auto", doc: "島の点：auto（描かない）・show・hide"},
     grid:   {type: "string", default: "none", doc: "none・equator（赤道）・graticule（30° ごとの経線・緯線と赤道）"},
     show:   {type: "string", default: "none", doc: "塗り分けた国の上に値を書くか：none（既定）・value（中に入る国だけ）"},
     unit:   {type: "string", default: "", doc: "値の単位（凡例の見出しに書く）"},

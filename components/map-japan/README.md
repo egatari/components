@@ -24,7 +24,9 @@ data-credit: 地図データ：Natural Earth（パブリックドメイン）を
 
 日本の範囲・東西南北の端・排他的経済水域を見せるときは layout="true"（はめ込み図なし、本当の位置）
 
-地図データ：Natural Earth（パブリックドメイン）を加工。
+<!-- llm: omit -->
+地図データ：Natural Earth（パブリックドメイン）を加工（フロントマターの data-credit と同じ）。
+<!-- llm: end -->
 
 <!-- llm: omit -->
 - `flows` の `value` の太さ：いちばん大きい値で 10 px、0 で 3 px、ないと 4 px

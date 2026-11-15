@@ -153,7 +153,7 @@ return class extends base.MotionElement {
   static props = {
     layout: {type: "string", default: "inset", doc: "inset（南西諸島を枠に入れて描く）か true（本当の位置。日本が小さくなる）"},
     islands: {type: "string", default: "main", doc: "main か all（inset で小笠原諸島の枠も描く）"},
-    "territory-islands": {type: "string", default: "auto", doc: "竹島・尖閣諸島・沖ノ鳥島・南鳥島の名前：auto（layout=\"true\" と小笠原諸島の枠の中だけ）・show（いつも）・hide（書かない）。島の点はいつも描く"},
+    "territory-islands": {type: "string", default: "auto", doc: "島の名前：auto（必要なときだけ）・show・hide"},
     labels: {type: "string", default: "focus", doc: "地域の名前：focus（regions に書いた地域だけ）・all（名前が中に入る都道府県すべて）・none"},
     show:   {type: "string", default: "none", doc: "塗り分けた地域の上に値を書くか：none（書かない、既定）・value（中に入る地域だけ値を書く）"},
     unit:   {type: "string", default: "", doc: "値の単位（凡例の見出しに書く）"},
