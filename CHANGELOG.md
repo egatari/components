@@ -8,6 +8,48 @@ Versions follow [README.md § Releases and versions](README.md#releases-and-vers
 
 - `m-compare` `by="row"`; an "outside every set" region for `m-venn`; planned-vs-actual bars for `m-timeline`
 
+## 2.12.0 - 2026-11-15
+
+This release adds:
+- computed tables for university statistics, in a new set `univ` (大学の統計・数理 / University statistics and mathematics);
+- graphical models, path diagrams and an HMM trellis in `m-network`;
+- a code trace part in a new tier `local`, which no chat pack carries.
+
+### Added
+
+- **`m-ctable` 2.0.0 (new, specialized, set univ):** a table filled step by step, with the cells each step uses and fills marked and a formula line under the table.
+  - `anova`: the columns SS → df → MS → F → p.
+  - `contingency`: margins, expected counts, χ² (no continuity correction) and the 2 × 2 odds ratio.
+  - `po`: potential outcomes. The unobserved half shows「?」on a light ground, then is revealed; then the individual effects; then the ATE against the naive difference.
+  - `table`: a plain table, row by row.
+  - Checks the arithmetic within the rounding carried through the formulas (p is not checked). The final table is in `table[data-readable]`. No preview of later steps.
+  - The demo values come from `tools/ctable-demo.py` (numpy, scipy); all data are fictional.
+- **`m-trace` 2.0.0 (new, tier local):** a short program run line by line. The current line is marked in the code, the variables after that line are shown with the changed ones marked (emph text, ground and bold), and the output so far.
+  - Data only from the tracer `tools/trace.py` (`uv run`; `sys.settrace`; the full state per step, the output per line, an uncaught error as the last line's output, truncation past `--max-steps`, a warning for unseeded `random`). The part never runs code.
+  - Long code scrolls with the current line in view and long lines wrap (on `code-core`).
+  - `by="time"` plays the whole trace inside one step at `rate` lines per second, with a cue per line.
+  - Checks line numbers, the value grammar and the caps (16 lines, 60 steps, 6 variables, 8 output lines). Code and output in `pre[data-readable]`, the final variables in `table[data-readable]`.
+- **Set `univ`** and **tier `local`** (ローカル / Local) in `tools/lint.mjs`, CATALOG.md and the gallery.
+
+### Changed
+
+- **`m-network` 2.1.0: graphical models and path diagrams.** Same pixels as 2.0.0 for existing data (same-paint against v2.11.0, 4 themes).
+  - Node `shape`: `circle`, `ellipse` (latent variables) or `box`; `observed: true` fills the node.
+  - Edge `bi: true`: dashed with two arrowheads (an unmeasured common cause).
+  - `plates: [{nodes, label}]`: a rounded frame around the nodes with N at its lower right.
+  - `layout: "trellis"` with `states`, `T` and `transitions`: the HMM trellis laid out without coordinates; node ids are `"state@t"`.
+  - Labels and notes take the `*x*_i` markup.
+  - The demo adds a path diagram, a plate and an HMM Viterbi path from `tools/network-demo.py`.
+
+### For Studio
+
+- **Before importing 2.12.0, Studio must know the tier `local`** (#213). make-llm-guide stops on an unknown tier, on purpose: an ignored tier would put m-trace into the chat pack on an older Studio.
+  - Leave `local` parts out of llm-pack-data (free and paid), the New… tiles and the per-purpose tables.
+  - Write them only to the Claude Code skill references.
+  - Where `tools/trace.py` lives (components `tools/` or Studio `kit/`) is dev's call; it is tested here.
+- make-llm-guide needs `tools/llm-guide/sets/univ.md` and `univ.ja.md`, the label 大学の統計・数理 / University statistics and mathematics, and recommend words (分散分析・分割表・カイ二乗・オッズ比・因果推論).
+- Import with `node tools/components2-update.mjs v2.12.0 --default`.
+
 ## 2.11.0 - 2026-11-15
 
 This release adds:
