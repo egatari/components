@@ -5,14 +5,16 @@ version: 2.0.0
 series: info
 tier: specialized
 set: data
-summary: 頂点と辺のグラフで、探索（幅優先・深さ優先・ダイクストラ）や巡回路を 1 ステップずつ見せる。今の頂点・候補・訪れた頂点を塗り分け、選んだ辺を引き、合計を出す
+summary: グラフの探索（幅優先・ダイクストラなど）や巡回路を 1 ステップずつ。今の頂点・候補・訪れた頂点、選んだ辺、合計
 steps: steps の数
 purposes: process, model
 props: dur, size, weights
 ---
 
+状態と合計は、探索を走らせたスクリプトの出力を書く。高さ 440px 以上。書かない欄は前のステップのまま。優先度付きの `frontier` は `[["C", 3]]`、`take`・`drop` は選んだ辺を増減する。
+
+<!-- llm: omit -->
 幅優先探索・深さ優先探索・ダイクストラ法・巡回セールスマン問題の近似（最近傍法、2-opt）など、グラフの上で手順を 1 つずつ進める様子を見せるときに使う。
-状態と合計は、探索を実際に走らせたスクリプトの出力を書く（手で考えない）。高さ 440px 以上を目安に置く。
 
 子の JSON：`{"nodes": [...], "edges": [...], "steps": [...]}`。
 
@@ -20,7 +22,6 @@ props: dur, size, weights
 - edge：`from`、`to`、`w`（重み）。`directed: true` で矢印
 - step：`current`、`visited`、`frontier`（`["B", "C"]`。優先度付きは `[["C", 3], ["B", 4]]`）、`parent`（`{"C": "A"}`）、`take`・`drop`（`[["A", "C"]]`）、`total`、`note`
 - `frontierKind`：`queue`・`stack`・`pq`・`set`。`total`：`{"label": "経路の長さ", "unit": "km"}`
-<!-- llm: omit -->
 - 書かなかった欄は前のステップのまま（`current` は `null` で消す）。`parent` は足していき、`null` で消す。`take`・`drop` は選んだ辺を増減する
 - `complete: true`：辺を描かない完全グラフ（巡回路）。どの 2 点でも `take` できる
 - 確かめること（data）：知らない id、ない辺の `take`、選んでいない辺の `drop`。選んだ辺がすべて `w` を持つとき、`total` が `w` の和と合うか（`total.check: false` で確かめない）
@@ -32,7 +33,9 @@ props: dur, size, weights
 
 サンプルは `demo.html`（幅優先探索、ダイクストラ法、巡回路の 2-opt）。地名と数値はすべて架空。
 
+<!-- llm: omit -->
 注意
 
 - 頂点の名前は短く（1〜3 字）。長い名前は箱が広がり、辺の重みの置き場がなくなる
 - `take` は経路や巡回路の辺、`parent` は探索の木。両方を同じステップで使うと線が増えて読みにくい
+<!-- llm: end -->
