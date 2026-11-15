@@ -32,9 +32,9 @@ props: cols, per-step, size, fade, stagger, visited
   見ている人の側の状態で、画面の決まり (i, k, t) の外（`m-kobun` のポップアップと同じ扱い）。`visited="false"` で付けない
 <!-- llm: end -->
 - ステップ：`per-step="n"` ならカードが n 枚ずつステップごとに出る（`data-from` から。同じステップの中は `stagger` 秒ずつずれる）。
-  <!-- llm: omit -->
-  まだ出ていないカードは押せず、Tab でも選べず、読み上げない。
-  <!-- llm: end -->
+<!-- llm: omit -->
+まだ出ていないカードは押せず、Tab でも選べず、読み上げない。
+<!-- llm: end -->
   `per-step="0"`（既定）なら初めから全部（ステップを使わない）。ステップは (k, t) だけで決まる
 - 並び：`cols`（既定はカードの数から：3 枚までは 1 行、4 枚は 2 列、それより多ければ 3 列）。カードの高さの下限は CSS の `--mm-h`（既定 104px）、間は `--mm-gap`（18px）。
   本文いっぱいに置いて縦の真ん中にそろえるなら `style="height:100%;align-content:center;--mm-h:150px"`

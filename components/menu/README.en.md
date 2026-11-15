@@ -34,9 +34,9 @@ Cards are plain child links; the part only styles them (grid, circle, subtitle, 
   Viewer-side state outside (i, k, t) (like `m-kobun` cards). `visited="false"` disables
 <!-- llm: end -->
 - `per-step="n"`: n cards per step (from `data-from`). `0` = all at once
-  <!-- llm: omit -->
-  Cards not shown yet cannot be pressed, focused or read.
-  <!-- llm: end -->
+<!-- llm: omit -->
+Cards not shown yet cannot be pressed, focused or read.
+<!-- llm: end -->
 - `cols` default: ≤ 3 cards 1 row, 4 → 2, more → 3. Min height `--mm-h` (104px), gap `--mm-gap` (18px). Fill, centred: `style="height:100%;align-content:center;--mm-h:150px"`
 <!-- llm: omit -->
 - Text: title `size` (34px), subtitle 0.8× (≥ 27px body minimum). Circle `--term`, subtitle `--muted`. `stagger` within a step; depends on (k, t) only

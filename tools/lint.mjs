@@ -316,6 +316,13 @@ export function lint(root, warns = []) {
     errs.push(...llmBlocks(rtext, `components/${name}/README.md`));
     if (!f) { errs.push(`components/${name}/README.md: no frontmatter`); continue; }
     errs.push(...lintEn(name, dir, f, rtext, js));
+    // Studio's make-llm-guide reads llm: markers only at the start of a line and stops on any other ("malformed llm marker")
+    for (const file of ['README.md', 'README.en.md']) {
+      const fp = path.join(dir, file);
+      if (fs.existsSync(fp)) fs.readFileSync(fp, 'utf8').split('\n').forEach((ln, i) => {
+        if (/<!--\s*llm:/.test(ln) && !/^<!--\s*llm:\s*[\w-]+\s*-->\s*$/.test(ln)) errs.push(`components/${name}/${file}:${i + 1}: an llm: marker must be alone at the start of a line (<!-- llm: omit -->, <!-- llm: <set> --> or <!-- llm: end -->; Studio stops on any other)`);
+      });
+    }
     for (const k of ['name', 'version', 'series', 'tier', 'summary', 'steps', 'props']) if (!(k in f)) errs.push(`components/${name}/README.md: frontmatter has no ${k}`);
     if ('tier' in f && !TIERS.includes(f.tier)) errs.push(`components/${name}/README.md: tier ${f.tier} is not one of ${TIERS.join(', ')}`);
     if (f.tier === 'specialized' && !SETS.includes(f.set)) errs.push(`components/${name}/README.md: a specialized part needs set: one of ${SETS.join(', ')}${'set' in f ? ` (not ${f.set})` : ''}`);
