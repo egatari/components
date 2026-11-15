@@ -4,7 +4,7 @@ display: グラフの探索 / Graph search
 version: 2.0.0
 series: info
 tier: specialized
-set: data
+set: algo
 summary: グラフの探索（幅優先・ダイクストラなど）や巡回路を 1 ステップずつ。今の頂点・候補・訪れた頂点、選んだ辺、合計
 steps: steps の数
 purposes: process, model
