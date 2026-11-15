@@ -41,6 +41,22 @@ ok(close2.reports.some((r) => r.code === 'layout' && r.msg.includes('overlap')),
 for (const bad of [null, {}, {nodes: [], steps: [{}]}, {...data, extra: 1}, {...data, nodes: Array.from({length: 25}, (_, i) => ({id: 'n' + i, x: i, y: 0}))}]) {
   const r = make(bad); ok(r.el.steps === 0 && r.reports.length === 1 && r.reports[0].code === 'data', 'shape rejects ' + JSON.stringify(bad).slice(0, 60));
 }
+const markov = {directed: true, stochastic: true, nodes: [{id: 'S', x: 0, y: 0}, {id: 'C', x: 4, y: 0}, {id: 'R', x: 2, y: 3}],
+  edges: [{from: 'S', to: 'S', w: 0.6}, {from: 'S', to: 'C', w: 0.3}, {from: 'S', to: 'R', w: 0.1}, {from: 'C', to: 'S', w: 0.4}, {from: 'C', to: 'C', w: 0.4}, {from: 'C', to: 'R', w: 0.2},
+    {from: 'R', to: 'S', w: 0.2}, {from: 'R', to: 'C', w: 0.4}, {from: 'R', to: 'R', w: 0.4}],
+  total: {label: 'P', check: false}, steps: [{current: 'S'}, {current: 'S', take: [['S', 'S']], total: 0.6}, {current: 'C', drop: [['S', 'S']], take: [['S', 'C']], total: 0.18}]};
+const mk = make(markov, {}, {clientHeight: 540});
+ok(mk.reports.length === 0, 'Markov chain: self-loops and opposite pairs accepted, outgoing w sum to 1: ' + JSON.stringify(mk.reports));
+const loopPts = mk.el.geom('S', 'S'), sc = mk.el.at.S;
+ok(loopPts.length > 10 && loopPts.every((q) => Math.hypot(q.x - sc.x, q.y - sc.y) >= sc.h / 2 - 1), 'self-loop is drawn outside its node');
+const ab = mk.el.geom('S', 'C'), ba = mk.el.geom('C', 'S'), mid = (pts) => pts[Math.floor(pts.length / 2)];
+ok(ab.length > 2 && ba.length > 2 && Math.abs(mid(ab).y - mid(ba).y) > 20, 'opposite edges S→C and C→S bow to different sides');
+mk.el.render(3, Infinity);
+ok(Object.values(mk.el.chosen).filter((c) => c.el.getAttribute('opacity') === '1.000').length === 1, 'step 3: the self-loop is dropped and S→C drawn');
+common(mk.el, 'markov', markov);
+const badSum = make({...markov, edges: markov.edges.map((e) => e.from === 'R' && e.to === 'R' ? {...e, w: 0.3} : e)});
+ok(badSum.reports.some((r) => r.code === 'data' && r.msg.includes('edges from R sum to 0.9')), 'stochastic: a row not summing to 1 reports data');
+ok(make({...markov, directed: false}).reports.some((r) => r.msg.includes('stochastic needs directed')), 'stochastic needs a directed graph');
 const attrs = make(data, {dur: -1, size: 20});
 ok(attrs.reports.filter((r) => r.code === 'attr').length === 2 && attrs.el.props.size === 24, 'bad props report/default');
 for (const lang of ['ja', 'en']) {

@@ -82,7 +82,25 @@ def tsp():
             if improved: break
     return {"nodes": [{"id": k, "x": x, "y": y} for k, (x, y) in cities.items()], "complete": True, "total": {"label": "巡回路の長さ", "check": False}, "steps": steps}
 
+def markov():
+    # a 3-state weather chain (fictional probabilities) and one seeded walk; the total is the walk's probability
+    import random
+    states = ["晴", "曇", "雨"]; pos = {"晴": (0, 0), "曇": (4, 0), "雨": (2, 3)}
+    P = {"晴": {"晴": 0.6, "曇": 0.3, "雨": 0.1}, "曇": {"晴": 0.4, "曇": 0.4, "雨": 0.2}, "雨": {"晴": 0.2, "曇": 0.4, "雨": 0.4}}
+    for seed in range(1000):  # the first seed whose 4-day walk visits all three states
+        r = random.Random(seed); s = "晴"; prob = 1.0; steps = [{"current": s, "note": "晴の日から始める"}]; last = None
+        for _ in range(4):
+            t = r.choices(states, weights=[P[s][x] for x in states])[0]
+            prob *= P[s][t]
+            st = {"current": t, "take": [[s, t]], "total": round(prob, 4), "note": f"{s} → {t}（確率 {P[s][t]}）"}
+            if last: st["drop"] = [last]
+            steps.append(st); last = [s, t]; s = t
+        if {x["current"] for x in steps} == set(states): break
+    return {"directed": True, "stochastic": True, "nodes": [{"id": k, "x": x, "y": y} for k, (x, y) in pos.items()],
+            "edges": [{"from": a, "to": b, "w": w} for a in states for b, w in P[a].items()],
+            "total": {"label": "この道筋の確率", "check": False}, "steps": steps}
+
 for cities in pick_cities():
     t = tsp()
     if any("drop" in st for st in t["steps"]): break
-print(json.dumps({"bfs": bfs("A"), "dijkstra": dijkstra("A", "F"), "tsp": t}, ensure_ascii=False))
+print(json.dumps({"bfs": bfs("A"), "dijkstra": dijkstra("A", "F"), "tsp": t, "markov": markov()}, ensure_ascii=False))

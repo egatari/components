@@ -12,6 +12,7 @@ From a script. Unset fields persist; `[["C", 3]]` keyed; `take`/`drop` edit chos
 <!-- llm: omit -->
 - Child JSON: node `id` `x` `y` (your units, y down) `label`; edge `from` `to` `w`; `directed: true`. Step: `current`, `visited`, `frontier`, `parent` (`{"C": "A"}`), `take`/`drop` (`[["A", "C"]]`), `total`, `note`. `frontierKind` queue, stack, pq, set; `total` `{"label", "unit"}`.
 - Omitted fields carry over (`current: null` clears); `parent` accumulates (`null` removes); `take`/`drop` change the chosen edges. `complete: true`: a complete graph with no edges drawn (tours).
+- Self-loops (`from` = `to`) are small loops outside the node, facing away from its other edges. In a directed graph, A→B and B→A both present are drawn as arcs bowing to the right of travel (weights on the outer side). `stochastic: true` (directed) checks that each node's outgoing `w` sum to 1 (data).
 - Checks (data): unknown ids, `take` of a missing edge, `drop` of an edge not chosen; when every chosen edge has `w`, `total` must equal their sum (`total.check: false` to skip).
 - Colours: current `--emph` thick ring, frontier `--accent2` dashed ring and the bottom row, visited `--muted` fill, chosen edges and the search tree (arrows) `--term`, other edges `--line`.
 - Timing: drops fade in half of `dur`, takes draw one by one in order; node states change in half of `dur`; the total counts up.

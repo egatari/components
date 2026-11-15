@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>m-network の見本</title>
-<!-- 組み方：node kit/build.mjs components/network/demo.html -o components/network/out/demo.html（グラフと数値は架空。状態と合計は探索を走らせた Python の出力） -->
+<!-- 組み方：node kit/build.mjs components/network/demo.html -o components/network/out/demo.html（グラフと数値は架空。状態・合計・確率は python3 tools/network-demo.py の出力） -->
 <style>
 </style>
 </head>
@@ -80,6 +80,30 @@
             {"current": "Q", "visited": ["P", "R", "S", "T", "V", "U", "Q"], "take": [["U", "Q"]], "total": 17.47, "note": "U からいちばん近い Q へ"},
             {"current": "P", "take": [["Q", "P"]], "total": 23.55, "note": "出発点へ戻る（最近傍法）"},
             {"current": null, "drop": [["T", "V"], ["Q", "P"]], "take": [["T", "Q"], ["V", "P"]], "total": 20.83, "note": "T–V と Q–P を T–Q と V–P に（2-opt）"}
+          ]
+        }
+      </script>
+    </m-network>
+  </div>
+</section>
+
+<section class="slide noconcl">
+  <h2>マルコフ連鎖：天気の移り変わり（架空）</h2>
+  <div class="body">
+    <m-network style="height:540px">
+      <script type="application/json">
+        {
+          "directed": true,
+          "stochastic": true,
+          "nodes": [{"id": "晴", "x": 0, "y": 0}, {"id": "曇", "x": 4, "y": 0}, {"id": "雨", "x": 2, "y": 3}],
+          "edges": [{"from": "晴", "to": "晴", "w": 0.6}, {"from": "晴", "to": "曇", "w": 0.3}, {"from": "晴", "to": "雨", "w": 0.1}, {"from": "曇", "to": "晴", "w": 0.4}, {"from": "曇", "to": "曇", "w": 0.4}, {"from": "曇", "to": "雨", "w": 0.2}, {"from": "雨", "to": "晴", "w": 0.2}, {"from": "雨", "to": "曇", "w": 0.4}, {"from": "雨", "to": "雨", "w": 0.4}],
+          "total": {"label": "この道筋の確率", "check": false},
+          "steps": [
+            {"current": "晴", "note": "晴の日から始める"},
+            {"current": "曇", "take": [["晴", "曇"]], "total": 0.3, "note": "晴 → 曇（確率 0.3）"},
+            {"current": "曇", "take": [["曇", "曇"]], "total": 0.12, "note": "曇 → 曇（確率 0.4）", "drop": [["晴", "曇"]]},
+            {"current": "曇", "take": [["曇", "曇"]], "total": 0.048, "note": "曇 → 曇（確率 0.4）", "drop": [["曇", "曇"]]},
+            {"current": "雨", "take": [["曇", "雨"]], "total": 0.0096, "note": "曇 → 雨（確率 0.2）", "drop": [["曇", "曇"]]}
           ]
         }
       </script>

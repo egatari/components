@@ -32,6 +32,7 @@ return class extends base.MotionElement {
     schema: {type: "object", additionalProperties: false, required: ["nodes", "steps"], properties: {
       directed: {type: "boolean"},
       complete: {type: "boolean"},
+      stochastic: {type: "boolean"},
       frontierKind: {type: "string", enum: ["queue", "stack", "pq", "set"]},
       total: {type: "object", additionalProperties: false, properties: {label: {type: "string"}, unit: {type: "string"}, digits: {type: "integer"}, check: {type: "boolean"}}},
       nodes: {type: "array", minItems: 1, maxItems: 24, items: {type: "object", additionalProperties: false, required: ["id", "x", "y"], properties: {
@@ -70,9 +71,19 @@ return class extends base.MotionElement {
     (d.nodes || []).forEach(function(n){ if (ids[n.id]) bad.push("node id \"" + n.id + "\" is used twice"); ids[n.id] = n; });
     (d.edges || []).forEach(function(e, i){
       if (!ids[e.from] || !ids[e.to]){ bad.push("edges[" + i + "] joins an unknown node (" + (ids[e.from] ? e.to : e.from) + ")"); return; }
-      if (e.from === e.to){ bad.push("edges[" + i + "] joins " + e.from + " to itself"); return; }
       edges[self.key(e.from, e.to)] = e;
     });
+    // stochastic：向きのあるグラフで、各頂点から出る辺の w の和が 1（推移確率）
+    if (d.stochastic){
+      if (!this.directed) bad.push("stochastic needs directed: true");
+      else Object.keys(ids).forEach(function(id){
+        var out = Object.keys(edges).map(function(k){ return edges[k]; }).filter(function(e){ return e.from === id; });
+        if (!out.length) return;
+        if (out.some(function(e){ return typeof e.w !== "number"; })){ bad.push("stochastic: an edge from " + id + " has no w"); return; }
+        var sum = out.reduce(function(a, e){ return a + e.w; }, 0);
+        if (Math.abs(sum - 1) > 1e-6) bad.push("stochastic: the edges from " + id + " sum to " + +sum.toFixed(9) + ", not 1");
+      });
+    }
     var known = function(id, where){ if (ids[id]) return true; bad.push(where + ": unknown node \"" + id + "\""); return false; };
     var check = !(d.total && d.total.check === false);
     var st = {current: null, visited: [], frontier: [], parent: {}, chosen: {}, total: undefined, note: "", take: [], drop: []};
@@ -118,7 +129,7 @@ return class extends base.MotionElement {
     var digits = d.total && d.total.digits !== undefined ? d.total.digits : states.reduce(function(m, s){
       if (typeof s.total !== "number") return m;
       var x = String(s.total).split(".")[1];
-      return Math.max(m, x ? Math.min(3, x.length) : 0);
+      return Math.max(m, x ? Math.min(4, x.length) : 0);
     }, 0);
     return (this._plan = {ids: ids, edges: edges, states: states, bad: bad, digits: digits,
       hasFrontier: states.some(function(s){ return s.frontier.length; }), hasTotal: states.some(function(s){ return typeof s.total === "number"; }),
@@ -143,7 +154,8 @@ return class extends base.MotionElement {
       return {n: n, lab: lab, w: Math.max(nh, Math.ceil(tw(lab)) + 24), h: nh};
     });
     var pad = 8, gx0 = pad, gx1 = W - pad, gy0 = pad, gy1 = H - band - pad;
-    var mw = Math.max.apply(null, nodes.map(function(o){ return o.w; })) / 2 + 6, mh = nh / 2 + 6;
+    var hasLoop = Object.keys(pl.edges).some(function(k){ return pl.edges[k].from === pl.edges[k].to; });
+    var mw = Math.max.apply(null, nodes.map(function(o){ return o.w; })) / 2 + 6 + (hasLoop ? nh * 1.6 : 0), mh = nh / 2 + 6 + (hasLoop ? nh * 1.6 : 0);
     var xs = d.nodes.map(function(n){ return n.x; }), ys = d.nodes.map(function(n){ return n.y; });
     var x0 = Math.min.apply(null, xs), x1 = Math.max.apply(null, xs), y0 = Math.min.apply(null, ys), y1 = Math.max.apply(null, ys);
     var aw = gx1 - gx0 - 2 * mw, ah = gy1 - gy0 - 2 * mh;
@@ -165,24 +177,89 @@ return class extends base.MotionElement {
         ctx.report("layout", "[network] nodes " + a.n.id + " and " + b.n.id + " overlap at this size; move them apart (they need about " + Math.ceil(Math.min(need, 1e6) / sc * 100) + "% of their distance) or make the element larger");
       }
     }
-    // 辺の端：頂点の箱（円）の縁で切る
-    var edgeEnds = function(A, B, shrinkA, shrinkB){
-      var dx = B.x - A.x, dy = B.y - A.y, L = Math.hypot(dx, dy) || 1;
-      var cut = function(o, ux, uy){
-        if (o.w <= o.h + 0.5) return o.h / 2;
-        var tx = Math.abs(ux) > 1e-9 ? (o.w / 2) / Math.abs(ux) : Infinity, ty = Math.abs(uy) > 1e-9 ? (o.h / 2) / Math.abs(uy) : Infinity;
-        return Math.min(tx, ty);
+    // 辺の形：点の列（頂点の縁から縁まで）。直線、向きの逆の辺もあるときの弧、自己ループ
+    var cutAt = function(o, ux, uy){
+      if (o.w <= o.h + 0.5) return o.h / 2;
+      var tx = Math.abs(ux) > 1e-9 ? (o.w / 2) / Math.abs(ux) : Infinity, ty = Math.abs(uy) > 1e-9 ? (o.h / 2) / Math.abs(uy) : Infinity;
+      return Math.min(tx, ty);
+    };
+    var rim = function(o, ang){ var ux = Math.cos(ang), uy = Math.sin(ang), c = cutAt(o, ux, uy); return {x: o.x + ux * c, y: o.y + uy * c}; };
+    var dirTo = function(o, x, y){ return Math.atan2(y - o.y, x - o.x); };
+    // 自己ループの向き：ほかの辺からいちばん離れ、枠の中に収まる向き（上から時計回りに 8 方向）
+    var loopExt = nh * 1.25, loopAng = {};
+    Object.keys(pl.edges).forEach(function(k){
+      var e = pl.edges[k];
+      if (e.from !== e.to) return;
+      var o = at[e.from], used = [];
+      Object.keys(pl.edges).forEach(function(k2){
+        var f = pl.edges[k2];
+        if (f.from === f.to) return;
+        if (f.from === e.from) used.push(dirTo(o, at[f.to].x, at[f.to].y));
+        if (f.to === e.from) used.push(dirTo(o, at[f.from].x, at[f.from].y));
+      });
+      var best = null, bestScore = -1;
+      for (var q = 0; q < 8; q++){
+        var ang = -Math.PI / 2 + q * Math.PI / 4, r = rim(o, ang), ax = r.x + Math.cos(ang) * loopExt, ay = r.y + Math.sin(ang) * loopExt;
+        var fits = ax > nh * 0.5 && ax < W - nh * 0.5 && ay > nh * 0.5 && ay < H - band - nh * 0.5;
+        var gapMin = used.reduce(function(m, u){ var dd = Math.abs(((ang - u) % (2 * Math.PI) + 3 * Math.PI) % (2 * Math.PI) - Math.PI); return Math.min(m, dd); }, Math.PI);
+        var score = gapMin + (fits ? 10 : 0);
+        if (score > bestScore + 1e-9){ bestScore = score; best = ang; }
+      }
+      loopAng[e.from] = best;
+    });
+    var geoms = {};
+    var geom = this.geom = function(a, b){
+      var gk = a + "\u0000" + b;
+      if (geoms[gk]) return geoms[gk];
+      var A = at[a], B = at[b], pts = [];
+      var bez = function(p0, p1, p2, p3){
+        for (var i = 0; i <= 24; i++){
+          var t = i / 24, u = 1 - t;
+          pts.push(p3 ? {x: u * u * u * p0.x + 3 * u * u * t * p1.x + 3 * u * t * t * p2.x + t * t * t * p3.x, y: u * u * u * p0.y + 3 * u * u * t * p1.y + 3 * u * t * t * p2.y + t * t * t * p3.y}
+                      : {x: u * u * p0.x + 2 * u * t * p1.x + t * t * p2.x, y: u * u * p0.y + 2 * u * t * p1.y + t * t * p2.y});
+        }
       };
-      var ux = dx / L, uy = dy / L, ca = cut(A, ux, uy) + (shrinkA || 0), cb = cut(B, ux, uy) + (shrinkB || 0);
-      return {x1: A.x + ux * ca, y1: A.y + uy * ca, x2: B.x - ux * cb, y2: B.y - uy * cb, ux: ux, uy: uy, L: L};
+      if (a === b){
+        var th = loopAng[a] !== undefined ? loopAng[a] : -Math.PI / 2, sp = 0.5, r0 = rim(A, th - sp), r1 = rim(A, th + sp);
+        var c0 = {x: r0.x + Math.cos(th - sp * 1.4) * loopExt * 1.3, y: r0.y + Math.sin(th - sp * 1.4) * loopExt * 1.3};
+        var c1 = {x: r1.x + Math.cos(th + sp * 1.4) * loopExt * 1.3, y: r1.y + Math.sin(th + sp * 1.4) * loopExt * 1.3};
+        bez(r0, c0, c1, r1);
+      } else if (self.directed && pl.edges[self.key(b, a)] && pl.edges[self.key(a, b)]){
+        // 往復の辺：進む向きの右側へふくらむ弧（逆向きの辺は反対側になる）
+        var dx = B.x - A.x, dy = B.y - A.y, L = Math.hypot(dx, dy) || 1, bend = Math.min(0.2 * L, nh * 1.6);
+        var cx = (A.x + B.x) / 2 - dy / L * bend, cy = (A.y + B.y) / 2 + dx / L * bend;
+        bez(rim(A, dirTo(A, cx, cy)), {x: cx, y: cy}, rim(B, dirTo(B, cx, cy)));
+      } else {
+        var ang2 = Math.atan2(B.y - A.y, B.x - A.x);
+        pts.push(rim(A, ang2), rim(B, ang2 + Math.PI));
+      }
+      return (geoms[gk] = pts);
     };
-    this.edgeEnds = edgeEnds;
+    var lenOf = function(pts){ var L = 0; for (var i = 1; i < pts.length; i++) L += Math.hypot(pts[i].x - pts[i - 1].x, pts[i].y - pts[i - 1].y); return L; };
+    // 点の列の先頭から割合 f までの点の列（f = 1 で全部）と、そこでの向き
+    var cutPts = this.cutPts = function(pts, f){
+      var L = lenOf(pts) * Math.max(0, Math.min(1, f)), out = [pts[0]], acc = 0;
+      for (var i = 1; i < pts.length; i++){
+        var sl = Math.hypot(pts[i].x - pts[i - 1].x, pts[i].y - pts[i - 1].y);
+        if (acc + sl >= L){ var r = sl ? (L - acc) / sl : 0; out.push({x: pts[i - 1].x + (pts[i].x - pts[i - 1].x) * r, y: pts[i - 1].y + (pts[i].y - pts[i - 1].y) * r}); return out; }
+        acc += sl; out.push(pts[i]);
+      }
+      return out;
+    };
+    var pathD = this.pathD = function(pts){ return pts.map(function(p, i){ return (i ? "L" : "M") + p.x.toFixed(1) + " " + p.y.toFixed(1); }).join(""); };
+    var at2 = function(pts, f){
+      var q = cutPts(pts, f), n = q.length, p = q[n - 1], o = n > 1 ? q[n - 2] : pts[0];
+      if (Math.hypot(p.x - o.x, p.y - o.y) < 1e-6){ o = pts[0]; p = pts[1] || pts[0]; }
+      var L = Math.hypot(p.x - o.x, p.y - o.y) || 1;
+      return {x: q[n - 1].x, y: q[n - 1].y, ux: (p.x - o.x) / L, uy: (p.y - o.y) / L};
+    };
     var gE = D.el("g", {}, svg), gT = D.el("g", {}, svg), gC = D.el("g", {}, svg), gN = D.el("g", {}, svg), gW = D.el("g", {}, svg), gB = D.el("g", {}, svg);
-    var arrow = function(g, e, col, wd){
-      var s = 10 + wd, x = e.x2, y = e.y2, px = -e.uy, py = e.ux;
-      return D.el("path", {d: "M" + x.toFixed(1) + " " + y.toFixed(1) + "L" + (x - e.ux * s + px * s * 0.5).toFixed(1) + " " + (y - e.uy * s + py * s * 0.5).toFixed(1) +
-        "L" + (x - e.ux * s - px * s * 0.5).toFixed(1) + " " + (y - e.uy * s - py * s * 0.5).toFixed(1) + "Z", fill: col}, g);
+    var headD = this.headD = function(pts, f, wd){
+      var e = at2(pts, f), s = 10 + wd, x = e.x, y = e.y, px = -e.uy, py = e.ux;
+      return "M" + x.toFixed(1) + " " + y.toFixed(1) + "L" + (x - e.ux * s + px * s * 0.5).toFixed(1) + " " + (y - e.uy * s + py * s * 0.5).toFixed(1) +
+        "L" + (x - e.ux * s - px * s * 0.5).toFixed(1) + " " + (y - e.uy * s - py * s * 0.5).toFixed(1) + "Z";
     };
+    var arrow = function(g, pts, col, wd){ return D.el("path", {d: headD(pts, 1, wd), fill: col}, g); };
     // ほかの辺（--line）と重み
     var placed = nodes.map(function(o){ return {x0: o.x - o.w / 2 - 4, x1: o.x + o.w / 2 + 4, y0: o.y - o.h / 2 - 4, y1: o.y + o.h / 2 + 4}; });
     var hit = function(r){ return placed.some(function(q){ return r.x0 < q.x1 && q.x0 < r.x1 && r.y0 < q.y1 && q.y0 < r.y1; }); };
@@ -190,20 +267,20 @@ return class extends base.MotionElement {
     var crowded = [];
     this.wlabels = [];
     Object.keys(pl.edges).forEach(function(k){
-      var e = pl.edges[k], A = at[e.from], B = at[e.to], g = edgeEnds(A, B, 0, 0);
-      D.el("line", {x1: g.x1.toFixed(1), y1: g.y1.toFixed(1), x2: g.x2.toFixed(1), y2: g.y2.toFixed(1), stroke: "var(--line)", "stroke-width": 2.5}, gE);
-      if (self.directed) arrow(gE, g, "var(--line)", 2.5);
+      var e = pl.edges[k], pts = geom(e.from, e.to);
+      D.el("path", {d: pathD(pts), fill: "none", stroke: "var(--line)", "stroke-width": 2.5}, gE);
+      if (self.directed) arrow(gE, pts, "var(--line)", 2.5);
       if (!P.weights || typeof e.w !== "number") return;
-      var s = fmt(e.w, decimals(e.w)), w = tw(s) + 8, h = fs + 6, best = null;
-      [0.5, 0.38, 0.62, 0.28, 0.72].some(function(f){
-        return [1, -1].some(function(side){
-          var off = fs * 0.62 + 4, cx = g.x1 + (g.x2 - g.x1) * f - g.uy * off * side, cy = g.y1 + (g.y2 - g.y1) * f + g.ux * off * side;
+      var s = fmt(e.w, decimals(e.w)), w = tw(s) + 8, h = fs + 6, best = null, loop = e.from === e.to;
+      (loop ? [0.5] : [0.5, 0.38, 0.62, 0.28, 0.72]).some(function(f){
+        return (loop ? [1, -1, 1.8, -1.8] : [1, -1]).some(function(side){
+          var g = at2(pts, f), off = (fs * 0.62 + 4) * side, cx = g.x - g.uy * off, cy = g.y + g.ux * off;
           var r = {x0: cx - w / 2, x1: cx + w / 2, y0: cy - h / 2, y1: cy + h / 2, cx: cx, cy: cy};
           if (!hit(r) && inside(r)){ best = r; return true; }
           return false;
         });
       });
-      if (!best){ crowded.push(e.from + "–" + e.to); return; }
+      if (!best){ crowded.push(e.from + (self.directed ? "→" : "–") + e.to); return; }
       placed.push(best);
       var t = D.el("text", {x: best.cx.toFixed(1), y: (best.cy + fs * 0.36).toFixed(1), "font-size": fs, "text-anchor": "middle", fill: "var(--fg)",
         stroke: "var(--bg)", "stroke-width": 6, "paint-order": "stroke", style: "font-variant-numeric:tabular-nums"}, gW);
@@ -216,16 +293,16 @@ return class extends base.MotionElement {
     pl.states.forEach(function(s){
       Object.keys(s.parent).forEach(function(c){
         var p = s.parent[c], k = p + "\u0000" + c;
-        if (self.tree[k]) return;
-        var g = edgeEnds(at[p], at[c], 0, 2);
-        self.tree[k] = {g: g, el: D.el("g", {opacity: 0}, gT)};
-        D.el("line", {x1: g.x1.toFixed(1), y1: g.y1.toFixed(1), x2: (g.x2 - g.ux * 8).toFixed(1), y2: (g.y2 - g.uy * 8).toFixed(1), stroke: "var(--term)", "stroke-width": 4.5, "stroke-linecap": "round"}, self.tree[k].el);
-        arrow(self.tree[k].el, g, "var(--term)", 4.5);
+        if (self.tree[k] || p === c) return;
+        var pts = geom(p, c), L = lenOf(pts);
+        self.tree[k] = {el: D.el("g", {opacity: 0}, gT)};
+        D.el("path", {d: pathD(cutPts(pts, Math.max(0, (L - 8) / L))), fill: "none", stroke: "var(--term)", "stroke-width": 4.5, "stroke-linecap": "round"}, self.tree[k].el);
+        arrow(self.tree[k].el, pts, "var(--term)", 4.5);
       });
       Object.keys(s.chosen).forEach(function(k){
         if (self.chosen[k]) return;
-        var A = at[s.chosen[k][0]], B = at[s.chosen[k][1]];
-        self.chosen[k] = {el: D.el("line", {stroke: "var(--term)", "stroke-width": 8, "stroke-linecap": "round", opacity: 0}, gC), A: A, B: B};
+        self.chosen[k] = {el: D.el("path", {d: "M0 0", fill: "none", stroke: "var(--term)", "stroke-width": 8, "stroke-linecap": "round", opacity: 0}, gC), a: s.chosen[k][0], b: s.chosen[k][1],
+          head: self.directed ? D.el("path", {d: "M0 0", fill: "var(--term)", opacity: 0}, gC) : null};
       });
     });
     // 頂点：塗り（訪れた）、点線の輪（候補）、太い輪（今）、名前
@@ -334,19 +411,22 @@ return class extends base.MotionElement {
     var takeAt = {};
     cur.take.forEach(function(x, j){ takeAt[x.k] = {j: j, a: x.a, b: x.b}; });
     Object.keys(this.chosen).forEach(function(k2){
-      var c = self.chosen[k2], el = c.el, A, B, f = 0, op = 0;
+      var c = self.chosen[k2], el = c.el, a = c.a, b = c.b, f = 0, op = 0;
       if (takeAt[k2] && k > 0){
-        A = self.at[takeAt[k2].a]; B = self.at[takeAt[k2].b];
+        a = takeAt[k2].a; b = takeAt[k2].b;
         f = D.prog(t, tm.start + takeAt[k2].j * P.dur, P.dur); op = f > 0 ? 1 : 0;
       } else if (cur.chosen[k2]){
-        A = c.A; B = c.B; f = 1; op = 1;
+        a = cur.chosen[k2][0]; b = cur.chosen[k2][1]; f = 1; op = 1;
       } else if (prev.chosen[k2] && k > 0){
-        A = c.A; B = c.B; f = 1; op = 1 - D.prog(t, 0, tm.fade);
-      } else { A = c.A; B = c.B; }
-      var g = self.edgeEnds(A, B, 0, 0);
-      el.setAttribute("x1", g.x1.toFixed(1)); el.setAttribute("y1", g.y1.toFixed(1));
-      el.setAttribute("x2", (g.x1 + (g.x2 - g.x1) * f).toFixed(1)); el.setAttribute("y2", (g.y1 + (g.y2 - g.y1) * f).toFixed(1));
+        a = prev.chosen[k2][0]; b = prev.chosen[k2][1]; f = 1; op = 1 - D.prog(t, 0, tm.fade);
+      }
+      var pts = self.geom(a, b), L = 0;
+      for (var i = 1; i < pts.length; i++) L += Math.hypot(pts[i].x - pts[i - 1].x, pts[i].y - pts[i - 1].y);
+      // 向きのあるグラフ：線は矢じりの手前で止め、矢じりを線の先に付ける
+      var fl = c.head ? f * Math.max(0, (L - 12) / (L || 1)) : f;
+      el.setAttribute("d", f > 0 ? self.pathD(self.cutPts(pts, fl)) : "M0 0");
       el.setAttribute("opacity", op.toFixed(3));
+      if (c.head){ c.head.setAttribute("d", f > 0 ? self.headD(pts, f, 8) : "M0 0"); c.head.setAttribute("opacity", op.toFixed(3)); }
     });
     // 合計：前の値から今の値へ数え上げる
     if (this.totalText){
