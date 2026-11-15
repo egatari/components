@@ -4,7 +4,8 @@
 //   2. no negative or NaN size (width, height, r, rx, ry, font-size, stroke-width) and no NaN in any attribute
 //   3. nothing drawn outside the element
 //   4. text ≥ 24 px (except text marked data-annot)
-//   5. the territory names of the drawn islands (竹島, 尖閣諸島; 沖ノ鳥島 and 南鳥島 are drawn only with islands="all" or layout="true",
+//   5. with territory-islands="show", the territory names of the drawn islands (竹島, 尖閣諸島; 沖ノ鳥島 and 南鳥島 are drawn only with islands="all" or layout="true",
+//      and by default (2.2.0) no names for 竹島・尖閣諸島 in the inset layout;
 //      tools/test-map-territory.mjs) are written, or a warning names the missing one
 // Also the m-bars of the nightly deck that logged "<rect> attribute height: A negative value" (2026-10-25, japan-population):
 // orient="h" with no height, so the element is 0 px high; it must warn instead and keep every size ≥ 0.
@@ -27,10 +28,11 @@ const POINTS = { points: [
 const CHORO = { values: { 13: 1405, 14: 924, 27: 884, 23: 754, 11: 734, 12: 628, 28: 547, '01': 522, 40: 514, 31: 55, 47: 147 },
   classes: [0, 100, 300, 500, 800], regions: [{ id: '13', label: '東京', step: 2 }, { id: '27', label: '大阪', step: 2 }] };
 const CASES = [
-  ['points', '', POINTS],
-  ['points, labels="none"', 'labels="none"', POINTS],
-  ['choropleth + legend', 'legend="人口" unit="万人" show="value"', CHORO],
-  ['choropleth + legend, labels="none"', 'labels="none" legend="人口" unit="万人"', CHORO],
+  ['points', 'territory-islands="show"', POINTS],
+  ['points, labels="none"', 'labels="none" territory-islands="show"', POINTS],
+  ['choropleth + legend', 'legend="人口" unit="万人" show="value" territory-islands="show"', CHORO],
+  ['choropleth + legend, labels="none"', 'labels="none" legend="人口" unit="万人" territory-islands="show"', CHORO],
+  ['points, territory names by default (none)', '', POINTS],
 ];
 const SIZES = [['300 px', 'height:300px'], ['240 px', 'height:240px'], ['300 px × 420 px', 'height:300px;width:420px']];
 const slides = [];
@@ -80,6 +82,7 @@ try {
     ok(bad.bad.length === 0, `${slides[i].name}: sizes ≥ 0, no NaN, inside the element, text ≥ 24 px` + (bad.bad.length ? ': ' + bad.bad.slice(0, 4).join('; ') : ''));
     // m-bars 2.0 reports it through ctx.report("size", "[bars] …") (the shim's bridge shows it on the console); 1.x warned "m-bars: …"
     if (slides[i].bars) { ok(warnings.some((w) => w.startsWith('m-bars:') || /: size: \[bars\] the element \(.*\) is too small/.test(w)), `${slides[i].name}: reports that the element is too small`); continue; }
+    if (/by default/.test(slides[i].name)) { ok(NAMES.every((n) => !bad.names.includes(n)), `${slides[i].name}: 竹島・尖閣諸島 are not named by default (2.2.0)`); continue; }
     const missing = NAMES.filter((n) => !bad.names.includes(n));
     const unwarned = missing.filter((n) => !warnings.some((w) => w.includes(n)));
     ok(unwarned.length === 0, `${slides[i].name}: territory names ${missing.length ? 'missing (' + missing.join('、') + ') ' + (unwarned.length ? 'without a warning' : 'with a warning') : 'all written'}`);

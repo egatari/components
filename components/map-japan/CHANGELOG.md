@@ -2,6 +2,13 @@
 
 The part's own versions (Egatari spec §6.1). Releases of the whole library are in the repository's CHANGELOG.md.
 
+## 2.2.0 (components 2.11.0)
+
+- Island names only when needed (owner decision, docs/map-design.md §4.5.1). In the default `layout="inset"`, the names of 竹島 and 尖閣諸島 are no longer written, and neither are their leader lines; the islands' shapes, points and fills are unchanged.
+  - Names are written with `layout="true"`, in the 小笠原諸島 inset, or with the new `territory-islands="show"`. `"hide"` writes none.
+  - The readable layer lists an island only when its name is written; 北方領土 is always listed.
+  - The space a name would take is still reserved, so every other label stays where it was: with `territory-islands="show"` the map paints the same pixels as 2.1.0.
+
 ## 2.1.0 (components 2.7.0)
 
 - Colour ramps (spec §8.4 `--ramp-1` … `--ramp-5`): on a theme with ramps, class i of `values` takes the ramp at t = i/(n−1) (base `ramp`), in the map and the legend; the legend with values and the readable list stay. Every stop falls back to the 2.0 class colour (mixed from --bg, --term and --fg), so themes without ramps give the same colours. The lightness-gap report is not made on ramp themes (the theme chooses the stops). Uses base 1.2.0 (ramp, rampStops).

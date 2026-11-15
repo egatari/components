@@ -53,6 +53,7 @@ const cases = [];
 for (const h of HEIGHTS) for (const w of WIDTHS) for (const labels of ['focus', 'none'])
   cases.push({ kind: 'grid', name: `${w}×${h}, labels=${labels}`, attrs: `labels="${labels}"`, style: `width:${w}px;height:${h}px`, data: COLOURED });
 cases.push({ kind: 'grid', name: 'graticule, 1184×440', attrs: 'grid="graticule"', style: 'height:440px', data: COLOURED });
+cases.push({ kind: 'grid', name: 'territory-islands="show", 1184×440', attrs: 'territory-islands="show"', style: 'height:440px', data: COLOURED });
 cases.push({ kind: 'names', name: 'names in labels and the readable layer', attrs: 'labels="all"', style: 'height:600px',
   data: { regions: ['CHN', 'TWN', 'KOR', 'PRK', 'MNG', 'THA', 'USA', 'GBR'].map((id) => ({ id, step: 1 })) } });
 cases.push({ kind: 'taiwan-regions', name: 'China coloured as a country', attrs: '', style: 'height:440px', data: { regions: [{ id: 'CHN', tone: 'emph' }] } });
@@ -153,12 +154,15 @@ try {
       }
       return { s0, sN, sr, geo: [...new Set(geo)], size: [el.clientWidth, el.clientHeight] };
     }, i);
-    const TERR = ['北方領土', '竹島', '尖閣諸島', '沖ノ鳥島', '南鳥島', '帰属未定地'];
+    // 2.2.0: the four island points are drawn (and listed) only with territory-islands="show"; 北方領土 and 帰属未定地 always
+    const DOTS = ['竹島', '尖閣諸島', '沖ノ鳥島', '南鳥島'], showDots = /territory-islands="show"/.test(c.attrs);
     for (const [when, s] of [['step 0', r.s0], ['final', r.sN]]) {
       ok(s.bad.length === 0, `${c.name}: ${s.bad.slice(0, 4).join('; ')}`);
-      for (const t of TERR) ok(s.drawn.includes(t), `${c.name} (${when}): ${t} is not drawn`);
+      for (const t of ['北方領土', '帰属未定地']) ok(s.drawn.includes(t), `${c.name} (${when}): ${t} is not drawn`);
+      for (const t of DOTS) ok(s.drawn.includes(t) === showDots, `${c.name} (${when}): ${t} is ${showDots ? 'not ' : ''}drawn`);
     }
-    for (const t of ['北方領土', '竹島', '尖閣諸島', '沖ノ鳥島', '南鳥島']) ok(r.sr.filter((x) => x.startsWith(t + '（')).length === 1, `${c.name}: the readable layer has not exactly one entry for ${t} (${r.sr.join('；')})`);
+    ok(r.sr.filter((x) => x.startsWith('北方領土（')).length === 1, `${c.name}: the readable layer has not exactly one entry for 北方領土`);
+    for (const t of DOTS) ok(r.sr.filter((x) => x.startsWith(t + '（')).length === (showDots ? 1 : 0), `${c.name}: the readable layer lists ${t} ${showDots ? 'not exactly once' : 'though it is not drawn'} (${r.sr.join('；')})`);
     ok(r.sr.filter((x) => x.startsWith('帰属未定地（')).length === 1, `${c.name}: the readable layer has no entry for 帰属未定地`);
     ok(r.geo.length === 0, `${c.name}: ${r.geo.slice(0, 4).join('; ')}`);
     if (c.kind === 'grid') {

@@ -36,6 +36,8 @@ for (const [h, ws] of [[300, [420, 1184]], [380, [420, 1184]], [520, [420, 1184]
 for (const h of [300, 440, 520])
   cases.push({ kind: 'extremes', name: `layout="true" with the four extremities, ${h} px`, attrs: 'layout="true" labels="none"', style: `height:${h}px`, data: EXTREMES, layout: 'true' });
 const GROUPS = { regions: ['hokkaido', 'tohoku', 'kanto', 'chubu', 'kinki', 'chugoku', 'shikoku', 'kyushu'].map((g, i) => ({ group: g, tone: `series-${i % 4 + 1}`, step: i + 1 })) };
+for (const [w, h] of [[1184, 440], [600, 380]])
+  cases.push({ kind: 'show', name: `territory-islands="show", ${w}×${h}`, attrs: 'territory-islands="show"', style: `width:${w}px;height:${h}px`, data: REGION, layout: 'inset' });
 cases.push({ kind: 'regions', name: 'the demo\'s 八地方区分 slide', attrs: 'aria-label="八地方区分の地図"', style: 'height:440px', data: GROUPS, layout: 'inset' });
 for (const h of [240, 300, 360, 440, 520, 600]) for (const w of [420, 640, 900, 1184]) for (const isl of ['main', 'all'])
   cases.push({ kind: 'regions', name: `八地方区分, islands="${isl}", ${w}×${h}`, attrs: `islands="${isl}"`, style: `width:${w}px;height:${h}px`, data: GROUPS, layout: 'inset' });
@@ -128,10 +130,12 @@ try {
     const layer = (t) => r.sr.filter((x) => x.startsWith(t + '（') && builtIn(x)).length;
     const author = (t) => r.sr.some((x) => x.startsWith(t) && !builtIn(x));
     for (const t of T.concat(FAR, c.layout === 'true' ? OGA : [])) {
-      const drawn = r.sN.drawn.includes(t), inLayer = layer(t) + (author(t) ? 1 : 0);
-      ok(drawn ? inLayer === 1 : inLayer === 0, `${c.name}: readable layer has ${inLayer} entries for ${t}, drawn: ${drawn} (${r.sr.join('；')})`);
+      // 2.2.0: 北方領土 is listed when drawn; the island names only when they are written (or an author's point names the island)
+      const listed = t === '北方領土' ? r.sN.drawn.includes(t) : r.sN.named.includes(t) || author(t), inLayer = layer(t) + (author(t) ? 1 : 0);
+      ok(listed ? inLayer === 1 : inLayer === 0, `${c.name}: readable layer has ${inLayer} entries for ${t}, listed: ${listed} (${r.sr.join('；')})`);
     }
     if (c.kind === 'grid' && c.layout === 'inset') {
+      ok(!['竹島', '尖閣諸島'].some((t) => r.sN.named.includes(t)), `${c.name}: 竹島・尖閣諸島 are named in the default inset layout (2.2.0: names only when needed)`);
       ok(!r.texts.includes('小笠原諸島') && !FAR.some((t) => r.sN.drawn.includes(t)), `${c.name}: the 小笠原諸島 inset is drawn by default`);
     }
     if (c.layout === 'true' && c.kind === 'grid') {
@@ -140,6 +144,7 @@ try {
       for (const t of OGA) if (!r.sN.named.includes(t)) console.log(`     ${c.name}: ${t} not named (warned)`);
       for (const t of OGA) ok(r.s0.named.includes(t) && r.sN.named.includes(t) || warnings.some((w) => w.includes(`(${r.size[0]}×${r.size[1]} px)`) && w.includes('the name ' + t)), `${c.name}: ${t} is neither named nor warned`);
     }
+    if (c.kind === 'show') for (const t of ['竹島', '尖閣諸島']) ok(r.sN.named.includes(t) || warnings.some((w) => w.includes(`(${r.size[0]}×${r.size[1]} px)`) && w.includes('the name ' + t)), `${c.name}: ${t} is neither named nor warned`);
     if (c.kind === 'all') {
       const shownInset = r.texts.includes('小笠原諸島') || FAR.some((t) => r.sN.drawn.includes(t));
       const warned = warnings.some((w) => w.includes(`(${r.size[0]}×${r.size[1]} px)`) && w.includes('小笠原諸島 inset'));

@@ -2,6 +2,14 @@
 
 The part's own versions (Egatari spec §6.1). Releases of the whole library are in the repository's CHANGELOG.md.
 
+## 2.2.0 (components 2.11.0)
+
+- Island points only when needed (owner decision, docs/map-design.md §4.5.1). At world scale, the points of 竹島, 尖閣諸島, 沖ノ鳥島 and 南鳥島 looked like stray dots, so they are no longer drawn by default.
+  - `territory-islands="show"` draws them as before; `"hide"` never draws them.
+  - Japan's fill and the data are unchanged.
+  - The readable layer lists the four only when they are drawn; 北方領土 and 帰属未定地 are always listed.
+  - Other labels keep their places: with `territory-islands="show"` the map paints the same pixels as 2.1.0.
+
 ## 2.1.0 (components 2.7.0)
 
 - Colour ramps (spec §8.4 `--ramp-1` … `--ramp-5`): on a theme with ramps, class i of `values` takes the ramp at t = i/(n−1) (base `ramp`), in the map and the legend; the legend with values and the readable list stay. Every stop falls back to the 2.0.3 class colour (mixed from --bg, --term and --fg), so themes without ramps give the same colours. The lightness-gap report is not made on ramp themes (the theme chooses the stops). Uses base 1.2.0 (ramp, rampStops).
