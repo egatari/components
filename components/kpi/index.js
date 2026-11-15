@@ -8,7 +8,7 @@
 // 見せ方（docs/conventions.md §1）：count（数え上げ、既定）・rise（最後の値のまま少し小さい大きさから戻る）・flip（右の桁から 1 桁ずつ
 // めくれて止まる）・underline（出たあと数字の下に線を引く）。段階の数・長さ・合図・最後の中身はどれも同じ
 // 2.0（Egatari spec §6.1 の部品）：base の MotionElement・el・mtext・prog・lerp・clamp・variant・previewOpacity を使い、プレイヤーのグローバルは使わない
-egatariParts.define({name: "kpi", version: "2.0.4", requires: {base: "1.2.0"}, element: "m-kpi"}, function(deps){
+egatariParts.define({name: "kpi", version: "2.0.5", requires: {base: "1.2.0"}, element: "m-kpi"}, function(deps){
 "use strict";
 var base = deps.base;
 return class extends base.MotionElement {
@@ -23,13 +23,13 @@ return class extends base.MotionElement {
     example: {cards: [{label: "作成時間", value: 62, unit: "%", prefix: "−", delta: {dir: "down", text: "前の版から 8 pt", good: true}}]},
   };
   static props = {
-    cols:       {type: "number", default: 0, doc: "1 行の札の数（0 = 札の数、4 まで）"},
-    digits:     {type: "number", default: 0, doc: "数字の小数桁（札の digits が優先）"},
-    "per-step": {type: "number", default: 1, doc: "1 ステップに出す札の数（0 = 全部をステップ 1 で）"},
+    cols:       {type: "number", default: 0, doc: "1 行のカードの数（0 = カードの数、4 まで）"},
+    digits:     {type: "number", default: 0, doc: "数字の小数桁（カードの digits が優先）"},
+    "per-step": {type: "number", default: 1, doc: "1 ステップに出すカードの数（0 = 全部をステップ 1 で）"},
     dur:        {type: "number", default: 1.2, doc: "数え上げの秒数"},
-    stagger:    {type: "number", default: 0.3, doc: "同じステップの札の出だしのずれ（秒）"},
+    stagger:    {type: "number", default: 0.3, doc: "同じステップのカードの出だしのずれ（秒）"},
     count:      {type: "bool", default: true, doc: "数字を数え上げる"},
-    size:       {type: "number", default: 0, doc: "数字の字の大きさ（px。0 = 札の高さから）"},
+    size:       {type: "number", default: 0, doc: "数字の字の大きさ（px。0 = カードの高さから）"},
   };
   get steps(){
     if (this.getAttribute("steps") !== null) return +this.getAttribute("steps");

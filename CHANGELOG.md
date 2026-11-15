@@ -46,6 +46,9 @@ This release adds:
 ### Wording
 
 - Rule 6b in READMEs and one demo, no code change: ビルドのときに (m-callout), ツール (m-cards), ステップのキー (m-menu), 比較のためのコピー (m-particles), プレーヤー (m-timer), キー (m-venn), 試しに導入 (m-kpi demo). These are phrases Studio's JA_WORDS rewrites in the ja pack; those entries can go.
+- Rule 6b in property descriptions and data notes, patch versions with the same drawing (every demo frame compared with the 2.13 candidate before this change):
+  - `m-heatmap` 2.1.2: [行, 列, ステップ]; `m-hist` 2.0.6: パーツが数える; `m-boxplot` 2.0.6: 表示する値; `m-score` 2.1.2: ビルドのときに足す; `m-timer` 2.0.6: 1 ステップ; `m-kpi` 2.0.5 and `m-menu` 2.0.4: 札 → カード.
+  - `m-curves` and `m-timeline` keep their versions: their remaining words are in code comments, which no pack carries.
 
 ### For Studio
 

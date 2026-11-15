@@ -12,10 +12,10 @@
 // 2.0（Egatari spec §6.1 の部品）：base の MotionElement・el・prog を使い、プレイヤーのグローバルは使わない。
 //   延長を戻すのは ctx.entered だけ（1.x の deck:pos の代わりはない）。日本語かどうかは mount の ctx.lang、動画かどうかは ctx.mode。
 //   要素の大きさの問題は ctx.report("size", …)。印刷の前後は document.defaultView の beforeprint・afterprint
-egatariParts.define({name: "timer", version: "2.0.5", requires: {base: "1.2.0"}, element: "m-timer"}, function(deps){
+egatariParts.define({name: "timer", version: "2.0.6", requires: {base: "1.2.0"}, element: "m-timer"}, function(deps){
 "use strict";
 var base = deps.base;
-var CSS_ID = "timer-2-0-5-css";   // the style element this part writes, named with its name and version (spec §6.1 Identifiers)
+var CSS_ID = "timer-2-0-6-css";   // the style element this part writes, named with its name and version (spec §6.1 Identifiers)
 var JA = {ready: "準備の確認", total: "合計", remaining: "残り", done: "時間", start: "準備ができたら　→ キーでスタート", next: "終了　→ キーで次へ", end: "終了",
           min: "分", sec: "秒", plus: "＋1 分", minus: "−1 分"};
 var EN = {ready: "Ready?", total: "Total", remaining: "Remaining", done: "Time's up", start: "When ready, press → to start", next: "Time's up. Press → for the next", end: "Time's up",
@@ -51,7 +51,7 @@ return class extends base.MotionElement {
         next: {type: "string"}, end: {type: "string"}, min: {type: "string"}, sec: {type: "string"}, plus: {type: "string"}, minus: {type: "string"}}}}},
     example: {ready: {title: "準備の確認", text: "用紙とペンがそろっているか"}, phases: [{title: "① 付箋に書く", short: "付箋に書く", sec: 180}, {title: "② 島で選ぶ", short: "島で選ぶ", sec: 300}]},
     note: {en: "phases is a list of {\"title\", \"sec\"} (sec: whole seconds, not \"3分\"); one phase per step",
-           ja: "phases は {\"title\", \"sec\"} の並び（sec は秒の整数。\"3分\" のような字ではない）。区切り 1 つが 1 段階"},
+           ja: "phases は {\"title\", \"sec\"} の並び（sec は秒の整数。\"3分\" のような字ではない）。区切り 1 つが 1 ステップ"},
   };
   static props = {};
   get steps(){ return this.getAttribute("steps") !== null ? +this.getAttribute("steps") : ((this.data || {}).phases || []).length; }

@@ -2,6 +2,10 @@
 
 The part's own versions (Egatari spec §6.1). Releases of the whole library are in the repository's CHANGELOG.md.
 
+## 2.0.6 (components 2.13.0)
+
+- Japanese wording of the property descriptions and data notes (no change to the drawing).
+
 ## 2.0.5 (components 2.9.0)
 
 - Hardening: an element too small for its drawing (0 px wide, or 0 × 0) no longer gives the phase rows a negative SVG size (Chrome logged "A negative value is not valid"); the sizes are clamped at 0. Drawing at normal sizes is unchanged (tools/test-same-paint.mjs, 4 themes). Checked by tools/test-zero-size.mjs.

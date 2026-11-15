@@ -17,7 +17,7 @@
 // 読める層：音の名前を文字で（「ド レ ミ ファ｜ソ …」）。描いた図は aria-hidden
 // 2.0（Egatari spec §6.1 の部品）：base の MotionElement・el・prog・variant・previewOpacity を使い、プレイヤーのグローバルは使わない。
 // 楽譜の描画は組み立てのとき（spec §6.2 build.fields の abcjs）。レッスンのデータや要素の大きさの問題は ctx.report で知らせる（console.warn の代わり）
-egatariParts.define({name: "score", version: "2.1.1", requires: {base: "1.2.0", "markup-reader": "1.0.2"}, element: "m-score"}, function(deps){
+egatariParts.define({name: "score", version: "2.1.2", requires: {base: "1.2.0", "markup-reader": "1.0.2"}, element: "m-score"}, function(deps){
 "use strict";
 var base = deps.base;
 // ---- 楽譜のデータ（DOM を使わない。tools/test-score.mjs が試す） ----
@@ -347,7 +347,7 @@ return class extends base.MotionElement {
         arcs: {type: "array", items: {type: "object", required: ["kind", "from", "to", "n"], properties: {
           kind: {type: "string", enum: ["tie", "slur"]}, from: {type: "integer"}, to: {type: "integer"}, pitch: {type: "string"}, n: {type: "integer"}}}}}}}},
     example: {abc: "X:1\nM:4/4\nL:1/4\nQ:1/4=96\nK:C\nC D E F |]"},
-    note: {en: "write abc only; the build adds abcSvg, abcMap and renderers", ja: "abc だけを書く（abcSvg・abcMap・renderers は組み立てが足す）"},
+    note: {en: "write abc only; the build adds abcSvg, abcMap and renderers", ja: "abc だけを書く（abcSvg・abcMap・renderers はビルドのときに足す）"},
   };
   static props = {
     by: {type: "string", default: "note", doc: "note（1 音・和音ずつ）| measure（1 小節ずつ）"},

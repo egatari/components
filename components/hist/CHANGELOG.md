@@ -2,6 +2,10 @@
 
 The part's own versions (Egatari spec §6.1). Releases of the whole library are in the repository's CHANGELOG.md.
 
+## 2.0.6 (components 2.13.0)
+
+- Japanese wording of the property descriptions and data notes (no change to the drawing).
+
 ## 2.0.5 (components 2.7.0)
 
 - Requires base 1.2.0 and plot 1.1.2 (mtext keeps a lone `*` literal and draws `\*` `\_` `\^` as the character).

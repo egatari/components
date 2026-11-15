@@ -1,6 +1,6 @@
 ---
 name: m-menu
-version: 2.0.3
+version: 2.0.4
 series: common
 tier: standard
 summary: スライドへのリンクのカードを格子に並べる（目次・単元の選び方）。カードは <a href="#<スライドの id>">、行ったスライドに「見た」の印

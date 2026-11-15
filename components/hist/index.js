@@ -9,7 +9,7 @@
 // 2.0（Egatari spec §6.1 の部品）：base の MotionElement・el・mtext・prog・lerp・variant・previewOpacity、plot の Plot、
 // 代表値と度数は hist-core（1.x の static stats）を使い、プレイヤーのグローバルは使わない。書き方やデータの知らせ
 // （1.x の console.warn）は mount で ctx.report に。言語は ctx.lang（mount で読む）
-egatariParts.define({name: "hist", version: "2.0.5", requires: {base: "1.2.0", "hist-core": "1.0.0", plot: "1.1.2"}, element: "m-hist"}, function(deps){
+egatariParts.define({name: "hist", version: "2.0.6", requires: {base: "1.2.0", "hist-core": "1.0.0", plot: "1.1.2"}, element: "m-hist"}, function(deps){
 "use strict";
 var base = deps.base, plot = deps.plot;
 // ---- 代表値と度数（hist-core。tools/test-stats.mjs が試す） ----
@@ -68,7 +68,7 @@ return class extends base.MotionElement {
           properties: {label: {type: "string"}, tone: {type: "string"}, values: NUMS, table: TABLE}}}}},
       example: {values: [23, 31, 27, 18, 25, 29, 33, 22, 26, 28], bins: {start: 15, width: 5}},
       note: {en: "raw values with bins {start, width} (the part counts), or a frequency table [{from, to, count}]; up to 2 series [{label, tone, values | table}]",
-             ja: "生の値と階級 {start, width}（部品が数える）か、度数分布表 [{from, to, count}]。系列は 2 つまで [{label, tone, values か table}]"},
+             ja: "生の値と階級 {start, width}（パーツが数える）か、度数分布表 [{from, to, count}]。系列は 2 つまで [{label, tone, values か table}]"},
     };
   })();
   static props = {

@@ -13,10 +13,10 @@
 // 2.0（Egatari spec §6.1 の部品）：base を使い、プレイヤーのグローバルは使わない。札の行き先（# の後ろ、spec §9.1A）はこのパーツが
 // ctx.slides で読み（slideOf）、「見た」は ctx.visited(スライドの鍵)。印はスライドに入ったときの描画（ctx.entered）で付け直す
 // （1.x は DECK の deck:pos を聞いていた。ほかのスライドを見られるのは、このスライドを離れている間だけ）
-egatariParts.define({name: "menu", version: "2.0.3", requires: {base: "1.2.0"}, element: "m-menu"}, function(deps){
+egatariParts.define({name: "menu", version: "2.0.4", requires: {base: "1.2.0"}, element: "m-menu"}, function(deps){
 "use strict";
 var base = deps.base;
-var CSS_ID = "menu-2-0-3-css";   // the style element this part writes, named with its name and version (spec §6.1 Identifiers)
+var CSS_ID = "menu-2-0-4-css";   // the style element this part writes, named with its name and version (spec §6.1 Identifiers)
 var CSS =
   "m-menu{display:grid;gap:var(--mm-gap,18px);grid-template-columns:repeat(var(--mm-cols,3),minmax(0,1fr));grid-auto-rows:minmax(var(--mm-h,104px),auto);align-content:start}" +
   "m-menu>a{position:relative;display:flex;align-items:center;gap:18px;padding:14px 22px;box-sizing:border-box;" +
@@ -65,12 +65,12 @@ return class extends base.MotionElement {
   // データの形（kit/shape.js）：JSON ではなく、子のリンク <a href="#<スライドの id>">題</a>
   static shape = {links: true, example: '<a href="#s-abc123" data-sub="副題">題</a>'};
   static props = {
-    cols:       {type: "number", default: 0, doc: "列の数（0 なら札の数から：3 枚までは 1 行、4 枚は 2 列、それより多ければ 3 列）"},
-    "per-step": {type: "number", default: 0, doc: "1 ステップに出す札の数（0 なら初めから全部出し、ステップを使わない）"},
-    size:       {type: "number", default: 34, doc: "札の題の字の大きさ（px）。副題はその 0.8 倍（本文の下限の 27px より小さくしない）"},
-    fade:       {type: "number", default: 0.4, doc: "札が出る秒数"},
-    stagger:    {type: "number", default: 0.12, doc: "同じステップの札どうしの出るずれ（秒）"},
-    visited:    {type: "bool", default: true, doc: "このセッションで行き先のスライドを開いた札に「見た」の印を付ける"},
+    cols:       {type: "number", default: 0, doc: "列の数（0 ならカードの数から：3 枚までは 1 行、4 枚は 2 列、それより多ければ 3 列）"},
+    "per-step": {type: "number", default: 0, doc: "1 ステップに出すカードの数（0 なら初めから全部出し、ステップを使わない）"},
+    size:       {type: "number", default: 34, doc: "カードの題の字の大きさ（px）。副題はその 0.8 倍（本文の下限の 27px より小さくしない）"},
+    fade:       {type: "number", default: 0.4, doc: "カードが出る秒数"},
+    stagger:    {type: "number", default: 0.12, doc: "同じステップのカードどうしの出るずれ（秒）"},
+    visited:    {type: "bool", default: true, doc: "このセッションで行き先のスライドを開いたカードに「見た」の印を付ける"},
   };
   get steps(){
     var a = this.getAttribute("steps");

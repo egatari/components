@@ -11,7 +11,7 @@
 // 2.0（Egatari spec §6.1 の部品）：base の MotionElement・el・prog・variant・previewOpacity と、計算は heatmap-core（1.x の
 // static calc）を使い、プレイヤーのグローバルは使わない。書き方やデータの知らせ（1.x の console.warn）は mount で ctx.report に。
 // 言語は ctx.lang（mount で読む）。凡例のグラデーションの id は heatmap-2-0-2-legend-<n>（1.x は m-heatmap-legend-<n>）
-egatariParts.define({name: "heatmap", version: "2.1.1", requires: {base: "1.2.0", "heatmap-core": "1.0.0"}, element: "m-heatmap"}, function(deps){
+egatariParts.define({name: "heatmap", version: "2.1.2", requires: {base: "1.2.0", "heatmap-core": "1.0.0"}, element: "m-heatmap"}, function(deps){
 "use strict";
 var base = deps.base;
 // ---- 計算（heatmap-core。tools/test-heatmap.mjs がブラウザなしで試す） ----
@@ -38,7 +38,7 @@ function clip(s, w, C){
 }
 var ON = function(v){ return /^(on|true|yes)$/i.test(String(v || "").trim()); };
 var TONES = ["term", "emph", "accent2"];
-var ID = "heatmap-2-1-1-";   // name and version of this part, dots replaced (spec §6.1 Identifiers)
+var ID = "heatmap-2-1-2-";   // name and version of this part, dots replaced (spec §6.1 Identifiers)
 var SEQ = 0;   // 凡例のグラデーションの id（ページの中で部品ごとに別。mount は 1 回だけ。このパーツだけの数え）
 return class extends base.MotionElement {
   static partName = "heatmap";   // the registry name (define meta name), for report prefixes
@@ -53,7 +53,7 @@ return class extends base.MotionElement {
       highlight: {type: "array", items: {type: "array", minItems: 2, maxItems: 3, items: {type: "number"}}}}},
     example: {rows: ["ねこ", "いぬ"], cols: ["ねこ", "いぬ"], values: [[45, 5], [6, 44]]},
     note: {en: "values[row][col], one row per label in rows and one number per label in cols; highlight [[row, col] or [row, col, step]] (0-based)",
-           ja: "values[行][列]。rows の名前ごとに 1 行、cols の名前ごとに 1 つの数。highlight は [[行, 列] か [行, 列, 段階]]（0 から数える）"},
+           ja: "values[行][列]。rows の名前ごとに 1 行、cols の名前ごとに 1 つの数。highlight は [[行, 列] か [行, 列, ステップ]]（0 から数える）"},
   };
   static props = {
     scale:     {type: "string", default: "sequential", doc: "sequential か diverging（center を地の色に 2 色）"},

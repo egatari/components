@@ -11,7 +11,7 @@
 // 2.0（Egatari spec §6.1 の部品）：base の MotionElement・el・mtext・prog・variant・previewOpacity、plot の Plot、
 // 四分位数は boxplot-core（1.x の static stats）を使い、プレイヤーのグローバルは使わない。書き方やデータの知らせ
 // （1.x の console.warn）は mount で ctx.report に。言語は ctx.lang（mount で読む）
-egatariParts.define({name: "boxplot", version: "2.0.5", requires: {base: "1.2.0", "boxplot-core": "1.0.0", plot: "1.1.2"}, element: "m-boxplot"}, function(deps){
+egatariParts.define({name: "boxplot", version: "2.0.6", requires: {base: "1.2.0", "boxplot-core": "1.0.0", plot: "1.1.2"}, element: "m-boxplot"}, function(deps){
 "use strict";
 var base = deps.base, plot = deps.plot;
 // ---- 四分位数（boxplot-core。tools/test-stats.mjs が試す） ----
@@ -75,8 +75,8 @@ return class extends base.MotionElement {
     outliers: {type: "string", default: "off", doc: "on：1.5×四分位範囲の外を外れ値（点）にし、ひげはその内側まで"},
     dots:     {type: "string", default: "off", doc: "on：値の点を箱の下に並べる（build=\"steps\" ではいつも出る）"},
     build:    {type: "string", default: "steps", doc: "steps（求める手順のとおり）か whole（群 1 つ = 1 ステップ）"},
-    unit:     {type: "string", default: "", doc: "書き出す値の後ろに付ける単位"},
-    digits:   {type: "number", default: undefined, doc: "書き出す値の小数桁（書かなければ値の桁＋1 まで）"},
+    unit:     {type: "string", default: "", doc: "表示する値の後ろに付ける単位"},
+    digits:   {type: "number", default: undefined, doc: "表示する値の小数桁（書かなければ値の桁＋1 まで）"},
     dur:      {type: "number", default: 0.8, doc: "1 ステップの動きの秒数"},
   };
   get steps(){

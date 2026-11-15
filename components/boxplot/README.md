@@ -1,6 +1,6 @@
 ---
 name: m-boxplot
-version: 2.0.5
+version: 2.0.6
 series: academic
 tier: specialized
 set: stats
