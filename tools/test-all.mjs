@@ -146,6 +146,7 @@ const TESTS = [
   ['test-nnet', ['tools/test-nnet.mjs', path.join(tmp, 'nnet')]],
   ['test-ctable', ['tools/test-ctable.mjs', path.join(tmp, 'ctable')]],
   ['test-trace', ['tools/test-trace.mjs', path.join(tmp, 'trace')]],
+  ['test-vector', ['tools/test-vector.mjs', path.join(tmp, 'vector')]],
   ['test-mapping', ['tools/test-mapping.mjs', path.join(tmp, 'mapping')]],
   ['test-orbit', ['tools/test-orbit.mjs', path.join(tmp, 'orbit')]],
   ['test-kanbun-num', ['tools/test-kanbun-num.mjs', path.join(tmp, 'kanbun-num')]],
