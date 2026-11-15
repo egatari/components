@@ -147,6 +147,8 @@ const TESTS = [
   ['test-ctable', ['tools/test-ctable.mjs', path.join(tmp, 'ctable')]],
   ['test-trace', ['tools/test-trace.mjs', path.join(tmp, 'trace')]],
   ['test-vector', ['tools/test-vector.mjs', path.join(tmp, 'vector')]],
+  ['test-classify2d', ['tools/test-classify2d.mjs', path.join(tmp, 'classify2d')]],
+  ['test-contour-core', ['tools/test-contour-core.mjs']],
   ['test-mapping', ['tools/test-mapping.mjs', path.join(tmp, 'mapping')]],
   ['test-orbit', ['tools/test-orbit.mjs', path.join(tmp, 'orbit')]],
   ['test-kanbun-num', ['tools/test-kanbun-num.mjs', path.join(tmp, 'kanbun-num')]],
