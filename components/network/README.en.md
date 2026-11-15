@@ -1,6 +1,6 @@
 ---
-summary: Graph search, tours: current, frontier, visited, chosen edges, total
-steps: len(steps)
+summary: Search, tours: current, frontier, visited, chosen edges, total
+steps: #steps
 props:
   dur: s per edge
   size: text px
@@ -8,7 +8,7 @@ props:
 example: {"nodes": [{"id": "A", "x": 0, "y": 0}, {"id": "B", "x": 4, "y": 0}], "edges": [{"from": "A", "to": "B", "w": 4}], "steps": [{"current": "A", "frontier": ["B"]}, {"current": "B", "take": [["A", "B"]], "total": 4}]}
 ---
 
-From a script. Unset fields carry over; `[["C", 3]]`: keyed frontier; `take`/`drop` edit chosen edges.
+From a script. Unset fields persist; `[["C", 3]]` keyed; `take`/`drop` edit chosen edges.
 <!-- llm: omit -->
 - Child JSON: node `id` `x` `y` (your units, y down) `label`; edge `from` `to` `w`; `directed: true`. Step: `current`, `visited`, `frontier`, `parent` (`{"C": "A"}`), `take`/`drop` (`[["A", "C"]]`), `total`, `note`. `frontierKind` queue, stack, pq, set; `total` `{"label", "unit"}`.
 - Omitted fields carry over (`current: null` clears); `parent` accumulates (`null` removes); `take`/`drop` change the chosen edges. `complete: true`: a complete graph with no edges drawn (tours).
