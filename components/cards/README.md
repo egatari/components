@@ -32,7 +32,7 @@ props: layout, arrows, nums, hilite, per-step, stagger, dur
 - 進め方：arrow-right arrows-right-left refresh repeat circle-check checklist list-numbers git-branch target flag rocket hand-click
 - 伝える：message messages mail phone bell speakerphone share world-www microphone presentation
 - 書類：file file-text files notebook book clipboard-list folder news certificate award
-- 道具：tool settings hammer bulb puzzle cpu device-laptop device-mobile robot code scale
+- ツール：tool settings hammer bulb puzzle cpu device-laptop device-mobile robot code scale
 - 自然：leaf tree plant sun moon cloud cloud-rain droplet flame snowflake
 - 安全：shield shield-check lock key alert-triangle first-aid-kit heart heart-rate-monitor eye
 - 学び：school pencil ruler math-function atom flask microscope palette music language
