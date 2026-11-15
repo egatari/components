@@ -24,7 +24,7 @@
 </section>
 
 <section class="slide noconcl">
-  <h2>長いコードは窓で送る（14 行）</h2>
+  <h2>長いコードはスクロールして見せる（14 行）</h2>
   <div class="body"><m-code style="height:440px"><script type="application/json">{"lang": "python", "code": "import numpy as np\nfrom sklearn.datasets import load_iris\nfrom sklearn.model_selection import train_test_split\nfrom sklearn.linear_model import LogisticRegression\n\nX, y = load_iris(return_X_y=True)\nX_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.3, random_state=0)\n\nmodel = LogisticRegression(max_iter=200)\nmodel.fit(X_train, y_train)\n\npred = model.predict(X_test)\nacc = np.mean(pred == y_test)\nprint(round(acc, 3))", "steps": [{"lines": [1, 4], "note": "道具を読み込む"}, {"lines": [6, 7], "note": "データを学習用と確かめ用に 7 対 3 で分ける"}, {"lines": [9, 10], "note": "ロジスティック回帰で学習"}, {"lines": [12, 14], "note": "確かめ用で予測し、正解の割合を表示"}], "output": "0.978"}</script></m-code></div>
 </section>
 </div>

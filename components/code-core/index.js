@@ -94,7 +94,7 @@ function windowFor(n, slots, ra, rb){
     if (bottom) l -= 1;
     if (l >= n - 1){ l = n - 1; bottom = false; }
     if (l < f) continue;
-    // まず窓を埋める（空いた行が少ない方）、次に中心が近い方
+    // まず表示する範囲を埋める（空いた行が少ない方）、次に中心が近い方
     var unused = slots - (top ? 1 : 0) - (bottom ? 1 : 0) - (l - f + 1), fits = ra >= f && rb <= l, score = unused * 1000 + Math.abs((f + l) / 2 - (ra + rb) / 2);
     if (fits && (!best || score < best.score - 1e-9)) best = {f: f, l: l, top: top, bottom: bottom, fits: true, score: score};
   }

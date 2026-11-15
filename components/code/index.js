@@ -226,7 +226,7 @@ return class extends base.MotionElement {
     if (outputH > H) ctx.report("size", "[code] output needs " + outputH + " px height; element has " + H + " px");
   }
   // 収める配置（2.2.0）：説明は下の帯（2 行まで）、長い行は折り返し（続きの行は番号の欄に ↪）、行が多ければステップごとに
-  // そのステップの行を中心にした窓（隠れた行は ⋮ と数）。窓はステップの前半で消え、後半で新しい位置に出る（(k, t) だけで決まる）
+  // そのステップの行が中央に来るようにスクロールして表示する（隠れた行は ⋮ と数）。表示する範囲はステップの前半で消え、後半で新しい位置に出る（(k, t) だけで決まる）
   mountFit(ctx, d, T, program, output, marks, lang){
     var self = this, P = this.props, fs = this.fs, nf = this.noteSize, row = Math.ceil(fs * 1.4), noteRow = Math.ceil(nf * 1.45 + 4);
     var W = Math.max(1, this.clientWidth), H = Math.max(1, this.clientHeight), header = row + 16, pad = 16, gap = 32, ja = T === TEXT.ja;
@@ -235,6 +235,8 @@ return class extends base.MotionElement {
     var outputH = output.length ? header + row * Math.min(8, output.length) + pad : 0;
     var right = output.length > 0 && (P.outputPos === "right" || P.outputPos === "auto" && W - gap - Math.max(120, outNatural) >= W * 0.55);
     var outW = right ? Math.max(120, Math.min(outNatural, W * 0.4)) : 0, codeW = right ? W - outW - gap : W;
+    // 出力が下に回るとき、帯が幅の 4 割以上残るなら、出力は帯の右に並べる（帯と出力の高い方だけ使う）
+    var sideW = Math.max(120, outNatural), side = !right && output.length > 0 && P.outputPos === "auto" && d.steps.length > 0 && W - sideW - gap >= W * 0.4;
     var numW = monoWidth(String(program.length), fs) + 16, textX = pad + numW, textW = Math.max(fs, codeW - textX - pad), firstY = header + fs;
     // 見た目の行：元の行ごとに折り返す。色の範囲は字下げを広げた後の位置に直して、行の切れ目で分ける
     var vrows = [], rowsOf = [];
@@ -256,7 +258,7 @@ return class extends base.MotionElement {
     });
     function range(a, b){ var o = []; for (var i = a; i <= b; i++) o.push(i); return o; }
     // 帯の説明：「3–4 行目 · 説明」を 2 行までに折る。3 行以上なら 2 行目の末を … にして知らせる
-    var nw = codeW, marker = function(st){ var L = st.lines; if (!L.length) return ""; var cont = L.every(function(n, i){ return i === 0 || n === L[i - 1] + 1; });
+    var nw = side ? W - sideW - gap : codeW, marker = function(st){ var L = st.lines; if (!L.length) return ""; var cont = L.every(function(n, i){ return i === 0 || n === L[i - 1] + 1; });
       var t = cont ? (L.length === 1 ? String(L[0]) : L[0] + "–" + L[L.length - 1]) : L.join(", ");
       return ja ? t + " 行目" : (L.length === 1 ? "line " : "lines ") + t; };
     var noteLines = d.steps.map(function(s, j){
@@ -283,10 +285,12 @@ return class extends base.MotionElement {
       if (cur && base.textWidth(cand, listFont, {font: self}) > nw - 24){ list.push(cur); cur = t; } else cur = cand;
     });
     if (cur) list.push(cur);
-    var listH = list.length ? noteRow + 16 + (list.length - 1) * listRow : 0, below = !right && output.length ? outputH + 16 : 0;
-    var zone = Math.max(bandH, listH), slots = Math.floor((H - header - pad - (zone ? 8 + zone : 0) - below) / row);
-    if (list.length > 1 && slots < Math.min(vrows.length, 3)){
-      zone = bandH; slots = Math.floor((H - header - pad - (zone ? 8 + zone : 0) - below) / row);
+    var listH = list.length ? noteRow + 16 + (list.length - 1) * listRow : 0, below = !right && !side && output.length ? outputH + 16 : 0;
+    var zone = Math.max(bandH, listH, side ? outputH : 0), slots = Math.floor((H - header - pad - (zone ? 8 + zone : 0) - below) / row);
+    // コードを先に：最後の一覧の分だけコードの行が減るなら、一覧は最後の説明だけにする
+    var zoneNoList = Math.max(bandH, side ? outputH : 0), slotsNoList = Math.floor((H - header - pad - (zoneNoList ? 8 + zoneNoList : 0) - below) / row);
+    if (list.length > 1 && slots < Math.min(vrows.length, slotsNoList)){
+      zone = zoneNoList; slots = slotsNoList;
       this.setAttribute("data-fit", "last-note"); list = [proseCut(list[list.length - 1], nw - 24, listFont)];
       listH = noteRow + 16;
     }
@@ -302,7 +306,7 @@ return class extends base.MotionElement {
       return w;
     });
     this.window0 = C.windowFor(vrows.length, shown, 0, 0);
-    this.geometry = {fit: true, codeW: codeW, codeH: codeH, rows: vrows.length, slots: shown, right: right, bandRows: nr, listRows: list.length, windowed: vrows.length > shown};
+    this.geometry = {fit: true, side: side, codeW: codeW, codeH: codeH, rows: vrows.length, slots: shown, right: right, bandRows: nr, listRows: list.length, windowed: vrows.length > shown};
     this.noteLayout = "band";
     var g = this.codeLayer = base.el("g", {opacity: 0}, this.svg);
     base.el("rect", {x: 1, y: 1, width: Math.max(1, codeW - 2), height: Math.max(1, codeH - 2), rx: 12, fill: "var(--term-tint, color-mix(in srgb, var(--fg) 5%, var(--bg)))", stroke: "var(--line)", "stroke-width": 2}, g);
@@ -336,7 +340,7 @@ return class extends base.MotionElement {
     }
     this.outputLayer = base.el("g", {opacity: 0}, this.svg);
     if (output.length){
-      var ox = right ? W - outW : 0, oy = right ? 0 : bandY + zone + 16, ow = right ? outW : codeW;
+      var ox = right ? W - outW : side ? W - sideW : 0, oy = right ? 0 : side ? bandY : bandY + zone + 16, ow = right ? outW : side ? sideW : codeW;
       var oc = Math.max(0, Math.min(8, output.length, Math.floor((H - oy - header - pad) / row)));
       base.el("rect", {x: ox + 1, y: oy + 1, width: Math.max(1, ow - 2), height: Math.max(1, header + oc * row + pad - 2), rx: 12, fill: "var(--term-tint, color-mix(in srgb, var(--fg) 5%, var(--bg)))", stroke: "var(--line)", "stroke-width": 2}, this.outputLayer);
       this.label(this.outputLayer, ox + pad, oy + pad + fs, cut(T.output, ow - 2 * pad, fs), fs);
@@ -353,7 +357,7 @@ return class extends base.MotionElement {
     }
     this.svg.setAttribute("style", "overflow:hidden");
   }
-  // 窓の位置：k ≤ 1 は先頭、説明のステップはその説明の窓、最後の状態は最後の説明の窓
+  // 表示する範囲：k ≤ 1 は先頭、説明のステップはその説明の範囲、最後の状態は最後の説明の範囲
   windowAt(k){ var n = this.windows.length; return k <= 1 || !n ? this.window0 : this.windows[Math.min(k - 2, n - 1)]; }
   renderFit(k, t, ctx){
     ctx = ctx || {};
