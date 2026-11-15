@@ -10,6 +10,9 @@
 // Deliberate exception approved by the owner (v1.8.0): m-map-japan's default drawing changed (no 小笠原諸島 inset unless
 // islands="all"; territory names and the readable layer per docs/map-design.md §5.3), so it is not compared with a baseline
 // older than v1.8.0 (CHANGED_IN). Pinned lessons keep the drawing of the version they pin.
+// Deliberate change approved by the owner (components 2.11.0, 2026-11-15): m-map-japan 2.2.0 and m-map-world 2.2.0 show the names
+// and points of 竹島・尖閣諸島・沖ノ鳥島・南鳥島 only when needed (docs/map-design.md §4.5.1), so neither is compared with a baseline older
+// than 2.11.0 (CHANGED_IN). With territory-islands="show" both paint exactly as 2.1.0 (checked with tools/test-same-paint.mjs).
 // Deliberate change approved by the owner (v2.2.0, 2026-11-03): base 1.1.0 measures text widths in the theme fonts and draws
 // sub/superscripts at 24px or more, so every part's layout may move by some pixels when a lesson is rebuilt. Against a baseline
 // older than v2.2.0 the default variant's NAME is compared instead (the first of `static variants`, which a lesson without a
@@ -35,7 +38,7 @@ const shotsRoot = path.resolve(process.argv[2] || fs.mkdtempSync(path.join(os.tm
 const S = await studio();
 const b = await S.browser.launch(LAUNCH);
 let fail = 0, n = 0;
-const CHANGED_IN = { 'map-japan': '1.8.0' };
+const CHANGED_IN = { 'map-japan': '2.11.0', 'map-world': '2.11.0' };
 const MASKED_IN = { predict: { since: '1.10.0', css: 'm-predict .pd-ctl{visibility:hidden!important}' } };
 const older = (a, b) => { const x = a.split('.').map(Number), y = b.split('.').map(Number); for (let i = 0; i < 3; i++) if (x[i] !== y[i]) return x[i] < y[i]; return false; };
 const ALL_CHANGED_IN = '2.2.0';
