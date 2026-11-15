@@ -12,7 +12,11 @@ props: layout, islands, labels, show, territory-islands, unit, digits, legend, d
 data-credit: 地図データ：Natural Earth（パブリックドメイン）を加工
 ---
 
-地理・歴史の授業で場所を示すときに使う。子の JSON（どれも `step` `at` `tone` を持てる）：
+<!-- llm: omit -->
+地理・歴史の授業で場所を示すときに使う。
+<!-- llm: end -->
+
+子の JSON（どれも `step` `at` `tone` を持てる）：
 
 - `regions`：`id`（`"01"`〜`"47"`）か `group`（`hokkaido` `tohoku` `kanto` `chubu` `kinki` `chugoku` `shikoku` `kyushu`）。`label`
 - `values`：`{"13": 1406, …}` と `classes`（階級の下限。最初はいちばん小さい値以下に。書かなければ四分位で 4 階級。5 つまで）で塗り分け。凡例に階級を書く。塗り分けのステップは `valuesStep`（既定 1。`values` は `step` を持てない）
@@ -22,7 +26,7 @@ data-credit: 地図データ：Natural Earth（パブリックドメイン）を
 
 `labels`：`focus`（既定）・`all`・`none`。`show="value"` で入る地域に値を書く（既定は書かない）。
 
-日本の範囲・東西南北の端・排他的経済水域を見せるときは layout="true"（はめ込み図なし、本当の位置）
+日本の範囲・東西南北の端・排他的経済水域を見せるときは layout="true"（本当の位置）
 
 <!-- llm: omit -->
 地図データ：Natural Earth（パブリックドメイン）を加工（フロントマターの data-credit と同じ）。

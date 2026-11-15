@@ -12,7 +12,11 @@ props: labels, grid, show, territory-islands, unit, digits, legend, dur
 data-credit: 地図データ：Natural Earth（パブリックドメイン）を加工
 ---
 
-世界地理・歴史の授業で国や都市の場所を示すときに使う。子の JSON（どれも `step` `at` `tone` を持てる）：
+<!-- llm: omit -->
+世界地理・歴史の授業で国や都市の場所を示すときに使う。
+<!-- llm: end -->
+
+子の JSON（どれも `step` `at` `tone` を持てる）：
 
 - `regions`：`id`（`"JPN"` など ISO の 3 文字か国名）か `group`（六州）。`label`
 - `categories`：`label` と `ids`（国か州）。凡例に出す。4 区分まで
