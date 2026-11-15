@@ -1,0 +1,7 @@
+# m-network changelog
+
+The part's own versions (Egatari spec §6.1). Releases of the whole library are in the repository's CHANGELOG.md.
+
+## 2.0.0 (components 2.10.0)
+
+- New part: graph search and tours. Nodes at author coordinates, edges with optional weights and direction. Each step sets the current node, visited nodes, the frontier (shown also as a queue, stack or priority queue row), search-tree parents, and takes or drops chosen edges (drawn end to end); a running total counts up. Checks unknown ids, missing edges, bad drops and, when every chosen edge has a weight, that the total equals their sum.

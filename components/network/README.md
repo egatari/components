@@ -1,0 +1,38 @@
+---
+name: m-network
+display: グラフの探索 / Graph search
+version: 2.0.0
+series: info
+tier: specialized
+set: data
+summary: 頂点と辺のグラフで、探索（幅優先・深さ優先・ダイクストラ）や巡回路を 1 ステップずつ見せる。今の頂点・候補・訪れた頂点を塗り分け、選んだ辺を引き、合計を出す
+steps: steps の数
+purposes: process, model
+props: dur, size, weights
+---
+
+幅優先探索・深さ優先探索・ダイクストラ法・巡回セールスマン問題の近似（最近傍法、2-opt）など、グラフの上で手順を 1 つずつ進める様子を見せるときに使う。
+状態と合計は、探索を実際に走らせたスクリプトの出力を書く（手で考えない）。高さ 440px 以上を目安に置く。
+
+子の JSON：`{"nodes": [...], "edges": [...], "steps": [...]}`。
+
+- node：`id`、`x`、`y`（作者の単位。y は下向き）、`label`
+- edge：`from`、`to`、`w`（重み）。`directed: true` で矢印
+- step：`current`、`visited`、`frontier`（`["B", "C"]`。優先度付きは `[["C", 3], ["B", 4]]`）、`parent`（`{"C": "A"}`）、`take`・`drop`（`[["A", "C"]]`）、`total`、`note`
+- `frontierKind`：`queue`・`stack`・`pq`・`set`。`total`：`{"label": "経路の長さ", "unit": "km"}`
+<!-- llm: omit -->
+- 書かなかった欄は前のステップのまま（`current` は `null` で消す）。`parent` は足していき、`null` で消す。`take`・`drop` は選んだ辺を増減する
+- `complete: true`：辺を描かない完全グラフ（巡回路）。どの 2 点でも `take` できる
+- 確かめること（data）：知らない id、ない辺の `take`、選んでいない辺の `drop`。選んだ辺がすべて `w` を持つとき、`total` が `w` の和と合うか（`total.check: false` で確かめない）
+- 色：今の頂点 `--emph` の太い輪、候補 `--accent2` の点線の輪（下の帯にも並べる）、訪れた頂点 `--muted` の塗り、選んだ辺と探索の木（`parent`、矢印）`--term`、ほかの辺 `--line`。色だけに頼らず、輪の形と帯で区別できる
+- 時間：`drop` が消え（`dur` の半分）、`take` を書いた順に 1 本ずつ端から端へ引く。頂点の色は `dur` の半分で変わる。合計はステップの間に数え上げる
+- 上限：頂点 24、辺 60、ステップ 40。頂点が重なる・重みの置き場がない・説明が長いときは layout、枠が小さいときは size で知らせる
+- 先のステップは薄く見せない（答えになるので）
+<!-- llm: end -->
+
+サンプルは `demo.html`（幅優先探索、ダイクストラ法、巡回路の 2-opt）。地名と数値はすべて架空。
+
+注意
+
+- 頂点の名前は短く（1〜3 字）。長い名前は箱が広がり、辺の重みの置き場がなくなる
+- `take` は経路や巡回路の辺、`parent` は探索の木。両方を同じステップで使うと線が増えて読みにくい
