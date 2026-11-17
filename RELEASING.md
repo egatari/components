@@ -29,7 +29,7 @@ Only the maintainer releases. To withdraw a release, add it to `yanked.json` und
    ```bash
    gh release download vX.Y.Z -D /tmp/check && shasum -a 256 /tmp/check/*.tar.gz && grep -A2 '"tarball"' /tmp/check/manifest.json
    ```
-5. If the release was made on a branch, fast-forward `main` to the tag once the release is checked (step 4): `git push origin vX.Y.Z^{commit}:refs/heads/main`. Fast-forward only, never a force push; if `main` cannot fast-forward, stop and ask.
+5. If the release was made on a branch, fast-forward `main` to the tag once the release is checked (step 4): `git push origin vX.Y.Z^{commit}:refs/heads/main`. Fast-forward only, never a force push; if `main` cannot fast-forward, stop and ask. The maintainer's OK to tag and publish a GitHub release includes this fast-forward.
 6. Tagging moves `tools/gallery.mjs`'s baseline (the newest tag below `package.json`'s version), so regenerate `gallery.html` (`node tools/gallery.mjs`) on any branch that already carries a later version, and let its CI run again.
 7. In Egatari Studio: `node tools/components2-update.mjs vX.Y.Z --default` (`npm run components:update` is the 1.x importer), then Studio's tests, then a pull request there.
 
