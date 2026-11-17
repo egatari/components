@@ -7,7 +7,7 @@
 // 説明は和文を文節の切れ目らしい所（平仮名の後ろで平仮名でない字の前、読点・空白の後ろ）で折り返し、入らなければ … で切って ctx.report
 // 見せ方（docs/conventions.md §1）：rise（下から、既定）・fade（その場で）・draw（枠と矢印を描いてから中身）。段階の数・長さ・最後の中身はどれも同じ
 // 2.0（Egatari spec §6.1 の部品）：base の MotionElement・el・mtext・prog・clamp・variant・previewOpacity と icons の svg を使い、プレイヤーのグローバルは使わない
-egatariParts.define({name: "cards", version: "2.0.5", requires: {base: "1.3.0", icons: "1.0.0"}, element: "m-cards"}, function(deps){
+egatariParts.define({name: "cards", version: "2.1.0", requires: {base: "1.3.0", icons: "1.0.0"}, element: "m-cards"}, function(deps){
 "use strict";
 var base = deps.base, icons = deps.icons;
 var TONES = /^(term|emph|accent2|series-[1-4])$/;
@@ -119,27 +119,29 @@ return class extends base.MotionElement {
       var x = col * (cw + gap), y = row * (ch + vgap);
       var tone = TONES.test(c.tone || "") ? c.tone : "term", hi = i === hl;
       var g = D.el("g", {opacity: 0, role: "listitem", "aria-label": [c.n || (P.nums ? String(i + 1) : ""), c.title, c.text || ""].filter(Boolean).join(" ")}, svg);
-      var frame = D.el("rect", {x: x + 1, y: y + 1, width: cw - 2, height: ch - 2, rx: 14, fill: hi ? "var(--emph-tint)" : "var(--term-tint)", stroke: hi ? "var(--emph)" : "var(--line)", "stroke-width": hi ? 4 : 2}, g);
+      // data-part：Studio の形の検査（R-geometry）が測る印。カードの枠が箱、中の字（番号・見出し・説明）がその箱の字（矢印は矢じりだけの形なので辺にしない）
+      var pid = String(i + 1), lab = function(a){ return Object.assign({"data-part": "label", "data-part-id": pid, "data-part-of": "box"}, a); };
+      var frame = D.el("rect", {x: x + 1, y: y + 1, width: cw - 2, height: ch - 2, rx: 14, fill: hi ? "var(--emph-tint)" : "var(--term-tint)", stroke: hi ? "var(--emph)" : "var(--line)", "stroke-width": hi ? 4 : 2, "data-part": "box", "data-part-id": pid}, g);
       var body = D.el("g", {}, g);
       var badge = c.n !== undefined ? String(c.n) : P.nums ? String(i + 1) : "";
       var cy = y + pad, textW = cw - 2 * pad, hx = x + pad, corner = null;
       if (wide){
         // 1 行目：番号・アイコン・見出し（左から）
         var lineH = Math.max(bd, isz * 0.8);
-        if (badge){ self.badge(body, hx + bd / 2, cy + lineH / 2, badge, tone); hx += bd + 14; }
+        if (badge){ self.badge(body, hx + bd / 2, cy + lineH / 2, badge, tone, pid); hx += bd + 14; }
         if (c.icon){ self.icon(body, c.icon, hx, cy + lineH / 2 - isz * 0.4, isz * 0.8, tone, missing); hx += isz * 0.8 + 14; }
         var tw = wrap(c.title, x + cw - pad - hx, tsz, 2, self);
-        tw.lines.forEach(function(s, j){ D.mtext(body, hx, cy + lineH / 2 + tsz * 0.36 + (j - (tw.lines.length - 1) / 2) * (tsz + 6), s, {"font-size": tsz, "font-weight": 700}); });
+        tw.lines.forEach(function(s, j){ D.mtext(body, hx, cy + lineH / 2 + tsz * 0.36 + (j - (tw.lines.length - 1) / 2) * (tsz + 6), s, lab({"font-size": tsz, "font-weight": 700})); });
         if (tw.cut) unfit.push(i + 1 + " (title)");
         cy += Math.max(lineH, tw.lines.length * (tsz + 6)) + 16;
       } else {
         // 縦：番号は左上、アイコンは上の真ん中、その下に見出し（真ん中）
         corner = badge ? D.el("g", {}, body) : null;   // 番号は左上の角に固定（中身を縦の真ん中へ寄せても動かない）
-        if (badge) self.badge(corner, x + pad + bd / 2, y + pad + bd / 2, badge, tone);
+        if (badge) self.badge(corner, x + pad + bd / 2, y + pad + bd / 2, badge, tone, pid);
         if (c.icon){ self.icon(body, c.icon, x + cw / 2 - isz / 2, cy, isz, tone, missing); cy += isz + 14; }
         else if (badge) cy += bd + 8;
         var tw2 = wrap(c.title, textW, tsz, 2, self);
-        tw2.lines.forEach(function(s){ cy += tsz; D.mtext(body, x + cw / 2, cy, s, {"text-anchor": "middle", "font-size": tsz, "font-weight": 700}); cy += 6; });
+        tw2.lines.forEach(function(s){ cy += tsz; D.mtext(body, x + cw / 2, cy, s, lab({"text-anchor": "middle", "font-size": tsz, "font-weight": 700})); cy += 6; });
         if (tw2.cut) unfit.push(i + 1 + " (title)");
         cy += 12;
       }
@@ -148,7 +150,7 @@ return class extends base.MotionElement {
         var room = Math.max(0, Math.floor((y + ch - pad - cy + (lh - xsz)) / lh));
         var tx = wrap(c.text, textW, xsz, Math.max(1, room), self);
         var center = !wide && tx.lines.length === 1;
-        tx.lines.forEach(function(s, j){ D.mtext(body, center ? x + cw / 2 : x + pad, cy + xsz + j * lh, s, center ? {"text-anchor": "middle", "font-size": xsz} : {"font-size": xsz}); });
+        tx.lines.forEach(function(s, j){ D.mtext(body, center ? x + cw / 2 : x + pad, cy + xsz + j * lh, s, lab(center ? {"text-anchor": "middle", "font-size": xsz} : {"font-size": xsz})); });
         if (tx.cut || room < 1) unfit.push(String(i + 1));
         end = cy + xsz + (tx.lines.length - 1) * lh + 8;
       }
@@ -178,10 +180,10 @@ return class extends base.MotionElement {
     });
     if (unfit.length) ctx.report("layout", "[cards] the text of card " + unfit.join(", ") + " does not fit; it is cut with …. Shorten it, or give the element more height");
   }
-  badge(parent, cx, cy, s, tone){
+  badge(parent, cx, cy, s, tone, pid){
     var D = base;
     D.el("circle", {cx: cx, cy: cy, r: 22, fill: "var(--" + tone + ")"}, parent);
-    D.mtext(parent, cx, cy + 9, s, {"text-anchor": "middle", "font-size": 26, "font-weight": 700, fill: "var(--bg)"});
+    D.mtext(parent, cx, cy + 9, s, {"text-anchor": "middle", "font-size": 26, "font-weight": 700, fill: "var(--bg)", "data-part": "label", "data-part-id": pid, "data-part-of": "box"});
   }
   icon(parent, name, x, y, size, tone, missing){
     var wrapG = base.el("g", {style: "color:var(--" + tone + ");"}, parent);

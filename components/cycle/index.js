@@ -15,7 +15,7 @@
 // この部品は markup-reader で決まった要素と属性だけを読んで置く（再生のときに KaTeX は動かない）。描いた結果がなければ tex を字のまま出して知らせる。
 // データの問題（ない箱を指す辺）と、入らないときは ctx.report で知らせる（1.x の console.warn の代わり）。
 // 配置を決める内部の関数は arrange(size)（1.x の layout(size)。2.0 の layout(ctx) は再生器が呼ぶので名前を分けた）
-egatariParts.define({name: "cycle", version: "2.0.6", requires: {base: "1.3.0", "markup-reader": "1.0.3"}, element: "m-cycle"}, function(deps){
+egatariParts.define({name: "cycle", version: "2.1.0", requires: {base: "1.3.0", "markup-reader": "1.0.3"}, element: "m-cycle"}, function(deps){
 "use strict";
 var base = deps.base, MR = deps["markup-reader"];
 var Part = class extends base.MotionElement {
@@ -170,16 +170,18 @@ var Part = class extends base.MotionElement {
     this.L = L;
     this.pt = function(t){ return [L.cx + L.rx * Math.cos(t), L.cy + L.ry * Math.sin(t)]; };
     var rects = {};
-    this.boxes = L.boxes.map(function(b){
+    // data-part：Studio の形の検査（R-geometry）が測る印。箱（id は箱の id、なければ box と番号）、その中の字、円に沿う矢印と辺（矢じりは除く）、辺の名前
+    var pid = function(i){ var n = L.boxes[i].o.n; return n.id !== undefined ? String(n.id) : "box" + (i + 1); };
+    this.boxes = L.boxes.map(function(b, i){
       var col = tone(b.o.n.tone), g = D.el("g", {opacity: 0}, gB);
-      D.el("rect", {class: "box", x: b.x.toFixed(1), y: b.y.toFixed(1), width: b.w, height: b.h, rx: 12, fill: boxFill(b.o.n.tone), stroke: col, "stroke-width": b.o.n.tone === "emph" ? 3 : 2.2}, g);
-      boxDraw(self, g, b.x, b.y, b.bs);
+      D.el("rect", {class: "box", x: b.x.toFixed(1), y: b.y.toFixed(1), width: b.w, height: b.h, rx: 12, fill: boxFill(b.o.n.tone), stroke: col, "stroke-width": b.o.n.tone === "emph" ? 3 : 2.2, "data-part": "box", "data-part-id": pid(i)}, g);
+      boxDraw(self, g, b.x, b.y, b.bs, {"data-part": "label", "data-part-id": pid(i), "data-part-of": "box"});
       if (b.o.n.id !== undefined) rects[b.o.n.id] = b;
       return {b: b, g: g, o: b.o};
     });
     this.arcs = L.arcs.map(function(a){
-      var col = "var(--muted)", g = D.el("g", {opacity: 0}, gA);
-      return {a: a, r: a.r, g: g, path: D.el("path", {d: "", fill: "none", stroke: col, "stroke-width": 3, "stroke-linecap": "round"}, g),
+      var col = "var(--muted)", i = a.r.i, g = D.el("g", {opacity: 0, "data-part": "edge", "data-part-id": "arc" + (i + 1), "data-part-from": pid(i), "data-part-to": pid((i + 1) % L.boxes.length)}, gA);
+      return {a: a, r: a.r, g: g, path: D.el("path", {d: "", fill: "none", stroke: col, "stroke-width": 3, "stroke-linecap": "round", "data-part-line": ""}, g),
         head: D.el("path", {d: "M0,0L-16,-7L-16,7Z", fill: col}, g)};
     });
     // 前の段階の箱から、この箱へ向かう向き（draw と grow で箱が寄ってくる向き）
@@ -193,14 +195,14 @@ var Part = class extends base.MotionElement {
       boxDraw(self, g, L.cx - L.cen.w / 2, L.cy - L.cen.h / 2, L.cen);
       this.center = {g: g};
     }
-    this.edges = this.plan().edges.map(function(x){
+    this.edges = this.plan().edges.map(function(x, k){
       var e = x.e, A = rects[e.from], B = rects[e.to];
       if (!A || !B) return null;
       var dx = B.cx - A.cx, dy = B.cy - A.cy, Lh = Math.hypot(dx, dy) || 1;
       var cut = function(R, sx, sy){ var s = Math.min(sx ? (R.w / 2 + 6) / Math.abs(sx) : Infinity, sy ? (R.h / 2 + 6) / Math.abs(sy) : Infinity); return [R.cx + sx * s, R.cy + sy * s]; };
       var p0 = cut(A, dx / Lh, dy / Lh), p1 = cut(B, -dx / Lh, -dy / Lh), col = e.tone ? tone(e.tone) : "var(--muted)";
-      var g = D.el("g", {opacity: 0}, gE), ux = p1[0] - p0[0], uy = p1[1] - p0[1], l2 = Math.hypot(ux, uy) || 1;
-      D.el("line", {x1: p0[0].toFixed(1), y1: p0[1].toFixed(1), x2: (p1[0] - ux / l2 * 14).toFixed(1), y2: (p1[1] - uy / l2 * 14).toFixed(1), stroke: col, "stroke-width": 3, "stroke-dasharray": e.dash === false ? "none" : "8 6"}, g);
+      var eid = "edge" + (k + 1), g = D.el("g", {opacity: 0, "data-part": "edge", "data-part-id": eid, "data-part-from": String(e.from), "data-part-to": String(e.to)}, gE), ux = p1[0] - p0[0], uy = p1[1] - p0[1], l2 = Math.hypot(ux, uy) || 1;
+      D.el("line", {x1: p0[0].toFixed(1), y1: p0[1].toFixed(1), x2: (p1[0] - ux / l2 * 14).toFixed(1), y2: (p1[1] - uy / l2 * 14).toFixed(1), "data-part-line": "", stroke: col, "stroke-width": 3, "stroke-dasharray": e.dash === false ? "none" : "8 6"}, g);
       D.el("path", {d: "M0,0L-16,-7L-16,7Z", fill: col, transform: "translate(" + p1[0].toFixed(1) + " " + p1[1].toFixed(1) + ") rotate(" + (Math.atan2(uy, ux) * 180 / Math.PI).toFixed(1) + ")"}, g);
       if (e.label){
         // 名前は線の横に（線・真ん中の名前・箱と重ならない所。なければ知らせる）
@@ -208,7 +210,7 @@ var Part = class extends base.MotionElement {
         if (L.cen) obst.push({x: L.cx - L.cen.w / 2, y: L.cy - L.cen.h / 2, w: L.cen.w, h: L.cen.h});
         var at = sideLabel(p0, p1, est(e.label, 24, self), 30, obst, self.W, self.H);
         if (!at.ok) self.reportLayout("[cycle] the label \"" + e.label + "\" of the edge " + JSON.stringify(e.from) + " → " + JSON.stringify(e.to) + " has no free place beside its line (it may overlap; make the element larger or the label shorter)");
-        D.mtext(g, at.x, at.y, e.label, {"text-anchor": "middle", "font-size": 24, fill: e.tone ? col : "var(--muted)"});
+        D.mtext(g, at.x, at.y, e.label, {"text-anchor": "middle", "font-size": 24, fill: e.tone ? col : "var(--muted)", "data-part": "label", "data-part-id": eid, "data-part-of": "edge"});
       }
       return {g: g, step: x.step, at: x.at};
     }).filter(Boolean);
@@ -393,12 +395,13 @@ function boxSize(el, lines){
   });
   return {w: Math.ceil(w + 36), h: Math.ceil(y + 0.28 * prev.size + 10), lines: lines};
 }
-function boxDraw(el, g, x, y, bs){
+function boxDraw(el, g, x, y, bs, mark){
   bs.lines.forEach(function(l){
     // 式の枠は見積もった幅にし、中で中央に寄せる（KaTeX の字が読み込まれた後の幅で中央になる）
     if (l.tex){ var fo = MR.texFrame(g, x + bs.w / 2, y + l.y, l.src, "tex", {size: l.size, anchor: "middle", color: l.fill, w: l.w + 8, h: l.size * 1.6}, el.texSink);
+      if (mark) for (var a in mark) fo.setAttribute(a, mark[a]);
       fo.firstChild.style.verticalAlign = "top"; fo.setAttribute("x", (x + bs.w / 2 - (l.w + 8) / 2).toFixed(1)); fo.setAttribute("width", (l.w + 8).toFixed(1)); fo.style.textAlign = "center"; }
-    else base.mtext(g, x + bs.w / 2, y + l.y, l.text, {"text-anchor": "middle", "font-size": l.size, fill: l.fill, "font-weight": l.weight || 400});
+    else base.mtext(g, x + bs.w / 2, y + l.y, l.text, Object.assign({"text-anchor": "middle", "font-size": l.size, fill: l.fill, "font-weight": l.weight || 400}, mark || {}));
   });
 }
 return Part;
