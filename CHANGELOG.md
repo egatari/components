@@ -4,14 +4,22 @@ Versions follow [README.md § Releases and versions](README.md#releases-and-vers
 
 ## Unreleased
 
+### Later (candidates, not in this release)
+
+- `m-compare` `by="row"`; an "outside every set" region for `m-venn`; planned-vs-actual bars for `m-timeline`
+
+## 2.15.0 - 2026-11-18
+
+This release marks the boxes, edges and labels of six more parts for Studio's geometry check, and reports values outside a range that was not written in `m-sweep` and `m-seq` as `m-curves` does.
+
 ### Changed
 
 - **Parts that draw boxes and lines mark them for Studio's geometry check (R-geometry, handoff #45)**: `m-cards` 2.1.0, `m-cycle` 2.1.0, `m-mapping` 2.1.0, `m-network` 2.2.0, `m-timeline` 2.1.0 and `m-nnet` 2.1.0 put `data-part` on their boxes, edges and labels (as `m-flow`, `m-tree`, `m-quad` and `m-fishbone` already do), so the check can find labels that overlap, a line over a label, an edge through another box or a label outside its box. The drawing does not change. `tools/test-geometry.mjs` runs the check (from the Studio commit `geometryCommit` in tools/studio.json, v0.6.14) on every demo with marks; none shows a geo* warning.
 - **Values outside a range that was not written are reported the same way in every axis part** (as `m-curves` 2.3.1): `m-sweep` 2.2.0 (`yr`, default `[0, 10]`, once per value) and `m-seq` 2.1.0 (`yr`, default `[0, 1]`, for `dens`; `xr`, default the ends of `xs`, for marks) report them with `ctx.report("range", …)`, a warning in Studio, with the values' range and the fix. A written range that cuts the drawing is taken as intended. The other axis parts take their default range from the data, so nothing falls outside. The drawing does not change; `tools/test-range-default.mjs`.
 
-### Later (candidates, not in this release)
+### For Studio
 
-- `m-compare` `by="row"`; an "outside every set" region for `m-venn`; planned-vs-actual bars for `m-timeline`
+- No drawing changes. The AI instruction pack is the same as 2.14.1. The geometry check (R-geometry) now also measures `m-cards`, `m-cycle`, `m-mapping`, `m-network`, `m-timeline` and `m-nnet`.
 
 ## 2.14.1 - 2026-11-18
 
