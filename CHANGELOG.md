@@ -4,6 +4,10 @@ Versions follow [README.md § Releases and versions](README.md#releases-and-vers
 
 ## Unreleased
 
+### Changed
+
+- **Values outside a range that was not written are reported the same way in every axis part** (as `m-curves` 2.3.1): `m-sweep` 2.2.0 (`yr`, default `[0, 10]`, once per value) and `m-seq` 2.1.0 (`yr`, default `[0, 1]`, for `dens`; `xr`, default the ends of `xs`, for marks) report them with `ctx.report("range", …)`, a warning in Studio, with the values' range and the fix. A written range that cuts the drawing is taken as intended. The other axis parts take their default range from the data, so nothing falls outside. The drawing does not change; `tools/test-range-default.mjs`.
+
 ### Later (candidates, not in this release)
 
 - `m-compare` `by="row"`; an "outside every set" region for `m-venn`; planned-vs-actual bars for `m-timeline`

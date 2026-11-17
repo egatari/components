@@ -1,6 +1,6 @@
 ---
 name: m-seq
-version: 2.0.6
+version: 2.1.0
 series: academic
 tier: specialized
 set: stats
@@ -23,5 +23,6 @@ props: per-step, slot, xr, yr, xt, yt, xf, yf, xl, yl, digits, panel, ghosts
 
 サンプルは `demo.html`（分散既知の正規モデルで平均の事後分布を更新。観測は架空）。
 <!-- llm: omit -->
+- `yr`（既定 `[0, 1]`）・`xr`（既定は `xs` の端）を属性にも JSON にも書かずに、`dens` の値や `mark` がその外に出ると知らせる（`ctx.report("range", …)`、Studio の品質チェックの警告になる。2.1.0 から）。書いた範囲で切れるのは意図とみなし、知らせない
 先のステップを薄く見せる表示（`ctx.preview`）：最後のステップの密度の曲線と、先の観測の点を薄く見せる。途中の曲線と読み取りの値は見せない（全部の曲線を重ねると図が読めない）
 <!-- llm: end -->

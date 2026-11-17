@@ -2,6 +2,10 @@
 
 The part's own versions (Egatari spec §6.1). Releases of the whole library are in the repository's CHANGELOG.md.
 
+## 2.1.0 (components 2.15.0)
+
+- When `yr` is not written (in the attribute or the JSON; the default `[0, 1]`) and `dens` values go outside it, or `xr` is not written (the ends of `xs`) and a `mark` is outside it, the part reports it with `ctx.report("range", …)` (a warning in Studio), with the values' range and the fix, as `m-curves` 2.3.1 does. A written range that cuts the curve is taken as intended. The drawing does not change.
+
 ## 2.0.6 (components 2.14.0)
 
 - Requires base 1.3.0, plot 1.1.3 (sub- and superscripts in `mtext` at 0.7 of the text, at least 17 px).

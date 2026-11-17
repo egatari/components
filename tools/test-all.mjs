@@ -158,6 +158,7 @@ const TESTS = [
   ['test-predict', ['tools/test-predict.mjs', path.join(tmp, 'predict')]],
   ['test-timer', ['tools/test-timer.mjs', path.join(tmp, 'timer')]],
   ['test-curves-range', ['tools/test-curves-range.mjs', path.join(tmp, 'curves-range')]],
+  ['test-range-default', ['tools/test-range-default.mjs', path.join(tmp, 'range-default')]],
   ['test-layout', ['tools/test-layout.mjs', path.join(tmp, 'layout')]],
   ['test-overlap', ['tools/test-overlap.mjs', path.join(tmp, 'overlap')]],
   ['test-score-noclass', ['tools/test-score-noclass.mjs', path.join(tmp, 'score-noclass')]],

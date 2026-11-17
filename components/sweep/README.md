@@ -1,6 +1,6 @@
 ---
 name: m-sweep
-version: 2.1.3
+version: 2.2.0
 series: academic
 tier: specialized
 set: math
@@ -21,5 +21,6 @@ props: f, values, param, xr, yr, xt, yt, xl, yl, digits, dur, at, point, size
 - `size="40"`：字の大きさ（24 以上）
 
 <!-- llm: omit -->
+- `yr` の既定は `[0, 10]`。書かずに線がその外に出ると、値ごとに知らせる（`ctx.report("range", …)`、Studio の品質チェックの警告になる。2.2.0 から）。書いた範囲で切れるのは意図とみなし、知らせない
 先のステップを薄く見せる表示（`ctx.preview`）：先の値の曲線を `--emph` で薄く見せる（今ある跡の線を使う）。先の値の「c = …」の字は出さない（新しい要素が要るため）
 <!-- llm: end -->

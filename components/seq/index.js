@@ -6,7 +6,7 @@
 // steps[0] は始めの状態（段階 0）。steps[1..] が 1 回ずつの更新。1 段階に per-step 回の更新を、等しい時間枠で順に動かす。
 // 今の分布は濃く、前の分布は薄い線で残す。右の欄に readout の数値（桁をそろえる）。mark は今回の観測の位置
 // 2.0（Egatari spec §6.1 の部品）：base の MotionElement・el・mtext・prog・lerp・previewOpacity と plot の Plot を使い、プレイヤーのグローバルは使わない
-egatariParts.define({name: "seq", version: "2.0.6", requires: {base: "1.3.0", plot: "1.1.3"}, element: "m-seq"}, function(deps){
+egatariParts.define({name: "seq", version: "2.1.0", requires: {base: "1.3.0", plot: "1.1.3"}, element: "m-seq"}, function(deps){
 "use strict";
 var base = deps.base, plot = deps.plot;
 // 点列の d。null の所で線を切り、次の有限な点から M で引き直す（plot の p.d と同じ字。切れ目がなければ同じ d）
@@ -99,6 +99,15 @@ return class extends base.MotionElement {
     var bad = [];
     data.steps.forEach(function(s, i){ if (self.pts(s.dens).indexOf(null) >= 0) bad.push(i); });
     if (bad.length) ctx.report("data", "[seq] steps " + bad.join(", ") + ": dens has values that are not finite numbers (NaN, ±Infinity or missing for some xs); the curve is broken there");
+    // 軸の範囲を書かなかったとき（yr は既定の [0, 1]、xr は xs の端）に値が範囲の外に出るなら知らせる（m-curves 2.3.1 と同じ。書いた範囲で切るのは意図とみなし、知らせない）
+    var unset = function(name){ return !self.hasAttribute(name) && data[name] === undefined; };
+    var outside = function(ax, r, vs, what, cut){
+      var lo = Math.min(r[0], r[1]), hi = Math.max(r[0], r[1]), tol = (hi - lo) * 1e-9, out = vs.filter(function(v){ return v < lo - tol || v > hi + tol; });
+      if (out.length) ctx.report("range", "[seq] " + out.length + " of " + vs.length + " " + what + " are outside " + ax + " " + JSON.stringify(r) + " (the default" + (ax === "xr" ? ", the ends of xs" : "") + "; values from " + +Math.min.apply(null, vs).toPrecision(4) + " to " + +Math.max.apply(null, vs).toPrecision(4) + "), so " + cut + ". Write " + ax + " to cover them");
+    };
+    var fin = function(v){ return typeof v === "number" && isFinite(v); };
+    if (unset("yr")) outside("yr", this.opt("yr"), [].concat.apply([], data.steps.map(function(s){ return (s.dens || []).filter(fin); })), "dens values", "the curve is cut at the edge");
+    if (unset("xr")) outside("xr", xr, data.steps.map(function(s){ return s.mark; }).filter(fin), "marks", "they are drawn outside the plot");
     // 塗り（今の分布の下）→ 前の分布の薄い線 → 今の分布の線 の順に重ねる
     this.area = D.el("path", {fill: "var(--term-tint)", stroke: "none", "clip-path": p.clip}, p.svg);
     var gG = D.el("g", {"clip-path": p.clip}, p.svg);

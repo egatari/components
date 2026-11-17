@@ -5,7 +5,7 @@
 // i 番目の変化を at[i] 秒から始める。point='{"u": 9.8, "label": "平均待ち {y} 日"}' は u の所の曲線の上の点（値の変化について動く）
 // 2.0（Egatari spec §6.1 の部品）：base の MotionElement・el・mtext・prog・lerp・previewOpacity、plot の Plot、expr の compile を使い、
 // プレイヤーのグローバルは使わない（1.x は式の評価器 egatari-expr を写して持っていた）
-egatariParts.define({name: "sweep", version: "2.1.3", requires: {base: "1.3.0", expr: "1.0.0", plot: "1.1.3"}, element: "m-sweep"}, function(deps){
+egatariParts.define({name: "sweep", version: "2.2.0", requires: {base: "1.3.0", expr: "1.0.0", plot: "1.1.3"}, element: "m-sweep"}, function(deps){
 "use strict";
 var base = deps.base, plot = deps.plot, expr = deps.expr;
 // 関数 f を [a, b] で n 分割した点列（px）。有限でない値（NaN・±Infinity）の点は null
@@ -114,6 +114,13 @@ return class extends base.MotionElement {
       return q;
     });
     this.cur = D.el("path", {fill: "none", stroke: "var(--emph)", "stroke-width": 3.5, "clip-path": p.clip}, p.svg);
+    // 縦軸の範囲を書かなかったとき（既定の [0, 10]）に線が範囲の外に出るなら、値ごとに知らせる（m-curves 2.3.1 と同じ。書いた範囲で切るのは意図とみなし、知らせない）
+    if (!this.hasAttribute("yr")) P.values.forEach(function(v){
+      var lo = Math.min(P.yr[0], P.yr[1]), hi = Math.max(P.yr[0], P.yr[1]), tol = (hi - lo) * 1e-9, vs = [];
+      for (var j = 0; j <= 300; j++){ var y = self.g(v)(P.xr[0] + (P.xr[1] - P.xr[0]) * j / 300); if (typeof y === "number" && isFinite(y)) vs.push(y); }
+      var out = vs.filter(function(y){ return y < lo - tol || y > hi + tol; });
+      if (out.length) ctx.report("range", "[sweep] " + P.param + " = " + v + ": " + out.length + " of " + vs.length + " points are outside yr " + JSON.stringify(P.yr) + " (the default; values from " + +Math.min.apply(null, vs).toPrecision(4) + " to " + +Math.max.apply(null, vs).toPrecision(4) + "), so the line is cut at the edge. Write yr to cover them");
+    });
     if (P.at !== null && P.at !== undefined && !this.ats) ctx.report("attr", "[sweep] at must be " + (P.values.length - 1) + " non-negative seconds in increasing order (one per change); each change gets its own step instead");
     var A = this.ats; if (A) for (var j = 1; j < A.length; j++) if (A[j] < A[j - 1] + P.dur) { ctx.report("attr", "[sweep] change " + (j + 1) + " starts at " + A[j] + " s, before change " + j + " ends (" + (A[j - 1] + P.dur) + " s); it takes over from there"); break; }
     // 曲線の上の点：u の所の f。値ごとに図の中にあるか確かめる（外なら知らせて、その間は点と字を隠す）

@@ -24,22 +24,6 @@
 </style>
 </head>
 <body>
-<script>/* m-curves */
-(function(){
-// 見本の数値：対数正規の予測分布 LN(0, 0.6^2) の平均・中央値・90% 分位点を計算して、縦線の点列にする
-document.addEventListener("DOMContentLoaded", function(){
-  var s = 0.6, pdf = function(x){ return Math.exp(-Math.pow(Math.log(x), 2) / (2 * s * s)) / (x * s * Math.sqrt(2 * Math.PI)); };
-  var mean = Math.exp(s * s / 2), med = 1, q90 = Math.exp(s * 1.2815516);
-  var v = function(x){ return [[x, 0], [x, pdf(x)]]; };
-  document.getElementById("pred-data").textContent = JSON.stringify([
-    {label: "予測分布 *p*(*y*|*w*)", f: "exp(-pow(log(x),2)/(2*0.36))/(x*0.6*sqrt(2*PI))", xr: [0.02, 4], tone: "fg", labelAt: 3, anchor: "right", dy: -30},
-    {label: "中央値", pts: v(med), tone: "term", anchor: "left", ly: 0.04},
-    {label: "平均", pts: v(mean), tone: "emph", anchor: "right", ly: 0.04},
-    {label: "90% 分位点", pts: v(q90), tone: "accent2", dash: true, anchor: "right", dx: -4}
-  ]);
-});
-})();
-</script>
 <script>/* m-seq */
 (function(){
 // 見本の数値：分散 1 が既知の正規モデルで、平均 θ の事後分布 N(μ_n, σ_n^2) を観測 1 個ずつ更新する（事前 N(0, 1.5^2)。観測 ys は架空の値）
@@ -58,78 +42,91 @@ document.addEventListener("DOMContentLoaded", function(){
 });
 })();
 </script>
+<script>/* m-curves */
+(function(){
+// 見本の数値：対数正規の予測分布 LN(0, 0.6^2) の平均・中央値・90% 分位点を計算して、縦線の点列にする
+document.addEventListener("DOMContentLoaded", function(){
+  var s = 0.6, pdf = function(x){ return Math.exp(-Math.pow(Math.log(x), 2) / (2 * s * s)) / (x * s * Math.sqrt(2 * Math.PI)); };
+  var mean = Math.exp(s * s / 2), med = 1, q90 = Math.exp(s * 1.2815516);
+  var v = function(x){ return [[x, 0], [x, pdf(x)]]; };
+  document.getElementById("pred-data").textContent = JSON.stringify([
+    {label: "予測分布 *p*(*y*|*w*)", f: "exp(-pow(log(x),2)/(2*0.36))/(x*0.6*sqrt(2*PI))", xr: [0.02, 4], tone: "fg", labelAt: 3, anchor: "right", dy: -30},
+    {label: "中央値", pts: v(med), tone: "term", anchor: "left", ly: 0.04},
+    {label: "平均", pts: v(mean), tone: "emph", anchor: "right", ly: 0.04},
+    {label: "90% 分位点", pts: v(q90), tone: "accent2", dash: true, anchor: "right", dx: -4}
+  ]);
+});
+})();
+</script>
 <div id="stage">
 
 <section class="slide">
   <h2>パーツの一覧（55 個、231 枚）</h2>
   <div class="body">
     <p>パーツごとに、説明の 1 枚とサンプルのスライドが続く。→ でステップを進める。</p>
-    <p>m-curves（変わった）　m-balance　m-bars　m-boxplot　m-callout　m-cards　m-checklist　m-ci　m-classify2d　m-code　m-codetree　m-collect　m-compare　m-contour　m-ctable　m-cycle　m-diverge　m-fishbone　m-flow　m-folds　m-gendai　m-heatmap　m-hissan　m-hist　m-kakijun　m-kanbun　m-keyboard　m-kobun　m-kpi　m-map-japan　m-map-world　m-mapping　m-market　m-menu　m-network　m-nnet　m-numberline　m-orbit　m-particles　m-pie　m-predict　m-quad　m-sampling　m-scatter　m-score　m-seq　m-sweep　m-syntax　m-tape　m-timeline　m-timer　m-trace　m-tree　m-vector　m-venn</p>
+    <p>m-seq（変わった）　m-sweep（変わった）　m-balance　m-bars　m-boxplot　m-callout　m-cards　m-checklist　m-ci　m-classify2d　m-code　m-codetree　m-collect　m-compare　m-contour　m-ctable　m-curves　m-cycle　m-diverge　m-fishbone　m-flow　m-folds　m-gendai　m-heatmap　m-hissan　m-hist　m-kakijun　m-kanbun　m-keyboard　m-kobun　m-kpi　m-map-japan　m-map-world　m-mapping　m-market　m-menu　m-network　m-nnet　m-numberline　m-orbit　m-particles　m-pie　m-predict　m-quad　m-sampling　m-scatter　m-score　m-syntax　m-tape　m-timeline　m-timer　m-trace　m-tree　m-vector　m-venn</p>
   </div>
 </section>
 
 <section class="slide">
-  <h2>m-curves（変わった、v2.14.1）</h2>
+  <h2>m-seq（変わった、v2.15.0）</h2>
   <div class="body">
-    <p>同じ座標軸に線を 1 本ずつ引く（線の名前は凡例でなく線の端に直接書く）</p>
+    <p>観測を 1 つずつ加え、分布と数値が更新されていく様子を見せる（前の分布は薄く残す）</p>
     <ul>
-      <li>伝えたいこと：時間での変化</li>
+      <li>伝えたいこと：ばらつき</li>
       <li>見せ方：1 種類</li>
-      <li>内容の分野：標準パーツ　サンプルのスライド：4 枚</li>
+      <li>内容の分野：数理・統計　サンプルのスライド：1 枚</li>
     </ul>
   </div>
 </section>
 
-<section id="g-curves-1" class="slide">
-  <h2>予測分布と代表値</h2>
+<section id="g-seq-1" class="slide">
+  <h2>平均の事後分布が観測ごとに狭くなる（観測は架空）</h2>
   <div class="body">
-    <m-curves xr="[0,4]" yr="[0,0.8]" xt="[0,1,2,3,4]" yt="[0,0.2,0.4,0.6,0.8]" yf="1" xl="需要 *y*" yl="密度" style="height:420px">
-      <script type="application/json" id="pred-data">[]</script>
-    </m-curves>
+    <m-seq per-step="2" xr="[-3,4]" yr="[0,1.25]" xt="[-2,0,2,4]" yt="[0,0.5,1]" yf="1" xl="平均 *θ*" yl="密度" style="height:420px">
+      <script type="application/json" id="seq-data">{}</script>
+    </m-seq>
   </div>
-  <div class="concl"><span>→ 右に裾が長いと，平均は中央値より右に来る</span></div>
+  <div class="concl"><span>→ 観測が増えるほど，事後分布は狭くなる</span></div>
 </section>
 
-<section id="g-curves-2" class="slide">
-  <h2>損失関数の形</h2>
+<section class="slide">
+  <h2>m-sweep（変わった、v2.15.0）</h2>
   <div class="body">
-    <m-curves xr="[-2,2]" yr="[0,4]" xt="[-2,-1,0,1,2]" yt="[0,1,2,3,4]" xl="誤差 *u* = *y* − *a*" yl="損失" style="height:420px">
-      <script type="application/json">[
-        {"label": "二乗 *u*^2", "f": "x*x", "labelAt": 1.6, "anchor": "left", "dx": -14},
-        {"label": "絶対値 |*u*|", "f": "abs(x)", "labelAt": -2, "anchor": "right", "ly": 1.1},
-        {"label": "分位点（*τ* = 0.9）", "f": "x >= 0 ? 0.9*x : -0.1*x", "labelAt": -2, "anchor": "right", "dy": -6}
-      ]</script>
-    </m-curves>
+    <p>パラメータを動かして関数の形の変化を見せる（前の形は灰色で残す）</p>
+    <ul>
+      <li>伝えたいこと：パラメータを動かす</li>
+      <li>見せ方：1 種類</li>
+      <li>内容の分野：数理・統計　サンプルのスライド：3 枚</li>
+    </ul>
   </div>
-  <div class="concl"><span>→ どの損失を使うかで，最適な決定 <i>a</i> が変わる</span></div>
 </section>
 
-<section id="g-curves-3" class="slide">
-  <h2>需要が増えると（架空の例）</h2>
+<section id="g-sweep-1" class="slide">
+  <h2>幅のパラメータで形が変わる</h2>
   <div class="body">
-    <m-curves xr="[0,10]" yr="[0,12]" xt="[0,2,4,6,8,10]" yt="[0,3,6,9,12]" xl="数量 *Q*" yl="価格 *P*" style="height:420px">
-      <script type="application/json">[
-        {"label": "需要 D", "f": "10 - x", "tone": "term", "step": 1, "labelAt": 1.5, "anchor": "below"},
-        {"label": "供給 S", "f": "2 + x", "tone": "accent2", "step": 1, "labelAt": 8.5, "anchor": "left"},
-        {"label": "増えた需要 D′", "f": "13 - x", "tone": "emph", "step": 2, "labelAt": 2, "anchor": "right"},
-        {"label": "均衡", "pts": [[4, 0], [4, 6]], "tone": "muted", "dash": true, "step": 3, "anchor": "left", "ly": 1},
-        {"label": "新しい均衡", "pts": [[5.5, 0], [5.5, 7.5]], "tone": "emph", "dash": true, "step": 3, "anchor": "right", "ly": 1}
-      ]</script>
-    </m-curves>
+    <m-sweep f="1/(1 + u*u/(c*c))" values="[0.5,1,2]" param="σ" xr="[-4,4]" yr="[0,1.2]" xt="[-4,-2,0,2,4]" yt="[0,0.5,1]"
+             xl="*u*" yl="重み" digits="1" style="height:400px"></m-sweep>
   </div>
-  <div class="concl"><span>→ 需要が増えると，価格も取引量も上がる</span></div>
+  <div class="concl"><span>→ σ が大きいほど、遠くの点まで重みが届く</span></div>
 </section>
 
-<section id="g-curves-4" class="slide">
-  <h2>両側検定の棄却域</h2>
+<section id="g-sweep-2" class="slide">
+  <h2>学習率と誤差の減り方</h2>
   <div class="body">
-    <m-curves xr="[-4,4]" yr="[0,0.45]" xt="[-1.96,0,1.96]" xf="2" yt="[0,0.2,0.4]" xl="検定統計量 *z*" style="height:400px">
-      <script type="application/json">[
-        {"label": "標準正規分布", "f": "N(x, 0, 1)", "labelAt": 1, "anchor": "right", "area": [[null, -1.96], [1.96, null]], "areaLabel": "2.5 %", "tone": "term"}
-      ]</script>
-    </m-curves>
+    <m-sweep f="((1-c)**2)**u" values="[0.1,0.5,1.8,2.1]" param="ηa" xr="[0,10]" yr="[0,1.5]" xt="[0,5,10]" yt="[0,0.5,1,1.5]"
+             xl="*t*" yl="損失の比" digits="1" style="height:400px"></m-sweep>
   </div>
-  <div class="concl"><span>→ 両端の 5 % に入れば帰無仮説を棄却する</span></div>
+  <div class="concl"><span>→ ηa が 2 を超えると、誤差は減らずに増える</span></div>
+</section>
+
+<section id="g-sweep-3" class="slide">
+  <h2>審査が速くなると、待ち時間はどう変わる</h2>
+  <div class="body">
+    <m-sweep f="1/(c - u)" values="[10,12]" param="1 日に処理できる件数" xr="[6,9.9]" yr="[0,6]" xt="[6,7,8,9]" yt="[0,2,4,6]"
+             xl="1 日の申請" yl="平均待ち（日）" digits="0" size="36" at="[0.5]" point='{"u": 9.8, "label": "平均待ち {y} 日", "digits": 2}' style="height:400px"></m-sweep>
+  </div>
+  <div class="concl"><span>→ 混むほど、少し速くするだけで待ちが大きく減る（架空）</span></div>
 </section>
 
 <section class="slide">
@@ -1042,6 +1039,70 @@ document.addEventListener("DOMContentLoaded", function(){
       <script type="application/json">{"kind": "po", "units": [{"id": "1", "t": 1, "y0": 60, "y1": 72}, {"id": "2", "t": 1, "y0": 70, "y1": 75}, {"id": "3", "t": 1, "y0": 65, "y1": 74}, {"id": "4", "t": 0, "y0": 55, "y1": 63}, {"id": "5", "t": 0, "y0": 58, "y1": 62}, {"id": "6", "t": 0, "y0": 50, "y1": 61}], "ate": 8.17, "naive": 19.33}</script>
     </m-ctable>
   </div>
+</section>
+
+<section class="slide">
+  <h2>m-curves</h2>
+  <div class="body">
+    <p>同じ座標軸に線を 1 本ずつ引く（線の名前は凡例でなく線の端に直接書く）</p>
+    <ul>
+      <li>伝えたいこと：時間での変化</li>
+      <li>見せ方：1 種類</li>
+      <li>内容の分野：標準パーツ　サンプルのスライド：4 枚</li>
+    </ul>
+  </div>
+</section>
+
+<section id="g-curves-1" class="slide">
+  <h2>予測分布と代表値</h2>
+  <div class="body">
+    <m-curves xr="[0,4]" yr="[0,0.8]" xt="[0,1,2,3,4]" yt="[0,0.2,0.4,0.6,0.8]" yf="1" xl="需要 *y*" yl="密度" style="height:420px">
+      <script type="application/json" id="pred-data">[]</script>
+    </m-curves>
+  </div>
+  <div class="concl"><span>→ 右に裾が長いと，平均は中央値より右に来る</span></div>
+</section>
+
+<section id="g-curves-2" class="slide">
+  <h2>損失関数の形</h2>
+  <div class="body">
+    <m-curves xr="[-2,2]" yr="[0,4]" xt="[-2,-1,0,1,2]" yt="[0,1,2,3,4]" xl="誤差 *u* = *y* − *a*" yl="損失" style="height:420px">
+      <script type="application/json">[
+        {"label": "二乗 *u*^2", "f": "x*x", "labelAt": 1.6, "anchor": "left", "dx": -14},
+        {"label": "絶対値 |*u*|", "f": "abs(x)", "labelAt": -2, "anchor": "right", "ly": 1.1},
+        {"label": "分位点（*τ* = 0.9）", "f": "x >= 0 ? 0.9*x : -0.1*x", "labelAt": -2, "anchor": "right", "dy": -6}
+      ]</script>
+    </m-curves>
+  </div>
+  <div class="concl"><span>→ どの損失を使うかで，最適な決定 <i>a</i> が変わる</span></div>
+</section>
+
+<section id="g-curves-3" class="slide">
+  <h2>需要が増えると（架空の例）</h2>
+  <div class="body">
+    <m-curves xr="[0,10]" yr="[0,12]" xt="[0,2,4,6,8,10]" yt="[0,3,6,9,12]" xl="数量 *Q*" yl="価格 *P*" style="height:420px">
+      <script type="application/json">[
+        {"label": "需要 D", "f": "10 - x", "tone": "term", "step": 1, "labelAt": 1.5, "anchor": "below"},
+        {"label": "供給 S", "f": "2 + x", "tone": "accent2", "step": 1, "labelAt": 8.5, "anchor": "left"},
+        {"label": "増えた需要 D′", "f": "13 - x", "tone": "emph", "step": 2, "labelAt": 2, "anchor": "right"},
+        {"label": "均衡", "pts": [[4, 0], [4, 6]], "tone": "muted", "dash": true, "step": 3, "anchor": "left", "ly": 1},
+        {"label": "新しい均衡", "pts": [[5.5, 0], [5.5, 7.5]], "tone": "emph", "dash": true, "step": 3, "anchor": "right", "ly": 1}
+      ]</script>
+    </m-curves>
+  </div>
+  <div class="concl"><span>→ 需要が増えると，価格も取引量も上がる</span></div>
+</section>
+
+<section id="g-curves-4" class="slide">
+  <h2>両側検定の棄却域</h2>
+  <div class="body">
+    <m-curves xr="[-4,4]" yr="[0,0.45]" xt="[-1.96,0,1.96]" xf="2" yt="[0,0.2,0.4]" xl="検定統計量 *z*" style="height:400px">
+      <script type="application/json">[
+        {"label": "標準正規分布", "f": "N(x, 0, 1)", "labelAt": 1, "anchor": "right", "area": [[null, -1.96], [1.96, null]], "areaLabel": "2.5 %", "tone": "term"}
+      ]</script>
+    </m-curves>
+  </div>
+  <div class="concl"><span>→ 両端の 5 % に入れば帰無仮説を棄却する</span></div>
 </section>
 
 <section class="slide">
@@ -2810,67 +2871,6 @@ document.addEventListener("DOMContentLoaded", function(){
     </m-score>
   </div>
   <div class="concl"><span>→ どの和音も、線か間に 3 つの音を重ねる</span></div>
-</section>
-
-<section class="slide">
-  <h2>m-seq</h2>
-  <div class="body">
-    <p>観測を 1 つずつ加え、分布と数値が更新されていく様子を見せる（前の分布は薄く残す）</p>
-    <ul>
-      <li>伝えたいこと：ばらつき</li>
-      <li>見せ方：1 種類</li>
-      <li>内容の分野：数理・統計　サンプルのスライド：1 枚</li>
-    </ul>
-  </div>
-</section>
-
-<section id="g-seq-1" class="slide">
-  <h2>平均の事後分布が観測ごとに狭くなる（観測は架空）</h2>
-  <div class="body">
-    <m-seq per-step="2" xr="[-3,4]" yr="[0,1.25]" xt="[-2,0,2,4]" yt="[0,0.5,1]" yf="1" xl="平均 *θ*" yl="密度" style="height:420px">
-      <script type="application/json" id="seq-data">{}</script>
-    </m-seq>
-  </div>
-  <div class="concl"><span>→ 観測が増えるほど，事後分布は狭くなる</span></div>
-</section>
-
-<section class="slide">
-  <h2>m-sweep</h2>
-  <div class="body">
-    <p>パラメータを動かして関数の形の変化を見せる（前の形は灰色で残す）</p>
-    <ul>
-      <li>伝えたいこと：パラメータを動かす</li>
-      <li>見せ方：1 種類</li>
-      <li>内容の分野：数理・統計　サンプルのスライド：3 枚</li>
-    </ul>
-  </div>
-</section>
-
-<section id="g-sweep-1" class="slide">
-  <h2>幅のパラメータで形が変わる</h2>
-  <div class="body">
-    <m-sweep f="1/(1 + u*u/(c*c))" values="[0.5,1,2]" param="σ" xr="[-4,4]" yr="[0,1.2]" xt="[-4,-2,0,2,4]" yt="[0,0.5,1]"
-             xl="*u*" yl="重み" digits="1" style="height:400px"></m-sweep>
-  </div>
-  <div class="concl"><span>→ σ が大きいほど、遠くの点まで重みが届く</span></div>
-</section>
-
-<section id="g-sweep-2" class="slide">
-  <h2>学習率と誤差の減り方</h2>
-  <div class="body">
-    <m-sweep f="((1-c)**2)**u" values="[0.1,0.5,1.8,2.1]" param="ηa" xr="[0,10]" yr="[0,1.5]" xt="[0,5,10]" yt="[0,0.5,1,1.5]"
-             xl="*t*" yl="損失の比" digits="1" style="height:400px"></m-sweep>
-  </div>
-  <div class="concl"><span>→ ηa が 2 を超えると、誤差は減らずに増える</span></div>
-</section>
-
-<section id="g-sweep-3" class="slide">
-  <h2>審査が速くなると、待ち時間はどう変わる</h2>
-  <div class="body">
-    <m-sweep f="1/(c - u)" values="[10,12]" param="1 日に処理できる件数" xr="[6,9.9]" yr="[0,6]" xt="[6,7,8,9]" yt="[0,2,4,6]"
-             xl="1 日の申請" yl="平均待ち（日）" digits="0" size="36" at="[0.5]" point='{"u": 9.8, "label": "平均待ち {y} 日", "digits": 2}' style="height:400px"></m-sweep>
-  </div>
-  <div class="concl"><span>→ 混むほど、少し速くするだけで待ちが大きく減る（架空）</span></div>
 </section>
 
 <section class="slide">
