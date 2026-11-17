@@ -8,3 +8,4 @@ tools/map/.cache/
 data/kana/font
 .spec/
 .katex-docs/
+.studio-geometry/
