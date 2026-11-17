@@ -2,6 +2,10 @@
 
 The part's own versions (Egatari spec §6.1). Releases of the whole library are in the repository's CHANGELOG.md.
 
+## 2.3.1 (components 2.14.1)
+
+- The report of a series outside the default `xr` or `yr` uses the kind `range`, not `data`. Studio treats `data` as data it cannot draw (an error) and `range` as a warning with the fix, which is what 2.3.0 meant. The message and the drawing do not change.
+
 ## 2.3.0 (components 2.14.0)
 
 - When `xr` or `yr` is not written (the default `[0, 1]`) and a series goes outside it, the part reports it once per series and axis (`ctx.report("data", …)`, with the values' range and the fix), so Studio's check can warn. A written range that cuts a line is taken as intended. The drawing does not change.

@@ -1,5 +1,5 @@
-// m-curves 2.3.0: when xr or yr is not written (the default [0, 1]) and a line goes outside it, the part reports it once per
-// series and axis with ctx.report("data", …), so Studio's check can show a warning; a written range is taken as intended (no
+// m-curves 2.3.0–2.3.1: when xr or yr is not written (the default [0, 1]) and a line goes outside it, the part reports it once per
+// series and axis with ctx.report("range", …), so Studio's check can show a warning; a written range is taken as intended (no
 // report), and a line inside the default range is not reported.
 //   node tools/test-curves-range.mjs [work dir]
 import fs from 'node:fs';
@@ -49,7 +49,7 @@ try {
   const no = await run(b, 'no-yr', slide('s-no-yr', 'xr="[0,1]"', THREE));
   const curves = no.reports.filter((r) => /\[curves\]/.test(r));
   ok(curves.length === 2, 'yr not written, two series outside [0, 1]: two reports (' + curves.length + ')' + (curves.length ? ': ' + curves.join(' | ') : ''));
-  ok(curves.every((r) => /^data: \[curves\] series [01] /.test(r) && /outside yr \[0,1\]/.test(r) && /Write yr/.test(r)), 'each is a data report that names the series, yr and the fix');
+  ok(curves.every((r) => /^range: \[curves\] series [01] /.test(r) && /outside yr \[0,1\]/.test(r) && /Write yr/.test(r)), 'each is a range report that names the series, yr and the fix');
   ok(curves.some((r) => /series 1 .*from 3\.2 to 14/.test(r)), 'the report gives the range of the values (3.2 to 14)');
   const yes = await run(b, 'yr', slide('s-yr', 'xr="[0,1]" yr="[0,2]"', THREE));
   ok(!yes.reports.some((r) => /\[curves\]/.test(r)), 'yr written: no report, even though B is cut at 2' + (yes.reports.length ? ': ' + yes.reports.join(' | ') : ''));

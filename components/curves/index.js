@@ -6,10 +6,10 @@
 // 2.0（Egatari spec §6.1 の部品）：base の MotionElement・el・mtext・prog・previewOpacity、plot の Plot、expr の compile を使い、
 // プレイヤーのグローバルは使わない（1.x は式の評価器 egatari-expr を写して持っていた）。破線の mask の id は
 // curves-2-2-1-<n>m<系列>：このパーツの名前と版に、このパーツだけの数え（1.x は mc<n>m<系列> で、DECK.Plot の数えを進めていた）
-egatariParts.define({name: "curves", version: "2.3.0", requires: {base: "1.3.0", expr: "1.0.0", plot: "1.1.3"}, element: "m-curves"}, function(deps){
+egatariParts.define({name: "curves", version: "2.3.1", requires: {base: "1.3.0", expr: "1.0.0", plot: "1.1.3"}, element: "m-curves"}, function(deps){
 "use strict";
 var base = deps.base, plot = deps.plot, expr = deps.expr;
-var ID = "curves-2-3-0-";   // name and version of this part, dots replaced (spec §6.1 Identifiers)
+var ID = "curves-2-3-1-";   // name and version of this part, dots replaced (spec §6.1 Identifiers)
 var count = 0;              // this part's own counter for its ids (deterministic: the order of mounting)
 // 線の名前（26px）の下付き・上付きの分の高さ（px）。base 1.1.0 で mtext の下付き・上付きは 24px 以上になり、下付きの字の下端は基線から
 // 添字の 0.75 倍まで、上付きの字の上端は 1.4 倍まで届く（Source Sans 3 で測った値。BIZ UDPGothic ではそれぞれ 0.5 倍と 1.2 倍）。
@@ -75,7 +75,7 @@ return class extends base.MotionElement {
         if (self.hasAttribute(ax[0])) return;
         var r = P[ax[0]], lo = Math.min(r[0], r[1]), hi = Math.max(r[0], r[1]), tol = (hi - lo) * 1e-9, vs = raw.map(function(q){ return q[ax[1]]; }).filter(function(v){ return typeof v === "number" && isFinite(v); });
         var out = vs.filter(function(v){ return v < lo - tol || v > hi + tol; });
-        if (out.length) ctx.report("data", "[curves] series " + i + " (" + JSON.stringify(s.label || "") + "): " + out.length + " of " + vs.length + " points are outside " + ax[0] + " " + JSON.stringify(r) + " (the default; values from " + +Math.min.apply(null, vs).toPrecision(4) + " to " + +Math.max.apply(null, vs).toPrecision(4) + "), so the line is cut at the edge. Write " + ax[0] + " to cover them");
+        if (out.length) ctx.report("range", "[curves] series " + i + " (" + JSON.stringify(s.label || "") + "): " + out.length + " of " + vs.length + " points are outside " + ax[0] + " " + JSON.stringify(r) + " (the default; values from " + +Math.min.apply(null, vs).toPrecision(4) + " to " + +Math.max.apply(null, vs).toPrecision(4) + "), so the line is cut at the edge. Write " + ax[0] + " to cover them");
       });
       // 有限でない点（NaN・±Infinity）は線を切り、有限な区間ごとに M から引き直す（1 つの NaN で線全体が消えない）
       var d = "", pen = false, gap = false;

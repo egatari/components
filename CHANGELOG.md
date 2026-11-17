@@ -4,6 +4,10 @@ Versions follow [README.md § Releases and versions](README.md#releases-and-vers
 
 ## Unreleased
 
+### Fixed
+
+- **`m-curves` 2.3.1: the default-range report is a warning in Studio.** 2.3.0 reported a line outside the default `xr` or `yr` with the kind `data`, which Studio treats as data it cannot draw (an error), so a lesson that relied on the default range failed on import. It now uses `range`, which Studio shows as a warning with the fix (the owner's decision was a warning). The message and the drawing do not change.
+
 ### Later (candidates, not in this release)
 
 - `m-compare` `by="row"`; an "outside every set" region for `m-venn`; planned-vs-actual bars for `m-timeline`
