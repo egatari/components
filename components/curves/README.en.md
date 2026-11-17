@@ -34,6 +34,7 @@ Series: a JSON array in a child script. One series = one step; same `step` = tog
 `f` is arithmetic, not code: numbers, `x`, `Math` functions/constants (`sin(x)`, `PI`; no `random`), `N(x, mean, sd)`, `+ - * / % **`, comparisons, `&& || !`, `? :`. Powers: `**`. An unreadable `f` shows a card.
 
 <!-- llm: omit -->
+- `xr` and `yr` default to `[0, 1]`. When one is not written and a line goes outside it, the line is cut flat at the edge, so the part reports it per series and axis (`ctx.report`; Studio's check warns; from 2.3.0). A written range that cuts a line is taken as intended.
 - `area`: shades to y = 0; several spans; rejection regions, p-values; `areaLabel` per span
 Older forms (still work; not described to the AI)
 

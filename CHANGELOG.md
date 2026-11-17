@@ -4,6 +4,11 @@ Versions follow [README.md § Releases and versions](README.md#releases-and-vers
 
 ## Unreleased
 
+### Changed
+
+- **`m-curves` 2.3.0: a report when a line leaves the default range.** When `xr` or `yr` is not written (the default `[0, 1]`) and a series goes outside it, the part reports it once per series and axis, with the values' range and the fix, so Studio's check can warn. A written range that cuts a line is taken as intended. The drawing does not change.
+- **`m-hist` README:** a dot plot of integer values stacks on the values themselves only without `bins` (with `bins` the dots stack at the class mid-points).
+
 ### Later (candidates, not in this release)
 
 - `m-compare` `by="row"`; an "outside every set" region for `m-venn`; planned-vs-actual bars for `m-timeline`
