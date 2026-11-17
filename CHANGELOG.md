@@ -4,13 +4,21 @@ Versions follow [README.md § Releases and versions](README.md#releases-and-vers
 
 ## Unreleased
 
+### Later (candidates, not in this release)
+
+- `m-compare` `by="row"`; an "outside every set" region for `m-venn`; planned-vs-actual bars for `m-timeline`
+
+## 2.14.1 - 2026-11-18
+
+This release fixes how `m-curves` 2.3.0 reported a line outside the default range: Studio showed it as an error instead of a warning.
+
 ### Fixed
 
 - **`m-curves` 2.3.1: the default-range report is a warning in Studio.** 2.3.0 reported a line outside the default `xr` or `yr` with the kind `data`, which Studio treats as data it cannot draw (an error), so a lesson that relied on the default range failed on import. It now uses `range`, which Studio shows as a warning with the fix (the owner's decision was a warning). The message and the drawing do not change.
 
-### Later (candidates, not in this release)
+### For Studio
 
-- `m-compare` `by="row"`; an "outside every set" region for `m-venn`; planned-vs-actual bars for `m-timeline`
+- Only `m-curves` changes (2.3.0 → 2.3.1, `index.js` only). The AI instruction pack is the same as 2.14.0.
 
 ## 2.14.0 - 2026-11-17
 
