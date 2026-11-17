@@ -20,7 +20,7 @@
 // この部品は markup-reader で決まった要素と属性だけを読んで置く（再生のときに KaTeX は動かない）。描いた結果がなければ tex を字のまま出して知らせる。
 // データと属性の問題、入らないときは ctx.report で知らせる（1.x の console.warn の代わり）。言語は ctx.lang（mount で this.ja）。
 // 配置を決める内部の関数は arrange(size)（1.x の layout(size)。2.0 の layout(ctx) は再生器が呼ぶので名前を分けた）
-egatariParts.define({name: "timeline", version: "2.0.5", requires: {base: "1.3.0", "markup-reader": "1.0.3"}, element: "m-timeline"}, function(deps){
+egatariParts.define({name: "timeline", version: "2.1.0", requires: {base: "1.3.0", "markup-reader": "1.0.3"}, element: "m-timeline"}, function(deps){
 "use strict";
 var base = deps.base, MR = deps["markup-reader"];
 var Part = class extends base.MotionElement {
@@ -396,17 +396,22 @@ var Part = class extends base.MotionElement {
       return {g: e, step: first};
     });
     var rects = {};
-    // 出来事：点、軸からの線、箱
-    this.points = L.points.map(function(o){
+    // data-part：Studio の形の検査（R-geometry）が測る印。出来事の箱（id は出来事の id、なければ event と番号）とその中の字、軸の点（mark）、
+    // 軸から箱への線（@axis からの辺）、つながり（edges）と後の作業への矢印（after）とその名前。期間の帯・節目・今日の線は測らない
+    var pidOf = {};
+    L.points.forEach(function(o, i){ pidOf[i] = o.n.id !== undefined ? String(o.n.id) : "event" + (i + 1); });
+    this.points = L.points.map(function(o, i){
+      var pid = pidOf[i];
       var col = tone(o.n.tone), bs = o.bs, r = hz ? {x: o.u0b, y: o.c0, w: bs.w, h: bs.h} : {x: o.c0, y: o.u0b, w: bs.w, h: bs.h};
-      var dot = D.el("circle", {cx: self.xy(o.u, L.axisC)[0], cy: self.xy(o.u, L.axisC)[1], r: 8, fill: col, stroke: "var(--bg)", "stroke-width": 2.5, opacity: 0}, gDot);
+      var dot = D.el("circle", {cx: self.xy(o.u, L.axisC)[0], cy: self.xy(o.u, L.axisC)[1], r: 8, fill: col, stroke: "var(--bg)", "stroke-width": 2.5, opacity: 0, "data-part": "mark", "data-part-id": "@" + pid}, gDot);
       // 箱の軸に近い辺の、点にいちばん近いところへ線を引く
       var ua = Math.max(o.u0b + 14, Math.min(o.u0b + o.eu - 14, o.u));
       var p0 = self.xy(o.u, L.axisC), p1 = self.xy(ua, o.cn);
-      var stem = D.el("line", {x1: p0[0], y1: p0[1], x2: p0[0], y2: p0[1], stroke: "var(--muted)", "stroke-width": 3, opacity: 0}, gStem);
+      var stem = D.el("line", {x1: p0[0], y1: p0[1], x2: p0[0], y2: p0[1], stroke: "var(--muted)", "stroke-width": 3, opacity: 0, "data-part-line": ""},
+        D.el("g", {"data-part": "edge", "data-part-id": "stem-" + pid, "data-part-from": "@axis", "data-part-to": pid}, gStem));
       var g = D.el("g", {opacity: 0}, gBox);
-      D.el("rect", {class: "box", x: r.x.toFixed(1), y: r.y.toFixed(1), width: bs.w, height: bs.h, rx: 10, fill: boxFill(o.n.tone), stroke: col, "stroke-width": o.n.tone === "emph" ? 3 : 2.2}, g);
-      boxDraw(self, g, r.x, r.y, bs);
+      D.el("rect", {class: "box", x: r.x.toFixed(1), y: r.y.toFixed(1), width: bs.w, height: bs.h, rx: 10, fill: boxFill(o.n.tone), stroke: col, "stroke-width": o.n.tone === "emph" ? 3 : 2.2, "data-part": "box", "data-part-id": pid}, g);
+      boxDraw(self, g, r.x, r.y, bs, {"data-part": "label", "data-part-id": pid, "data-part-of": "box"});
       rects[o.n.id] = r;
       // 軸から箱へ向かう向き（箱は軸の側から寄ってくる）
       return {o: o, g: g, dot: dot, stem: stem, p0: p0, p1: p1, cx: r.x + bs.w / 2, cy: r.y + bs.h / 2, dir: hz ? [0, o.side] : [o.side, 0]};
@@ -474,20 +479,20 @@ var Part = class extends base.MotionElement {
     var obst = this.points.map(function(o){ return box2(o.o.u0b, o.o.c0, o.o.u0b + o.o.eu, o.o.c0 + o.o.ec); })
       .concat(this.lanes.map(function(o){ var g0 = L.groups[o.o.group], c0 = g0.subC[o.o.sub]; return box2(o.o.lo, c0, o.o.hi, c0 + g0.thick[o.o.sub]); }));
     obst.push(box2(L.axisU0, L.axisC - 10, L.axisU1, L.axisC + 10 + (L.hasL ? L.tickExt : 0)));
-    this.edges = this.plan().edges.map(function(x){
-      var e = x.e, A = rects[e.from], B = rects[e.to];
+    this.edges = this.plan().edges.map(function(x, k){
+      var e = x.e, A = rects[e.from], B = rects[e.to], eid = "edge" + (k + 1);
       if (!A || !B) return null;
       var ac = [A.x + A.w / 2, A.y + A.h / 2], bc = [B.x + B.w / 2, B.y + B.h / 2], dx = bc[0] - ac[0], dy = bc[1] - ac[1], Lh = Math.hypot(dx, dy) || 1;
       var cut = function(R, c, sx, sy){ var s = Math.min(sx ? (R.w / 2 + 6) / Math.abs(sx) : Infinity, sy ? (R.h / 2 + 6) / Math.abs(sy) : Infinity); return [c[0] + sx * s, c[1] + sy * s]; };
       var p0 = cut(A, ac, dx / Lh, dy / Lh), p1 = cut(B, bc, -dx / Lh, -dy / Lh), col = e.tone ? tone(e.tone) : "var(--muted)";
-      var g = D.el("g", {opacity: 0}, gEdge), ux = (p1[0] - p0[0]), uy = (p1[1] - p0[1]), l2 = Math.hypot(ux, uy) || 1;
-      D.el("line", {x1: p0[0].toFixed(1), y1: p0[1].toFixed(1), x2: (p1[0] - ux / l2 * 14).toFixed(1), y2: (p1[1] - uy / l2 * 14).toFixed(1), stroke: col, "stroke-width": 3, "stroke-dasharray": e.dash === false ? "none" : "8 6"}, g);
+      var g = D.el("g", {opacity: 0, "data-part": "edge", "data-part-id": eid, "data-part-from": String(e.from), "data-part-to": String(e.to)}, gEdge), ux = (p1[0] - p0[0]), uy = (p1[1] - p0[1]), l2 = Math.hypot(ux, uy) || 1;
+      D.el("line", {x1: p0[0].toFixed(1), y1: p0[1].toFixed(1), x2: (p1[0] - ux / l2 * 14).toFixed(1), y2: (p1[1] - uy / l2 * 14).toFixed(1), "data-part-line": "", stroke: col, "stroke-width": 3, "stroke-dasharray": e.dash === false ? "none" : "8 6"}, g);
       D.el("path", {d: "M0,0L-16,-7L-16,7Z", fill: col, transform: "translate(" + p1[0].toFixed(1) + " " + p1[1].toFixed(1) + ") rotate(" + (Math.atan2(uy, ux) * 180 / Math.PI).toFixed(1) + ")"}, g);
       if (e.label){
         // 名前は線の横に（線・軸と目盛り・箱・帯と重ならない所。なければ知らせる）
         var at = sideLabel(p0, p1, est(e.label, 24, self), 30, obst, self.W, self.H);
         if (!at.ok) self.rep("layout", "[timeline] the label \"" + e.label + "\" of the edge " + JSON.stringify(e.from) + " → " + JSON.stringify(e.to) + " has no free place beside its line (it may overlap; make the element larger or the label shorter)");
-        D.mtext(g, at.x, at.y, e.label, {"text-anchor": "middle", "font-size": 24, fill: e.tone ? col : "var(--muted)"});
+        D.mtext(g, at.x, at.y, e.label, {"text-anchor": "middle", "font-size": 24, fill: e.tone ? col : "var(--muted)", "data-part": "label", "data-part-id": eid, "data-part-of": "edge"});
       }
       return {g: g, step: x.step, at: x.at};
     }).filter(Boolean);
@@ -495,15 +500,15 @@ var Part = class extends base.MotionElement {
     this.deps = [];
     if (this.plan().deps.length){
       var gDep = D.el("g", {}, svg);
-      this.deps = this.plan().deps.map(function(x){
+      this.deps = this.plan().deps.map(function(x, k){
         var pts = routeDep(L, x.a, x.b, size), path = "", len = 0;
         // 最後の区間は矢じりの分だけ短く（矢じりは最後の区間の向き）
         var q = pts.map(function(p){ return p.slice(); }), n = q.length, du = Math.sign(pts[n - 1][0] - pts[n - 2][0]), dc = Math.sign(pts[n - 1][1] - pts[n - 2][1]);
         q[n - 1][0] -= 14 * du; q[n - 1][1] -= 14 * dc;
         var dxy = self.xy(du, dc), ang = Math.atan2(dxy[1], dxy[0]) * 180 / Math.PI;
         q.forEach(function(p, j){ var xy = self.xy(p[0], p[1]); path += (j ? "L" : "M") + xy[0].toFixed(1) + "," + xy[1].toFixed(1); if (j) len += Math.abs(p[0] - q[j - 1][0]) + Math.abs(p[1] - q[j - 1][1]); });
-        var g = D.el("g", {class: "dep", opacity: 0}, gDep), end = self.xy(pts[n - 1][0], pts[n - 1][1]);
-        var line = D.el("path", {d: path, fill: "none", stroke: "var(--muted)", "stroke-width": 3, "stroke-linejoin": "round", "stroke-dasharray": len.toFixed(1) + " " + (len + 2).toFixed(1)}, g);
+        var g = D.el("g", {class: "dep", opacity: 0, "data-part": "edge", "data-part-id": "after" + (k + 1), "data-part-from": String(x.a.n.id), "data-part-to": String(x.b.n.id)}, gDep), end = self.xy(pts[n - 1][0], pts[n - 1][1]);
+        var line = D.el("path", {d: path, fill: "none", stroke: "var(--muted)", "stroke-width": 3, "stroke-linejoin": "round", "stroke-dasharray": len.toFixed(1) + " " + (len + 2).toFixed(1), "data-part-line": ""}, g);
         var head = D.el("path", {d: "M0,0L-16,-7L-16,7Z", fill: "var(--muted)", transform: "translate(" + end[0].toFixed(1) + " " + end[1].toFixed(1) + ") rotate(" + ang + ")"}, g);
         return {g: g, line: line, head: head, len: len, step: x.step, at: x.at, pts: pts.map(function(p){ return self.xy(p[0], p[1]); }), from: x.a.n.id, to: x.b.n.id};
       });
@@ -746,12 +751,13 @@ function boxSize(el, lines){
   });
   return {w: Math.ceil(w + 32), h: Math.ceil(y + 0.28 * prev.size + 10), lines: lines};
 }
-function boxDraw(el, g, x, y, bs){
+function boxDraw(el, g, x, y, bs, mark){
   bs.lines.forEach(function(l){
     // 式の枠は見積もった幅にし、中で中央に寄せる（KaTeX の字が読み込まれた後の幅で中央になる）
     if (l.tex){ var fo = MR.texFrame(g, x + bs.w / 2, y + l.y, l.src, "tex", {size: l.size, anchor: "middle", color: l.fill, w: l.w + 8, h: l.size * 1.6}, el.texSink);
+      if (mark) for (var a in mark) fo.setAttribute(a, mark[a]);
       fo.firstChild.style.verticalAlign = "top"; fo.setAttribute("x", (x + bs.w / 2 - (l.w + 8) / 2).toFixed(1)); fo.setAttribute("width", (l.w + 8).toFixed(1)); fo.style.textAlign = "center"; }
-    else base.mtext(g, x + bs.w / 2, y + l.y, l.text, {"text-anchor": "middle", "font-size": l.size, fill: l.fill, "font-weight": l.weight || 400});
+    else base.mtext(g, x + bs.w / 2, y + l.y, l.text, Object.assign({"text-anchor": "middle", "font-size": l.size, fill: l.fill, "font-weight": l.weight || 400}, mark || {}));
   });
 }
 // 箱を軸に沿って並べる：望む位置（o.u）を中心に、重ならないように塊にまとめてずらす（順は変えない）。o.u0b に左（上）端

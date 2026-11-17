@@ -2,6 +2,10 @@
 
 The part's own versions (Egatari spec §6.1). Releases of the whole library are in the repository's CHANGELOG.md.
 
+## 2.1.0 (components 2.15.0)
+
+- Marks what it draws for Studio's geometry check (R-geometry): each event box (`data-part="box"`, id = the event's id, else `event1`, `event2` …) with its lines (text or formula) as labels, the dot on the axis as a mark, the line from the axis to the box as an edge from `@axis`, and the `edges` and `after` arrows as edges (heads left out) with their names. Lanes, milestones and the today line are not marked. The drawing does not change.
+
 ## 2.0.5 (components 2.14.0)
 
 - Requires base 1.3.0, markup-reader 1.0.3 (sub- and superscripts in `mtext` at 0.7 of the text, at least 17 px).
