@@ -6,14 +6,14 @@
 <title>パーツの一覧（サンプル）</title>
 <!-- tools/gallery.mjs が各パーツの demo.html と README.md から作る。手で直さない。数値・会社はすべて架空か公の事実 -->
 <style>
-/* m-compare */
-.vlabel{font-size:27px;color:var(--muted);margin:0 0 6px}
 /* m-cycle */
 .vcap{font-size:27px;line-height:1.3;margin:0 0 6px;color:var(--muted)}
-/* m-fishbone */
-.vcap{font-size:27px;color:var(--muted);text-align:center;margin-bottom:6px}
 /* m-timeline */
 .vcap{font-size:27px;line-height:1.3;margin:0 0 6px;color:var(--muted)}
+/* m-compare */
+.vlabel{font-size:27px;color:var(--muted);margin:0 0 6px}
+/* m-fishbone */
+.vcap{font-size:27px;color:var(--muted);text-align:center;margin-bottom:6px}
 /* m-timer */
 /* 1 枚目は Studio の部品の一覧の見本の絵（本文の枠で撮る）にもなる。時計の 0 が枠の左端に付いて切れて見えないよう、少し内側に置く */
 .slide:first-of-type .body{padding:0 10px}
@@ -64,7 +64,387 @@ document.addEventListener("DOMContentLoaded", function(){
   <h2>パーツの一覧（55 個、231 枚）</h2>
   <div class="body">
     <p>パーツごとに、説明の 1 枚とサンプルのスライドが続く。→ でステップを進める。</p>
-    <p>m-seq（変わった）　m-sweep（変わった）　m-balance　m-bars　m-boxplot　m-callout　m-cards　m-checklist　m-ci　m-classify2d　m-code　m-codetree　m-collect　m-compare　m-contour　m-ctable　m-curves　m-cycle　m-diverge　m-fishbone　m-flow　m-folds　m-gendai　m-heatmap　m-hissan　m-hist　m-kakijun　m-kanbun　m-keyboard　m-kobun　m-kpi　m-map-japan　m-map-world　m-mapping　m-market　m-menu　m-network　m-nnet　m-numberline　m-orbit　m-particles　m-pie　m-predict　m-quad　m-sampling　m-scatter　m-score　m-syntax　m-tape　m-timeline　m-timer　m-trace　m-tree　m-vector　m-venn</p>
+    <p>m-cards（変わった）　m-cycle（変わった）　m-mapping（変わった）　m-network（変わった）　m-nnet（変わった）　m-seq（変わった）　m-sweep（変わった）　m-timeline（変わった）　m-balance　m-bars　m-boxplot　m-callout　m-checklist　m-ci　m-classify2d　m-code　m-codetree　m-collect　m-compare　m-contour　m-ctable　m-curves　m-diverge　m-fishbone　m-flow　m-folds　m-gendai　m-heatmap　m-hissan　m-hist　m-kakijun　m-kanbun　m-keyboard　m-kobun　m-kpi　m-map-japan　m-map-world　m-market　m-menu　m-numberline　m-orbit　m-particles　m-pie　m-predict　m-quad　m-sampling　m-scatter　m-score　m-syntax　m-tape　m-timer　m-trace　m-tree　m-vector　m-venn</p>
+  </div>
+</section>
+
+<section class="slide">
+  <h2>m-cards（変わった、v2.15.0）</h2>
+  <div class="body">
+    <p>カード（番号の丸・アイコン・見出し・説明）を横一列か 2 段に並べ、ステップごとに出す。矢印で順を、枠の色で強調を見せる</p>
+    <ul>
+      <li>伝えたいこと：手順・工程・まとめる・分ける</li>
+      <li>見せ方：rise・fade・draw</li>
+      <li>内容の分野：標準パーツ　サンプルのスライド：3 枚</li>
+    </ul>
+  </div>
+</section>
+
+<section id="g-cards-1" class="slide">
+  <h2>新しい窓口の進め方（架空の会社）</h2>
+  <div class="body">
+    <m-cards arrows nums style="height:330px">
+      <script type="application/json">{
+        "cards": [
+          {"icon": "messages", "title": "聞く", "text": "店に来た人の困りごとを 5 分で聞き取る"},
+          {"icon": "clipboard-list", "title": "まとめる", "text": "聞いたことを 1 枚の紙にまとめる"},
+          {"icon": "users", "title": "相談する", "text": "週に 1 回、担当の 3 人で話し合う"},
+          {"icon": "circle-check", "title": "返す", "text": "1 週間以内に答えを返す"}
+        ]
+      }</script>
+    </m-cards>
+  </div>
+  <div class="concl"><span>→ 聞いてから答えるまでを 1 週間に</span></div>
+</section>
+
+<section id="g-cards-2" class="slide">
+  <h2>4 つの店の工夫（架空）</h2>
+  <div class="body">
+    <m-cards layout="grid" hilite="4" style="height:420px">
+      <script type="application/json">{
+        "cards": [
+          {"n": "A", "icon": "building-store", "title": "駅前店", "text": "朝の 30 分だけ、受け取り専用の列を作った"},
+          {"n": "B", "icon": "calendar-event", "title": "川沿い店", "text": "予約の日を前の日に電話で知らせるようにした"},
+          {"n": "C", "icon": "map-pin", "title": "山の手店", "text": "店の場所の地図を、紙で配るのをやめて看板にした"},
+          {"n": "D", "icon": "chart-bar", "title": "港町店", "text": "待ち時間を毎日数えて、壁に貼り出した。来た人の 8 割が「待ちが短くなった」と答えた", "tone": "emph"}
+        ]
+      }</script>
+    </m-cards>
+  </div>
+  <div class="concl"><span>→ 数えて見せた店で、待ちが短くなったと感じる人がいちばん多い</span></div>
+</section>
+
+<section id="g-cards-3" class="slide">
+  <h2>まとめて出す（per-step="0"、見せ方 draw）</h2>
+  <div class="body">
+    <m-cards per-step="0" variant="draw" hilite="last" style="height:300px">
+      <script type="application/json">{
+        "cards": [
+          {"icon": "leaf", "title": "材料", "text": "地元の野菜を使う"},
+          {"icon": "truck", "title": "運ぶ", "text": "朝に届けて、その日のうちに売る"},
+          {"icon": "heart", "title": "残さない", "text": "売れ残りは翌日の総菜に"}
+        ]
+      }</script>
+    </m-cards>
+  </div>
+</section>
+
+<section class="slide">
+  <h2>m-cycle（変わった、v2.15.0）</h2>
+  <div class="body">
+    <p>循環の図。項目の箱を円の上に 12 時から時計回りに並べ、円に沿った矢印でつなぐ（最後から最初へ戻る矢印も）</p>
+    <ul>
+      <li>伝えたいこと：循環</li>
+      <li>見せ方：fade・draw・grow</li>
+      <li>内容の分野：標準パーツ　サンプルのスライド：3 枚</li>
+    </ul>
+  </div>
+</section>
+
+<section id="g-cycle-1" class="slide">
+  <h2>PDCA サイクル</h2>
+  <div class="body">
+    <m-cycle style="height:430px">
+      <script type="application/json">{
+        "center": {"label": "PDCA"},
+        "nodes": [
+          {"label": "計画（Plan）", "note": "目標と手順を決める"},
+          {"label": "実行（Do）", "note": "計画どおりにやってみる"},
+          {"label": "評価（Check）", "note": "結果を目標と比べる"},
+          {"label": "改善（Act）", "note": "やり方を直して次へ", "tone": "emph"}
+        ]
+      }</script>
+    </m-cycle>
+  </div>
+  <div class="concl"><span>→ 1 周ごとに、やり方が少しずつよくなる</span></div>
+</section>
+
+<section id="g-cycle-2" class="slide">
+  <h2>水の循環</h2>
+  <div class="body">
+    <m-cycle style="height:430px">
+      <script type="application/json">{
+        "center": {"label": "水の循環", "note": "太陽の熱で動く"},
+        "nodes": [
+          {"label": "蒸発", "note": "海や地面の水が水蒸気に"},
+          {"label": "雲ができる", "note": "上空で冷えて水や氷の粒に"},
+          {"label": "雨・雪", "note": "粒が大きくなって落ちる"},
+          {"label": "しみこむ・流れる", "note": "地下水や川になる"},
+          {"label": "海へ", "note": "川が海に注ぐ"}
+        ]
+      }</script>
+    </m-cycle>
+  </div>
+  <div class="concl"><span>→ 水は形を変えながら、地球の上を回り続ける</span></div>
+</section>
+
+<section id="g-cycle-3" class="slide">
+  <h2>見せ方の種類（variant）</h2>
+  <div class="body">
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:0 36px">
+      <div><p class="vcap">現れてから矢印（fade、既定）</p>
+        <m-cycle variant="fade" style="height:360px">
+          <script type="application/json">{"nodes": [{"label": "計画"}, {"label": "実行"}, {"label": "評価"}, {"label": "改善"}]}</script>
+        </m-cycle></div>
+      <div><p class="vcap">矢印を引いてから（draw）</p>
+        <m-cycle variant="draw" style="height:360px">
+          <script type="application/json">{"nodes": [{"label": "計画"}, {"label": "実行"}, {"label": "評価"}, {"label": "改善"}]}</script>
+        </m-cycle></div>
+      <div><p class="vcap">前の箱の側から大きくなる（grow）</p>
+        <m-cycle variant="grow" style="height:360px">
+          <script type="application/json">{"nodes": [{"label": "計画"}, {"label": "実行"}, {"label": "評価"}, {"label": "改善"}]}</script>
+        </m-cycle></div>
+    </div>
+  </div>
+  <div class="concl"><span>→ 書かなければ最初の見せ方（fade）になる</span></div>
+</section>
+
+<section class="slide">
+  <h2>m-mapping（変わった、v2.15.0）</h2>
+  <div class="body">
+    <p>実験の結果を数値へ対応させ、同じ値になる結果をまとめて確率分布を作る</p>
+    <ul>
+      <li>伝えたいこと：仕組みをモデルで見る・まとめる・分ける</li>
+      <li>見せ方：1 種類</li>
+      <li>内容の分野：数理・統計　サンプルのスライド：4 枚</li>
+    </ul>
+  </div>
+</section>
+
+<section id="g-mapping-1" class="slide">
+  <h2>硬貨を 2 回投げる</h2>
+  <div class="body"><m-mapping style="height:440px"><script type="application/json">{"outcomes":[{"label":"表表","x":2},{"label":"表裏","x":1},{"label":"裏表","x":1},{"label":"裏裏","x":0}],"picture":"coins","name":"X"}</script></m-mapping></div>
+  <div class="concl"><span>X は表の数。同じ値になる結果の確率を足す</span></div>
+</section>
+
+<section id="g-mapping-2" class="slide">
+  <h2>さいころ：5 以上なら当たり（X = 1）</h2>
+  <div class="body"><m-mapping style="height:440px"><script type="application/json">{"outcomes":[{"label":"1","x":0},{"label":"2","x":0},{"label":"3","x":0},{"label":"4","x":0},{"label":"5","x":1},{"label":"6","x":1}],"name":"X","picture":"dice"}</script></m-mapping></div>
+  <div class="concl"><span>当たりは 6 通りのうち 2 通り。P(X = 1) = 1/3</span></div>
+</section>
+
+<section id="g-mapping-3" class="slide">
+  <h2>ぶどうの粒の数を X にする（架空）</h2>
+  <div class="body"><m-mapping style="height:440px"><script type="application/json">{"outcomes":[{"label":"房 A","x":3},{"label":"房 B","x":5},{"label":"房 C","x":3},{"label":"房 D","x":4}],"name":"X","picture":"grapes"}</script></m-mapping></div>
+  <div class="concl"><span>粒の数を数えると X の値になる</span></div>
+</section>
+
+<section id="g-mapping-4" class="slide">
+  <h2>袋から玉を 2 個取り出す（戻さない）</h2>
+  <div class="body"><m-mapping style="height:440px"><script type="application/json">{"outcomes":[{"label":"赤赤","x":2},{"label":"赤青","x":1},{"label":"青赤","x":1}],"name":"X","picture":"balls"}</script></m-mapping></div>
+  <div class="concl"><span>赤 2 個・青 1 個から 2 個。X は赤の数</span></div>
+</section>
+
+<section class="slide">
+  <h2>m-network（変わった、v2.15.0）</h2>
+  <div class="body">
+    <p>グラフの探索（幅優先・ダイクストラなど）や巡回路を 1 ステップずつ。今の頂点・候補・訪れた頂点、選んだ辺、合計</p>
+    <ul>
+      <li>伝えたいこと：手順・工程・仕組みをモデルで見る</li>
+      <li>見せ方：1 種類</li>
+      <li>内容の分野：情報　サンプルのスライド：7 枚</li>
+    </ul>
+  </div>
+</section>
+
+<section id="g-network-1" class="slide noconcl">
+  <h2>幅優先探索：近い順に広げる（待ち行列）</h2>
+  <div class="body">
+    <m-network style="height:540px">
+      <script type="application/json">
+        {
+          "nodes": [{"id": "A", "x": 0, "y": 2}, {"id": "B", "x": 3, "y": 0}, {"id": "C", "x": 3, "y": 4}, {"id": "D", "x": 6, "y": 1}, {"id": "E", "x": 6, "y": 4}, {"id": "F", "x": 9, "y": 2}],
+          "edges": [{"from": "A", "to": "B"}, {"from": "A", "to": "C"}, {"from": "B", "to": "C"}, {"from": "B", "to": "D"}, {"from": "C", "to": "E"}, {"from": "D", "to": "E"}, {"from": "D", "to": "F"}, {"from": "E", "to": "F"}],
+          "frontierKind": "queue",
+          "steps": [
+            {"frontier": ["A"], "note": "A から始める"},
+            {"current": "A", "visited": ["A"], "frontier": ["B", "C"], "parent": {"B": "A", "C": "A"}, "note": "A を取り出し、隣の B・C を後ろへ"},
+            {"current": "B", "visited": ["A", "B"], "frontier": ["C", "D"], "parent": {"D": "B"}, "note": "B を取り出し、隣の D を後ろへ"},
+            {"current": "C", "visited": ["A", "B", "C"], "frontier": ["D", "E"], "parent": {"E": "C"}, "note": "C を取り出し、隣の E を後ろへ"},
+            {"current": "D", "visited": ["A", "B", "C", "D"], "frontier": ["E", "F"], "parent": {"F": "D"}, "note": "D を取り出し、隣の F を後ろへ"},
+            {"current": "E", "visited": ["A", "B", "C", "D", "E"], "frontier": ["F"], "note": "E を取り出す（新しい隣はない）"},
+            {"current": "F", "visited": ["A", "B", "C", "D", "E", "F"], "frontier": [], "note": "F を取り出す（新しい隣はない）"},
+            {"current": null, "note": "全部の頂点を訪れた"}
+          ]
+        }
+      </script>
+    </m-network>
+  </div>
+</section>
+
+<section id="g-network-2" class="slide noconcl">
+  <h2>ダイクストラ法：A から F への最短経路</h2>
+  <div class="body">
+    <m-network style="height:540px">
+      <script type="application/json">
+        {
+          "nodes": [{"id": "A", "x": 0, "y": 2}, {"id": "B", "x": 3, "y": 0}, {"id": "C", "x": 3, "y": 4}, {"id": "D", "x": 6, "y": 1}, {"id": "E", "x": 6, "y": 4}, {"id": "F", "x": 9, "y": 2}],
+          "edges": [{"from": "A", "to": "B", "w": 4}, {"from": "A", "to": "C", "w": 2}, {"from": "B", "to": "C", "w": 1}, {"from": "B", "to": "D", "w": 5}, {"from": "C", "to": "E", "w": 8}, {"from": "D", "to": "E", "w": 2}, {"from": "D", "to": "F", "w": 6}, {"from": "E", "to": "F", "w": 3}],
+          "frontierKind": "pq",
+          "total": {"label": "距離"},
+          "steps": [
+            {"frontier": [["A", 0]], "note": "A の距離を 0 に"},
+            {"current": "A", "visited": ["A"], "frontier": [["C", 2], ["B", 4]], "parent": {"B": "A", "C": "A"}, "note": "A（距離 0）を確定"},
+            {"current": "C", "visited": ["A", "C"], "frontier": [["B", 3], ["E", 10]], "parent": {"B": "C", "E": "C"}, "note": "C（距離 2）を確定"},
+            {"current": "B", "visited": ["A", "C", "B"], "frontier": [["D", 8], ["E", 10]], "parent": {"D": "B"}, "note": "B（距離 3）を確定"},
+            {"current": "D", "visited": ["A", "C", "B", "D"], "frontier": [["E", 10], ["F", 14]], "parent": {"F": "D"}, "note": "D（距離 8）を確定"},
+            {"current": "E", "visited": ["A", "C", "B", "D", "E"], "frontier": [["F", 13]], "parent": {"F": "E"}, "note": "E（距離 10）を確定"},
+            {"current": "F", "visited": ["A", "C", "B", "D", "E", "F"], "frontier": [], "note": "F（距離 13）を確定"},
+            {"current": "F", "frontier": [], "parent": {"B": null, "C": null, "E": null, "D": null, "F": null}, "take": [["A", "C"], ["C", "E"], ["E", "F"]], "total": 13, "note": "A から F への最短経路"}
+          ]
+        }
+      </script>
+    </m-network>
+  </div>
+</section>
+
+<section id="g-network-3" class="slide noconcl">
+  <h2>巡回路：最近傍法から 2-opt へ（架空）</h2>
+  <div class="body">
+    <m-network style="height:540px">
+      <script type="application/json">
+        {
+          "nodes": [{"id": "P", "x": 6, "y": 3}, {"id": "Q", "x": 0, "y": 2}, {"id": "R", "x": 8, "y": 3}, {"id": "S", "x": 9, "y": 1}, {"id": "T", "x": 4, "y": 1}, {"id": "U", "x": 1, "y": 4}, {"id": "V", "x": 4, "y": 4}],
+          "complete": true,
+          "total": {"label": "巡回路の長さ", "check": false},
+          "steps": [
+            {"current": "R", "visited": ["P", "R"], "take": [["P", "R"]], "total": 2.0, "note": "P からいちばん近い R へ"},
+            {"current": "S", "visited": ["P", "R", "S"], "take": [["R", "S"]], "total": 4.24, "note": "R からいちばん近い S へ"},
+            {"current": "T", "visited": ["P", "R", "S", "T"], "take": [["S", "T"]], "total": 9.24, "note": "S からいちばん近い T へ"},
+            {"current": "V", "visited": ["P", "R", "S", "T", "V"], "take": [["T", "V"]], "total": 12.24, "note": "T からいちばん近い V へ"},
+            {"current": "U", "visited": ["P", "R", "S", "T", "V", "U"], "take": [["V", "U"]], "total": 15.24, "note": "V からいちばん近い U へ"},
+            {"current": "Q", "visited": ["P", "R", "S", "T", "V", "U", "Q"], "take": [["U", "Q"]], "total": 17.47, "note": "U からいちばん近い Q へ"},
+            {"current": "P", "take": [["Q", "P"]], "total": 23.55, "note": "出発点へ戻る（最近傍法）"},
+            {"current": null, "drop": [["T", "V"], ["Q", "P"]], "take": [["T", "Q"], ["V", "P"]], "total": 20.83, "note": "T–V と Q–P を T–Q と V–P に（2-opt）"}
+          ]
+        }
+      </script>
+    </m-network>
+  </div>
+</section>
+
+<section id="g-network-4" class="slide noconcl">
+  <h2>マルコフ連鎖：天気の移り変わり（架空）</h2>
+  <div class="body">
+    <m-network style="height:540px">
+      <script type="application/json">
+        {
+          "directed": true,
+          "stochastic": true,
+          "nodes": [{"id": "晴", "x": 0, "y": 0}, {"id": "曇", "x": 4, "y": 0}, {"id": "雨", "x": 2, "y": 3}],
+          "edges": [{"from": "晴", "to": "晴", "w": 0.6}, {"from": "晴", "to": "曇", "w": 0.3}, {"from": "晴", "to": "雨", "w": 0.1}, {"from": "曇", "to": "晴", "w": 0.4}, {"from": "曇", "to": "曇", "w": 0.4}, {"from": "曇", "to": "雨", "w": 0.2}, {"from": "雨", "to": "晴", "w": 0.2}, {"from": "雨", "to": "曇", "w": 0.4}, {"from": "雨", "to": "雨", "w": 0.4}],
+          "total": {"label": "この道筋の確率", "check": false},
+          "steps": [
+            {"current": "晴", "note": "晴の日から始める"},
+            {"current": "曇", "take": [["晴", "曇"]], "total": 0.3, "note": "晴 → 曇（確率 0.3）"},
+            {"current": "曇", "take": [["曇", "曇"]], "total": 0.12, "note": "曇 → 曇（確率 0.4）", "drop": [["晴", "曇"]]},
+            {"current": "曇", "take": [["曇", "曇"]], "total": 0.048, "note": "曇 → 曇（確率 0.4）", "drop": [["曇", "曇"]]},
+            {"current": "雨", "take": [["曇", "雨"]], "total": 0.0096, "note": "曇 → 雨（確率 0.2）", "drop": [["曇", "曇"]]}
+          ]
+        }
+      </script>
+    </m-network>
+  </div>
+</section>
+
+<section id="g-network-5" class="slide noconcl">
+  <h2>パス図：潜在変数と観測した変数（架空）</h2>
+  <div class="body">
+    <m-network style="height:540px">
+      <script type="application/json">
+        {
+          "directed": true,
+          "nodes": [{"id": "意欲", "x": 0, "y": 1, "shape": "ellipse"}, {"id": "学力", "x": 4, "y": 1, "shape": "ellipse"}, {"id": "国語", "x": 8, "y": 0, "shape": "box", "observed": true}, {"id": "数学", "x": 8, "y": 1, "shape": "box", "observed": true}, {"id": "英語", "x": 8, "y": 2, "shape": "box", "observed": true}, {"id": "家庭", "x": 0, "y": 3, "shape": "box", "observed": true}],
+          "edges": [{"from": "意欲", "to": "学力", "w": 0.45}, {"from": "学力", "to": "国語", "w": 0.82}, {"from": "学力", "to": "数学", "w": 0.75}, {"from": "学力", "to": "英語", "w": 0.79}, {"from": "家庭", "to": "意欲", "w": 0.3, "bi": true}],
+          "steps": [
+            {"current": "学力", "note": "楕円は潜在変数（直接は測れない）"},
+            {"current": "数学", "note": "塗った四角は観測した変数。矢印の数は係数（架空）"},
+            {"current": "家庭", "note": "両向きの破線は、測っていない共通の原因（交絡）"}
+          ]
+        }
+      </script>
+    </m-network>
+  </div>
+</section>
+
+<section id="g-network-6" class="slide noconcl">
+  <h2>プレート表記：同じものが N 個</h2>
+  <div class="body">
+    <m-network style="height:360px;width:640px;margin:0 auto">
+      <script type="application/json">
+        {
+          "directed": true,
+          "nodes": [{"id": "θ", "x": 0, "y": 0, "shape": "circle"}, {"id": "x", "x": 3, "y": 0, "label": "*x*_i", "observed": true}],
+          "edges": [{"from": "θ", "to": "x"}],
+          "plates": [{"nodes": ["x"], "label": "N"}],
+          "steps": [
+            {"current": "θ", "note": "θ（パラメータ）は観測しない"},
+            {"current": "x", "note": "枠は「同じものが N 個」。*x*_1 … *x*_N が θ から出る"}
+          ]
+        }
+      </script>
+    </m-network>
+  </div>
+</section>
+
+<section id="g-network-7" class="slide noconcl">
+  <h2>隠れマルコフモデルの格子とビタビ（架空）</h2>
+  <div class="body">
+    <m-network style="height:540px">
+      <script type="application/json">
+        {
+          "layout": "trellis",
+          "states": ["晴", "雨"],
+          "T": 4,
+          "transitions": [{"from": "晴", "to": "晴", "w": 0.7}, {"from": "晴", "to": "雨", "w": 0.3}, {"from": "雨", "to": "晴", "w": 0.4}, {"from": "雨", "to": "雨", "w": 0.6}],
+          "steps": [
+            {"current": "晴@1", "note": "観測：散歩・読書・読書・散歩。いちばん確からしい天気の並び（ビタビ）"},
+            {"current": "雨@2", "take": [["晴@1", "雨@2"]], "note": "時刻 2：雨（読書）"},
+            {"current": "雨@3", "take": [["雨@2", "雨@3"]], "note": "時刻 3：雨（読書）"},
+            {"current": "晴@4", "take": [["雨@3", "晴@4"]], "note": "時刻 4：晴（散歩）"}
+          ]
+        }
+      </script>
+    </m-network>
+  </div>
+</section>
+
+<section class="slide">
+  <h2>m-nnet（変わった、v2.15.0）</h2>
+  <div class="body">
+    <p>ニューラルネットの層を並べ、前向きの計算を層ごとに見せる。ニューロンはまとめた丸か、Σ（重み付きの和）と f（活性化関数）に分けた形</p>
+    <ul>
+      <li>伝えたいこと：仕組みをモデルで見る・手順・工程</li>
+      <li>見せ方：1 種類</li>
+      <li>内容の分野：情報　サンプルのスライド：3 枚</li>
+    </ul>
+  </div>
+</section>
+
+<section id="g-nnet-1" class="slide noconcl">
+  <h2>パーセプトロンで AND を計算する</h2>
+  <div class="body">
+    <m-nnet style="height:440px">
+      <script type="application/json">{"layers": [{"n": 2, "label": "入力", "names": ["*x*_1", "*x*_2"]}, {"n": 1, "label": "出力", "act": "step", "form": "split", "names": ["*y*"]}], "weights": [[[1.0, 1.0]]], "biases": [[-1.5]], "values": {"x": [1, 1], "z": [[0.5]], "a": [[1.0]]}}</script>
+    </m-nnet>
+  </div>
+</section>
+
+<section id="g-nnet-2" class="slide noconcl">
+  <h2>3–4–4–2 の前向きの計算（架空の重み）</h2>
+  <div class="body">
+    <m-nnet edges="weight" style="height:540px">
+      <script type="application/json">{"layers": [{"n": 3, "label": "入力層", "names": ["*x*_1", "*x*_2", "*x*_3"]}, {"n": 4, "label": "隠れ層 1", "act": "relu"}, {"n": 4, "label": "隠れ層 2", "act": "relu"}, {"n": 2, "label": "出力層", "act": "sigmoid", "names": ["*y*_1", "*y*_2"]}], "weights": [[[0.1, -0.11, 0.51], [0.08, -0.43, 0.29], [1.04, 0.76, -0.56], [-1.01, -0.5, 0.03]], [[-1.86, -0.18, -1.0, -0.59], [-0.44, -0.25, 0.33, 0.83], [-0.1, 1.09, -0.53, 0.28], [0.72, 0.08, -0.59, -0.74]], [[-0.37, 0.18, -0.81, -0.17], [-0.13, 0.43, 0.17, 0.28]]], "biases": [[-0.2, -0.04, 0.24, 0.45], [-0.38, 0.45, 0.4, 0.23], [0.08, -0.09]], "values": {"x": [0.5, -1.2, 0.8], "z": [[0.39, 0.75, -0.6, 0.57], [-1.58, 0.56, 1.34, 0.15], [-0.93, 0.42]], "a": [[0.39, 0.75, 0.0, 0.57], [0.0, 0.56, 1.34, 0.15], [0.28, 0.6]]}}</script>
+    </m-nnet>
+  </div>
+</section>
+
+<section id="g-nnet-3" class="slide noconcl">
+  <h2>隠れ層 2 を Σ と ReLU に分けて見る（架空）</h2>
+  <div class="body">
+    <m-nnet edges="weight" style="height:540px">
+      <script type="application/json">{"layers": [{"n": 3, "label": "入力層", "names": ["*x*_1", "*x*_2", "*x*_3"]}, {"n": 4, "label": "隠れ層 1", "act": "relu"}, {"n": 4, "label": "隠れ層 2", "act": "relu"}, {"n": 2, "label": "出力層", "act": "sigmoid", "names": ["*y*_1", "*y*_2"]}], "weights": [[[0.1, -0.11, 0.51], [0.08, -0.43, 0.29], [1.04, 0.76, -0.56], [-1.01, -0.5, 0.03]], [[-1.86, -0.18, -1.0, -0.59], [-0.44, -0.25, 0.33, 0.83], [-0.1, 1.09, -0.53, 0.28], [0.72, 0.08, -0.59, -0.74]], [[-0.37, 0.18, -0.81, -0.17], [-0.13, 0.43, 0.17, 0.28]]], "biases": [[-0.2, -0.04, 0.24, 0.45], [-0.38, 0.45, 0.4, 0.23], [0.08, -0.09]], "values": {"x": [0.5, -1.2, 0.8], "z": [[0.39, 0.75, -0.6, 0.57], [-1.58, 0.56, 1.34, 0.15], [-0.93, 0.42]], "a": [[0.39, 0.75, 0.0, 0.57], [0.0, 0.56, 1.34, 0.15], [0.28, 0.6]]}, "steps": [{"show": "x"}, {"layer": 1, "phase": "a"}, {"open": 2, "note": "隠れ層 2 を Σ と ReLU に分けて見る"}, {"layer": 2, "phase": "z"}, {"focus": [2, 0]}, {"layer": 2, "phase": "a"}, {"layer": 3, "phase": "a"}]}</script>
+    </m-nnet>
   </div>
 </section>
 
@@ -127,6 +507,98 @@ document.addEventListener("DOMContentLoaded", function(){
              xl="1 日の申請" yl="平均待ち（日）" digits="0" size="36" at="[0.5]" point='{"u": 9.8, "label": "平均待ち {y} 日", "digits": 2}' style="height:400px"></m-sweep>
   </div>
   <div class="concl"><span>→ 混むほど、少し速くするだけで待ちが大きく減る（架空）</span></div>
+</section>
+
+<section class="slide">
+  <h2>m-timeline（変わった、v2.15.0）</h2>
+  <div class="body">
+    <p>年表。出来事を時間の軸の上に 1 つずつ出す。期間は軸に沿って長さのとおりに描き、重なれば段を分ける。end は含まない（"1912" は 1912 年の初め）</p>
+    <ul>
+      <li>伝えたいこと：年表・予定</li>
+      <li>見せ方：fade・draw・grow</li>
+      <li>内容の分野：標準パーツ　サンプルのスライド：4 枚</li>
+    </ul>
+  </div>
+</section>
+
+<section id="g-timeline-1" class="slide">
+  <h2>明治のおもな出来事</h2>
+  <div class="body">
+    <m-timeline style="height:430px">
+      <script type="application/json">{
+        "nodes": [
+          {"label": "明治維新", "when": "1868", "whenLabel": "明治元年", "note": "五箇条の御誓文"},
+          {"label": "廃藩置県", "when": "1871"},
+          {"label": "鉄道の開業", "when": "1872", "note": "新橋〜横浜"},
+          {"label": "西南戦争", "when": "1877"},
+          {"label": "憲法の発布", "when": "1889", "tone": "emph"},
+          {"label": "日清戦争", "when": "1894"},
+          {"label": "日露戦争", "when": "1904"}
+        ]
+      }</script>
+    </m-timeline>
+  </div>
+  <div class="concl"><span>→ 約 20 年で憲法をもつ国になった</span></div>
+</section>
+
+<section id="g-timeline-2" class="slide">
+  <h2>明治・大正の作家の生涯</h2>
+  <div class="body">
+    <m-timeline style="height:430px">
+      <script type="application/json">{
+        "nodes": [
+          {"label": "明治", "when": "1868", "end": "1912", "lane": "時代", "tone": "muted"},
+          {"label": "大正", "when": "1912", "end": "1926", "lane": "時代", "tone": "muted"},
+          {"label": "森鷗外", "when": "1862", "end": "1922", "lane": "作家"},
+          {"label": "夏目漱石", "when": "1867", "end": "1916", "lane": "作家"},
+          {"label": "正岡子規", "when": "1867", "end": "1902", "lane": "作家"},
+          {"label": "樋口一葉\n24 歳で没", "when": "1872", "end": "1896", "lane": "作家", "tone": "emph"},
+          {"label": "芥川龍之介", "when": "1892", "end": "1927", "lane": "作家"},
+          {"label": "宮沢賢治", "when": "1896", "end": "1933", "lane": "作家"}
+        ]
+      }</script>
+    </m-timeline>
+  </div>
+  <div class="concl"><span>→ 重なる生涯は段を分けて積む。漱石と子規は同じ年の生まれ</span></div>
+</section>
+
+<section id="g-timeline-3" class="slide">
+  <h2>アプリ開発の工程表（架空）</h2>
+  <div class="body">
+    <m-timeline unit="week" today="2026-11-02" style="height:400px">
+      <script type="application/json">{
+        "nodes": [
+          {"id": "req", "label": "要件定義", "when": "2026-10-05", "end": "2026-10-17", "lane": "設計", "progress": 100},
+          {"id": "ui", "label": "画面設計", "when": "2026-10-17", "end": "2026-11-07", "lane": "設計", "progress": 70, "after": ["req"]},
+          {"id": "dev", "label": "実装", "when": "2026-11-07", "end": "2026-12-05", "lane": "開発", "progress": 10, "after": ["ui"]},
+          {"id": "test", "label": "試験", "when": "2026-12-05", "end": "2026-12-19", "lane": "開発", "after": ["dev"]},
+          {"id": "rel", "label": "公開", "when": "2026-12-21", "lane": "開発", "tone": "emph", "after": ["test"]}
+        ]
+      }</script>
+    </m-timeline>
+  </div>
+  <div class="concl"><span>→ 矢印は「前の作業が終わってから」。画面設計の遅れは実装に響く</span></div>
+</section>
+
+<section id="g-timeline-4" class="slide">
+  <h2>見せ方の種類（variant）</h2>
+  <div class="body">
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:0 36px">
+      <div><p class="vcap">現れてから線（fade、既定）</p>
+        <m-timeline variant="fade" style="height:330px">
+          <script type="application/json">{"nodes": [{"label": "明治維新", "when": "1868"}, {"label": "明治", "when": "1868", "end": "1912"}, {"label": "憲法の発布", "when": "1889"}]}</script>
+        </m-timeline></div>
+      <div><p class="vcap">線を引いてから（draw）</p>
+        <m-timeline variant="draw" style="height:330px">
+          <script type="application/json">{"nodes": [{"label": "明治維新", "when": "1868"}, {"label": "明治", "when": "1868", "end": "1912"}, {"label": "憲法の発布", "when": "1889"}]}</script>
+        </m-timeline></div>
+      <div><p class="vcap">軸の側から大きくなる（grow）</p>
+        <m-timeline variant="grow" style="height:330px">
+          <script type="application/json">{"nodes": [{"label": "明治維新", "when": "1868"}, {"label": "明治", "when": "1868", "end": "1912"}, {"label": "憲法の発布", "when": "1889"}]}</script>
+        </m-timeline></div>
+    </div>
+  </div>
+  <div class="concl"><span>→ 書かなければ最初の見せ方（fade）になる</span></div>
 </section>
 
 <section class="slide">
@@ -386,67 +858,6 @@ document.addEventListener("DOMContentLoaded", function(){
         ]
       }</script>
     </m-callout>
-  </div>
-</section>
-
-<section class="slide">
-  <h2>m-cards</h2>
-  <div class="body">
-    <p>カード（番号の丸・アイコン・見出し・説明）を横一列か 2 段に並べ、ステップごとに出す。矢印で順を、枠の色で強調を見せる</p>
-    <ul>
-      <li>伝えたいこと：手順・工程・まとめる・分ける</li>
-      <li>見せ方：rise・fade・draw</li>
-      <li>内容の分野：標準パーツ　サンプルのスライド：3 枚</li>
-    </ul>
-  </div>
-</section>
-
-<section id="g-cards-1" class="slide">
-  <h2>新しい窓口の進め方（架空の会社）</h2>
-  <div class="body">
-    <m-cards arrows nums style="height:330px">
-      <script type="application/json">{
-        "cards": [
-          {"icon": "messages", "title": "聞く", "text": "店に来た人の困りごとを 5 分で聞き取る"},
-          {"icon": "clipboard-list", "title": "まとめる", "text": "聞いたことを 1 枚の紙にまとめる"},
-          {"icon": "users", "title": "相談する", "text": "週に 1 回、担当の 3 人で話し合う"},
-          {"icon": "circle-check", "title": "返す", "text": "1 週間以内に答えを返す"}
-        ]
-      }</script>
-    </m-cards>
-  </div>
-  <div class="concl"><span>→ 聞いてから答えるまでを 1 週間に</span></div>
-</section>
-
-<section id="g-cards-2" class="slide">
-  <h2>4 つの店の工夫（架空）</h2>
-  <div class="body">
-    <m-cards layout="grid" hilite="4" style="height:420px">
-      <script type="application/json">{
-        "cards": [
-          {"n": "A", "icon": "building-store", "title": "駅前店", "text": "朝の 30 分だけ、受け取り専用の列を作った"},
-          {"n": "B", "icon": "calendar-event", "title": "川沿い店", "text": "予約の日を前の日に電話で知らせるようにした"},
-          {"n": "C", "icon": "map-pin", "title": "山の手店", "text": "店の場所の地図を、紙で配るのをやめて看板にした"},
-          {"n": "D", "icon": "chart-bar", "title": "港町店", "text": "待ち時間を毎日数えて、壁に貼り出した。来た人の 8 割が「待ちが短くなった」と答えた", "tone": "emph"}
-        ]
-      }</script>
-    </m-cards>
-  </div>
-  <div class="concl"><span>→ 数えて見せた店で、待ちが短くなったと感じる人がいちばん多い</span></div>
-</section>
-
-<section id="g-cards-3" class="slide">
-  <h2>まとめて出す（per-step="0"、見せ方 draw）</h2>
-  <div class="body">
-    <m-cards per-step="0" variant="draw" hilite="last" style="height:300px">
-      <script type="application/json">{
-        "cards": [
-          {"icon": "leaf", "title": "材料", "text": "地元の野菜を使う"},
-          {"icon": "truck", "title": "運ぶ", "text": "朝に届けて、その日のうちに売る"},
-          {"icon": "heart", "title": "残さない", "text": "売れ残りは翌日の総菜に"}
-        ]
-      }</script>
-    </m-cards>
   </div>
 </section>
 
@@ -1103,76 +1514,6 @@ document.addEventListener("DOMContentLoaded", function(){
     </m-curves>
   </div>
   <div class="concl"><span>→ 両端の 5 % に入れば帰無仮説を棄却する</span></div>
-</section>
-
-<section class="slide">
-  <h2>m-cycle</h2>
-  <div class="body">
-    <p>循環の図。項目の箱を円の上に 12 時から時計回りに並べ、円に沿った矢印でつなぐ（最後から最初へ戻る矢印も）</p>
-    <ul>
-      <li>伝えたいこと：循環</li>
-      <li>見せ方：fade・draw・grow</li>
-      <li>内容の分野：標準パーツ　サンプルのスライド：3 枚</li>
-    </ul>
-  </div>
-</section>
-
-<section id="g-cycle-1" class="slide">
-  <h2>PDCA サイクル</h2>
-  <div class="body">
-    <m-cycle style="height:430px">
-      <script type="application/json">{
-        "center": {"label": "PDCA"},
-        "nodes": [
-          {"label": "計画（Plan）", "note": "目標と手順を決める"},
-          {"label": "実行（Do）", "note": "計画どおりにやってみる"},
-          {"label": "評価（Check）", "note": "結果を目標と比べる"},
-          {"label": "改善（Act）", "note": "やり方を直して次へ", "tone": "emph"}
-        ]
-      }</script>
-    </m-cycle>
-  </div>
-  <div class="concl"><span>→ 1 周ごとに、やり方が少しずつよくなる</span></div>
-</section>
-
-<section id="g-cycle-2" class="slide">
-  <h2>水の循環</h2>
-  <div class="body">
-    <m-cycle style="height:430px">
-      <script type="application/json">{
-        "center": {"label": "水の循環", "note": "太陽の熱で動く"},
-        "nodes": [
-          {"label": "蒸発", "note": "海や地面の水が水蒸気に"},
-          {"label": "雲ができる", "note": "上空で冷えて水や氷の粒に"},
-          {"label": "雨・雪", "note": "粒が大きくなって落ちる"},
-          {"label": "しみこむ・流れる", "note": "地下水や川になる"},
-          {"label": "海へ", "note": "川が海に注ぐ"}
-        ]
-      }</script>
-    </m-cycle>
-  </div>
-  <div class="concl"><span>→ 水は形を変えながら、地球の上を回り続ける</span></div>
-</section>
-
-<section id="g-cycle-3" class="slide">
-  <h2>見せ方の種類（variant）</h2>
-  <div class="body">
-    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:0 36px">
-      <div><p class="vcap">現れてから矢印（fade、既定）</p>
-        <m-cycle variant="fade" style="height:360px">
-          <script type="application/json">{"nodes": [{"label": "計画"}, {"label": "実行"}, {"label": "評価"}, {"label": "改善"}]}</script>
-        </m-cycle></div>
-      <div><p class="vcap">矢印を引いてから（draw）</p>
-        <m-cycle variant="draw" style="height:360px">
-          <script type="application/json">{"nodes": [{"label": "計画"}, {"label": "実行"}, {"label": "評価"}, {"label": "改善"}]}</script>
-        </m-cycle></div>
-      <div><p class="vcap">前の箱の側から大きくなる（grow）</p>
-        <m-cycle variant="grow" style="height:360px">
-          <script type="application/json">{"nodes": [{"label": "計画"}, {"label": "実行"}, {"label": "評価"}, {"label": "改善"}]}</script>
-        </m-cycle></div>
-    </div>
-  </div>
-  <div class="concl"><span>→ 書かなければ最初の見せ方（fade）になる</span></div>
 </section>
 
 <section class="slide">
@@ -2050,42 +2391,6 @@ document.addEventListener("DOMContentLoaded", function(){
 </section>
 
 <section class="slide">
-  <h2>m-mapping</h2>
-  <div class="body">
-    <p>実験の結果を数値へ対応させ、同じ値になる結果をまとめて確率分布を作る</p>
-    <ul>
-      <li>伝えたいこと：仕組みをモデルで見る・まとめる・分ける</li>
-      <li>見せ方：1 種類</li>
-      <li>内容の分野：数理・統計　サンプルのスライド：4 枚</li>
-    </ul>
-  </div>
-</section>
-
-<section id="g-mapping-1" class="slide">
-  <h2>硬貨を 2 回投げる</h2>
-  <div class="body"><m-mapping style="height:440px"><script type="application/json">{"outcomes":[{"label":"表表","x":2},{"label":"表裏","x":1},{"label":"裏表","x":1},{"label":"裏裏","x":0}],"picture":"coins","name":"X"}</script></m-mapping></div>
-  <div class="concl"><span>X は表の数。同じ値になる結果の確率を足す</span></div>
-</section>
-
-<section id="g-mapping-2" class="slide">
-  <h2>さいころ：5 以上なら当たり（X = 1）</h2>
-  <div class="body"><m-mapping style="height:440px"><script type="application/json">{"outcomes":[{"label":"1","x":0},{"label":"2","x":0},{"label":"3","x":0},{"label":"4","x":0},{"label":"5","x":1},{"label":"6","x":1}],"name":"X","picture":"dice"}</script></m-mapping></div>
-  <div class="concl"><span>当たりは 6 通りのうち 2 通り。P(X = 1) = 1/3</span></div>
-</section>
-
-<section id="g-mapping-3" class="slide">
-  <h2>ぶどうの粒の数を X にする（架空）</h2>
-  <div class="body"><m-mapping style="height:440px"><script type="application/json">{"outcomes":[{"label":"房 A","x":3},{"label":"房 B","x":5},{"label":"房 C","x":3},{"label":"房 D","x":4}],"name":"X","picture":"grapes"}</script></m-mapping></div>
-  <div class="concl"><span>粒の数を数えると X の値になる</span></div>
-</section>
-
-<section id="g-mapping-4" class="slide">
-  <h2>袋から玉を 2 個取り出す（戻さない）</h2>
-  <div class="body"><m-mapping style="height:440px"><script type="application/json">{"outcomes":[{"label":"赤赤","x":2},{"label":"赤青","x":1},{"label":"青赤","x":1}],"name":"X","picture":"balls"}</script></m-mapping></div>
-  <div class="concl"><span>赤 2 個・青 1 個から 2 個。X は赤の数</span></div>
-</section>
-
-<section class="slide">
   <h2>m-market</h2>
   <div class="body">
     <p>市場規模の入れ子の円（TAM / SAM / SOM）。外の円から 1 つずつ、前の円の大きさから縮んで現れる</p>
@@ -2187,219 +2492,6 @@ document.addEventListener("DOMContentLoaded", function(){
     </ul>
   </div>
   <div class="concl"><span>短い復習でも、点に差が出た</span></div>
-</section>
-
-<section class="slide">
-  <h2>m-network</h2>
-  <div class="body">
-    <p>グラフの探索（幅優先・ダイクストラなど）や巡回路を 1 ステップずつ。今の頂点・候補・訪れた頂点、選んだ辺、合計</p>
-    <ul>
-      <li>伝えたいこと：手順・工程・仕組みをモデルで見る</li>
-      <li>見せ方：1 種類</li>
-      <li>内容の分野：情報　サンプルのスライド：7 枚</li>
-    </ul>
-  </div>
-</section>
-
-<section id="g-network-1" class="slide noconcl">
-  <h2>幅優先探索：近い順に広げる（待ち行列）</h2>
-  <div class="body">
-    <m-network style="height:540px">
-      <script type="application/json">
-        {
-          "nodes": [{"id": "A", "x": 0, "y": 2}, {"id": "B", "x": 3, "y": 0}, {"id": "C", "x": 3, "y": 4}, {"id": "D", "x": 6, "y": 1}, {"id": "E", "x": 6, "y": 4}, {"id": "F", "x": 9, "y": 2}],
-          "edges": [{"from": "A", "to": "B"}, {"from": "A", "to": "C"}, {"from": "B", "to": "C"}, {"from": "B", "to": "D"}, {"from": "C", "to": "E"}, {"from": "D", "to": "E"}, {"from": "D", "to": "F"}, {"from": "E", "to": "F"}],
-          "frontierKind": "queue",
-          "steps": [
-            {"frontier": ["A"], "note": "A から始める"},
-            {"current": "A", "visited": ["A"], "frontier": ["B", "C"], "parent": {"B": "A", "C": "A"}, "note": "A を取り出し、隣の B・C を後ろへ"},
-            {"current": "B", "visited": ["A", "B"], "frontier": ["C", "D"], "parent": {"D": "B"}, "note": "B を取り出し、隣の D を後ろへ"},
-            {"current": "C", "visited": ["A", "B", "C"], "frontier": ["D", "E"], "parent": {"E": "C"}, "note": "C を取り出し、隣の E を後ろへ"},
-            {"current": "D", "visited": ["A", "B", "C", "D"], "frontier": ["E", "F"], "parent": {"F": "D"}, "note": "D を取り出し、隣の F を後ろへ"},
-            {"current": "E", "visited": ["A", "B", "C", "D", "E"], "frontier": ["F"], "note": "E を取り出す（新しい隣はない）"},
-            {"current": "F", "visited": ["A", "B", "C", "D", "E", "F"], "frontier": [], "note": "F を取り出す（新しい隣はない）"},
-            {"current": null, "note": "全部の頂点を訪れた"}
-          ]
-        }
-      </script>
-    </m-network>
-  </div>
-</section>
-
-<section id="g-network-2" class="slide noconcl">
-  <h2>ダイクストラ法：A から F への最短経路</h2>
-  <div class="body">
-    <m-network style="height:540px">
-      <script type="application/json">
-        {
-          "nodes": [{"id": "A", "x": 0, "y": 2}, {"id": "B", "x": 3, "y": 0}, {"id": "C", "x": 3, "y": 4}, {"id": "D", "x": 6, "y": 1}, {"id": "E", "x": 6, "y": 4}, {"id": "F", "x": 9, "y": 2}],
-          "edges": [{"from": "A", "to": "B", "w": 4}, {"from": "A", "to": "C", "w": 2}, {"from": "B", "to": "C", "w": 1}, {"from": "B", "to": "D", "w": 5}, {"from": "C", "to": "E", "w": 8}, {"from": "D", "to": "E", "w": 2}, {"from": "D", "to": "F", "w": 6}, {"from": "E", "to": "F", "w": 3}],
-          "frontierKind": "pq",
-          "total": {"label": "距離"},
-          "steps": [
-            {"frontier": [["A", 0]], "note": "A の距離を 0 に"},
-            {"current": "A", "visited": ["A"], "frontier": [["C", 2], ["B", 4]], "parent": {"B": "A", "C": "A"}, "note": "A（距離 0）を確定"},
-            {"current": "C", "visited": ["A", "C"], "frontier": [["B", 3], ["E", 10]], "parent": {"B": "C", "E": "C"}, "note": "C（距離 2）を確定"},
-            {"current": "B", "visited": ["A", "C", "B"], "frontier": [["D", 8], ["E", 10]], "parent": {"D": "B"}, "note": "B（距離 3）を確定"},
-            {"current": "D", "visited": ["A", "C", "B", "D"], "frontier": [["E", 10], ["F", 14]], "parent": {"F": "D"}, "note": "D（距離 8）を確定"},
-            {"current": "E", "visited": ["A", "C", "B", "D", "E"], "frontier": [["F", 13]], "parent": {"F": "E"}, "note": "E（距離 10）を確定"},
-            {"current": "F", "visited": ["A", "C", "B", "D", "E", "F"], "frontier": [], "note": "F（距離 13）を確定"},
-            {"current": "F", "frontier": [], "parent": {"B": null, "C": null, "E": null, "D": null, "F": null}, "take": [["A", "C"], ["C", "E"], ["E", "F"]], "total": 13, "note": "A から F への最短経路"}
-          ]
-        }
-      </script>
-    </m-network>
-  </div>
-</section>
-
-<section id="g-network-3" class="slide noconcl">
-  <h2>巡回路：最近傍法から 2-opt へ（架空）</h2>
-  <div class="body">
-    <m-network style="height:540px">
-      <script type="application/json">
-        {
-          "nodes": [{"id": "P", "x": 6, "y": 3}, {"id": "Q", "x": 0, "y": 2}, {"id": "R", "x": 8, "y": 3}, {"id": "S", "x": 9, "y": 1}, {"id": "T", "x": 4, "y": 1}, {"id": "U", "x": 1, "y": 4}, {"id": "V", "x": 4, "y": 4}],
-          "complete": true,
-          "total": {"label": "巡回路の長さ", "check": false},
-          "steps": [
-            {"current": "R", "visited": ["P", "R"], "take": [["P", "R"]], "total": 2.0, "note": "P からいちばん近い R へ"},
-            {"current": "S", "visited": ["P", "R", "S"], "take": [["R", "S"]], "total": 4.24, "note": "R からいちばん近い S へ"},
-            {"current": "T", "visited": ["P", "R", "S", "T"], "take": [["S", "T"]], "total": 9.24, "note": "S からいちばん近い T へ"},
-            {"current": "V", "visited": ["P", "R", "S", "T", "V"], "take": [["T", "V"]], "total": 12.24, "note": "T からいちばん近い V へ"},
-            {"current": "U", "visited": ["P", "R", "S", "T", "V", "U"], "take": [["V", "U"]], "total": 15.24, "note": "V からいちばん近い U へ"},
-            {"current": "Q", "visited": ["P", "R", "S", "T", "V", "U", "Q"], "take": [["U", "Q"]], "total": 17.47, "note": "U からいちばん近い Q へ"},
-            {"current": "P", "take": [["Q", "P"]], "total": 23.55, "note": "出発点へ戻る（最近傍法）"},
-            {"current": null, "drop": [["T", "V"], ["Q", "P"]], "take": [["T", "Q"], ["V", "P"]], "total": 20.83, "note": "T–V と Q–P を T–Q と V–P に（2-opt）"}
-          ]
-        }
-      </script>
-    </m-network>
-  </div>
-</section>
-
-<section id="g-network-4" class="slide noconcl">
-  <h2>マルコフ連鎖：天気の移り変わり（架空）</h2>
-  <div class="body">
-    <m-network style="height:540px">
-      <script type="application/json">
-        {
-          "directed": true,
-          "stochastic": true,
-          "nodes": [{"id": "晴", "x": 0, "y": 0}, {"id": "曇", "x": 4, "y": 0}, {"id": "雨", "x": 2, "y": 3}],
-          "edges": [{"from": "晴", "to": "晴", "w": 0.6}, {"from": "晴", "to": "曇", "w": 0.3}, {"from": "晴", "to": "雨", "w": 0.1}, {"from": "曇", "to": "晴", "w": 0.4}, {"from": "曇", "to": "曇", "w": 0.4}, {"from": "曇", "to": "雨", "w": 0.2}, {"from": "雨", "to": "晴", "w": 0.2}, {"from": "雨", "to": "曇", "w": 0.4}, {"from": "雨", "to": "雨", "w": 0.4}],
-          "total": {"label": "この道筋の確率", "check": false},
-          "steps": [
-            {"current": "晴", "note": "晴の日から始める"},
-            {"current": "曇", "take": [["晴", "曇"]], "total": 0.3, "note": "晴 → 曇（確率 0.3）"},
-            {"current": "曇", "take": [["曇", "曇"]], "total": 0.12, "note": "曇 → 曇（確率 0.4）", "drop": [["晴", "曇"]]},
-            {"current": "曇", "take": [["曇", "曇"]], "total": 0.048, "note": "曇 → 曇（確率 0.4）", "drop": [["曇", "曇"]]},
-            {"current": "雨", "take": [["曇", "雨"]], "total": 0.0096, "note": "曇 → 雨（確率 0.2）", "drop": [["曇", "曇"]]}
-          ]
-        }
-      </script>
-    </m-network>
-  </div>
-</section>
-
-<section id="g-network-5" class="slide noconcl">
-  <h2>パス図：潜在変数と観測した変数（架空）</h2>
-  <div class="body">
-    <m-network style="height:540px">
-      <script type="application/json">
-        {
-          "directed": true,
-          "nodes": [{"id": "意欲", "x": 0, "y": 1, "shape": "ellipse"}, {"id": "学力", "x": 4, "y": 1, "shape": "ellipse"}, {"id": "国語", "x": 8, "y": 0, "shape": "box", "observed": true}, {"id": "数学", "x": 8, "y": 1, "shape": "box", "observed": true}, {"id": "英語", "x": 8, "y": 2, "shape": "box", "observed": true}, {"id": "家庭", "x": 0, "y": 3, "shape": "box", "observed": true}],
-          "edges": [{"from": "意欲", "to": "学力", "w": 0.45}, {"from": "学力", "to": "国語", "w": 0.82}, {"from": "学力", "to": "数学", "w": 0.75}, {"from": "学力", "to": "英語", "w": 0.79}, {"from": "家庭", "to": "意欲", "w": 0.3, "bi": true}],
-          "steps": [
-            {"current": "学力", "note": "楕円は潜在変数（直接は測れない）"},
-            {"current": "数学", "note": "塗った四角は観測した変数。矢印の数は係数（架空）"},
-            {"current": "家庭", "note": "両向きの破線は、測っていない共通の原因（交絡）"}
-          ]
-        }
-      </script>
-    </m-network>
-  </div>
-</section>
-
-<section id="g-network-6" class="slide noconcl">
-  <h2>プレート表記：同じものが N 個</h2>
-  <div class="body">
-    <m-network style="height:360px;width:640px;margin:0 auto">
-      <script type="application/json">
-        {
-          "directed": true,
-          "nodes": [{"id": "θ", "x": 0, "y": 0, "shape": "circle"}, {"id": "x", "x": 3, "y": 0, "label": "*x*_i", "observed": true}],
-          "edges": [{"from": "θ", "to": "x"}],
-          "plates": [{"nodes": ["x"], "label": "N"}],
-          "steps": [
-            {"current": "θ", "note": "θ（パラメータ）は観測しない"},
-            {"current": "x", "note": "枠は「同じものが N 個」。*x*_1 … *x*_N が θ から出る"}
-          ]
-        }
-      </script>
-    </m-network>
-  </div>
-</section>
-
-<section id="g-network-7" class="slide noconcl">
-  <h2>隠れマルコフモデルの格子とビタビ（架空）</h2>
-  <div class="body">
-    <m-network style="height:540px">
-      <script type="application/json">
-        {
-          "layout": "trellis",
-          "states": ["晴", "雨"],
-          "T": 4,
-          "transitions": [{"from": "晴", "to": "晴", "w": 0.7}, {"from": "晴", "to": "雨", "w": 0.3}, {"from": "雨", "to": "晴", "w": 0.4}, {"from": "雨", "to": "雨", "w": 0.6}],
-          "steps": [
-            {"current": "晴@1", "note": "観測：散歩・読書・読書・散歩。いちばん確からしい天気の並び（ビタビ）"},
-            {"current": "雨@2", "take": [["晴@1", "雨@2"]], "note": "時刻 2：雨（読書）"},
-            {"current": "雨@3", "take": [["雨@2", "雨@3"]], "note": "時刻 3：雨（読書）"},
-            {"current": "晴@4", "take": [["雨@3", "晴@4"]], "note": "時刻 4：晴（散歩）"}
-          ]
-        }
-      </script>
-    </m-network>
-  </div>
-</section>
-
-<section class="slide">
-  <h2>m-nnet</h2>
-  <div class="body">
-    <p>ニューラルネットの層を並べ、前向きの計算を層ごとに見せる。ニューロンはまとめた丸か、Σ（重み付きの和）と f（活性化関数）に分けた形</p>
-    <ul>
-      <li>伝えたいこと：仕組みをモデルで見る・手順・工程</li>
-      <li>見せ方：1 種類</li>
-      <li>内容の分野：情報　サンプルのスライド：3 枚</li>
-    </ul>
-  </div>
-</section>
-
-<section id="g-nnet-1" class="slide noconcl">
-  <h2>パーセプトロンで AND を計算する</h2>
-  <div class="body">
-    <m-nnet style="height:440px">
-      <script type="application/json">{"layers": [{"n": 2, "label": "入力", "names": ["*x*_1", "*x*_2"]}, {"n": 1, "label": "出力", "act": "step", "form": "split", "names": ["*y*"]}], "weights": [[[1.0, 1.0]]], "biases": [[-1.5]], "values": {"x": [1, 1], "z": [[0.5]], "a": [[1.0]]}}</script>
-    </m-nnet>
-  </div>
-</section>
-
-<section id="g-nnet-2" class="slide noconcl">
-  <h2>3–4–4–2 の前向きの計算（架空の重み）</h2>
-  <div class="body">
-    <m-nnet edges="weight" style="height:540px">
-      <script type="application/json">{"layers": [{"n": 3, "label": "入力層", "names": ["*x*_1", "*x*_2", "*x*_3"]}, {"n": 4, "label": "隠れ層 1", "act": "relu"}, {"n": 4, "label": "隠れ層 2", "act": "relu"}, {"n": 2, "label": "出力層", "act": "sigmoid", "names": ["*y*_1", "*y*_2"]}], "weights": [[[0.1, -0.11, 0.51], [0.08, -0.43, 0.29], [1.04, 0.76, -0.56], [-1.01, -0.5, 0.03]], [[-1.86, -0.18, -1.0, -0.59], [-0.44, -0.25, 0.33, 0.83], [-0.1, 1.09, -0.53, 0.28], [0.72, 0.08, -0.59, -0.74]], [[-0.37, 0.18, -0.81, -0.17], [-0.13, 0.43, 0.17, 0.28]]], "biases": [[-0.2, -0.04, 0.24, 0.45], [-0.38, 0.45, 0.4, 0.23], [0.08, -0.09]], "values": {"x": [0.5, -1.2, 0.8], "z": [[0.39, 0.75, -0.6, 0.57], [-1.58, 0.56, 1.34, 0.15], [-0.93, 0.42]], "a": [[0.39, 0.75, 0.0, 0.57], [0.0, 0.56, 1.34, 0.15], [0.28, 0.6]]}}</script>
-    </m-nnet>
-  </div>
-</section>
-
-<section id="g-nnet-3" class="slide noconcl">
-  <h2>隠れ層 2 を Σ と ReLU に分けて見る（架空）</h2>
-  <div class="body">
-    <m-nnet edges="weight" style="height:540px">
-      <script type="application/json">{"layers": [{"n": 3, "label": "入力層", "names": ["*x*_1", "*x*_2", "*x*_3"]}, {"n": 4, "label": "隠れ層 1", "act": "relu"}, {"n": 4, "label": "隠れ層 2", "act": "relu"}, {"n": 2, "label": "出力層", "act": "sigmoid", "names": ["*y*_1", "*y*_2"]}], "weights": [[[0.1, -0.11, 0.51], [0.08, -0.43, 0.29], [1.04, 0.76, -0.56], [-1.01, -0.5, 0.03]], [[-1.86, -0.18, -1.0, -0.59], [-0.44, -0.25, 0.33, 0.83], [-0.1, 1.09, -0.53, 0.28], [0.72, 0.08, -0.59, -0.74]], [[-0.37, 0.18, -0.81, -0.17], [-0.13, 0.43, 0.17, 0.28]]], "biases": [[-0.2, -0.04, 0.24, 0.45], [-0.38, 0.45, 0.4, 0.23], [0.08, -0.09]], "values": {"x": [0.5, -1.2, 0.8], "z": [[0.39, 0.75, -0.6, 0.57], [-1.58, 0.56, 1.34, 0.15], [-0.93, 0.42]], "a": [[0.39, 0.75, 0.0, 0.57], [0.0, 0.56, 1.34, 0.15], [0.28, 0.6]]}, "steps": [{"show": "x"}, {"layer": 1, "phase": "a"}, {"open": 2, "note": "隠れ層 2 を Σ と ReLU に分けて見る"}, {"layer": 2, "phase": "z"}, {"focus": [2, 0]}, {"layer": 2, "phase": "a"}, {"layer": 3, "phase": "a"}]}</script>
-    </m-nnet>
-  </div>
 </section>
 
 <section class="slide">
@@ -2984,98 +3076,6 @@ document.addEventListener("DOMContentLoaded", function(){
     </div>
   </div>
   <div class="concl"><span>→ 左はフェード（既定）、右は左から伸びる</span></div>
-</section>
-
-<section class="slide">
-  <h2>m-timeline</h2>
-  <div class="body">
-    <p>年表。出来事を時間の軸の上に 1 つずつ出す。期間は軸に沿って長さのとおりに描き、重なれば段を分ける。end は含まない（"1912" は 1912 年の初め）</p>
-    <ul>
-      <li>伝えたいこと：年表・予定</li>
-      <li>見せ方：fade・draw・grow</li>
-      <li>内容の分野：標準パーツ　サンプルのスライド：4 枚</li>
-    </ul>
-  </div>
-</section>
-
-<section id="g-timeline-1" class="slide">
-  <h2>明治のおもな出来事</h2>
-  <div class="body">
-    <m-timeline style="height:430px">
-      <script type="application/json">{
-        "nodes": [
-          {"label": "明治維新", "when": "1868", "whenLabel": "明治元年", "note": "五箇条の御誓文"},
-          {"label": "廃藩置県", "when": "1871"},
-          {"label": "鉄道の開業", "when": "1872", "note": "新橋〜横浜"},
-          {"label": "西南戦争", "when": "1877"},
-          {"label": "憲法の発布", "when": "1889", "tone": "emph"},
-          {"label": "日清戦争", "when": "1894"},
-          {"label": "日露戦争", "when": "1904"}
-        ]
-      }</script>
-    </m-timeline>
-  </div>
-  <div class="concl"><span>→ 約 20 年で憲法をもつ国になった</span></div>
-</section>
-
-<section id="g-timeline-2" class="slide">
-  <h2>明治・大正の作家の生涯</h2>
-  <div class="body">
-    <m-timeline style="height:430px">
-      <script type="application/json">{
-        "nodes": [
-          {"label": "明治", "when": "1868", "end": "1912", "lane": "時代", "tone": "muted"},
-          {"label": "大正", "when": "1912", "end": "1926", "lane": "時代", "tone": "muted"},
-          {"label": "森鷗外", "when": "1862", "end": "1922", "lane": "作家"},
-          {"label": "夏目漱石", "when": "1867", "end": "1916", "lane": "作家"},
-          {"label": "正岡子規", "when": "1867", "end": "1902", "lane": "作家"},
-          {"label": "樋口一葉\n24 歳で没", "when": "1872", "end": "1896", "lane": "作家", "tone": "emph"},
-          {"label": "芥川龍之介", "when": "1892", "end": "1927", "lane": "作家"},
-          {"label": "宮沢賢治", "when": "1896", "end": "1933", "lane": "作家"}
-        ]
-      }</script>
-    </m-timeline>
-  </div>
-  <div class="concl"><span>→ 重なる生涯は段を分けて積む。漱石と子規は同じ年の生まれ</span></div>
-</section>
-
-<section id="g-timeline-3" class="slide">
-  <h2>アプリ開発の工程表（架空）</h2>
-  <div class="body">
-    <m-timeline unit="week" today="2026-11-02" style="height:400px">
-      <script type="application/json">{
-        "nodes": [
-          {"id": "req", "label": "要件定義", "when": "2026-10-05", "end": "2026-10-17", "lane": "設計", "progress": 100},
-          {"id": "ui", "label": "画面設計", "when": "2026-10-17", "end": "2026-11-07", "lane": "設計", "progress": 70, "after": ["req"]},
-          {"id": "dev", "label": "実装", "when": "2026-11-07", "end": "2026-12-05", "lane": "開発", "progress": 10, "after": ["ui"]},
-          {"id": "test", "label": "試験", "when": "2026-12-05", "end": "2026-12-19", "lane": "開発", "after": ["dev"]},
-          {"id": "rel", "label": "公開", "when": "2026-12-21", "lane": "開発", "tone": "emph", "after": ["test"]}
-        ]
-      }</script>
-    </m-timeline>
-  </div>
-  <div class="concl"><span>→ 矢印は「前の作業が終わってから」。画面設計の遅れは実装に響く</span></div>
-</section>
-
-<section id="g-timeline-4" class="slide">
-  <h2>見せ方の種類（variant）</h2>
-  <div class="body">
-    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:0 36px">
-      <div><p class="vcap">現れてから線（fade、既定）</p>
-        <m-timeline variant="fade" style="height:330px">
-          <script type="application/json">{"nodes": [{"label": "明治維新", "when": "1868"}, {"label": "明治", "when": "1868", "end": "1912"}, {"label": "憲法の発布", "when": "1889"}]}</script>
-        </m-timeline></div>
-      <div><p class="vcap">線を引いてから（draw）</p>
-        <m-timeline variant="draw" style="height:330px">
-          <script type="application/json">{"nodes": [{"label": "明治維新", "when": "1868"}, {"label": "明治", "when": "1868", "end": "1912"}, {"label": "憲法の発布", "when": "1889"}]}</script>
-        </m-timeline></div>
-      <div><p class="vcap">軸の側から大きくなる（grow）</p>
-        <m-timeline variant="grow" style="height:330px">
-          <script type="application/json">{"nodes": [{"label": "明治維新", "when": "1868"}, {"label": "明治", "when": "1868", "end": "1912"}, {"label": "憲法の発布", "when": "1889"}]}</script>
-        </m-timeline></div>
-    </div>
-  </div>
-  <div class="concl"><span>→ 書かなければ最初の見せ方（fade）になる</span></div>
 </section>
 
 <section class="slide">
