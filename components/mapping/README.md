@@ -1,7 +1,7 @@
 ---
 name: m-mapping
 display: 確率変数の対応 / Random variable mapping
-version: 2.0.1
+version: 2.0.2
 series: academic
 tier: specialized
 set: data

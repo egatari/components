@@ -64,76 +64,12 @@ document.addEventListener("DOMContentLoaded", function(){
   <h2>パーツの一覧（55 個、231 枚）</h2>
   <div class="body">
     <p>パーツごとに、説明の 1 枚とサンプルのスライドが続く。→ でステップを進める。</p>
-    <p>m-curves（変わった）　m-balance　m-bars　m-boxplot　m-callout　m-cards　m-checklist　m-ci　m-classify2d　m-code　m-codetree　m-collect　m-compare　m-contour　m-ctable　m-cycle　m-diverge　m-fishbone　m-flow　m-folds　m-gendai　m-heatmap　m-hissan　m-hist　m-kakijun　m-kanbun　m-keyboard　m-kobun　m-kpi　m-map-japan　m-map-world　m-mapping　m-market　m-menu　m-network　m-nnet　m-numberline　m-orbit　m-particles　m-pie　m-predict　m-quad　m-sampling　m-scatter　m-score　m-seq　m-sweep　m-syntax　m-tape　m-timeline　m-timer　m-trace　m-tree　m-vector　m-venn</p>
+    <p>m-balance（変わった）　m-bars（変わった）　m-boxplot（変わった）　m-callout（変わった）　m-cards（変わった）　m-checklist（変わった）　m-ci（変わった）　m-classify2d（変わった）　m-code（変わった）　m-codetree（変わった）　m-collect（変わった）　m-compare（変わった）　m-contour（変わった）　m-ctable（変わった）　m-curves（変わった）　m-cycle（変わった）　m-diverge（変わった）　m-fishbone（変わった）　m-flow（変わった）　m-folds（変わった）　m-gendai（変わった）　m-heatmap（変わった）　m-hissan（変わった）　m-hist（変わった）　m-kakijun（変わった）　m-kanbun（変わった）　m-keyboard（変わった）　m-kobun（変わった）　m-kpi（変わった）　m-map-japan（変わった）　m-map-world（変わった）　m-mapping（変わった）　m-market（変わった）　m-menu（変わった）　m-network（変わった）　m-nnet（変わった）　m-numberline（変わった）　m-orbit（変わった）　m-particles（変わった）　m-pie（変わった）　m-predict（変わった）　m-quad（変わった）　m-sampling（変わった）　m-scatter（変わった）　m-score（変わった）　m-seq（変わった）　m-sweep（変わった）　m-syntax（変わった）　m-tape（変わった）　m-timeline（変わった）　m-timer（変わった）　m-trace（変わった）　m-tree（変わった）　m-vector（変わった）　m-venn（変わった）</p>
   </div>
 </section>
 
 <section class="slide">
-  <h2>m-curves（変わった、v2.14.0）</h2>
-  <div class="body">
-    <p>同じ座標軸に線を 1 本ずつ引く（線の名前は凡例でなく線の端に直接書く）</p>
-    <ul>
-      <li>伝えたいこと：時間での変化</li>
-      <li>見せ方：1 種類</li>
-      <li>内容の分野：標準パーツ　サンプルのスライド：4 枚</li>
-    </ul>
-  </div>
-</section>
-
-<section id="g-curves-1" class="slide">
-  <h2>予測分布と代表値</h2>
-  <div class="body">
-    <m-curves xr="[0,4]" yr="[0,0.8]" xt="[0,1,2,3,4]" yt="[0,0.2,0.4,0.6,0.8]" yf="1" xl="需要 *y*" yl="密度" style="height:420px">
-      <script type="application/json" id="pred-data">[]</script>
-    </m-curves>
-  </div>
-  <div class="concl"><span>→ 右に裾が長いと，平均は中央値より右に来る</span></div>
-</section>
-
-<section id="g-curves-2" class="slide">
-  <h2>損失関数の形</h2>
-  <div class="body">
-    <m-curves xr="[-2,2]" yr="[0,4]" xt="[-2,-1,0,1,2]" yt="[0,1,2,3,4]" xl="誤差 *u* = *y* − *a*" yl="損失" style="height:420px">
-      <script type="application/json">[
-        {"label": "二乗 *u*^2", "f": "x*x", "labelAt": 1.6, "anchor": "left", "dx": -14},
-        {"label": "絶対値 |*u*|", "f": "abs(x)", "labelAt": -2, "anchor": "right", "ly": 1.1},
-        {"label": "分位点（*τ* = 0.9）", "f": "x >= 0 ? 0.9*x : -0.1*x", "labelAt": -2, "anchor": "right", "dy": -6}
-      ]</script>
-    </m-curves>
-  </div>
-  <div class="concl"><span>→ どの損失を使うかで，最適な決定 <i>a</i> が変わる</span></div>
-</section>
-
-<section id="g-curves-3" class="slide">
-  <h2>需要が増えると（架空の例）</h2>
-  <div class="body">
-    <m-curves xr="[0,10]" yr="[0,12]" xt="[0,2,4,6,8,10]" yt="[0,3,6,9,12]" xl="数量 *Q*" yl="価格 *P*" style="height:420px">
-      <script type="application/json">[
-        {"label": "需要 D", "f": "10 - x", "tone": "term", "step": 1, "labelAt": 1.5, "anchor": "below"},
-        {"label": "供給 S", "f": "2 + x", "tone": "accent2", "step": 1, "labelAt": 8.5, "anchor": "left"},
-        {"label": "増えた需要 D′", "f": "13 - x", "tone": "emph", "step": 2, "labelAt": 2, "anchor": "right"},
-        {"label": "均衡", "pts": [[4, 0], [4, 6]], "tone": "muted", "dash": true, "step": 3, "anchor": "left", "ly": 1},
-        {"label": "新しい均衡", "pts": [[5.5, 0], [5.5, 7.5]], "tone": "emph", "dash": true, "step": 3, "anchor": "right", "ly": 1}
-      ]</script>
-    </m-curves>
-  </div>
-  <div class="concl"><span>→ 需要が増えると，価格も取引量も上がる</span></div>
-</section>
-
-<section id="g-curves-4" class="slide">
-  <h2>両側検定の棄却域</h2>
-  <div class="body">
-    <m-curves xr="[-4,4]" yr="[0,0.45]" xt="[-1.96,0,1.96]" xf="2" yt="[0,0.2,0.4]" xl="検定統計量 *z*" style="height:400px">
-      <script type="application/json">[
-        {"label": "標準正規分布", "f": "N(x, 0, 1)", "labelAt": 1, "anchor": "right", "area": [[null, -1.96], [1.96, null]], "areaLabel": "2.5 %", "tone": "term"}
-      ]</script>
-    </m-curves>
-  </div>
-  <div class="concl"><span>→ 両端の 5 % に入れば帰無仮説を棄却する</span></div>
-</section>
-
-<section class="slide">
-  <h2>m-balance</h2>
+  <h2>m-balance（変わった、v2.14.0）</h2>
   <div class="body">
     <p>確率の重りを置き、支点が期待値でつり合う様子を示す</p>
     <ul>
@@ -151,7 +87,7 @@ document.addEventListener("DOMContentLoaded", function(){
 </section>
 
 <section class="slide">
-  <h2>m-bars</h2>
+  <h2>m-bars（変わった、v2.14.0）</h2>
   <div class="body">
     <p>棒をステップごとに 0 から伸ばす（縦棒・横棒・組の棒・積み上げ棒）。値の軸の上限をステップで広げて「軸を突き抜ける伸び」も見せられる</p>
     <ul>
@@ -295,7 +231,7 @@ document.addEventListener("DOMContentLoaded", function(){
 </section>
 
 <section class="slide">
-  <h2>m-boxplot</h2>
+  <h2>m-boxplot（変わった、v2.14.0）</h2>
   <div class="body">
     <p>箱ひげ図。値を並べ、中央値・四分位数を求める手順のとおりに組み立てる。群を並べて比べる</p>
     <ul>
@@ -345,7 +281,7 @@ document.addEventListener("DOMContentLoaded", function(){
 </section>
 
 <section class="slide">
-  <h2>m-callout</h2>
+  <h2>m-callout（変わった、v2.14.0）</h2>
   <div class="body">
     <p>画面の画像に番号の丸を置き、引き出し線で横の説明につなぐ。ステップごとに 1 つずつ（研修・手引き・操作の説明）</p>
     <ul>
@@ -393,7 +329,7 @@ document.addEventListener("DOMContentLoaded", function(){
 </section>
 
 <section class="slide">
-  <h2>m-cards</h2>
+  <h2>m-cards（変わった、v2.14.0）</h2>
   <div class="body">
     <p>カード（番号の丸・アイコン・見出し・説明）を横一列か 2 段に並べ、ステップごとに出す。矢印で順を、枠の色で強調を見せる</p>
     <ul>
@@ -454,7 +390,7 @@ document.addEventListener("DOMContentLoaded", function(){
 </section>
 
 <section class="slide">
-  <h2>m-checklist</h2>
+  <h2>m-checklist（変わった、v2.14.0）</h2>
   <div class="body">
     <p>確かめる項目を並べ、ステップごとに 1 つずつ印（✓・×）を描く。印はスライドの中身で、見ている人の操作を保存しない</p>
     <ul>
@@ -514,7 +450,7 @@ document.addEventListener("DOMContentLoaded", function(){
 </section>
 
 <section class="slide">
-  <h2>m-ci</h2>
+  <h2>m-ci（変わった、v2.14.0）</h2>
   <div class="body">
     <p>正規標本の区間を重ね、母平均を含む割合で信頼水準を説明する</p>
     <ul>
@@ -532,7 +468,7 @@ document.addEventListener("DOMContentLoaded", function(){
 </section>
 
 <section class="slide">
-  <h2>m-classify2d</h2>
+  <h2>m-classify2d（変わった、v2.14.0）</h2>
   <div class="body">
     <p>scikit-learn の分類を 2 次元で描く。点・領域・境界・確率や決定関数の等高線・サポートベクトル・ボロノイ図・決定木の分割・k 平均法</p>
     <ul>
@@ -594,7 +530,7 @@ document.addEventListener("DOMContentLoaded", function(){
 </section>
 
 <section class="slide">
-  <h2>m-code</h2>
+  <h2>m-code（変わった、v2.14.0）</h2>
   <div class="body">
     <p>短いコードを行ごとに説明し、最後に出力を見せる</p>
     <ul>
@@ -629,7 +565,7 @@ document.addEventListener("DOMContentLoaded", function(){
 </section>
 
 <section class="slide">
-  <h2>m-codetree</h2>
+  <h2>m-codetree（変わった、v2.14.0）</h2>
   <div class="body">
     <p>ハフマン木で 2 値の系列を 1 語ずつ復号する（MH 符号）。ランは画素の升目に伸びる</p>
     <ul>
@@ -863,7 +799,7 @@ document.addEventListener("DOMContentLoaded", function(){
 </section>
 
 <section class="slide">
-  <h2>m-collect</h2>
+  <h2>m-collect（変わった、v2.14.0）</h2>
   <div class="body">
     <p>並んだカード（回答など）が動いて縮み、少数の箱（要約）にまとまる</p>
     <ul>
@@ -892,7 +828,7 @@ document.addEventListener("DOMContentLoaded", function(){
 </section>
 
 <section class="slide">
-  <h2>m-compare</h2>
+  <h2>m-compare（変わった、v2.14.0）</h2>
   <div class="body">
     <p>2 つ（3 つまで）を横に並べて比べる表。一方の列、もう一方の列、それから行ごとの違い</p>
     <ul>
@@ -964,7 +900,7 @@ document.addEventListener("DOMContentLoaded", function(){
 </section>
 
 <section class="slide">
-  <h2>m-contour</h2>
+  <h2>m-contour（変わった、v2.14.0）</h2>
   <div class="body">
     <p>2 変数の関数の等高線を値ごとに引き、勾配の矢印と、勾配降下法などの反復の道を 1 点ずつ見せる</p>
     <ul>
@@ -1006,7 +942,7 @@ document.addEventListener("DOMContentLoaded", function(){
 </section>
 
 <section class="slide">
-  <h2>m-ctable</h2>
+  <h2>m-ctable（変わった、v2.14.0）</h2>
   <div class="body">
     <p>分散分析表・分割表・潜在結果の表を、ステップごとに埋める。使ったセルと埋めたセルを示し、表の下に式。計算を確かめる</p>
     <ul>
@@ -1045,7 +981,71 @@ document.addEventListener("DOMContentLoaded", function(){
 </section>
 
 <section class="slide">
-  <h2>m-cycle</h2>
+  <h2>m-curves（変わった、v2.14.0）</h2>
+  <div class="body">
+    <p>同じ座標軸に線を 1 本ずつ引く（線の名前は凡例でなく線の端に直接書く）</p>
+    <ul>
+      <li>伝えたいこと：時間での変化</li>
+      <li>見せ方：1 種類</li>
+      <li>内容の分野：標準パーツ　サンプルのスライド：4 枚</li>
+    </ul>
+  </div>
+</section>
+
+<section id="g-curves-1" class="slide">
+  <h2>予測分布と代表値</h2>
+  <div class="body">
+    <m-curves xr="[0,4]" yr="[0,0.8]" xt="[0,1,2,3,4]" yt="[0,0.2,0.4,0.6,0.8]" yf="1" xl="需要 *y*" yl="密度" style="height:420px">
+      <script type="application/json" id="pred-data">[]</script>
+    </m-curves>
+  </div>
+  <div class="concl"><span>→ 右に裾が長いと，平均は中央値より右に来る</span></div>
+</section>
+
+<section id="g-curves-2" class="slide">
+  <h2>損失関数の形</h2>
+  <div class="body">
+    <m-curves xr="[-2,2]" yr="[0,4]" xt="[-2,-1,0,1,2]" yt="[0,1,2,3,4]" xl="誤差 *u* = *y* − *a*" yl="損失" style="height:420px">
+      <script type="application/json">[
+        {"label": "二乗 *u*^2", "f": "x*x", "labelAt": 1.6, "anchor": "left", "dx": -14},
+        {"label": "絶対値 |*u*|", "f": "abs(x)", "labelAt": -2, "anchor": "right", "ly": 1.1},
+        {"label": "分位点（*τ* = 0.9）", "f": "x >= 0 ? 0.9*x : -0.1*x", "labelAt": -2, "anchor": "right", "dy": -6}
+      ]</script>
+    </m-curves>
+  </div>
+  <div class="concl"><span>→ どの損失を使うかで，最適な決定 <i>a</i> が変わる</span></div>
+</section>
+
+<section id="g-curves-3" class="slide">
+  <h2>需要が増えると（架空の例）</h2>
+  <div class="body">
+    <m-curves xr="[0,10]" yr="[0,12]" xt="[0,2,4,6,8,10]" yt="[0,3,6,9,12]" xl="数量 *Q*" yl="価格 *P*" style="height:420px">
+      <script type="application/json">[
+        {"label": "需要 D", "f": "10 - x", "tone": "term", "step": 1, "labelAt": 1.5, "anchor": "below"},
+        {"label": "供給 S", "f": "2 + x", "tone": "accent2", "step": 1, "labelAt": 8.5, "anchor": "left"},
+        {"label": "増えた需要 D′", "f": "13 - x", "tone": "emph", "step": 2, "labelAt": 2, "anchor": "right"},
+        {"label": "均衡", "pts": [[4, 0], [4, 6]], "tone": "muted", "dash": true, "step": 3, "anchor": "left", "ly": 1},
+        {"label": "新しい均衡", "pts": [[5.5, 0], [5.5, 7.5]], "tone": "emph", "dash": true, "step": 3, "anchor": "right", "ly": 1}
+      ]</script>
+    </m-curves>
+  </div>
+  <div class="concl"><span>→ 需要が増えると，価格も取引量も上がる</span></div>
+</section>
+
+<section id="g-curves-4" class="slide">
+  <h2>両側検定の棄却域</h2>
+  <div class="body">
+    <m-curves xr="[-4,4]" yr="[0,0.45]" xt="[-1.96,0,1.96]" xf="2" yt="[0,0.2,0.4]" xl="検定統計量 *z*" style="height:400px">
+      <script type="application/json">[
+        {"label": "標準正規分布", "f": "N(x, 0, 1)", "labelAt": 1, "anchor": "right", "area": [[null, -1.96], [1.96, null]], "areaLabel": "2.5 %", "tone": "term"}
+      ]</script>
+    </m-curves>
+  </div>
+  <div class="concl"><span>→ 両端の 5 % に入れば帰無仮説を棄却する</span></div>
+</section>
+
+<section class="slide">
+  <h2>m-cycle（変わった、v2.14.0）</h2>
   <div class="body">
     <p>循環の図。項目の箱を円の上に 12 時から時計回りに並べ、円に沿った矢印でつなぐ（最後から最初へ戻る矢印も）</p>
     <ul>
@@ -1115,7 +1115,7 @@ document.addEventListener("DOMContentLoaded", function(){
 </section>
 
 <section class="slide">
-  <h2>m-diverge</h2>
+  <h2>m-diverge（変わった、v2.14.0）</h2>
   <div class="body">
     <p>基準の棒から始め、増減の棒を前の棒の端から上下に積んで、最後に合計の棒を立てる（ウォーターフォール）</p>
     <ul>
@@ -1184,7 +1184,7 @@ document.addEventListener("DOMContentLoaded", function(){
 </section>
 
 <section class="slide">
-  <h2>m-fishbone</h2>
+  <h2>m-fishbone（変わった、v2.14.0）</h2>
   <div class="body">
     <p>原因と結果の図（特性要因図・フィッシュボーン図）を、大骨 1 本ずつ組み立て、最後に結果（頭）を出す。座標は書かず、配置はパーツが決める</p>
     <ul>
@@ -1271,7 +1271,7 @@ document.addEventListener("DOMContentLoaded", function(){
 </section>
 
 <section class="slide">
-  <h2>m-flow</h2>
+  <h2>m-flow（変わった、v2.14.0）</h2>
   <div class="body">
     <p>流れ図の箱と矢印をステップごとに出して、図を組み立てる</p>
     <ul>
@@ -1356,7 +1356,7 @@ document.addEventListener("DOMContentLoaded", function(){
 </section>
 
 <section class="slide">
-  <h2>m-folds</h2>
+  <h2>m-folds（変わった、v2.14.0）</h2>
   <div class="body">
     <p>データを k 個に分けた 1 つ（フォールド）を検証に使い、検証に使うフォールドを順に替えて、各分割の誤差と平均を示す</p>
     <ul>
@@ -1392,7 +1392,7 @@ document.addEventListener("DOMContentLoaded", function(){
 </section>
 
 <section class="slide">
-  <h2>m-gendai</h2>
+  <h2>m-gendai（変わった、v2.14.0）</h2>
   <div class="body">
     <p>現代文の読解の図：傍線・二重傍線を引き、指示語から指す内容へ矢印、段落を役割（主張・具体例・対比）の枠で囲んで線でつなぐ</p>
     <ul>
@@ -1433,7 +1433,7 @@ document.addEventListener("DOMContentLoaded", function(){
 </section>
 
 <section class="slide">
-  <h2>m-heatmap</h2>
+  <h2>m-heatmap（変わった、v2.14.0）</h2>
   <div class="body">
     <p>ヒートマップ。値で塗ったセルの格子（混同行列・相関行列・注意の重み）</p>
     <ul>
@@ -1480,7 +1480,7 @@ document.addEventListener("DOMContentLoaded", function(){
 </section>
 
 <section class="slide">
-  <h2>m-hissan</h2>
+  <h2>m-hissan（変わった、v2.14.0）</h2>
   <div class="body">
     <p>筆算（たし算・ひき算・かけ算・わり算、小数も）。式を書けば、パーツが教科書の手順で計算して書く</p>
     <ul>
@@ -1516,7 +1516,7 @@ document.addEventListener("DOMContentLoaded", function(){
 </section>
 
 <section class="slide">
-  <h2>m-hist</h2>
+  <h2>m-hist（変わった、v2.14.0）</h2>
   <div class="body">
     <p>ヒストグラム・度数折れ線・ドットプロット。平均値・中央値・最頻値の線も</p>
     <ul>
@@ -1563,7 +1563,7 @@ document.addEventListener("DOMContentLoaded", function(){
 </section>
 
 <section class="slide">
-  <h2>m-kakijun</h2>
+  <h2>m-kakijun（変わった、v2.14.0）</h2>
   <div class="body">
     <p>かな（ひらがな・カタカナ）の書き順。字を 1 画ずつ、書く順と向きのとおりに書いて見せる</p>
     <ul>
@@ -1599,7 +1599,7 @@ document.addEventListener("DOMContentLoaded", function(){
 </section>
 
 <section class="slide">
-  <h2>m-kanbun</h2>
+  <h2>m-kanbun（変わった、v2.14.0）</h2>
   <div class="body">
     <p>白文に返り点・送り仮名を付け、訓読の順に字をたどり（返り点で上へ戻るところに弧）、書き下し文にする（縦書き）</p>
     <ul>
@@ -1647,7 +1647,7 @@ document.addEventListener("DOMContentLoaded", function(){
 </section>
 
 <section class="slide">
-  <h2>m-keyboard</h2>
+  <h2>m-keyboard（変わった、v2.14.0）</h2>
   <div class="body">
     <p>ピアノの鍵盤。音階・和音・半音と全音を光らせて音も鳴らす</p>
     <ul>
@@ -1697,7 +1697,7 @@ document.addEventListener("DOMContentLoaded", function(){
 </section>
 
 <section class="slide">
-  <h2>m-kobun</h2>
+  <h2>m-kobun（変わった、v2.14.0）</h2>
   <div class="body">
     <p style="margin:0 0 10px;line-height:1.3"><span style="display:inline-block;font-size:27px;font-weight:700;color:var(--fg);border:2px dashed var(--accent2);border-radius:8px;padding:0 12px">操作できる / Interactive</span></p>
     <p style="border:3px dashed var(--accent2);border-radius:10px;padding:10px 16px">古文を語に切り（スラッシュ）、品詞で色を分けて 1 文ずつ見せ、最後に現代語訳と並べる。助動詞を押すと活用表と意味（学習者が押して操作できる）</p>
@@ -1739,7 +1739,7 @@ document.addEventListener("DOMContentLoaded", function(){
 </section>
 
 <section class="slide">
-  <h2>m-kpi</h2>
+  <h2>m-kpi（変わった、v2.14.0）</h2>
   <div class="body">
     <p>大きな数字のカード（KPI）をステップごとに出す。数字は数え上げ、下に増減の矢印と一言</p>
     <ul>
@@ -1805,7 +1805,7 @@ document.addEventListener("DOMContentLoaded", function(){
 </section>
 
 <section class="slide">
-  <h2>m-map-japan</h2>
+  <h2>m-map-japan（変わった、v2.14.0）</h2>
   <div class="body">
     <p>日本の 47 都道府県の地図。地域の強調、統計の塗り分け、点、矢印、経度・緯度の重ね描きをステップごとに出す</p>
     <ul>
@@ -1919,7 +1919,7 @@ document.addEventListener("DOMContentLoaded", function(){
 </section>
 
 <section class="slide">
-  <h2>m-map-world</h2>
+  <h2>m-map-world（変わった、v2.14.0）</h2>
   <div class="body">
     <p>世界の国・地域の地図（太平洋が中央）。国や州の強調、区分と値の塗り分け、点、矢印をステップごとに出す</p>
     <ul>
@@ -1989,7 +1989,7 @@ document.addEventListener("DOMContentLoaded", function(){
 </section>
 
 <section class="slide">
-  <h2>m-mapping</h2>
+  <h2>m-mapping（変わった、v2.14.0）</h2>
   <div class="body">
     <p>実験の結果を数値へ対応させ、同じ値になる結果をまとめて確率分布を作る</p>
     <ul>
@@ -2025,7 +2025,7 @@ document.addEventListener("DOMContentLoaded", function(){
 </section>
 
 <section class="slide">
-  <h2>m-market</h2>
+  <h2>m-market（変わった、v2.14.0）</h2>
   <div class="body">
     <p>市場規模の入れ子の円（TAM / SAM / SOM）。外の円から 1 つずつ、前の円の大きさから縮んで現れる</p>
     <ul>
@@ -2069,7 +2069,7 @@ document.addEventListener("DOMContentLoaded", function(){
 </section>
 
 <section class="slide">
-  <h2>m-menu</h2>
+  <h2>m-menu（変わった、v2.14.0）</h2>
   <div class="body">
     <p style="margin:0 0 10px;line-height:1.3"><span style="display:inline-block;font-size:27px;font-weight:700;color:var(--fg);border:2px dashed var(--accent2);border-radius:8px;padding:0 12px">操作できる / Interactive</span></p>
     <p style="border:3px dashed var(--accent2);border-radius:10px;padding:10px 16px">スライドへのリンクのカードを格子に並べる（目次・単元の選び方）。カードは &lt;a href="#&lt;スライドの id&gt;"&gt;、行ったスライドに「見た」の印（学習者が押して操作できる）</p>
@@ -2129,7 +2129,7 @@ document.addEventListener("DOMContentLoaded", function(){
 </section>
 
 <section class="slide">
-  <h2>m-network</h2>
+  <h2>m-network（変わった、v2.14.0）</h2>
   <div class="body">
     <p>グラフの探索（幅優先・ダイクストラなど）や巡回路を 1 ステップずつ。今の頂点・候補・訪れた頂点、選んだ辺、合計</p>
     <ul>
@@ -2303,7 +2303,7 @@ document.addEventListener("DOMContentLoaded", function(){
 </section>
 
 <section class="slide">
-  <h2>m-nnet</h2>
+  <h2>m-nnet（変わった、v2.14.0）</h2>
   <div class="body">
     <p>ニューラルネットの層を並べ、前向きの計算を層ごとに見せる。ニューロンはまとめた丸か、Σ（重み付きの和）と f（活性化関数）に分けた形</p>
     <ul>
@@ -2342,7 +2342,7 @@ document.addEventListener("DOMContentLoaded", function(){
 </section>
 
 <section class="slide">
-  <h2>m-numberline</h2>
+  <h2>m-numberline（変わった、v2.14.0）</h2>
   <div class="body">
     <p>数直線。点・□・ジャンプ・不等式の範囲・0.1 の拡大。2 本で比例数直線</p>
     <ul>
@@ -2408,7 +2408,7 @@ document.addEventListener("DOMContentLoaded", function(){
 </section>
 
 <section class="slide">
-  <h2>m-orbit</h2>
+  <h2>m-orbit（変わった、v2.14.0）</h2>
   <div class="body">
     <p>月の満ち欠け（金星の満ち欠け）。北極の上から見た図と地球から見た形を並べ、月を位置から位置へ動かす。形は位置から計算する</p>
     <ul>
@@ -2450,7 +2450,7 @@ document.addEventListener("DOMContentLoaded", function(){
 </section>
 
 <section class="slide">
-  <h2>m-particles</h2>
+  <h2>m-particles（変わった、v2.14.0）</h2>
   <div class="body">
     <p>状態変化の粒子の並び方と間隔、化学変化で保存される原子の数を見せる</p>
     <ul>
@@ -2486,7 +2486,7 @@ document.addEventListener("DOMContentLoaded", function(){
 </section>
 
 <section class="slide">
-  <h2>m-pie</h2>
+  <h2>m-pie（変わった、v2.14.0）</h2>
   <div class="body">
     <p>円グラフとドーナツグラフ。切れの名前と値・割合は、大きい切れなら中に、小さい切れなら外に引き出し線で書く</p>
     <ul>
@@ -2554,7 +2554,7 @@ document.addEventListener("DOMContentLoaded", function(){
 </section>
 
 <section class="slide">
-  <h2>m-predict</h2>
+  <h2>m-predict（変わった、v2.14.0）</h2>
   <div class="body">
     <p style="margin:0 0 10px;line-height:1.3"><span style="display:inline-block;font-size:27px;font-weight:700;color:var(--fg);border:2px dashed var(--accent2);border-radius:8px;padding:0 12px">操作できる / Interactive</span></p>
     <p style="border:3px dashed var(--accent2);border-radius:10px;padding:10px 16px">予想してから答えを開く。選択肢ごとの人数を棒で見せ、答えのステップで正解に枠（学習者が押して操作できる）</p>
@@ -2617,7 +2617,7 @@ document.addEventListener("DOMContentLoaded", function(){
 </section>
 
 <section class="slide">
-  <h2>m-quad</h2>
+  <h2>m-quad（変わった、v2.14.0）</h2>
   <div class="body">
     <p>2 軸の位置づけ（ポジショニングマップ・SWOT 風の 4 象限）に、点をステップごとに 1 つずつ置く</p>
     <ul>
@@ -2669,7 +2669,7 @@ document.addEventListener("DOMContentLoaded", function(){
 </section>
 
 <section class="slide">
-  <h2>m-sampling</h2>
+  <h2>m-sampling（変わった、v2.14.0）</h2>
   <div class="body">
     <p>母集団から標本を取り、比率・平均の標本分布を積む</p>
     <ul>
@@ -2699,7 +2699,7 @@ document.addEventListener("DOMContentLoaded", function(){
 </section>
 
 <section class="slide">
-  <h2>m-scatter</h2>
+  <h2>m-scatter（変わった、v2.14.0）</h2>
   <div class="body">
     <p>散布図。点の組（系列）をステップごとに出し、そのあと傾向の線（最小二乗の直線か、書いた 2 点）を引く</p>
     <ul>
@@ -2761,7 +2761,7 @@ document.addEventListener("DOMContentLoaded", function(){
 </section>
 
 <section class="slide">
-  <h2>m-score</h2>
+  <h2>m-score（変わった、v2.14.0）</h2>
   <div class="body">
     <p>楽譜（五線譜）を 1 音・和音ずつ、または 1 小節ずつ出して音も鳴らす。ABC 記譜法で書く</p>
     <ul>
@@ -2813,7 +2813,7 @@ document.addEventListener("DOMContentLoaded", function(){
 </section>
 
 <section class="slide">
-  <h2>m-seq</h2>
+  <h2>m-seq（変わった、v2.14.0）</h2>
   <div class="body">
     <p>観測を 1 つずつ加え、分布と数値が更新されていく様子を見せる（前の分布は薄く残す）</p>
     <ul>
@@ -2835,7 +2835,7 @@ document.addEventListener("DOMContentLoaded", function(){
 </section>
 
 <section class="slide">
-  <h2>m-sweep</h2>
+  <h2>m-sweep（変わった、v2.14.0）</h2>
   <div class="body">
     <p>パラメータを動かして関数の形の変化を見せる（前の形は灰色で残す）</p>
     <ul>
@@ -2874,7 +2874,7 @@ document.addEventListener("DOMContentLoaded", function(){
 </section>
 
 <section class="slide">
-  <h2>m-syntax</h2>
+  <h2>m-syntax（変わった、v2.14.0）</h2>
   <div class="body">
     <p>英文の構造：S V O C M の記号、句と節の括弧、修飾の矢印、品詞、それから和訳</p>
     <ul>
@@ -2918,7 +2918,7 @@ document.addEventListener("DOMContentLoaded", function(){
 </section>
 
 <section class="slide">
-  <h2>m-tape</h2>
+  <h2>m-tape（変わった、v2.14.0）</h2>
   <div class="body">
     <p>テープ図・線分図。全体や部分を括弧で括り、わからない量は □ か ?。行から行へ「2 倍」の矢印</p>
     <ul>
@@ -2987,7 +2987,7 @@ document.addEventListener("DOMContentLoaded", function(){
 </section>
 
 <section class="slide">
-  <h2>m-timeline</h2>
+  <h2>m-timeline（変わった、v2.14.0）</h2>
   <div class="body">
     <p>年表。出来事を時間の軸の上に 1 つずつ出す。期間は軸に沿って長さのとおりに描き、重なれば段を分ける。end は含まない（"1912" は 1912 年の初め）</p>
     <ul>
@@ -3079,7 +3079,7 @@ document.addEventListener("DOMContentLoaded", function(){
 </section>
 
 <section class="slide">
-  <h2>m-timer</h2>
+  <h2>m-timer（変わった、v2.14.0）</h2>
   <div class="body">
     <p style="margin:0 0 10px;line-height:1.3"><span style="display:inline-block;font-size:27px;font-weight:700;color:var(--fg);border:2px dashed var(--accent2);border-radius:8px;padding:0 12px">操作できる / Interactive</span></p>
     <p style="border:3px dashed var(--accent2);border-radius:10px;padding:10px 16px">グループワークの進行タイマー。区切りごとに残り時間を大きく数え、区切りの一覧で今の区切りを示す（学習者が押して操作できる）</p>
@@ -3126,7 +3126,7 @@ document.addEventListener("DOMContentLoaded", function(){
 </section>
 
 <section class="slide">
-  <h2>m-trace</h2>
+  <h2>m-trace（変わった、v2.14.0）</h2>
   <div class="body">
     <p>短いコードを 1 行ずつ実行した記録を見せる。今の行に印、変わった変数に印、その時点までの出力</p>
     <ul>
@@ -3168,7 +3168,7 @@ document.addEventListener("DOMContentLoaded", function(){
 </section>
 
 <section class="slide">
-  <h2>m-tree</h2>
+  <h2>m-tree（変わった、v2.14.0）</h2>
   <div class="body">
     <p>階層・分類の木（組織図、生物の分類など）を、根から 1 段ずつ組み立てる。座標は書かず、配置はパーツが決める</p>
     <ul>
@@ -3275,7 +3275,7 @@ document.addEventListener("DOMContentLoaded", function(){
 </section>
 
 <section class="slide">
-  <h2>m-vector</h2>
+  <h2>m-vector（変わった、v2.14.0）</h2>
   <div class="body">
     <p>平面のベクトルの和・差・スカラー倍・正射影・内積と、2 × 2 の行列の 1 次変換・固有ベクトル・基底の取り替えを 1 ステップずつ。右に式</p>
     <ul>
@@ -3327,7 +3327,7 @@ document.addEventListener("DOMContentLoaded", function(){
 </section>
 
 <section class="slide">
-  <h2>m-venn</h2>
+  <h2>m-venn（変わった、v2.14.0）</h2>
   <div class="body">
     <p>2 つか 3 つの集合の円（ベン図）。集合を 1 つずつ出し、最後に重なりを強めてその中の項目を出す</p>
     <ul>

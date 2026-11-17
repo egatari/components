@@ -2,6 +2,10 @@
 
 The part's own versions (Egatari spec §6.1). Releases of the whole library are in the repository's CHANGELOG.md.
 
+## 2.0.4 (components 2.14.0)
+
+- Requires base 1.3.0 (sub- and superscripts in `mtext` at 0.7 of the text, at least 17 px).
+
 ## 2.0.3 (components 2.7.0)
 
 - Fix: `show="both"`'s sub-label (value and percent under the slice name) wrote the percent in full-width parentheses `（…）` even when `ctx.lang` was not `ja`; it now follows `ctx.lang` like the aria-label already did (" (…)" in English).

@@ -1,7 +1,7 @@
 ---
 name: m-folds
 display: 交差検証 / Cross-validation
-version: 2.1.0
+version: 2.1.1
 series: academic
 tier: specialized
 set: data

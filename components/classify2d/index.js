@@ -10,7 +10,7 @@
 // （行 0 が y の最小）。labels は 2 次元の配列か「クラス*個数」を空白で区切った行の順の続け書き。
 // 色：クラスごとに CLASS_COLORS（--series-1・--series-3・--fg・--series-4）と点の形（○・□・△・◇。色だけに頼らない）、領域はその色の薄い塗り、境界と等高線 --fg、
 // サポートベクトルの輪 --fg（クラスの色と --emph が近いテーマでも紛れない）、k 平均法の重心は × の印。
-egatariParts.define({name: "classify2d", version: "2.0.0", requires: {base: "1.2.0", "contour-core": "1.0.0"}, element: "m-classify2d"}, function(deps){
+egatariParts.define({name: "classify2d", version: "2.0.1", requires: {base: "1.3.0", "contour-core": "1.0.0"}, element: "m-classify2d"}, function(deps){
 "use strict";
 var base = deps.base, D = base, K = deps["contour-core"], clipN = 0;
 var NUM = {type: "number"}, PT = {type: "array", minItems: 2, maxItems: 3, items: {type: ["number", "null"]}};

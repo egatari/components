@@ -9,10 +9,10 @@
 // 03eaf0607598b993eb020f8e619caa53526bc771, DECK.Plot there), MIT License, Copyright (c) 2026 Gendo Kumoi, the same owner
 // and licence as this repository; el and mtext come from base instead of deck.js's closure.
 // tools/test-part-plot.mjs compares it with the pinned Studio's DECK.Plot.
-egatariParts.define({name: "plot", version: "1.1.2", requires: {base: "1.2.0"}}, function(deps){
+egatariParts.define({name: "plot", version: "1.1.3", requires: {base: "1.3.0"}}, function(deps){
 "use strict";
 var el = deps.base.el, mtext = deps.base.mtext, textWidth = deps.base.textWidth;
-var ID = "plot-1-1-2-";   // name and version of this part, dots replaced (spec §6.1 Identifiers)
+var ID = "plot-1-1-3-";   // name and version of this part, dots replaced (spec §6.1 Identifiers)
 
 // 座標軸つきの図（キットの Plot。色はテーマの変数）
 // o = {xr:[min,max], yr:[min,max], xt:[目盛り], yt:[目盛り], xf:小数桁, yf:小数桁, xl:"横軸名", xl2:"横軸の補足", yl:"縦軸名", noY:true, m:{l,r,t,b},

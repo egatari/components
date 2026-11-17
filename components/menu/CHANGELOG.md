@@ -2,6 +2,10 @@
 
 The part's own versions (Egatari spec §6.1). Releases of the whole library are in the repository's CHANGELOG.md.
 
+## 2.0.5 (components 2.14.0)
+
+- Requires base 1.3.0 (sub- and superscripts in `mtext` at 0.7 of the text, at least 17 px).
+
 ## 2.0.4 (components 2.13.0)
 
 - Japanese wording of the property descriptions and data notes (no change to the drawing).

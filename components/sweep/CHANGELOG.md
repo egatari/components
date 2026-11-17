@@ -2,6 +2,10 @@
 
 The part's own versions (Egatari spec §6.1). Releases of the whole library are in the repository's CHANGELOG.md.
 
+## 2.1.3 (components 2.14.0)
+
+- Requires base 1.3.0, plot 1.1.3 (sub- and superscripts in `mtext` at 0.7 of the text, at least 17 px).
+
 ## 2.1.2 (components 2.7.0)
 
 - Requires base 1.2.0 and plot 1.1.2 (mtext keeps a lone `*` literal and draws `\*` `\_` `\^` as the character).

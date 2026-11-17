@@ -2,6 +2,10 @@
 
 The part's own versions (Egatari spec §6.1). Releases of the whole library are in the repository's CHANGELOG.md.
 
+## 2.1.1 (components 2.14.0)
+
+- Requires base 1.3.0 (sub- and superscripts in `mtext` at 0.7 of the text, at least 17 px).
+
 ## 2.1.0 (components 2.12.0)
 
 - Graphical models and path diagrams (additive; existing lessons paint the same pixels):

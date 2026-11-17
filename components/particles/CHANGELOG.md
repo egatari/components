@@ -1,5 +1,9 @@
 # m-particles changelog
 
+## 2.0.3 (components 2.14.0)
+
+- Requires base 1.3.0 (sub- and superscripts in `mtext` at 0.7 of the text, at least 17 px).
+
 ## 2.0.2 (components 2.8.0)
 
 - Hardening: an m-particles element narrower than about 45 px no longer hangs the page (only an author's own layout can make it that narrow; Studio's panes and windows can't). The solid lattice keeps at least one column; it looped forever with a negative column count.

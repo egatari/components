@@ -4,7 +4,7 @@
 // is drawn instead: notes in the band (up to 2 rows), long lines soft-wrapped under a "↪" gutter, and a moving window of rows
 // centred on each step's lines with "⋮" markers for the hidden ones. The full source and output stay in a child
 // <pre data-readable> (the readable layer copies it as visible text).
-egatariParts.define({name: "code", version: "2.2.0", requires: {base: "1.2.0", "code-core": "1.0.0"}, element: "m-code"}, function(deps){
+egatariParts.define({name: "code", version: "2.2.1", requires: {base: "1.3.0", "code-core": "1.0.1"}, element: "m-code"}, function(deps){
 "use strict";
 var base = deps.base, MONO = deps["code-core"].MONO;
 var TEXT = {

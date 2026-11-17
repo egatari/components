@@ -14,7 +14,7 @@
 // 色：今の頂点 --emph（太い輪）、候補 --accent2（点線の輪と下の帯）、訪れた頂点 --muted の塗り、選んだ辺と探索の木 --term、ほかの辺 --line。
 // 確かめること（data）：知らない id、ない辺の take（complete のときを除く）、選んでいない辺の drop、
 // 選んだ辺がすべて重みを持つときに total が重みの和と合わないこと（total.check: false で確かめない）
-egatariParts.define({name: "network", version: "2.1.0", requires: {base: "1.2.0"}, element: "m-network"}, function(deps){
+egatariParts.define({name: "network", version: "2.1.1", requires: {base: "1.3.0"}, element: "m-network"}, function(deps){
 "use strict";
 var base = deps.base;
 var ID = {type: "string"};

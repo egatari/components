@@ -2,6 +2,10 @@
 
 The part's own versions (Egatari spec §6.1). Releases of the whole library are in the repository's CHANGELOG.md.
 
+## 2.0.5 (components 2.14.0)
+
+- Requires base 1.3.0 (sub- and superscripts in `mtext` at 0.7 of the text, at least 17 px).
+
 ## 2.0.4 (components 2.9.0)
 
 - Hardening: an element too small for its drawing (0 px wide, or 0 × 0) no longer gives the columns and the "better" frame a negative SVG size (Chrome logged "A negative value is not valid"); the sizes are clamped at 0. Drawing at normal sizes is unchanged (tools/test-same-paint.mjs, 4 themes). Checked by tools/test-zero-size.mjs.

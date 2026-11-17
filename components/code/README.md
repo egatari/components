@@ -1,7 +1,7 @@
 ---
 name: m-code
 display: コードの解説 / Code walkthrough
-version: 2.2.0
+version: 2.2.1
 series: academic
 tier: specialized
 set: data

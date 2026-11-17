@@ -1,7 +1,7 @@
 ---
 name: m-callout
 display: 画面の手順 / Screen steps
-version: 2.0.0
+version: 2.0.1
 series: common
 tier: specialized
 set: tools

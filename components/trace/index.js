@@ -8,7 +8,7 @@
 // steps[i]：line（または lines: [a, b]）、vars（その行を実行した後の、見せる変数すべての値。差分ではない）、out（その行の出力）、note。
 // ステップ：k = 0 はコードと空の変数、k = i + 1 はトレースの i 番目（by="time" なら 1 つのステップの中で rate 個/秒で進む）。
 // 色：今の行 --emph の地と行番号、変わった変数 --emph の字と地と太字（色だけに頼らない）。
-egatariParts.define({name: "trace", version: "2.0.0", requires: {base: "1.2.0", "code-core": "1.0.0"}, element: "m-trace"}, function(deps){
+egatariParts.define({name: "trace", version: "2.0.1", requires: {base: "1.3.0", "code-core": "1.0.1"}, element: "m-trace"}, function(deps){
 "use strict";
 var base = deps.base, C = deps["code-core"], MONO = C.MONO, set = C.set, monoWidth = C.monoWidth, cut = C.cut;
 var CAP = {lines: 16, steps: 60, show: 6, str: 40, list: 12, grid: 6, dict: 8, out: 8};

@@ -2,6 +2,10 @@
 
 The part's own versions (Egatari spec §6.1). Releases of the whole library are in the repository's CHANGELOG.md.
 
+## 2.1.1 (components 2.14.0)
+
+- Requires base 1.3.0 (sub- and superscripts in `mtext` at 0.7 of the text, at least 17 px).
+
 ## 2.1.0 (components 2.9.0)
 
 - Error bars: a group's `err` is ± a number or `[low, high]` (the interval's ends), per series for `values`; they appear with the values, which move beyond the bar's end. `mark="dot"` draws a point at the value instead of a bar. `sig` brackets two groups (or, with `group`, two series in a group) with a mark (default `*`) above the values between them, stacking overlapping brackets from the shortest; vertical, unstacked bars only (otherwise a `data` report). The spoken name adds the intervals and the brackets. Without these fields every demo paints the same pixels as 2.0.3 (tools/test-same-paint.mjs --only bars, 4 themes × 76 frames).

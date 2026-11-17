@@ -1,9 +1,9 @@
 ---
 name: markup-reader
-version: 1.0.2
+version: 1.0.3
 kind: library
 summary: 組み立てのときに描いた結果（KaTeX の HTML・MathML、abcjs の SVG）を、決まった要素と属性だけで読んで置く。教材の作者が直接は書かない
-requires: base@1.2.0
+requires: base@1.3.0
 ---
 
 A library part (Egatari spec §6.1). Parts that show build-time rendered

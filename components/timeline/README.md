@@ -1,6 +1,6 @@
 ---
 name: m-timeline
-version: 2.0.4
+version: 2.0.5
 series: common
 tier: standard
 summary: 年表。出来事を時間の軸の上に 1 つずつ出す。期間は軸に沿って長さのとおりに描き、重なれば段を分ける。end は含まない（"1912" は 1912 年の初め）

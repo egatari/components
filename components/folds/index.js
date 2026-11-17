@@ -3,7 +3,7 @@
 // (KFold with shuffle, StratifiedKFold = クラスの比率を保つ KFold, GroupKFold, TimeSeriesSplit, a holdout): test cells as the
 // validation block, train cells as before, unused cells empty; class colours and names, group runs, time order. The k mode
 // draws exactly as 2.0.1.
-egatariParts.define({name: "folds", version: "2.1.0", requires: {base: "1.2.0"}, element: "m-folds"}, function(deps){
+egatariParts.define({name: "folds", version: "2.1.1", requires: {base: "1.3.0"}, element: "m-folds"}, function(deps){
 "use strict";
 var base = deps.base;
 var TEXT = {

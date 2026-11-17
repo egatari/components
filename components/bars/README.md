@@ -1,6 +1,6 @@
 ---
 name: m-bars
-version: 2.1.0
+version: 2.1.1
 series: common
 tier: standard
 summary: 棒をステップごとに 0 から伸ばす（縦棒・横棒・組の棒・積み上げ棒）。値の軸の上限をステップで広げて「軸を突き抜ける伸び」も見せられる

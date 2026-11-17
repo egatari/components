@@ -5,6 +5,7 @@ The part's own versions (Egatari spec §6.1). Releases of the whole library are 
 ## 2.3.0 (components 2.14.0)
 
 - When `xr` or `yr` is not written (the default `[0, 1]`) and a series goes outside it, the part reports it once per series and axis (`ctx.report("data", …)`, with the values' range and the fix), so Studio's check can warn. A written range that cuts a line is taken as intended. The drawing does not change.
+- Requires base 1.3.0 (sub- and superscripts in `mtext` at 0.7 of the text, at least 17 px).
 
 ## 2.2.1 (components 2.7.0)
 

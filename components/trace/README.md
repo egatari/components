@@ -1,7 +1,7 @@
 ---
 name: m-trace
 display: コードの実行を追う / Code trace
-version: 2.0.0
+version: 2.0.1
 series: info
 tier: local
 summary: 短いコードを 1 行ずつ実行した記録を見せる。今の行に印、変わった変数に印、その時点までの出力

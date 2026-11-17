@@ -4,7 +4,7 @@
 // 2.2.0 draws the same pixels; new in 1.0.0: softWrap (visual rows of a long code line) and windowFor (the lines a moving
 // window shows for a step).
 //   returns {MONO, set, lines, monoWidth, cut, dialect, spans, wrap, softWrap, windowFor}
-egatariParts.define({name: "code-core", version: "1.0.0", requires: {base: "1.2.0"}}, function(deps){
+egatariParts.define({name: "code-core", version: "1.0.1", requires: {base: "1.3.0"}}, function(deps){
 "use strict";
 var base = deps.base, MONO = 'ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace';
 function set(e, a, v){ e.setAttribute(a, String(v)); }

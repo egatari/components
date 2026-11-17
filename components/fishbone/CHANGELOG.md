@@ -2,6 +2,10 @@
 
 The part's own versions (Egatari spec §6.1). Releases of the whole library are in the repository's CHANGELOG.md.
 
+## 2.1.2 (components 2.14.0)
+
+- Requires base 1.3.0 (sub- and superscripts in `mtext` at 0.7 of the text, at least 17 px).
+
 ## 2.1.1 (components 2.9.0)
 
 - Fix: a TeX label's box is sized from KaTeX's glyph widths (long arrows 1.64–1.86 em, W and M, `\text{…}`, fractions, sub- and superscripts), never narrower than before, and the formula is centred in its box after KaTeX's fonts load. Before, wide symbols stuck out of the box by up to 63 px (Studio's geometry check, geoLabelOutsideBox). Nothing is measured on screen, so the layout does not depend on when the fonts load. Demos without TeX draw the same pixels as 2.1.0. Checked by tools/test-tex-width.mjs.

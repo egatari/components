@@ -2,6 +2,10 @@
 
 The part's own versions (Egatari spec §6.1). Releases of the whole library are in the repository's CHANGELOG.md.
 
+## 2.2.1 (components 2.14.0)
+
+- Requires base 1.3.0 (sub- and superscripts in `mtext` at 0.7 of the text, at least 17 px).
+
 ## 2.2.0 (components 2.11.0)
 
 - Island names only when needed (owner decision, docs/map-design.md §4.5.1). In the default `layout="inset"`, the names of 竹島 and 尖閣諸島 are no longer written, and neither are their leader lines; the islands' shapes, points and fills are unchanged.

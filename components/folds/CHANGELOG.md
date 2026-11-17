@@ -1,5 +1,9 @@
 # m-folds changelog
 
+## 2.1.1 (components 2.14.0)
+
+- Requires base 1.3.0 (sub- and superscripts in `mtext` at 0.7 of the text, at least 17 px).
+
 ## 2.1.0 (components 2.13.0)
 
 - Per-sample splits: with `splits` (and `samples`), each sample is a cell and each row one split from a scikit-learn splitter (KFold, StratifiedKFold, GroupKFold, TimeSeriesSplit, ShuffleSplit, holdout); class colours and names, group runs, time ends; unused samples in a dashed outline.

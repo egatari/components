@@ -9,7 +9,7 @@
 // 説明は画像の横（side：right（既定）・left・both）に、丸と同じ上下の順に並べ、重ならないようにずらす。
 // 引き出し線は丸から画像の端まで水平に、そこから説明まで斜めにつなぐ。説明の順が丸の上下の順と同じなので、線どうしは交わらない
 // ステップ k で k 番目の丸・線・説明が出る（今の丸は --emph、前の丸は --term）
-egatariParts.define({name: "callout", version: "2.0.0", requires: {base: "1.2.0"}, element: "m-callout"}, function(deps){
+egatariParts.define({name: "callout", version: "2.0.1", requires: {base: "1.3.0"}, element: "m-callout"}, function(deps){
 "use strict";
 var base = deps.base;
 var BIG = 1048576;   // 埋め込んだ画像がこれ（1 MiB）より大きければ size で知らせる

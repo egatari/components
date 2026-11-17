@@ -1,6 +1,6 @@
 ---
 name: m-hist
-version: 2.0.6
+version: 2.0.7
 series: academic
 tier: specialized
 set: stats

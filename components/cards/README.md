@@ -1,6 +1,6 @@
 ---
 name: m-cards
-version: 2.0.4
+version: 2.0.5
 series: common
 tier: standard
 summary: カード（番号の丸・アイコン・見出し・説明）を横一列か 2 段に並べ、ステップごとに出す。矢印で順を、枠の色で強調を見せる

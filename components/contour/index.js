@@ -5,7 +5,7 @@
 //    "gradient": {"at": [[1, 1]]}, "path": [[2.5, 1.5], [1.5, 0.3], [0.9, 0.06]], "monotone": true}
 // （JSON の終わり）</m-contour>
 // 色：等高線 --term、値の名前 --fg（地の色の縁取り）、勾配の矢印 --accent2（接線は --muted の破線）、反復の道 --fg、今の点 --emph。
-egatariParts.define({name: "contour", version: "2.0.0", requires: {base: "1.2.0", expr: "1.0.0", "contour-core": "1.0.0"}, element: "m-contour"}, function(deps){
+egatariParts.define({name: "contour", version: "2.0.1", requires: {base: "1.3.0", expr: "1.0.0", "contour-core": "1.0.0"}, element: "m-contour"}, function(deps){
 "use strict";
 var base = deps.base, D = base, expr = deps.expr, K = deps["contour-core"], clipN = 0;
 var NUM = {type: "number"}, R2 = {type: "array", minItems: 2, maxItems: 2, items: NUM}, P2 = {type: "array", minItems: 2, maxItems: 2, items: NUM};

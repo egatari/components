@@ -1,6 +1,10 @@
 # m-code changelog
 
 
+## 2.2.1 (components 2.14.0)
+
+- Requires base 1.3.0 (sub- and superscripts in `mtext` at 0.7 of the text, at least 17 px).
+
 ## 2.2.0 (components 2.11.0)
 
 - **Fit to the box.** When the 2.1.0 layout fits, nothing changes; tools/test-same-paint.mjs compares the pixels with the release before. When it does not fit, the part now draws a fit layout instead of cutting with … and reporting `layout`. The 2.1.0 cases are: code taller or wider than the box, a note too long for the band, or a step that lists 3 or more lines.

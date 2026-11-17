@@ -1,8 +1,8 @@
 ---
 name: code-core
-version: 1.0.0
+version: 1.0.1
 kind: library
-requires: base@1.2.0
+requires: base@1.3.0
 summary: m-code と m-trace のコードの描き方（等幅の幅、色の役割、説明の折り返し、長い行の折り返し、ステップごとにスクロールする表示）。教材の作者が直接は書かない
 ---
 

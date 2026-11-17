@@ -1,6 +1,6 @@
 ---
 name: m-sweep
-version: 2.1.2
+version: 2.1.3
 series: academic
 tier: specialized
 set: math

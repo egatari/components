@@ -1,7 +1,7 @@
 ---
 name: m-checklist
 display: 確かめる一覧 / Checklist
-version: 2.0.0
+version: 2.0.1
 series: common
 tier: specialized
 set: tools

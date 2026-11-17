@@ -1,7 +1,7 @@
 ---
 name: m-classify2d
 display: 2 次元の分類 / 2-D classification
-version: 2.0.0
+version: 2.0.1
 series: academic
 tier: specialized
 set: ml

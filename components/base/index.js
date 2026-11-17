@@ -1,5 +1,5 @@
 // base 1.0.0: the shared base class and helpers of Egatari components 2.0 (a library part, Egatari spec §6.1).
-// Element parts require it ({base: "1.2.0"}) and receive what this factory returns:
+// Element parts require it ({base: "1.3.0"}) and receive what this factory returns:
 //   {MotionElement, el, lerp, prog, clamp, mtext, variant, previewOpacity}
 // It uses no import, no network and no global of the player (spec §6.1): only the DOM, getComputedStyle and console.
 // It requires shape (the data-shape checker): MotionElement checks the part's data against its declared shape before the
@@ -16,7 +16,7 @@
 // compSummary, compPlaceholder) is deck.js's, with DECK.shape → the shape part and DECK.ja → ctx.lang. Differences: base's
 // own warnings start "[base] " (deck.js: "deck.js: ", "[deck] "), and a data problem is reported with a spec §8.4 code
 // (reportCode) and the part's "[<name>] " prefix.
-egatariParts.define({name: "base", version: "1.2.0", requires: {shape: "1.0.0"}}, function(deps){
+egatariParts.define({name: "base", version: "1.3.0", requires: {shape: "1.0.0"}}, function(deps){
 "use strict";
 var NS = "http://www.w3.org/2000/svg";
 var SH = deps.shape;
@@ -51,9 +51,10 @@ function el(tag, attrs, parent){
 // SVG の中の簡単な数式記法：*..* は斜体、_x は下付き、^x は上付き（本格的な式は組み立てのときに描く。spec §6.2）
 function mtext(parent, x, y, str, attrs){
   var t = el("text", Object.assign({x: x, y: y, "font-size": 24}, attrs || {}), parent);
-  // 下付き・上付きは本文の 3/4、ただし 24px より小さくしない（図の字は 24px 以上。1.0.0 は 17px だった）。ずらしは字の大きさの
+  // 下付き・上付きは本文の 0.7 倍、ただし 17px より小さくしない（1.3.0。Studio の DECK.mtext と同じ 17px。1.1.0〜1.2.0 は 24px 以上で、
+  // 24px の字では本体と同じ大きさに見えた。図の字の 24px の決まりは添え字・上付きを除く）。ずらしは字の大きさの
   // −0.25em・+0.45em（sub・super の語は字によってずれが違い、Source Sans 3 では下に 17px 近く落ちる）
-  var subSize = Math.max(24, Math.round((+t.getAttribute("font-size") || 24) * 0.75));
+  var subSize = Math.max(17, Math.round((+t.getAttribute("font-size") || 24) * 0.7));
   marks(str).forEach(function(m){
     var s = el("tspan", m.shift ? {"baseline-shift": m.shift === "sub" ? "-0.25em" : "0.45em", "font-size": String(subSize)} : {}, t);
     if (m.it){ s.setAttribute("font-style", "italic"); s.setAttribute("class", "mi"); }

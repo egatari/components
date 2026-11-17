@@ -1,6 +1,6 @@
 ---
 name: m-collect
-version: 2.0.4
+version: 2.0.5
 series: academic
 tier: extra
 summary: 並んだカード（回答など）が動いて縮み、少数の箱（要約）にまとまる

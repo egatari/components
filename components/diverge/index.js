@@ -9,7 +9,7 @@
 // 色：合計 --term、増加 --accent2、減少 --emph（item の tone で変えられる）。値の数字は棒の端の外（増加と合計は上、減少は下）に、
 // 増減には符号を付けて書く。隣の棒とは累計の高さで点線をつなぐ
 // ステップ：既定は棒 1 本 = 1 ステップ（per-step で n 本ずつ、item の step で直接）。軸・目盛り・棒の名前はステップ 0 から見える
-egatariParts.define({name: "diverge", version: "2.0.0", requires: {base: "1.2.0"}, element: "m-diverge"}, function(deps){
+egatariParts.define({name: "diverge", version: "2.0.1", requires: {base: "1.3.0"}, element: "m-diverge"}, function(deps){
 "use strict";
 var base = deps.base;
 return class extends base.MotionElement {

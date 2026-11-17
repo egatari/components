@@ -10,7 +10,7 @@
 // steps を書くとき：{"show": "x"}、{"layer": l, "phase": "z" | "a"}、{"open": l}（まとめた丸を Σ|f に開く）、{"focus": [l, i]}（ニューロン i に入る辺と重み）。
 // "phase": "delta" と "grad"（誤差逆伝播）は予約。今は data で知らせて飛ばす。
 // 色：正の重み --term（実線）、負の重み --emph（点線）。今計算している層に入る辺を濃くする。値の出たニューロンは --accent2 の縁。
-egatariParts.define({name: "nnet", version: "2.0.0", requires: {base: "1.2.0"}, element: "m-nnet"}, function(deps){
+egatariParts.define({name: "nnet", version: "2.0.1", requires: {base: "1.3.0"}, element: "m-nnet"}, function(deps){
 "use strict";
 var base = deps.base;
 var NUM = {type: "number"}, VEC = {type: "array", items: NUM}, MAT = {type: "array", items: VEC};

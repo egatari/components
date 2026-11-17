@@ -7,7 +7,7 @@
 // （JSON の終わり）</m-vector>
 // 色：ベクトル --term、そのステップの結果 --emph、補助の線（平行移動・垂線）--muted の破線、変換した格子・新しい基底 --accent2、
 // 固有ベクトルの向き --emph の破線。
-egatariParts.define({name: "vector", version: "2.0.0", requires: {base: "1.2.0"}, element: "m-vector"}, function(deps){
+egatariParts.define({name: "vector", version: "2.0.1", requires: {base: "1.3.0"}, element: "m-vector"}, function(deps){
 "use strict";
 var base = deps.base, D = base, clipN = 0;
 var NUM = {type: "number"}, V2 = {type: "array", minItems: 2, maxItems: 2, items: NUM}, ID = {type: "string"};

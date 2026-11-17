@@ -1,6 +1,6 @@
 ---
 name: m-numberline
-version: 2.0.3
+version: 2.0.4
 series: academic
 tier: specialized
 set: math

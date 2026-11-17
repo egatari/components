@@ -4,7 +4,7 @@
 // （JSON の終わり）</m-checklist>
 // 印はスライドの中身（作者が決めた ✓ と ×）で、見ている人の操作ではない。押しても変わらず、何も保存しない
 // reveal="false"（既定）：項目はステップ 0 から全部見え、ステップごとに次の項目に印が付く。reveal="true"：項目もそのステップで現れる
-egatariParts.define({name: "checklist", version: "2.0.0", requires: {base: "1.2.0"}, element: "m-checklist"}, function(deps){
+egatariParts.define({name: "checklist", version: "2.0.1", requires: {base: "1.3.0"}, element: "m-checklist"}, function(deps){
 "use strict";
 var base = deps.base;
 return class extends base.MotionElement {

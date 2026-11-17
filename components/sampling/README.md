@@ -1,7 +1,7 @@
 ---
 name: m-sampling
 display: 標本抽出 / Sampling
-version: 2.0.1
+version: 2.0.2
 series: academic
 tier: specialized
 set: data

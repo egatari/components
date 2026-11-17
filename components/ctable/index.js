@@ -7,7 +7,7 @@
 // kind：anova（最後の行が全体、その前が誤差。role で変えられる）・contingency（rows・cols・n、margins、expected・chi2・or）・
 // po（units の t・y0・y1。見えない半分は「?」、ステップで開き、個人の効果と平均処置効果）・table（header と rows を行ごとに出す）
 // 色：使ったセル --accent2 の枠、埋めたセル --emph の枠、見えない値の地 --muted の薄い塗り（字の色だけに頼らず「?」と地で示す）。
-egatariParts.define({name: "ctable", version: "2.0.0", requires: {base: "1.2.0"}, element: "m-ctable"}, function(deps){
+egatariParts.define({name: "ctable", version: "2.0.1", requires: {base: "1.3.0"}, element: "m-ctable"}, function(deps){
 "use strict";
 var base = deps.base;
 var NUM = {type: "number"};
