@@ -4,15 +4,27 @@ Versions follow [README.md § Releases and versions](README.md#releases-and-vers
 
 ## Unreleased
 
+### Later (candidates, not in this release)
+
+- `m-compare` `by="row"`; an "outside every set" region for `m-venn`; planned-vs-actual bars for `m-timeline`
+
+## 2.14.0 - 2026-11-17
+
+This release makes sub- and superscripts read as such in every part (base 1.3.0), reports lines that leave the default range in `m-curves`, and adds the main fast-forward to RELEASING.md.
+
 ### Changed
 
 - **base 1.3.0: sub- and superscripts that read as such.** `mtext` draws `_x` and `^x` at 0.7 of the text and at least 17 px, as Studio's `DECK.mtext` does (1.1.0–1.2.0: 3/4 and at least 24 px, so at 24 px a subscript was as large as the letter). Every part that draws `_` or `^` text changes there. The 24 px floor for figure text excludes these (docs/conventions.md §2.3). plot 1.1.3, code-core 1.0.1, markup-reader 1.0.3 and every element part require it (patch versions; m-curves is already 2.3.0).
 - **`m-curves` 2.3.0: a report when a line leaves the default range.** When `xr` or `yr` is not written (the default `[0, 1]`) and a series goes outside it, the part reports it once per series and axis, with the values' range and the fix, so Studio's check can warn. A written range that cuts a line is taken as intended. The drawing does not change.
 - **`m-hist` README:** a dot plot of integer values stacks on the values themselves only without `bins` (with `bins` the dots stack at the class mid-points).
 
-### Later (candidates, not in this release)
+### Releasing
 
-- `m-compare` `by="row"`; an "outside every set" region for `m-venn`; planned-vs-actual bars for `m-timeline`
+- After a release made on a branch, `main` is fast-forwarded to the tag; the maintainer's OK to tag and release includes this. Tagging moves the gallery's baseline, so later branches regenerate `gallery.html`.
+
+### For Studio
+
+- Import with `node tools/components2-update.mjs v2.14.0 --default`. Studio's `DECK.mtext` already draws sub/superscripts at 17 px; no change is needed there.
 
 ## 2.13.0 - 2026-11-15
 
