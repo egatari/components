@@ -14,7 +14,7 @@
 // 色：今の頂点 --emph（太い輪）、候補 --accent2（点線の輪と下の帯）、訪れた頂点 --muted の塗り、選んだ辺と探索の木 --term、ほかの辺 --line。
 // 確かめること（data）：知らない id、ない辺の take（complete のときを除く）、選んでいない辺の drop、
 // 選んだ辺がすべて重みを持つときに total が重みの和と合わないこと（total.check: false で確かめない）
-egatariParts.define({name: "network", version: "2.1.1", requires: {base: "1.3.0"}, element: "m-network"}, function(deps){
+egatariParts.define({name: "network", version: "2.2.0", requires: {base: "1.3.0"}, element: "m-network"}, function(deps){
 "use strict";
 var base = deps.base;
 var ID = {type: "string"};
@@ -324,12 +324,15 @@ return class extends base.MotionElement {
     var inside = function(r){ return r.x0 >= 0 && r.x1 <= W && r.y0 >= 0 && r.y1 <= H - band; };
     var crowded = [];
     this.wlabels = [];
+    // data-part：Studio の形の検査（R-geometry）が測る印。頂点の枠（下の 1 枚だけ。訪れた・候補・今の重ねは測らない）とその名前、辺（自分への辺は除く。矢じりは除く）と重み（縁取りあり）。
+    // 探索の木・選んだ辺は同じ辺の上に重ねる線なので測らない
     Object.keys(pl.edges).forEach(function(k){
-      var e = pl.edges[k], pts = geom(e.from, e.to);
+      var e = pl.edges[k], pts = geom(e.from, e.to), eid = String(e.from) + (self.directed ? ">" : "-") + String(e.to), loop0 = e.from === e.to;
+      var ge = loop0 ? gE : D.el("g", {"data-part": "edge", "data-part-id": eid, "data-part-from": String(e.from), "data-part-to": String(e.to)}, gE);
       // 双方向の辺（bi：潜在の交絡）は破線で両端に矢じり
-      D.el("path", Object.assign({d: pathD(pts), fill: "none", stroke: "var(--line)", "stroke-width": 2.5}, e.bi ? {"stroke-dasharray": "8 6"} : {}), gE);
-      if (self.directed || e.bi) arrow(gE, pts, "var(--line)", 2.5);
-      if (e.bi) arrow(gE, pts.slice().reverse(), "var(--line)", 2.5);
+      D.el("path", Object.assign({d: pathD(pts), fill: "none", stroke: "var(--line)", "stroke-width": 2.5}, e.bi ? {"stroke-dasharray": "8 6"} : {}, loop0 ? {} : {"data-part-line": ""}), ge);
+      if (self.directed || e.bi) arrow(ge, pts, "var(--line)", 2.5);
+      if (e.bi) arrow(ge, pts.slice().reverse(), "var(--line)", 2.5);
       if (!P.weights || typeof e.w !== "number") return;
       var s = fmt(e.w, decimals(e.w)), w = tw(s) + 8, h = fs + 6, best = null, loop = e.from === e.to;
       (loop ? [0.5] : [0.5, 0.38, 0.62, 0.28, 0.72]).some(function(f){
@@ -342,8 +345,8 @@ return class extends base.MotionElement {
       });
       if (!best){ crowded.push(e.from + (self.directed ? "→" : "–") + e.to); return; }
       placed.push(best);
-      var t = D.el("text", {x: best.cx.toFixed(1), y: (best.cy + fs * 0.36).toFixed(1), "font-size": fs, "text-anchor": "middle", fill: "var(--fg)",
-        stroke: "var(--bg)", "stroke-width": 6, "paint-order": "stroke", style: "font-variant-numeric:tabular-nums"}, gW);
+      var t = D.el("text", Object.assign({x: best.cx.toFixed(1), y: (best.cy + fs * 0.36).toFixed(1), "font-size": fs, "text-anchor": "middle", fill: "var(--fg)",
+        stroke: "var(--bg)", "stroke-width": 6, "paint-order": "stroke", style: "font-variant-numeric:tabular-nums"}, loop ? {} : {"data-part": "label", "data-part-id": eid, "data-part-of": "edge", "data-part-halo": ""}), gW);
       t.textContent = s;
       self.wlabels.push(t);
     });
@@ -373,12 +376,13 @@ return class extends base.MotionElement {
         return D.el("rect", Object.assign({x: (o.x - w / 2).toFixed(1), y: (o.y - h / 2).toFixed(1), width: w.toFixed(1), height: h.toFixed(1)}, shp, attrs), gN);
       };
       // 観測した変数（observed）は塗る（グラフィカルモデルの習わし）
-      rect(0, {fill: o.n.observed ? "var(--line)" : "var(--bg)", stroke: "var(--fg)", "stroke-width": 2});
+      var nid = String(o.n.id), nl = {"data-part": "label", "data-part-id": nid, "data-part-of": "box"};
+      rect(0, {fill: o.n.observed ? "var(--line)" : "var(--bg)", stroke: "var(--fg)", "stroke-width": 2, "data-part": "box", "data-part-id": nid});
       o.vis = rect(0, {fill: "var(--muted)", opacity: 0});
       o.fr = rect(6, {fill: "none", stroke: "var(--accent2)", "stroke-width": 4, "stroke-dasharray": "8 6", opacity: 0});
       o.cur = rect(4, {fill: "none", stroke: "var(--emph)", "stroke-width": 7, opacity: 0});
-      if (MARK.test(o.lab)) D.mtext(gN, o.x, o.y + fs * 0.36, o.lab, {"font-size": fs, "text-anchor": "middle", fill: "var(--fg)"});
-      else { var t = D.el("text", {x: o.x.toFixed(1), y: (o.y + fs * 0.36).toFixed(1), "font-size": fs, "text-anchor": "middle", fill: "var(--fg)"}, gN); t.textContent = o.lab; }
+      if (MARK.test(o.lab)) D.mtext(gN, o.x, o.y + fs * 0.36, o.lab, Object.assign({"font-size": fs, "text-anchor": "middle", fill: "var(--fg)"}, nl));
+      else { var t = D.el("text", Object.assign({x: o.x.toFixed(1), y: (o.y + fs * 0.36).toFixed(1), "font-size": fs, "text-anchor": "middle", fill: "var(--fg)"}, nl), gN); t.textContent = o.lab; }
     });
     this.nodes = nodes;
     // 下の帯

@@ -1,7 +1,7 @@
 ---
 name: m-network
 display: グラフの探索 / Graph search
-version: 2.1.1
+version: 2.2.0
 series: info
 tier: specialized
 set: algo
