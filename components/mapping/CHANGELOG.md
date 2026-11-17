@@ -1,5 +1,9 @@
 # m-mapping changelog
 
+## 2.1.0 (components 2.15.0)
+
+- Marks what it draws for Studio's geometry check (R-geometry): the outcome chips (`o1`, `o2` …) and the value boxes (`v1`, `v2` …) as boxes with their text as labels (the count and probability beside a value box as labels outside it), and each arrow from a chip to its value box as an edge (the head left out). The bar chart on the right is not marked. The drawing does not change.
+
 ## 2.0.2 (components 2.14.0)
 
 - Requires base 1.3.0 (sub- and superscripts in `mtext` at 0.7 of the text, at least 17 px).

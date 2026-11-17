@@ -1,5 +1,5 @@
 // m-mapping: outcomes → numerical values → a probability distribution.
-egatariParts.define({name: "mapping", version: "2.0.2", requires: {base: "1.3.0"}, element: "m-mapping"}, function(deps){
+egatariParts.define({name: "mapping", version: "2.1.0", requires: {base: "1.3.0"}, element: "m-mapping"}, function(deps){
 "use strict";
 var base = deps.base;
 var TEXT = {
@@ -146,8 +146,8 @@ return class extends base.MotionElement {
     // Do not round an invalid total to 1 just because digits is small.
     return this.T.total + (p.validTotal ? "1" : String(p.total));
   }
-  label(g, x, y, s, fs, anchor){
-    var e = base.el("text", {x: x, y: y, "font-size": fs || this.fs, "text-anchor": anchor || "start", fill: "var(--fg)"}, g);
+  label(g, x, y, s, fs, anchor, mark){
+    var e = base.el("text", Object.assign({x: x, y: y, "font-size": fs || this.fs, "text-anchor": anchor || "start", fill: "var(--fg)"}, mark || {}), g);
     e.textContent = s; return e;
   }
   mount(ctx){
@@ -214,14 +214,17 @@ return class extends base.MotionElement {
     var maxP = Math.max.apply(null, p.groups.map(function(g){ return g.p; }).concat([1]));
     var zero = barX + negativePad + barW * (-minP / (maxP - minP));
     this.chips = []; this.boxes = []; this.arrows = []; this.bars = [];
+    // data-part：Studio の形の検査（R-geometry）が測る印。結果の札（o1, o2 …）と値の箱（v1, v2 …）、その中の字、札から箱への矢印（矢じりは除く）。
+    // 値の箱の右の数（何通り・確率）は箱の外に置く字。右の棒グラフは測らない
+    var lab = function(id, outside){ return Object.assign({"data-part": "label", "data-part-id": id, "data-part-of": "box"}, outside ? {"data-part-at": "outside"} : {}); };
     p.groups.forEach(function(g, j){
-      var y = ys[j], box = base.el("g", {}, self.valueLayer);
-      var frame = base.el("rect", {class: "box", x: bx, y: y - boxH / 2, width: bw, height: boxH, rx: 10, fill: "none", stroke: "var(--muted)", "stroke-width": 2}, box);
-      self.label(box, bx + 12, y + fs * 0.312, self.value(g.x));
+      var y = ys[j], box = base.el("g", {}, self.valueLayer), vid = "v" + (j + 1);
+      var frame = base.el("rect", {class: "box", x: bx, y: y - boxH / 2, width: bw, height: boxH, rx: 10, fill: "none", stroke: "var(--muted)", "stroke-width": 2, "data-part": "box", "data-part-id": vid}, box);
+      self.label(box, bx + 12, y + fs * 0.312, self.value(g.x), undefined, undefined, lab(vid));
       var summary = base.el("g", {opacity: 0}, box);
       var summaryY = y - boxH / 2 + 6 + small * 1.024;
-      self.label(summary, bx + vw + 28, summaryY, self.T.count(g.count), small);
-      self.label(summary, bx + vw + 28, summaryY + small * 1.424 + 4, "= " + self.fmt(g.p), small);
+      self.label(summary, bx + vw + 28, summaryY, self.T.count(g.count), small, undefined, lab(vid, true));
+      self.label(summary, bx + vw + 28, summaryY + small * 1.424 + 4, "= " + self.fmt(g.p), small, undefined, lab(vid, true));
       self.boxes.push({frame: frame, summary: summary, tone: g.tone});
       var end = zero + barW * (g.p / (maxP - minP));
       base.el("line", {x1: zero, x2: zero, y1: y - 20, y2: y + 20, stroke: "var(--muted)", "stroke-width": 2}, self.distribution);
@@ -231,17 +234,18 @@ return class extends base.MotionElement {
     });
     p.outcomes.forEach(function(o, i){
       var y = top + row * (i + 0.5), g = p.groups[o.group];   // y：行の真ん中
-      var chip = base.el("g", {}, self.outcomeLayer);
-      var frame = base.el("rect", {class: "box", x: 8, y: y - rowMin / 2 + 2, width: cw - 8, height: rowMin - 4, rx: 10, fill: "none", stroke: "var(--term)", "stroke-width": 2}, chip);
-      var labelY = p.showP ? y - (fs + small) * 0.715 - 2 + fs * 1.024 : y + fs * 0.312, pic = pics[i], lab = labelOf(o, i);
+      var chip = base.el("g", {}, self.outcomeLayer), oid = "o" + (i + 1);
+      var frame = base.el("rect", {class: "box", x: 8, y: y - rowMin / 2 + 2, width: cw - 8, height: rowMin - 4, rx: 10, fill: "none", stroke: "var(--term)", "stroke-width": 2, "data-part": "box", "data-part-id": oid}, chip);
+      var labelY = p.showP ? y - (fs + small) * 0.715 - 2 + fs * 1.024 : y + fs * 0.312, pic = pics[i], lab = labelOf(o, i), mk = function(id){ return {"data-part": "label", "data-part-id": id, "data-part-of": "box"}; };
       // 絵があれば左に絵、右に名前（と確率）。なければ真ん中に名前
       var tx = pic ? 20 + picW + 12 : cw / 2 + 4, anchor = pic ? "start" : "middle";
       if (pic) pic.draw(chip, 20 + (picW - pic.w) / 2, y);
-      if (lab) self.label(chip, tx, labelY, lab, fs, anchor);
-      if (p.showP) self.label(chip, tx, (lab ? labelY + fs * 0.4 + small * 1.024 + 4 : y + small * 0.312), self.fmt(o.p), small, anchor);
+      if (lab) self.label(chip, tx, labelY, lab, fs, anchor, mk(oid));
+      if (p.showP) self.label(chip, tx, (lab ? labelY + fs * 0.4 + small * 1.024 + 4 : y + small * 0.312), self.fmt(o.p), small, anchor, mk(oid));
       self.chips.push({frame: frame, tone: g.tone});
-      var path = base.el("path", {fill: "none", stroke: "var(--muted)", "stroke-width": 2, pathLength: 1, "stroke-dasharray": "1", opacity: 0}, self.svg);
-      var head = base.el("path", {fill: "none", stroke: "var(--muted)", "stroke-width": 2, opacity: 0}, self.svg);
+      var eg = base.el("g", {"data-part": "edge", "data-part-id": oid + "-v" + (o.group + 1), "data-part-from": oid, "data-part-to": "v" + (o.group + 1)}, self.svg);
+      var path = base.el("path", {fill: "none", stroke: "var(--muted)", "stroke-width": 2, pathLength: 1, "stroke-dasharray": "1", opacity: 0, "data-part-line": ""}, eg);
+      var head = base.el("path", {fill: "none", stroke: "var(--muted)", "stroke-width": 2, opacity: 0}, eg);
       self.arrows.push({path: path, head: head, x: cw + 4, y: y, endX: bx - 5, endY: ys[o.group], spread: (o.slot - (g.count - 1) / 2) * Math.min(6, (boxH - 24) / g.count), tone: g.tone});
     });
   }
