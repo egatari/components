@@ -10,7 +10,7 @@
 // steps を書くとき：{"show": "x"}、{"layer": l, "phase": "z" | "a"}、{"open": l}（まとめた丸を Σ|f に開く）、{"focus": [l, i]}（ニューロン i に入る辺と重み）。
 // "phase": "delta" と "grad"（誤差逆伝播）は予約。今は data で知らせて飛ばす。
 // 色：正の重み --term（実線）、負の重み --emph（点線）。今計算している層に入る辺を濃くする。値の出たニューロンは --accent2 の縁。
-egatariParts.define({name: "nnet", version: "2.0.1", requires: {base: "1.3.0"}, element: "m-nnet"}, function(deps){
+egatariParts.define({name: "nnet", version: "2.1.0", requires: {base: "1.3.0"}, element: "m-nnet"}, function(deps){
 "use strict";
 var base = deps.base;
 var NUM = {type: "number"}, VEC = {type: "array", items: NUM}, MAT = {type: "array", items: VEC};
@@ -170,9 +170,11 @@ return class extends base.MotionElement {
         if (s.i < 0) return;
         var w = d.weights ? d.weights[l - 1][t.i][s.i] : null, wt = P.edges === "weight" && w !== null;
         var x1 = s.x + colHalf(l - 1), x2 = t.x - colHalf(l);
-        var e = D.el("line", {x1: x1.toFixed(1), y1: s.y.toFixed(1), x2: x2.toFixed(1), y2: t.y.toFixed(1),
+        // data-part：Studio の形の検査（R-geometry）が測る印。ニューロンの枠（n<層>-<番号>）とその中の数・横の名前、層のあいだの線（辺）と重みの札（縁取りあり）
+        var eg = D.el("g", {"data-part": "edge", "data-part-id": "n" + (l - 1) + "-" + s.i + ">n" + l + "-" + t.i, "data-part-from": "n" + (l - 1) + "-" + s.i, "data-part-to": "n" + l + "-" + t.i}, gE);
+        var e = D.el("line", {"data-part-line": "", x1: x1.toFixed(1), y1: s.y.toFixed(1), x2: x2.toFixed(1), y2: t.y.toFixed(1),
           stroke: wt ? (w < 0 ? "var(--emph)" : "var(--term)") : "var(--line)", "stroke-width": wt ? (1 + 5 * Math.abs(w) / maxW).toFixed(2) : 1.5,
-          "stroke-dasharray": wt && w < 0 ? "8 6" : "none", opacity: 0.35}, gE);
+          "stroke-dasharray": wt && w < 0 ? "8 6" : "none", opacity: 0.35}, eg);
         self.edgeEls.push({el: e, l: l, s: s, t: t, w: w});
       });
     });
@@ -182,10 +184,11 @@ return class extends base.MotionElement {
       return col.map(function(c){
         if (c.i < 0){ var t = D.el("text", {x: c.x.toFixed(1), y: (c.y + fs * 0.36).toFixed(1), "font-size": fs, "text-anchor": "middle", fill: "var(--muted)"}, gN); t.textContent = "⋮"; return {dots: true}; }
         var g = D.el("g", {}, gN);
-        var body = D.el("rect", {y: (c.y - r).toFixed(1), height: 2 * r, rx: r, fill: "var(--bg)", stroke: "var(--fg)", "stroke-width": 2}, g);
+        var nid = "n" + l + "-" + c.i;
+        var body = D.el("rect", {y: (c.y - r).toFixed(1), height: 2 * r, rx: r, fill: "var(--bg)", stroke: "var(--fg)", "stroke-width": 2, "data-part": "box", "data-part-id": nid}, g);
         var ring = D.el("rect", {y: (c.y - r - 4).toFixed(1), height: 2 * r + 8, rx: r + 4, fill: "none", stroke: "var(--accent2)", "stroke-width": 4, opacity: 0}, g);
         var div = D.el("line", {x1: c.x, x2: c.x, y1: (c.y - r + 6).toFixed(1), y2: (c.y + r - 6).toFixed(1), stroke: "var(--fg)", "stroke-width": 2, opacity: 0}, g);
-        var mk = function(){ return D.el("text", {x: c.x, y: (c.y + fs * 0.36).toFixed(1), "font-size": fs, "text-anchor": "middle", fill: "var(--fg)", opacity: 0, style: "font-variant-numeric:tabular-nums"}, g); };
+        var mk = function(){ return D.el("text", {x: c.x, y: (c.y + fs * 0.36).toFixed(1), "font-size": fs, "text-anchor": "middle", fill: "var(--fg)", opacity: 0, style: "font-variant-numeric:tabular-nums", "data-part": "label", "data-part-id": nid, "data-part-of": "box"}, g); };
         var o = {c: c, l: l, body: body, ring: ring, div: div, one: mk(), zT: mk(), aT: mk(), sig: mk(), fn: mk()};
         o.sig.textContent = "Σ"; o.fn.textContent = L[l].act ? ACT[L[l].act][ja ? "ja" : "en"] : "f";
         if (l === 0 && V.x) o.one.textContent = self.fmt(V.x[c.i]);
@@ -200,7 +203,7 @@ return class extends base.MotionElement {
     // 名前（入力の左、出力の右）、層の名前（下）、分けた層の見出し（上：Σ → ReLU）
     var names = function(l, side){
       if (!L[l].names) return;
-      self.cols[l].forEach(function(c){ if (c.i < 0) return; D.mtext(gT, side < 0 ? c.x - colHalf(l) - 10 : c.x + colHalf(l) + 10, c.y + fs * 0.36, L[l].names[c.i], {"font-size": fs, "text-anchor": side < 0 ? "end" : "start"}); });
+      self.cols[l].forEach(function(c){ if (c.i < 0) return; D.mtext(gT, side < 0 ? c.x - colHalf(l) - 10 : c.x + colHalf(l) + 10, c.y + fs * 0.36, L[l].names[c.i], {"font-size": fs, "text-anchor": side < 0 ? "end" : "start", "data-part": "label", "data-part-id": "n" + l + "-" + c.i, "data-part-of": "box", "data-part-at": "outside"}); });
     };
     names(0, -1); if (L.length > 1) names(L.length - 1, 1);
     L.forEach(function(ly, l){
@@ -223,7 +226,7 @@ return class extends base.MotionElement {
         if (src.i < 0) return;
         var w = d.weights[tl - 1][ti][src.i], x1 = src.x + colHalf(tl - 1), x2 = tgt.x - colHalf(tl), f = 0.22;
         var x = x1 + (x2 - x1) * f, y = src.y + (tgt.y - src.y) * f - fs * 0.45;
-        var t = D.el("text", {x: x.toFixed(1), y: y.toFixed(1), "font-size": fs, "text-anchor": "middle", fill: w < 0 ? "var(--emph)" : "var(--term)", stroke: "var(--bg)", "stroke-width": 6, "paint-order": "stroke", style: "font-variant-numeric:tabular-nums"}, g);
+        var t = D.el("text", {x: x.toFixed(1), y: y.toFixed(1), "font-size": fs, "text-anchor": "middle", fill: w < 0 ? "var(--emph)" : "var(--term)", stroke: "var(--bg)", "stroke-width": 6, "paint-order": "stroke", style: "font-variant-numeric:tabular-nums", "data-part": "label", "data-part-id": "n" + (tl - 1) + "-" + src.i + ">n" + tl + "-" + ti, "data-part-of": "edge", "data-part-halo": ""}, g);
         t.textContent = self.fmt(w);
       });
       self.wlabels.push({key: key, g: g, l: tl, i: ti});

@@ -1,7 +1,7 @@
 ---
 name: m-nnet
 display: ニューラルネット / Neural network
-version: 2.0.1
+version: 2.1.0
 series: info
 tier: specialized
 set: ml
