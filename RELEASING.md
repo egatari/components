@@ -4,7 +4,7 @@ Only the maintainer releases. To withdraw a release, add it to `yanked.json` und
 
 **A published part version never gets a second hash.** Once a release, a pre-release included, has published `name@version`, that part's code (`index.js`) never changes under that version: any change to it bumps the part's version (README `version:`, the `egatariParts.define` meta, a section in the part's `CHANGELOG.md`), even when the catalogue version does not change (part versions differ from the catalogue's by design, spec §6.1). `published.json` records every published `name@version` with its identity hash, from 2.0.0-rc.1 on; `node tools/published.mjs` (in `npm test`, and `tools/release.mjs` refuses to run otherwise) fails when a recorded version's code has changed.
 
-1. On `main`, with CI green: set `version` in `package.json` to `X.Y.Z`, move `## Unreleased` in `CHANGELOG.md` to `## X.Y.Z - <date>`, run `node tools/published.mjs --record` (adds the new part versions to `published.json`), commit and push. Wait for CI to be green on all three systems.
+1. On `main` (or on a release branch that `main` can fast-forward to), with CI green: set `version` in `package.json` to `X.Y.Z`, move `## Unreleased` in `CHANGELOG.md` to `## X.Y.Z - <date>`, run `node tools/published.mjs --record` (adds the new part versions to `published.json`), commit and push. Wait for CI to be green on all three systems.
 2. Make the assets from a clean checkout of that commit:
    ```bash
    git status --short            # nothing
@@ -29,7 +29,9 @@ Only the maintainer releases. To withdraw a release, add it to `yanked.json` und
    ```bash
    gh release download vX.Y.Z -D /tmp/check && shasum -a 256 /tmp/check/*.tar.gz && grep -A2 '"tarball"' /tmp/check/manifest.json
    ```
-5. In Egatari Studio: `node tools/components2-update.mjs vX.Y.Z --default` (`npm run components:update` is the 1.x importer), then Studio's tests, then a pull request there.
+5. If the release was made on a branch, fast-forward `main` to the tag once the release is checked (step 4): `git push origin vX.Y.Z^{commit}:refs/heads/main`. Fast-forward only, never a force push; if `main` cannot fast-forward, stop and ask.
+6. Tagging moves `tools/gallery.mjs`'s baseline (the newest tag below `package.json`'s version), so regenerate `gallery.html` (`node tools/gallery.mjs`) on any branch that already carries a later version, and let its CI run again.
+7. In Egatari Studio: `node tools/components2-update.mjs vX.Y.Z --default` (`npm run components:update` is the 1.x importer), then Studio's tests, then a pull request there.
 
 The tarball is deterministic (`tools/tar.mjs`: sorted entries, fixed modes and times, no user names, fixed gzip header), so `node tools/release.mjs X.Y.Z` on the tagged commit gives the same file again (with the same Node major version; zlib may compress differently in another). The manifest's per-file sha256 values do not depend on compression.
 
