@@ -7,7 +7,7 @@
 // 2.0（Egatari spec §6.1 の部品）：base の MotionElement・el・mtext・prog・lerp・previewOpacity を使い、プレイヤーのグローバルは使わない。
 // 式（tex）は組み立てのときに KaTeX で描く（spec §6.2）：build.fields の targets[].tex を作り手が描いて texHtml を足し、
 // この部品は markup-reader で決まった要素と属性だけを読んで置く（再生のときに KaTeX は動かない）。描いた結果がなければ tex を字のまま出して知らせる
-egatariParts.define({name: "collect", version: "2.0.5", requires: {base: "1.3.0", "markup-reader": "1.0.3"}, element: "m-collect"}, function(deps){
+egatariParts.define({name: "collect", version: "2.1.0", requires: {base: "1.3.0", "markup-reader": "1.0.3"}, element: "m-collect"}, function(deps){
 "use strict";
 var base = deps.base, MR = deps["markup-reader"];
 return class extends base.MotionElement {
@@ -52,13 +52,15 @@ return class extends base.MotionElement {
       var c = tone[tg.tone || "emph"] || tone.emph;
       var frame = D.el("rect", {x: cx - bw / 2, y: cy - bh / 2, width: bw, height: bh, rx: 12, fill: "none", stroke: "var(--line)", "stroke-width": 2, "stroke-dasharray": "8 6", opacity: 0}, svg);
       var g = D.el("g", {opacity: 0}, svg);
-      D.el("rect", {x: cx - bw / 2, y: cy - bh / 2, width: bw, height: bh, rx: 12, fill: c[1], stroke: c[0], "stroke-width": 3}, g);
+      // marks for the geometry check (spec §8.4): the box is a box, its name, formula and value its labels; a name under or over the box stands outside
+      var bid = "t" + (j + 1), lab = function(e, out){ if (e){ e.setAttribute("data-part", "label"); e.setAttribute("data-part-id", bid); e.setAttribute("data-part-of", "box"); if (out) e.setAttribute("data-part-at", "outside"); } return e; };
+      D.el("rect", {"data-part": "box", "data-part-id": bid, x: cx - bw / 2, y: cy - bh / 2, width: bw, height: bh, rx: 12, fill: c[1], stroke: c[0], "stroke-width": 3}, g);
       var hasV = tg.value !== undefined, ly = cy + (hasV ? -16 : 9);
-      if (tg.tex) MR.texFrame(g, cx, ly + 4, tg, "tex", {size: 30, anchor: "middle", color: c[0], w: bw, h: 50}, sk).firstChild.style.verticalAlign = "top";
-      else D.mtext(g, cx, ly, tg.label || "", {"text-anchor": "middle", "font-size": 28, "font-weight": 700, fill: c[0]});
-      if (hasV) D.mtext(g, cx, cy + 38, String(tg.value), {"text-anchor": "middle", "font-size": 24, fill: "var(--fg)"});
+      if (tg.tex){ var tf = lab(MR.texFrame(g, cx, ly + 4, tg, "tex", {size: 30, anchor: "middle", color: c[0], w: bw, h: 50}, sk)); tf.firstChild.style.verticalAlign = "top"; }
+      else lab(D.mtext(g, cx, ly, tg.label || "", {"text-anchor": "middle", "font-size": 28, "font-weight": 700, fill: c[0]}));
+      if (hasV) lab(D.mtext(g, cx, cy + 38, String(tg.value), {"text-anchor": "middle", "font-size": 24, fill: "var(--fg)"}));
       // 下に入らなければ（y を書いた箱）箱の上に
-      if (tg.tex && tg.label) D.mtext(g, cx, cy + bh / 2 + 32 + 4 <= H ? cy + bh / 2 + 32 : cy - bh / 2 - 10, tg.label, {"text-anchor": "middle", "font-size": 24, fill: "var(--muted)"});
+      if (tg.tex && tg.label) lab(D.mtext(g, cx, cy + bh / 2 + 32 + 4 <= H ? cy + bh / 2 + 32 : cy - bh / 2 - 10, tg.label, {"text-anchor": "middle", "font-size": 24, fill: "var(--muted)"}), true);
       return {frame: frame, g: g, cx: cx, cy: cy, col: c, last: 0};
     });
     // 札と、行き先ごとの写し。もとの札は元の場所に薄い枠で残る（動いた後も、何を集めたかが図に残る。印刷でも読める）
@@ -72,8 +74,9 @@ return class extends base.MotionElement {
       to.forEach(function(j){ if (!self.targets[j]) badTo.push("chip " + i + " (" + JSON.stringify(cp.label || "") + "): to " + JSON.stringify(j)); });
       if (to.some(function(j){ return self.targets[j]; })){
         var rg = D.el("g", {transform: "translate(" + x.toFixed(2) + " " + y.toFixed(2) + ")", opacity: 0}, gR);
-        D.el("rect", {x: -cw / 2, y: -ch / 2, width: cw, height: ch, rx: 8, fill: "none", stroke: "var(--line)", "stroke-width": 2, "stroke-dasharray": "6 5"}, rg);
-        D.mtext(rg, 0, 9, cp.label || "", {"text-anchor": "middle", "font-size": 24, fill: "var(--muted)"});
+        // the chip left in place is a box with its label (the moving copies fade out, so they are not marked)
+        D.el("rect", {"data-part": "box", "data-part-id": "c" + (i + 1), x: -cw / 2, y: -ch / 2, width: cw, height: ch, rx: 8, fill: "none", stroke: "var(--line)", "stroke-width": 2, "stroke-dasharray": "6 5"}, rg);
+        D.mtext(rg, 0, 9, cp.label || "", {"data-part": "label", "data-part-id": "c" + (i + 1), "data-part-of": "box", "text-anchor": "middle", "font-size": 24, fill: "var(--muted)"});
         self.rests.push({g: rg, start: start});
       }
       to.forEach(function(j){

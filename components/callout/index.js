@@ -9,7 +9,7 @@
 // 説明は画像の横（side：right（既定）・left・both）に、丸と同じ上下の順に並べ、重ならないようにずらす。
 // 引き出し線は丸から画像の端まで水平に、そこから説明まで斜めにつなぐ。説明の順が丸の上下の順と同じなので、線どうしは交わらない
 // ステップ k で k 番目の丸・線・説明が出る（今の丸は --emph、前の丸は --term）
-egatariParts.define({name: "callout", version: "2.0.1", requires: {base: "1.3.0"}, element: "m-callout"}, function(deps){
+egatariParts.define({name: "callout", version: "2.1.0", requires: {base: "1.3.0"}, element: "m-callout"}, function(deps){
 "use strict";
 var base = deps.base;
 var BIG = 1048576;   // 埋め込んだ画像がこれ（1 MiB）より大きければ size で知らせる
@@ -98,19 +98,22 @@ return class extends base.MotionElement {
       col.forEach(function(o){ o.gx = sideLeft ? ix - 14 : ix + dw + 14; o.lx = sideLeft ? lw : W - lw; });
     });
     this.items = items.map(function(o){
-      var c = o.p.c, r = 20;
+      var c = o.p.c, r = 20, mid = "@n" + o.p.n;
+      // marks for the geometry check (spec §8.4): the numbered circle is a mark, the leader an edge from it to its text,
+      // the number and the text its labels (the text outside), the highlight a box
       if (Array.isArray(c.box) && c.box.length === 4)
-        o.box = D.el("rect", {x: (ix + c.box[0] * dw).toFixed(1), y: (iy + c.box[1] * dh).toFixed(1), width: (c.box[2] * dw).toFixed(1), height: (c.box[3] * dh).toFixed(1), rx: 6, fill: "none", stroke: "var(--emph)", "stroke-width": 4}, gB);
-      o.line = D.el("path", {d: "M" + o.tx.toFixed(1) + "," + o.ty.toFixed(1) + "H" + o.gx.toFixed(1) + "L" + o.lx.toFixed(1) + "," + (o.ly + o.h / 2).toFixed(1),
-        fill: "none", stroke: "var(--fg)", "stroke-width": 2.5, "stroke-linejoin": "round"}, gK);
+        o.box = D.el("rect", {"data-part": "box", "data-part-id": "box" + o.p.n, x: (ix + c.box[0] * dw).toFixed(1), y: (iy + c.box[1] * dh).toFixed(1), width: (c.box[2] * dw).toFixed(1), height: (c.box[3] * dh).toFixed(1), rx: 6, fill: "none", stroke: "var(--emph)", "stroke-width": 4}, gB);
+      var gk = D.el("g", {"data-part": "edge", "data-part-id": "lead" + o.p.n, "data-part-from": mid, "data-part-to": mid}, gK);
+      o.line = D.el("path", {"data-part-line": "", d: "M" + o.tx.toFixed(1) + "," + o.ty.toFixed(1) + "H" + o.gx.toFixed(1) + "L" + o.lx.toFixed(1) + "," + (o.ly + o.h / 2).toFixed(1),
+        fill: "none", stroke: "var(--fg)", "stroke-width": 2.5, "stroke-linejoin": "round"}, gk);
       o.len = Math.abs(o.gx - o.tx) + Math.hypot(o.lx - o.gx, o.ly + o.h / 2 - o.ty);
       o.line.setAttribute("stroke-dasharray", o.len.toFixed(1) + " " + o.len.toFixed(1));
-      o.dot = D.el("circle", {cx: o.tx.toFixed(1), cy: o.ty.toFixed(1), r: r, stroke: "var(--bg)", "stroke-width": 3}, gN);
-      o.num = D.el("text", {x: o.tx.toFixed(1), y: (o.ty + 8.5).toFixed(1), "font-size": 24, "font-weight": 700, "text-anchor": "middle", fill: "var(--bg)"}, gN);
+      o.dot = D.el("circle", {"data-part": "mark", "data-part-id": mid, cx: o.tx.toFixed(1), cy: o.ty.toFixed(1), r: r, stroke: "var(--bg)", "stroke-width": 3}, gN);
+      o.num = D.el("text", {"data-part": "label", "data-part-id": mid, "data-part-of": "mark", x: o.tx.toFixed(1), y: (o.ty + 8.5).toFixed(1), "font-size": 24, "font-weight": 700, "text-anchor": "middle", fill: "var(--bg)"}, gN);
       o.num.textContent = String(o.p.n);
       // 説明：番号と文。左の列は右寄せ（線の側）
       var g = D.el("g", {}, gL), ax = o.left ? lw - 8 : W - lw + 8;
-      o.lines.forEach(function(s, j){ D.mtext(g, ax, (o.ly + 6 + fs * 0.95 + j * lh).toFixed(1), (j === 0 ? o.p.n + ". " : "") + s, {"font-size": fs, "text-anchor": o.left ? "end" : "start"}); });
+      o.lines.forEach(function(s, j){ D.mtext(g, ax, (o.ly + 6 + fs * 0.95 + j * lh).toFixed(1), (j === 0 ? o.p.n + ". " : "") + s, {"data-part": "label", "data-part-id": mid, "data-part-of": "mark", "data-part-at": "outside", "font-size": fs, "text-anchor": o.left ? "end" : "start"}); });
       o.label = g;
       return o;
     });

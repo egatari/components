@@ -6,7 +6,7 @@
 // 円の大きさ：scale="fixed"（既定。見やすい決まった比）か "area"（面積を値に比例。小さすぎる円は最小の大きさにする）
 // 配置：layout="bottom"（既定。下端をそろえる）か "center"（同心）。円の名前・値・根拠（basis）は右に引き出し線で書く
 // 2.0（Egatari spec §6.1 の部品）：base の MotionElement・el・mtext・prog・lerp・previewOpacity を使い、プレイヤーのグローバルは使わない
-egatariParts.define({name: "market", version: "2.0.5", requires: {base: "1.3.0"}, element: "m-market"}, function(deps){
+egatariParts.define({name: "market", version: "2.1.0", requires: {base: "1.3.0"}, element: "m-market"}, function(deps){
 "use strict";
 var base = deps.base;
 return class extends base.MotionElement {
@@ -52,20 +52,23 @@ return class extends base.MotionElement {
     var lx = cx + big + 64, n = R.length;
     this.rings = R.map(function(r, i){
       var col = r.tone ? "var(--" + (/^(term|emph|muted|accent2|series-[1-4])$/.test(r.tone) ? r.tone : "term") + ")" : tones[Math.min(i, 3)];
-      var c = D.el("circle", {cx: cx, cy: cy(i), r: radii[i], fill: col, "fill-opacity": fills[Math.min(i, 3)], stroke: col, "stroke-width": i === n - 1 ? 3 : 2.2, opacity: 0}, gC);
+      var c = D.el("circle", {"data-part": "box", "data-part-id": "r" + (i + 1), cx: cx, cy: cy(i), r: radii[i], fill: col, "fill-opacity": fills[Math.min(i, 3)], stroke: col, "stroke-width": i === n - 1 ? 3 : 2.2, opacity: 0}, gC);
       // 引き出し線の起点：この円の見えている帯の中（次の円の上端との間）。最後の円は中心
       var top = cy(i) - radii[i], nextTop = i + 1 < n ? cy(i + 1) - radii[i + 1] : null;
       var py = nextTop !== null ? (top + nextTop) / 2 : cy(i);
       // 名前と数字の行は高さを等分して並べる（上から順に）
       var ly = (H / (n + 0.2)) * (i + 0.5) + 14;
       var g = D.el("g", {opacity: 0}, gL);
-      D.el("circle", {cx: cx, cy: py, r: 5, fill: col}, g);
-      D.el("polyline", {points: cx + "," + py + " " + (lx - 40) + "," + py + " " + (lx - 12) + "," + (ly - 10), fill: "none", stroke: col, "stroke-width": 1.6}, g);
-      var key = D.mtext(g, lx, ly, r.key || "", {"font-size": 28, "font-weight": 700, fill: col});
+      // marks for the geometry check (spec §8.4): the dot is a mark, the leader an edge from it, the name, value and basis its labels outside
+      var pid = "@p" + (i + 1), lab = function(e){ if (e){ e.setAttribute("data-part", "label"); e.setAttribute("data-part-id", pid); e.setAttribute("data-part-of", "mark"); e.setAttribute("data-part-at", "outside"); } return e; };
+      D.el("circle", {"data-part": "mark", "data-part-id": pid, cx: cx, cy: py, r: 5, fill: col}, g);
+      var lead = D.el("g", {"data-part": "edge", "data-part-id": "lead" + (i + 1), "data-part-from": pid, "data-part-to": pid}, g);
+      D.el("polyline", {"data-part-line": "", points: cx + "," + py + " " + (lx - 40) + "," + py + " " + (lx - 12) + "," + (ly - 10), fill: "none", stroke: col, "stroke-width": 1.6}, lead);
+      var key = lab(D.mtext(g, lx, ly, r.key || "", {"font-size": 28, "font-weight": 700, fill: col}));
       // 数字は名前の後ろ（名前の幅は和文 1 字 = 1 字幅、ほかは 0.6 字幅の見積もり）、根拠は次の行
       var kw = [...String(r.key || "")].reduce(function(a, ch){ return a + (/[\u0000-\u024f]/.test(ch) ? 0.7 : 1); }, 0) * 28;
-      var val = D.el("text", {x: lx + kw + 20, y: ly, "font-size": 36, "font-weight": 700, fill: "var(--fg)", style: "font-variant-numeric:tabular-nums"}, g);
-      var basis = r.basis ? D.mtext(g, lx, ly + 34, r.basis, {"font-size": 24, fill: "var(--muted)"}) : null;
+      var val = D.el("text", {"data-part": "label", "data-part-id": pid, "data-part-of": "mark", "data-part-at": "outside", x: lx + kw + 20, y: ly, "font-size": 36, "font-weight": 700, fill: "var(--fg)", style: "font-variant-numeric:tabular-nums"}, g);
+      var basis = r.basis ? lab(D.mtext(g, lx, ly + 34, r.basis, {"font-size": 24, fill: "var(--muted)"})) : null;
       // 最初の円は 1.15 倍から縮む。ただし要素の外にはみ出さない大きさまで
       var prev = i ? radii[i - 1] : Math.max(radii[0], Math.min(radii[0] * 1.15, cy(0), H - cy(0), cx, W - cx));
       return {r: r, c: c, g: g, val: val, basis: basis, rad: radii[i], prev: prev, cy: cy(i), pcy: i ? cy(i - 1) : cy(i), i: i};
