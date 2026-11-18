@@ -10,7 +10,7 @@
 // 2.0（Egatari spec §6.1 の部品）：base の MotionElement・el・mtext・prog・lerp・variant・previewOpacity と plot の Plot を使い、
 // プレイヤーのグローバルは使わない。名前の置き場がない・傾向の線が軸の外・上の名前が図より広い、は ctx.report で知らせる
 // （1.x は console.warn）
-egatariParts.define({name: "scatter", version: "2.0.6", requires: {base: "1.3.0", plot: "1.1.3"}, element: "m-scatter"}, function(deps){
+egatariParts.define({name: "scatter", version: "2.1.0", requires: {base: "1.3.0", plot: "1.1.3"}, element: "m-scatter"}, function(deps){
 "use strict";
 var base = deps.base, plot = deps.plot;
 return class extends base.MotionElement {
@@ -136,8 +136,9 @@ return class extends base.MotionElement {
     var hits = function(b, self2){ return boxes.some(function(o){ return o.pt !== self2 && b.l < o.r && o.l < b.r && b.t < o.b && o.t < b.b; }); };
     this.series = pl.series.map(function(o){
       var col = colorOf(o.s.tone, o.i), path = shapes[o.i % 4](R);
-      var marks = o.pts.filter(function(q){ return !q.out; }).map(function(q){
-        var g = D.el("g", {transform: "translate(" + p.x(q.x).toFixed(1) + " " + p.y(q.y).toFixed(1) + ")", opacity: 0}, gP);
+      // marks for the geometry check (spec §8.4): each point is a mark, its name a label outside it; a trend line is an edge
+      var marks = o.pts.filter(function(q){ return !q.out; }).map(function(q, j){
+        var g = D.el("g", {"data-part": "mark", "data-part-id": "@s" + (o.i + 1) + "p" + (j + 1), transform: "translate(" + p.x(q.x).toFixed(1) + " " + p.y(q.y).toFixed(1) + ")", opacity: 0}, gP);
         var c = q.tone ? colorOf(q.tone, o.i) : col;
         var sh = D.el("path", {d: path, fill: c, "fill-opacity": 0.85, stroke: "var(--bg)", "stroke-width": 1.5}, g);
         return {q: q, g: g, sh: sh, cx: p.x(q.x), cy: p.y(q.y)};
@@ -162,12 +163,12 @@ return class extends base.MotionElement {
         if (!pick){ pick = pref.filter(function(k){ return inBox(cands[k].b); })[0] || pref[0]; ctx.report("layout", "[scatter] the label \"" + mk.q.label + "\" has no free place (it may overlap)"); }
         var c = cands[pick];
         boxes.push({l: c.b.l, r: c.b.r, t: c.b.t, b: c.b.b, pt: mk.q});
-        return D.mtext(gL, c.x, c.y, mk.q.label, {"text-anchor": c.a, "font-size": 24, fill: mk.q.tone ? colorOf(mk.q.tone, o.i) : "var(--fg)", opacity: 0});
+        return D.mtext(gL, c.x, c.y, mk.q.label, {"data-part": "label", "data-part-id": mk.g.getAttribute("data-part-id"), "data-part-of": "mark", "data-part-at": "outside", "text-anchor": c.a, "font-size": 24, fill: mk.q.tone ? colorOf(mk.q.tone, o.i) : "var(--fg)", opacity: 0});
       });
       return {o: o, col: col, path: path, marks: marks, labels: labels};
     });
     // 傾向の線：最小二乗の直線（fit: "linear"）か、2 点（pts）
-    this.trends = pl.trends.map(function(o){
+    this.trends = pl.trends.map(function(o, ti){
       var t = o.t, a, b, r = null, xa, xb;
       var ya, yb;
       if (t.pts){
@@ -203,7 +204,8 @@ return class extends base.MotionElement {
       // 枠の外の線は描かない（名前も図の上に出さない）
       if (u1 <= u0){ out = true; ctx.report("range", "[scatter] the trend line is outside the axes (it is not drawn)"); }
       else { B = [A[0] + dx * u1, A[1] + dy * u1]; A = [A[0] + dx * u0, A[1] + dy * u0]; }
-      var line = D.el("path", {d: "M0,0", fill: "none", stroke: col, "stroke-width": 3.5, "stroke-linecap": "round", opacity: 0}, gT);
+      var line = D.el("path", {"data-part-line": "", d: "M0,0", fill: "none", stroke: col, "stroke-width": 3.5, "stroke-linecap": "round", opacity: 0},
+        D.el("g", {"data-part": "edge", "data-part-id": "trend" + (ti + 1), "data-part-from": "@trend", "data-part-to": "@trend"}, gT));
       if (t.dash) line.setAttribute("stroke-dasharray", "12 9");
       // 名前：{r} {a} {b} を相関係数・傾き・切片に置き換える（digits 桁、既定 2）
       var dg = t.digits !== undefined ? t.digits : 2, num = function(v){ return v === null ? "" : (v < 0 ? "−" : "") + Math.abs(v).toFixed(dg); };
