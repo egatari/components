@@ -10,7 +10,7 @@
 // 見せ方（docs/conventions.md §1）：fade（フェード、既定）・draw（線・弧・範囲の線を引き、目盛りは左から）。拡大の動きはどちらも同じ
 // 2.0（Egatari spec §6.1 の部品）：base の MotionElement・el・mtext・prog・variant・previewOpacity を使い、プレイヤーのグローバルは使わない。
 // データや大きさの問題は ctx.report で知らせる（1.x の console.warn の代わり）。幾何はテストのために static testing.geom（部品は読まない）
-egatariParts.define({name: "numberline", version: "2.0.4", requires: {base: "1.3.0"}, element: "m-numberline"}, function(deps){
+egatariParts.define({name: "numberline", version: "2.1.0", requires: {base: "1.3.0"}, element: "m-numberline"}, function(deps){
 "use strict";
 var base = deps.base;
 // 形の要素ごとに、書き直すと形が作り直される属性（render の終わりで使う）
@@ -299,6 +299,15 @@ return class extends base.MotionElement {
     if (!this._aria) this.setAttribute("aria-label", this.summary(/^ja\b/i.test(ctx.lang || "ja")));
     var items = this.items = [];
     var add = function(el, o){ o.el = el; items.push(o); return el; };
+    // marks for the geometry check (spec §8.4): pm sets them on an element and returns it. A point is a mark (@p…), a □ a box (b…),
+    // a jump, a range and a link are edges between unnamed ends, and every name is a label of the line (@axis…), the point, the □ or the edge
+    var pm = function(el, part, id, of, outside){
+      el.setAttribute("data-part", part); el.setAttribute("data-part-id", id);
+      if (of) el.setAttribute("data-part-of", of);
+      if (outside) el.setAttribute("data-part-at", "outside");
+      return el;
+    };
+    var edge = function(par, id){ return D.el("g", {"data-part": "edge", "data-part-id": id, "data-part-from": "@" + id, "data-part-to": "@" + id}, par); };
     var FS = 24, ROW = 34, FROW = 68, OVER = 14;
     var rowH = function(labels){ return labels.some(function(s){ return G.hasFrac(s); }) ? FROW : ROW; };
     // 名前を書く（字と縦に積んだ分数）。top は行の上端、frac はその行が分数の行か
@@ -432,6 +441,7 @@ return class extends base.MotionElement {
     var gGrid = D.el("g", {}, svg), gShade = D.el("g", {}, svg), gLine = D.el("g", {}, svg), gMark = D.el("g", {}, svg), gText = D.el("g", {}, svg);
     var draw = this.variant === "draw";
     var tickItems = function(o, y, ticks, shown, top, X, a, b, st, par, parT, frac){
+      var axis = o.axis;
       // 線
       var xa = a - OVER, xb = b + OVER + (arrow && par === gLine ? 12 : 0);
       add(D.el("line", {x1: xa.toFixed(1), x2: xb.toFixed(1), y1: y.toFixed(1), y2: y.toFixed(1), stroke: "var(--fg)", "stroke-width": 3, "stroke-linecap": "round", opacity: 0}, par), {st: st, at: 0, len: dur * 0.6, kind: "line"});
@@ -443,56 +453,59 @@ return class extends base.MotionElement {
       });
       shown.forEach(function(t){
         var x = X(t.v), at = draw ? dur * 0.55 * (x - a) / Math.max(1, b - a) : 0;
-        add(lab(parT, x, top, t.label, {frac: frac}), {st: st, at: at, len: draw ? dur * 0.4 : dur * 0.7, kind: "fade"});
+        add(pm(lab(parT, x, top, t.label, {frac: frac}), "label", axis, "mark", true), {st: st, at: at, len: draw ? dur * 0.4 : dur * 0.7, kind: "fade"});
       });
     };
     // ---- 線ごとに描く ----
-    Lx.forEach(function(o){
+    Lx.forEach(function(o, li){
       var y = o.y, s = o.side, X = o.X, st = pl.tickStep;
+      o.axis = "@axis" + (li + 1);
       var tickTop = s > 0 ? y + OVER : y - OVER - o.tickH, fracT = o.tickH >= FROW;
       tickItems(o, y, o.l.ticks, o.shown, tickTop + (o.tickH - (fracT ? FROW : ROW)) / 2, X, o.a, o.b, st, gLine, gText, fracT);
       // 線の名前（左）と単位（右）
-      if (o.l.src.label) add(D.mtext(gText, o.a - OVER - 12, y + 9, o.l.src.label, {"text-anchor": "end", "font-size": 26, "font-weight": 700, fill: "var(--fg)", opacity: 0}), {st: st, at: 0, len: dur * 0.7, kind: "fade"});
-      if (o.l.src.unit){ var uf = G.hasFrac(o.l.src.unit); add(lab(gText, o.b + OVER + (arrow ? 30 : 10), y - (uf ? 34 : 17), o.l.src.unit, {anchor: "start", frac: uf}), {st: st, at: 0, len: dur * 0.7, kind: "fade"}); }
+      if (o.l.src.label) add(D.mtext(gText, o.a - OVER - 12, y + 9, o.l.src.label, {"data-part": "label", "data-part-id": o.axis, "data-part-of": "mark", "data-part-at": "outside", "text-anchor": "end", "font-size": 26, "font-weight": 700, fill: "var(--fg)", opacity: 0}), {st: st, at: 0, len: dur * 0.7, kind: "fade"});
+      if (o.l.src.unit){ var uf = G.hasFrac(o.l.src.unit); add(pm(lab(gText, o.b + OVER + (arrow ? 30 : 10), y - (uf ? 34 : 17), o.l.src.unit, {anchor: "start", frac: uf}), "label", o.axis, "mark", true), {st: st, at: 0, len: dur * 0.7, kind: "fade"}); }
       var outerTop = s > 0 ? tickTop + o.tickH : tickTop;      // 目盛りの名前の外側の端
       // 点と □
       var markTop = o.markUp ? y - 12 - o.markH : (s > 0 ? outerTop + 2 : outerTop - 2 - o.markH);
-      o.marks.forEach(function(m){
-        var x = X(m.v), col = toneOf(m.o.tone, "var(--term)");
+      o.marks.forEach(function(m, mi){
+        var x = X(m.v), col = toneOf(m.o.tone, "var(--term)"), mid = (m.kind === "box" ? "b" : "@p") + (li + 1) + "-" + (mi + 1);
         if (m.kind === "box"){
           var bx = o.boxes.filter(function(b){ return b.m === m; })[0], bh = 40, cy = tickTop + o.tickH / 2;
           var g = D.el("g", {opacity: 0}, gMark);
           D.el("line", {x1: x.toFixed(1), x2: x.toFixed(1), y1: (y - 11).toFixed(1), y2: (y + 11).toFixed(1), stroke: "var(--fg)", "stroke-width": 3}, g);
-          D.el("rect", {x: (x - bx.w / 2).toFixed(1), y: (cy - bh / 2).toFixed(1), width: bx.w.toFixed(1), height: bh, rx: 3, fill: "var(--bg)", stroke: toneOf(m.o.tone, "var(--fg)"), "stroke-width": 3}, g);
-          if (m.o.label){ var bf = G.hasFrac(m.o.label); lab(g, x, cy - (bf ? 34 : 17), m.o.label, {frac: bf}); }
+          D.el("rect", {"data-part": "box", "data-part-id": mid, x: (x - bx.w / 2).toFixed(1), y: (cy - bh / 2).toFixed(1), width: bx.w.toFixed(1), height: bh, rx: 3, fill: "var(--bg)", stroke: toneOf(m.o.tone, "var(--fg)"), "stroke-width": 3}, g);
+          if (m.o.label){ var bf = G.hasFrac(m.o.label); pm(lab(g, x, cy - (bf ? 34 : 17), m.o.label, {frac: bf}), "label", mid, "box"); }
           add(g, {st: m.st, at: 0, len: dur * 0.6, kind: "fade"});
           return;
         }
-        add(D.el("circle", {cx: x.toFixed(1), cy: y.toFixed(1), r: 9, fill: m.kind === "open" ? "var(--bg)" : col, stroke: col, "stroke-width": 3, opacity: 0}, gMark), {st: m.st, at: 0, len: dur * 0.6, kind: "fade"});
-        if (m.o.label) add(lab(gText, x, markTop + (o.markH - (G.hasFrac(m.o.label) ? FROW : ROW)) / 2, m.o.label, {frac: G.hasFrac(m.o.label), fill: "var(--fg)"}), {st: m.st, at: dur * 0.2, len: dur * 0.5, kind: "fade"});
+        add(D.el("circle", {"data-part": "mark", "data-part-id": mid, cx: x.toFixed(1), cy: y.toFixed(1), r: 9, fill: m.kind === "open" ? "var(--bg)" : col, stroke: col, "stroke-width": 3, opacity: 0}, gMark), {st: m.st, at: 0, len: dur * 0.6, kind: "fade"});
+        if (m.o.label) add(pm(lab(gText, x, markTop + (o.markH - (G.hasFrac(m.o.label) ? FROW : ROW)) / 2, m.o.label, {frac: G.hasFrac(m.o.label), fill: "var(--fg)"}), "label", mid, "mark", true), {st: m.st, at: dur * 0.2, len: dur * 0.5, kind: "fade"});
       });
       // ジャンプ：線が 1 本なら線の上、2 本なら目盛りの名前の外側に弧
       var jd = L === 1 ? -1 : s, jBase = L === 1 ? y - 3 : (s > 0 ? outerTop + (o.markUp ? 0 : o.markH) + 6 : outerTop - (o.markUp ? 0 : o.markH) - 6);
-      o.jumps.forEach(function(j){
+      o.jumps.forEach(function(j, ji){
+        var jid = "jump" + (li + 1) + "-" + (ji + 1);
         var xa = X(j.a), xb = X(j.b), dx = xb - xa, h = j.h, col = toneOf(j.o.tone, "var(--term)"), cy = jBase + jd * h * 4 / 3;
         var c1 = xa + dx * 0.12, c2 = xb - dx * 0.12;
         var path = add(D.el("path", {d: "M" + xa.toFixed(1) + "," + jBase.toFixed(1) + "C" + c1.toFixed(1) + "," + cy.toFixed(1) + " " + c2.toFixed(1) + "," + cy.toFixed(1) + " " + (xb - Math.sign(dx) * 2).toFixed(1) + "," + (jBase + jd * 4).toFixed(1),
-          fill: "none", stroke: col, "stroke-width": 3, "stroke-linecap": "round", opacity: 0}, gMark), {st: j.st, at: 0, len: dur * 0.7, kind: "line"});
+          fill: "none", stroke: col, "stroke-width": 3, "stroke-linecap": "round", opacity: 0, "data-part-line": ""}, edge(gMark, jid)), {st: j.st, at: 0, len: dur * 0.7, kind: "line"});
         add(arrowHead(gMark, xb, jBase, Math.atan2(jBase - cy, xb - c2), col), {st: j.st, at: dur * 0.55, len: dur * 0.2, kind: "fade"});
         if (j.o.label){
           var top = jd < 0 ? jBase - h - 6 - o.jRow : jBase + h + 6;
           var lx = Math.max(G.width(j.o.label, FS, self) / 2 + 2, Math.min(W - G.width(j.o.label, FS, self) / 2 - 2, xa + dx / 2));
-          add(lab(gText, lx, top + (o.jRow - (G.hasFrac(j.o.label) ? FROW : ROW)) / 2, j.o.label, {frac: G.hasFrac(j.o.label)}), {st: j.st, at: dur * 0.3, len: dur * 0.5, kind: "fade"});
+          add(pm(lab(gText, lx, top + (o.jRow - (G.hasFrac(j.o.label) ? FROW : ROW)) / 2, j.o.label, {frac: G.hasFrac(j.o.label)}), "label", jid, "edge"), {st: j.st, at: dur * 0.3, len: dur * 0.5, kind: "fade"});
         }
       });
       // 範囲：目盛りの名前と反対の側に。端の丸は線の上、重なる範囲は別の高さ。共通部分を塗る
       var rd = -s, edgeL = o.a - OVER, edgeR = o.b + OVER;
       var lvY = function(lv){ return y + rd * (28 + lv * o.rSp); };
       o.ranges.forEach(function(r, i){
+        var rid = "range" + (li + 1) + "-" + (i + 1);
         var col = toneOf(r.o.tone, "var(--series-" + (i % 4 + 1) + ")"), yl = lvY(o.rlv[i]);
         var xl = isFinite(r.lo) ? X(r.lo) : edgeL - 6, xr = isFinite(r.hi) ? X(r.hi) : edgeR + 6;
         var d = (isFinite(r.lo) ? "M" + xl.toFixed(1) + "," + (y + rd * 9).toFixed(1) + "L" : "M") + xl.toFixed(1) + "," + yl.toFixed(1) + "L" + xr.toFixed(1) + "," + yl.toFixed(1) + (isFinite(r.hi) ? "L" + xr.toFixed(1) + "," + (y + rd * 9).toFixed(1) : "");
-        add(D.el("path", {d: d, fill: "none", stroke: col, "stroke-width": 4, "stroke-linejoin": "round", "stroke-linecap": "round", opacity: 0}, gMark), {st: r.st, at: dur * 0.15, len: dur * 0.6, kind: "line"});
+        add(D.el("path", {"data-part-line": "", d: d, fill: "none", stroke: col, "stroke-width": 4, "stroke-linejoin": "round", "stroke-linecap": "round", opacity: 0}, edge(gMark, rid)), {st: r.st, at: dur * 0.15, len: dur * 0.6, kind: "line"});
         if (!isFinite(r.lo)) add(arrowHead(gMark, xl - 4, yl, Math.PI, col), {st: r.st, at: dur * 0.5, len: dur * 0.25, kind: "fade"});
         if (!isFinite(r.hi)) add(arrowHead(gMark, xr + 4, yl, 0, col), {st: r.st, at: dur * 0.5, len: dur * 0.25, kind: "fade"});
         [[r.lo, r.incl[0]], [r.hi, r.incl[1]]].forEach(function(e){
@@ -502,7 +515,7 @@ return class extends base.MotionElement {
         if (r.o.label){
           var rf = G.hasFrac(r.o.label), w = G.width(r.o.label, FS, self), vl = Math.max(xl, edgeL), vr = Math.min(xr, edgeR);
           var cx = Math.max(w / 2 + 2, Math.min(W - w / 2 - 2, (vl + vr) / 2)), top = rd < 0 ? yl - 4 - o.rRow : yl + 4;
-          add(lab(gText, cx, top + (o.rRow - (rf ? FROW : ROW)) / 2, r.o.label, {frac: rf, fill: "var(--fg)"}), {st: r.st, at: dur * 0.4, len: dur * 0.4, kind: "fade"});
+          add(pm(lab(gText, cx, top + (o.rRow - (rf ? FROW : ROW)) / 2, r.o.label, {frac: rf, fill: "var(--fg)"}), "label", rid, "edge"), {st: r.st, at: dur * 0.4, len: dur * 0.4, kind: "fade"});
         }
       });
       var sh = G.shared(o.ranges);
@@ -515,17 +528,18 @@ return class extends base.MotionElement {
       }
     });
     // ---- 2 本の線を結ぶ ----
-    if (L > 1) pl.links.forEach(function(k){
+    if (L > 1) pl.links.forEach(function(k, ki){
+      var kid = "link" + (ki + 1);
       var xa = Lx[0].X(k.a), xb = Lx[1].X(k.b), ya = Lx[0].y + 13, yb = Lx[1].y - 13, up = k.o.dir === "up";
       if (!k.o.label){
         add(D.el("line", {x1: xa.toFixed(1), y1: ya.toFixed(1), x2: xb.toFixed(1), y2: yb.toFixed(1), stroke: "var(--muted)", "stroke-width": 2.5, "stroke-dasharray": "7 6", opacity: 0}, gGrid), {st: k.st, at: 0, len: dur * 0.6, kind: "fade"});
         return;
       }
       var col = toneOf(k.o.tone, "var(--term)"), s0 = up ? [xb, yb] : [xa, ya], e0 = up ? [xa, ya + 6] : [xb, yb - 6];
-      add(D.el("line", {x1: s0[0].toFixed(1), y1: s0[1].toFixed(1), x2: e0[0].toFixed(1), y2: e0[1].toFixed(1), stroke: col, "stroke-width": 3, opacity: 0}, gMark), {st: k.st, at: 0, len: dur * 0.6, kind: "line"});
+      add(D.el("line", {"data-part-line": "", x1: s0[0].toFixed(1), y1: s0[1].toFixed(1), x2: e0[0].toFixed(1), y2: e0[1].toFixed(1), stroke: col, "stroke-width": 3, opacity: 0}, edge(gMark, kid)), {st: k.st, at: 0, len: dur * 0.6, kind: "line"});
       add(arrowHead(gMark, up ? xa : xb, up ? ya - 2 : yb + 2, Math.atan2(e0[1] - s0[1], e0[0] - s0[0]), col), {st: k.st, at: dur * 0.5, len: dur * 0.2, kind: "fade"});
       var lf = G.hasFrac(k.o.label), w = G.width(k.o.label, FS, self), mx = (xa + xb) / 2, my = (ya + yb) / 2, right = mx + 14 + w < W - 2;
-      add(lab(gText, right ? mx + 14 : mx - 14, my - (lf ? 34 : 17), k.o.label, {anchor: right ? "start" : "end", frac: lf}), {st: k.st, at: dur * 0.3, len: dur * 0.5, kind: "fade"});
+      add(pm(lab(gText, right ? mx + 14 : mx - 14, my - (lf ? 34 : 17), k.o.label, {anchor: right ? "start" : "end", frac: lf}), "label", kid, "edge"), {st: k.st, at: dur * 0.3, len: dur * 0.5, kind: "fade"});
     });
     // ---- 拡大 ----
     if (L === 1 && pl.mags.length){
