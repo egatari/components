@@ -9,7 +9,7 @@
 // 見せ方（docs/conventions.md §1）：fade（フェード、既定）・grow（テープが左から伸び、括弧と矢印は線を引く）
 // 2.0（Egatari spec §6.1 の部品）：base の MotionElement・el・mtext・prog・variant・previewOpacity を使い、プレイヤーのグローバルは使わない。
 // データや大きさの問題は ctx.report で知らせる（1.x の console.warn の代わり）
-egatariParts.define({name: "tape", version: "2.0.5", requires: {base: "1.3.0"}, element: "m-tape"}, function(deps){
+egatariParts.define({name: "tape", version: "2.1.0", requires: {base: "1.3.0"}, element: "m-tape"}, function(deps){
 "use strict";
 var base = deps.base;
 // 字の幅（base の textWidth：font の要素の字で測った幅。字は mtext で書くので *_^ は数えない）
@@ -148,6 +148,14 @@ return class extends base.MotionElement {
     var y = Math.max(4, (H - total) / 2);
     rows.forEach(function(r){ r.top = y + r.above; r.cy = r.top + r.tapeH / 2; y += r.h + gap; });
     var gT = D.el("g", {}, svg), gS = D.el("g", {}, svg), gA = D.el("g", {}, svg), gX = D.el("g", {}, svg);
+    // marks for the geometry check (spec §8.4): a tape segment is a box, a brace and a "times" arrow are edges between unnamed ends,
+    // and every name is a label of its segment, edge or row (@row…)
+    var pm = function(el, id, of, outside){
+      el.setAttribute("data-part", "label"); el.setAttribute("data-part-id", id); el.setAttribute("data-part-of", of);
+      if (outside) el.setAttribute("data-part-at", "outside");
+      return el;
+    };
+    var edge = function(id){ return D.el("g", {"data-part": "edge", "data-part-id": id, "data-part-from": "@" + id, "data-part-to": "@" + id}, gA); };
     var drawContent = function(par, cx, base, c){
       var x = cx - c.w / 2;
       c.parts.forEach(function(p){
@@ -158,11 +166,11 @@ return class extends base.MotionElement {
     };
     rows.forEach(function(r, ri){
       var col = TONES.test(r.o.tone || "") ? "var(--" + r.o.tone + ")" : "var(--series-" + (ri % 4 + 1) + ")", st = r.st, n = r.segs.length;
-      if (r.o.label) add(D.mtext(gX, labX, r.cy + 9, r.o.label, {"text-anchor": "end", "font-size": 26, "font-weight": 700, fill: "var(--fg)", opacity: 0}), {st: st, at: 0, len: dur * 0.5, kind: "fade"});
+      if (r.o.label) add(D.mtext(gX, labX, r.cy + 9, r.o.label, {"data-part": "label", "data-part-id": "@row" + (ri + 1), "data-part-of": "mark", "data-part-at": "outside", "text-anchor": "end", "font-size": 26, "font-weight": 700, fill: "var(--fg)", opacity: 0}), {st: st, at: 0, len: dur * 0.5, kind: "fade"});
       r.segs.forEach(function(g, j){
-        var at = grow ? dur * 0.75 * j / n : 0, len = grow ? dur * 0.75 / n : dur * 0.7;
+        var at = grow ? dur * 0.75 * j / n : 0, len = grow ? dur * 0.75 / n : dur * 0.7, sid = (line ? "@s" : "s") + (ri + 1) + "-" + (j + 1);
         if (!line){
-          var rect = D.el("rect", {x: g.x.toFixed(1), y: r.top.toFixed(1), width: Math.max(0, g.w).toFixed(1), height: r.tapeH, fill: col, "fill-opacity": 0.14, stroke: "var(--fg)", "stroke-width": 2.5, opacity: 0}, gS);
+          var rect = D.el("rect", {"data-part": "box", "data-part-id": sid, x: g.x.toFixed(1), y: r.top.toFixed(1), width: Math.max(0, g.w).toFixed(1), height: r.tapeH, fill: col, "fill-opacity": 0.14, stroke: "var(--fg)", "stroke-width": 2.5, opacity: 0}, gS);
           add(rect, {st: st, at: at, len: len, kind: "seg", w: g.w});
         } else {
           add(D.el("line", {x1: g.x.toFixed(1), x2: (g.x + g.w).toFixed(1), y1: r.cy.toFixed(1), y2: r.cy.toFixed(1), stroke: col, "stroke-width": 4, opacity: 0}, gS), {st: st, at: at, len: len, kind: "line"});
@@ -174,36 +182,38 @@ return class extends base.MotionElement {
         if (g.c.parts.length){
           var cg = D.el("g", {opacity: 0}, gT), base = g.outside ? r.top - 8 - ROW + 25 : r.cy + 9;
           var cx = Math.max(x0 + g.c.w / 2, Math.min(W - g.c.w / 2 - 2, g.x + g.w / 2));
-          drawContent(cg, cx, base, g.c);
+          drawContent(pm(cg, sid, line ? "mark" : "box", line || g.outside), cx, base, g.c);
           add(cg, {st: st, at: grow ? at + len * 0.6 : dur * 0.2, len: grow ? Math.max(0.15, dur * 0.25) : dur * 0.5, kind: "fade"});
         }
       });
       // 括弧
-      pl.braces.filter(function(b){ return b.row === ri; }).forEach(function(b){
+      pl.braces.filter(function(b){ return b.row === ri; }).forEach(function(b, bi){
+        var bid = "brace" + (ri + 1) + "-" + (bi + 1);
         var xa = r.segs[b.o.from].x + 2, xb = r.segs[b.o.to].x + r.segs[b.o.to].w - 2, up = b.side === "above", dsg = up ? -1 : 1;
         var yb = up ? r.top - (r.out ? ROW + 8 : 0) - 6 - b.lv * BLV : r.top + r.tapeH + 6 + b.lv * BLV;
         var xm = (xa + xb) / 2, q = BR, rr = Math.min(12, (xb - xa) / 4), f = function(v){ return v.toFixed(1); };
         var d = "M" + f(xa) + "," + f(yb) + "Q" + f(xa) + "," + f(yb + dsg * q / 2) + " " + f(xa + rr) + "," + f(yb + dsg * q / 2) + "L" + f(xm - rr) + "," + f(yb + dsg * q / 2) +
                 "Q" + f(xm) + "," + f(yb + dsg * q / 2) + " " + f(xm) + "," + f(yb + dsg * q) + "Q" + f(xm) + "," + f(yb + dsg * q / 2) + " " + f(xm + rr) + "," + f(yb + dsg * q / 2) +
                 "L" + f(xb - rr) + "," + f(yb + dsg * q / 2) + "Q" + f(xb) + "," + f(yb + dsg * q / 2) + " " + f(xb) + "," + f(yb);
-        add(D.el("path", {d: d, fill: "none", stroke: "var(--fg)", "stroke-width": 2.5, "stroke-linejoin": "round", opacity: 0}, gA), {st: b.st, at: 0, len: dur * 0.6, kind: "line"});
+        add(D.el("path", {"data-part-line": "", d: d, fill: "none", stroke: "var(--fg)", "stroke-width": 2.5, "stroke-linejoin": "round", opacity: 0}, edge(bid)), {st: b.st, at: 0, len: dur * 0.6, kind: "line"});
         if (b.o.label){
           var c = content({label: b.o.label}), cx = Math.max(c.w / 2 + 2, Math.min(W - c.w / 2 - 2, xm)), base = up ? yb - q - 6 - ROW + 25 : yb + q + 6 + 25;
-          var cg = D.el("g", {opacity: 0}, gT);
+          var cg = pm(D.el("g", {opacity: 0}, gT), bid, "edge");
           drawContent(cg, cx, base, c);
           add(cg, {st: b.st, at: dur * 0.3, len: dur * 0.5, kind: "fade"});
         }
       });
     });
     // 倍の矢印：行の左の端から端へ、左にふくらむ弧
-    pl.times.forEach(function(x){
+    pl.times.forEach(function(x, xi){
+      var tid = "times" + (xi + 1);
       var a = rows[x.o.from], b = rows[x.o.to], xs = x0 - 8, xc = x0 - 44, ya = a.cy, yb = b.cy;
       add(D.el("path", {d: "M" + xs.toFixed(1) + "," + ya.toFixed(1) + "C" + xc.toFixed(1) + "," + ya.toFixed(1) + " " + xc.toFixed(1) + "," + yb.toFixed(1) + " " + (xs - 10).toFixed(1) + "," + yb.toFixed(1),
-        fill: "none", stroke: "var(--emph)", "stroke-width": 3, "stroke-linecap": "round", opacity: 0}, gA), {st: x.st, at: 0, len: dur * 0.6, kind: "line"});
+        fill: "none", stroke: "var(--emph)", "stroke-width": 3, "stroke-linecap": "round", opacity: 0, "data-part-line": ""}, edge(tid)), {st: x.st, at: 0, len: dur * 0.6, kind: "line"});
       add(D.el("path", {d: "M" + xs.toFixed(1) + "," + yb.toFixed(1) + "l-14,-7v14Z", fill: "var(--emph)", opacity: 0}, gA), {st: x.st, at: dur * 0.5, len: dur * 0.2, kind: "fade"});
       if (x.o.label){
         var lx = 0.75 * xc + 0.125 * (xs + xs - 10) - 12;
-        add(D.mtext(gT, lx, (ya + yb) / 2 + 9, x.o.label, {"text-anchor": "end", "font-size": 26, "font-weight": 700, fill: "var(--fg)", opacity: 0}), {st: x.st, at: dur * 0.3, len: dur * 0.5, kind: "fade"});
+        add(D.mtext(gT, lx, (ya + yb) / 2 + 9, x.o.label, {"data-part": "label", "data-part-id": tid, "data-part-of": "edge", "text-anchor": "end", "font-size": 26, "font-weight": 700, fill: "var(--fg)", opacity: 0}), {st: x.st, at: dur * 0.3, len: dur * 0.5, kind: "fade"});
       }
     });
     if (grow) items.forEach(function(it){ if (it.kind === "line") it.el.setAttribute("pathLength", 1); });
