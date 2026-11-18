@@ -6,21 +6,21 @@
 <title>パーツの一覧（サンプル）</title>
 <!-- tools/gallery.mjs が各パーツの demo.html と README.md から作る。手で直さない。数値・会社はすべて架空か公の事実 -->
 <style>
-/* m-cycle */
-.vcap{font-size:27px;line-height:1.3;margin:0 0 6px;color:var(--muted)}
-/* m-timeline */
-.vcap{font-size:27px;line-height:1.3;margin:0 0 6px;color:var(--muted)}
+/* m-venn */
+.vlabel{font-size:27px;color:var(--muted);margin:0 0 6px}
 /* m-compare */
 .vlabel{font-size:27px;color:var(--muted);margin:0 0 6px}
+/* m-cycle */
+.vcap{font-size:27px;line-height:1.3;margin:0 0 6px;color:var(--muted)}
 /* m-fishbone */
 .vcap{font-size:27px;color:var(--muted);text-align:center;margin-bottom:6px}
+/* m-timeline */
+.vcap{font-size:27px;line-height:1.3;margin:0 0 6px;color:var(--muted)}
 /* m-timer */
 /* 1 枚目は Studio の部品の一覧の見本の絵（本文の枠で撮る）にもなる。時計の 0 が枠の左端に付いて切れて見えないよう、少し内側に置く */
 .slide:first-of-type .body{padding:0 10px}
 /* m-tree */
 .vcap{font-size:27px;color:var(--muted);text-align:center;margin-bottom:6px}
-/* m-venn */
-.vlabel{font-size:27px;color:var(--muted);margin:0 0 6px}
 </style>
 </head>
 <body>
@@ -64,757 +64,12 @@ document.addEventListener("DOMContentLoaded", function(){
   <h2>パーツの一覧（55 個、231 枚）</h2>
   <div class="body">
     <p>パーツごとに、説明の 1 枚とサンプルのスライドが続く。→ でステップを進める。</p>
-    <p>m-cards（変わった）　m-cycle（変わった）　m-mapping（変わった）　m-network（変わった）　m-nnet（変わった）　m-seq（変わった）　m-sweep（変わった）　m-timeline（変わった）　m-balance　m-bars　m-boxplot　m-callout　m-checklist　m-ci　m-classify2d　m-code　m-codetree　m-collect　m-compare　m-contour　m-ctable　m-curves　m-diverge　m-fishbone　m-flow　m-folds　m-gendai　m-heatmap　m-hissan　m-hist　m-kakijun　m-kanbun　m-keyboard　m-kobun　m-kpi　m-map-japan　m-map-world　m-market　m-menu　m-numberline　m-orbit　m-particles　m-pie　m-predict　m-quad　m-sampling　m-scatter　m-score　m-syntax　m-tape　m-timer　m-trace　m-tree　m-vector　m-venn</p>
+    <p>m-callout（変わった）　m-codetree（変わった）　m-collect（変わった）　m-kakijun（変わった）　m-map-japan（変わった）　m-map-world（変わった）　m-market（変わった）　m-numberline（変わった）　m-pie（変わった）　m-scatter（変わった）　m-seq（変わった）　m-tape（変わった）　m-vector（変わった）　m-venn（変わった）　m-balance　m-bars　m-boxplot　m-cards　m-checklist　m-ci　m-classify2d　m-code　m-compare　m-contour　m-ctable　m-curves　m-cycle　m-diverge　m-fishbone　m-flow　m-folds　m-gendai　m-heatmap　m-hissan　m-hist　m-kanbun　m-keyboard　m-kobun　m-kpi　m-mapping　m-menu　m-network　m-nnet　m-orbit　m-particles　m-predict　m-quad　m-sampling　m-score　m-sweep　m-syntax　m-timeline　m-timer　m-trace　m-tree</p>
   </div>
 </section>
 
 <section class="slide">
-  <h2>m-cards（変わった、v2.15.0）</h2>
-  <div class="body">
-    <p>カード（番号の丸・アイコン・見出し・説明）を横一列か 2 段に並べ、ステップごとに出す。矢印で順を、枠の色で強調を見せる</p>
-    <ul>
-      <li>伝えたいこと：手順・工程・まとめる・分ける</li>
-      <li>見せ方：rise・fade・draw</li>
-      <li>内容の分野：標準パーツ　サンプルのスライド：3 枚</li>
-    </ul>
-  </div>
-</section>
-
-<section id="g-cards-1" class="slide">
-  <h2>新しい窓口の進め方（架空の会社）</h2>
-  <div class="body">
-    <m-cards arrows nums style="height:330px">
-      <script type="application/json">{
-        "cards": [
-          {"icon": "messages", "title": "聞く", "text": "店に来た人の困りごとを 5 分で聞き取る"},
-          {"icon": "clipboard-list", "title": "まとめる", "text": "聞いたことを 1 枚の紙にまとめる"},
-          {"icon": "users", "title": "相談する", "text": "週に 1 回、担当の 3 人で話し合う"},
-          {"icon": "circle-check", "title": "返す", "text": "1 週間以内に答えを返す"}
-        ]
-      }</script>
-    </m-cards>
-  </div>
-  <div class="concl"><span>→ 聞いてから答えるまでを 1 週間に</span></div>
-</section>
-
-<section id="g-cards-2" class="slide">
-  <h2>4 つの店の工夫（架空）</h2>
-  <div class="body">
-    <m-cards layout="grid" hilite="4" style="height:420px">
-      <script type="application/json">{
-        "cards": [
-          {"n": "A", "icon": "building-store", "title": "駅前店", "text": "朝の 30 分だけ、受け取り専用の列を作った"},
-          {"n": "B", "icon": "calendar-event", "title": "川沿い店", "text": "予約の日を前の日に電話で知らせるようにした"},
-          {"n": "C", "icon": "map-pin", "title": "山の手店", "text": "店の場所の地図を、紙で配るのをやめて看板にした"},
-          {"n": "D", "icon": "chart-bar", "title": "港町店", "text": "待ち時間を毎日数えて、壁に貼り出した。来た人の 8 割が「待ちが短くなった」と答えた", "tone": "emph"}
-        ]
-      }</script>
-    </m-cards>
-  </div>
-  <div class="concl"><span>→ 数えて見せた店で、待ちが短くなったと感じる人がいちばん多い</span></div>
-</section>
-
-<section id="g-cards-3" class="slide">
-  <h2>まとめて出す（per-step="0"、見せ方 draw）</h2>
-  <div class="body">
-    <m-cards per-step="0" variant="draw" hilite="last" style="height:300px">
-      <script type="application/json">{
-        "cards": [
-          {"icon": "leaf", "title": "材料", "text": "地元の野菜を使う"},
-          {"icon": "truck", "title": "運ぶ", "text": "朝に届けて、その日のうちに売る"},
-          {"icon": "heart", "title": "残さない", "text": "売れ残りは翌日の総菜に"}
-        ]
-      }</script>
-    </m-cards>
-  </div>
-</section>
-
-<section class="slide">
-  <h2>m-cycle（変わった、v2.15.0）</h2>
-  <div class="body">
-    <p>循環の図。項目の箱を円の上に 12 時から時計回りに並べ、円に沿った矢印でつなぐ（最後から最初へ戻る矢印も）</p>
-    <ul>
-      <li>伝えたいこと：循環</li>
-      <li>見せ方：fade・draw・grow</li>
-      <li>内容の分野：標準パーツ　サンプルのスライド：3 枚</li>
-    </ul>
-  </div>
-</section>
-
-<section id="g-cycle-1" class="slide">
-  <h2>PDCA サイクル</h2>
-  <div class="body">
-    <m-cycle style="height:430px">
-      <script type="application/json">{
-        "center": {"label": "PDCA"},
-        "nodes": [
-          {"label": "計画（Plan）", "note": "目標と手順を決める"},
-          {"label": "実行（Do）", "note": "計画どおりにやってみる"},
-          {"label": "評価（Check）", "note": "結果を目標と比べる"},
-          {"label": "改善（Act）", "note": "やり方を直して次へ", "tone": "emph"}
-        ]
-      }</script>
-    </m-cycle>
-  </div>
-  <div class="concl"><span>→ 1 周ごとに、やり方が少しずつよくなる</span></div>
-</section>
-
-<section id="g-cycle-2" class="slide">
-  <h2>水の循環</h2>
-  <div class="body">
-    <m-cycle style="height:430px">
-      <script type="application/json">{
-        "center": {"label": "水の循環", "note": "太陽の熱で動く"},
-        "nodes": [
-          {"label": "蒸発", "note": "海や地面の水が水蒸気に"},
-          {"label": "雲ができる", "note": "上空で冷えて水や氷の粒に"},
-          {"label": "雨・雪", "note": "粒が大きくなって落ちる"},
-          {"label": "しみこむ・流れる", "note": "地下水や川になる"},
-          {"label": "海へ", "note": "川が海に注ぐ"}
-        ]
-      }</script>
-    </m-cycle>
-  </div>
-  <div class="concl"><span>→ 水は形を変えながら、地球の上を回り続ける</span></div>
-</section>
-
-<section id="g-cycle-3" class="slide">
-  <h2>見せ方の種類（variant）</h2>
-  <div class="body">
-    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:0 36px">
-      <div><p class="vcap">現れてから矢印（fade、既定）</p>
-        <m-cycle variant="fade" style="height:360px">
-          <script type="application/json">{"nodes": [{"label": "計画"}, {"label": "実行"}, {"label": "評価"}, {"label": "改善"}]}</script>
-        </m-cycle></div>
-      <div><p class="vcap">矢印を引いてから（draw）</p>
-        <m-cycle variant="draw" style="height:360px">
-          <script type="application/json">{"nodes": [{"label": "計画"}, {"label": "実行"}, {"label": "評価"}, {"label": "改善"}]}</script>
-        </m-cycle></div>
-      <div><p class="vcap">前の箱の側から大きくなる（grow）</p>
-        <m-cycle variant="grow" style="height:360px">
-          <script type="application/json">{"nodes": [{"label": "計画"}, {"label": "実行"}, {"label": "評価"}, {"label": "改善"}]}</script>
-        </m-cycle></div>
-    </div>
-  </div>
-  <div class="concl"><span>→ 書かなければ最初の見せ方（fade）になる</span></div>
-</section>
-
-<section class="slide">
-  <h2>m-mapping（変わった、v2.15.0）</h2>
-  <div class="body">
-    <p>実験の結果を数値へ対応させ、同じ値になる結果をまとめて確率分布を作る</p>
-    <ul>
-      <li>伝えたいこと：仕組みをモデルで見る・まとめる・分ける</li>
-      <li>見せ方：1 種類</li>
-      <li>内容の分野：数理・統計　サンプルのスライド：4 枚</li>
-    </ul>
-  </div>
-</section>
-
-<section id="g-mapping-1" class="slide">
-  <h2>硬貨を 2 回投げる</h2>
-  <div class="body"><m-mapping style="height:440px"><script type="application/json">{"outcomes":[{"label":"表表","x":2},{"label":"表裏","x":1},{"label":"裏表","x":1},{"label":"裏裏","x":0}],"picture":"coins","name":"X"}</script></m-mapping></div>
-  <div class="concl"><span>X は表の数。同じ値になる結果の確率を足す</span></div>
-</section>
-
-<section id="g-mapping-2" class="slide">
-  <h2>さいころ：5 以上なら当たり（X = 1）</h2>
-  <div class="body"><m-mapping style="height:440px"><script type="application/json">{"outcomes":[{"label":"1","x":0},{"label":"2","x":0},{"label":"3","x":0},{"label":"4","x":0},{"label":"5","x":1},{"label":"6","x":1}],"name":"X","picture":"dice"}</script></m-mapping></div>
-  <div class="concl"><span>当たりは 6 通りのうち 2 通り。P(X = 1) = 1/3</span></div>
-</section>
-
-<section id="g-mapping-3" class="slide">
-  <h2>ぶどうの粒の数を X にする（架空）</h2>
-  <div class="body"><m-mapping style="height:440px"><script type="application/json">{"outcomes":[{"label":"房 A","x":3},{"label":"房 B","x":5},{"label":"房 C","x":3},{"label":"房 D","x":4}],"name":"X","picture":"grapes"}</script></m-mapping></div>
-  <div class="concl"><span>粒の数を数えると X の値になる</span></div>
-</section>
-
-<section id="g-mapping-4" class="slide">
-  <h2>袋から玉を 2 個取り出す（戻さない）</h2>
-  <div class="body"><m-mapping style="height:440px"><script type="application/json">{"outcomes":[{"label":"赤赤","x":2},{"label":"赤青","x":1},{"label":"青赤","x":1}],"name":"X","picture":"balls"}</script></m-mapping></div>
-  <div class="concl"><span>赤 2 個・青 1 個から 2 個。X は赤の数</span></div>
-</section>
-
-<section class="slide">
-  <h2>m-network（変わった、v2.15.0）</h2>
-  <div class="body">
-    <p>グラフの探索（幅優先・ダイクストラなど）や巡回路を 1 ステップずつ。今の頂点・候補・訪れた頂点、選んだ辺、合計</p>
-    <ul>
-      <li>伝えたいこと：手順・工程・仕組みをモデルで見る</li>
-      <li>見せ方：1 種類</li>
-      <li>内容の分野：情報　サンプルのスライド：7 枚</li>
-    </ul>
-  </div>
-</section>
-
-<section id="g-network-1" class="slide noconcl">
-  <h2>幅優先探索：近い順に広げる（待ち行列）</h2>
-  <div class="body">
-    <m-network style="height:540px">
-      <script type="application/json">
-        {
-          "nodes": [{"id": "A", "x": 0, "y": 2}, {"id": "B", "x": 3, "y": 0}, {"id": "C", "x": 3, "y": 4}, {"id": "D", "x": 6, "y": 1}, {"id": "E", "x": 6, "y": 4}, {"id": "F", "x": 9, "y": 2}],
-          "edges": [{"from": "A", "to": "B"}, {"from": "A", "to": "C"}, {"from": "B", "to": "C"}, {"from": "B", "to": "D"}, {"from": "C", "to": "E"}, {"from": "D", "to": "E"}, {"from": "D", "to": "F"}, {"from": "E", "to": "F"}],
-          "frontierKind": "queue",
-          "steps": [
-            {"frontier": ["A"], "note": "A から始める"},
-            {"current": "A", "visited": ["A"], "frontier": ["B", "C"], "parent": {"B": "A", "C": "A"}, "note": "A を取り出し、隣の B・C を後ろへ"},
-            {"current": "B", "visited": ["A", "B"], "frontier": ["C", "D"], "parent": {"D": "B"}, "note": "B を取り出し、隣の D を後ろへ"},
-            {"current": "C", "visited": ["A", "B", "C"], "frontier": ["D", "E"], "parent": {"E": "C"}, "note": "C を取り出し、隣の E を後ろへ"},
-            {"current": "D", "visited": ["A", "B", "C", "D"], "frontier": ["E", "F"], "parent": {"F": "D"}, "note": "D を取り出し、隣の F を後ろへ"},
-            {"current": "E", "visited": ["A", "B", "C", "D", "E"], "frontier": ["F"], "note": "E を取り出す（新しい隣はない）"},
-            {"current": "F", "visited": ["A", "B", "C", "D", "E", "F"], "frontier": [], "note": "F を取り出す（新しい隣はない）"},
-            {"current": null, "note": "全部の頂点を訪れた"}
-          ]
-        }
-      </script>
-    </m-network>
-  </div>
-</section>
-
-<section id="g-network-2" class="slide noconcl">
-  <h2>ダイクストラ法：A から F への最短経路</h2>
-  <div class="body">
-    <m-network style="height:540px">
-      <script type="application/json">
-        {
-          "nodes": [{"id": "A", "x": 0, "y": 2}, {"id": "B", "x": 3, "y": 0}, {"id": "C", "x": 3, "y": 4}, {"id": "D", "x": 6, "y": 1}, {"id": "E", "x": 6, "y": 4}, {"id": "F", "x": 9, "y": 2}],
-          "edges": [{"from": "A", "to": "B", "w": 4}, {"from": "A", "to": "C", "w": 2}, {"from": "B", "to": "C", "w": 1}, {"from": "B", "to": "D", "w": 5}, {"from": "C", "to": "E", "w": 8}, {"from": "D", "to": "E", "w": 2}, {"from": "D", "to": "F", "w": 6}, {"from": "E", "to": "F", "w": 3}],
-          "frontierKind": "pq",
-          "total": {"label": "距離"},
-          "steps": [
-            {"frontier": [["A", 0]], "note": "A の距離を 0 に"},
-            {"current": "A", "visited": ["A"], "frontier": [["C", 2], ["B", 4]], "parent": {"B": "A", "C": "A"}, "note": "A（距離 0）を確定"},
-            {"current": "C", "visited": ["A", "C"], "frontier": [["B", 3], ["E", 10]], "parent": {"B": "C", "E": "C"}, "note": "C（距離 2）を確定"},
-            {"current": "B", "visited": ["A", "C", "B"], "frontier": [["D", 8], ["E", 10]], "parent": {"D": "B"}, "note": "B（距離 3）を確定"},
-            {"current": "D", "visited": ["A", "C", "B", "D"], "frontier": [["E", 10], ["F", 14]], "parent": {"F": "D"}, "note": "D（距離 8）を確定"},
-            {"current": "E", "visited": ["A", "C", "B", "D", "E"], "frontier": [["F", 13]], "parent": {"F": "E"}, "note": "E（距離 10）を確定"},
-            {"current": "F", "visited": ["A", "C", "B", "D", "E", "F"], "frontier": [], "note": "F（距離 13）を確定"},
-            {"current": "F", "frontier": [], "parent": {"B": null, "C": null, "E": null, "D": null, "F": null}, "take": [["A", "C"], ["C", "E"], ["E", "F"]], "total": 13, "note": "A から F への最短経路"}
-          ]
-        }
-      </script>
-    </m-network>
-  </div>
-</section>
-
-<section id="g-network-3" class="slide noconcl">
-  <h2>巡回路：最近傍法から 2-opt へ（架空）</h2>
-  <div class="body">
-    <m-network style="height:540px">
-      <script type="application/json">
-        {
-          "nodes": [{"id": "P", "x": 6, "y": 3}, {"id": "Q", "x": 0, "y": 2}, {"id": "R", "x": 8, "y": 3}, {"id": "S", "x": 9, "y": 1}, {"id": "T", "x": 4, "y": 1}, {"id": "U", "x": 1, "y": 4}, {"id": "V", "x": 4, "y": 4}],
-          "complete": true,
-          "total": {"label": "巡回路の長さ", "check": false},
-          "steps": [
-            {"current": "R", "visited": ["P", "R"], "take": [["P", "R"]], "total": 2.0, "note": "P からいちばん近い R へ"},
-            {"current": "S", "visited": ["P", "R", "S"], "take": [["R", "S"]], "total": 4.24, "note": "R からいちばん近い S へ"},
-            {"current": "T", "visited": ["P", "R", "S", "T"], "take": [["S", "T"]], "total": 9.24, "note": "S からいちばん近い T へ"},
-            {"current": "V", "visited": ["P", "R", "S", "T", "V"], "take": [["T", "V"]], "total": 12.24, "note": "T からいちばん近い V へ"},
-            {"current": "U", "visited": ["P", "R", "S", "T", "V", "U"], "take": [["V", "U"]], "total": 15.24, "note": "V からいちばん近い U へ"},
-            {"current": "Q", "visited": ["P", "R", "S", "T", "V", "U", "Q"], "take": [["U", "Q"]], "total": 17.47, "note": "U からいちばん近い Q へ"},
-            {"current": "P", "take": [["Q", "P"]], "total": 23.55, "note": "出発点へ戻る（最近傍法）"},
-            {"current": null, "drop": [["T", "V"], ["Q", "P"]], "take": [["T", "Q"], ["V", "P"]], "total": 20.83, "note": "T–V と Q–P を T–Q と V–P に（2-opt）"}
-          ]
-        }
-      </script>
-    </m-network>
-  </div>
-</section>
-
-<section id="g-network-4" class="slide noconcl">
-  <h2>マルコフ連鎖：天気の移り変わり（架空）</h2>
-  <div class="body">
-    <m-network style="height:540px">
-      <script type="application/json">
-        {
-          "directed": true,
-          "stochastic": true,
-          "nodes": [{"id": "晴", "x": 0, "y": 0}, {"id": "曇", "x": 4, "y": 0}, {"id": "雨", "x": 2, "y": 3}],
-          "edges": [{"from": "晴", "to": "晴", "w": 0.6}, {"from": "晴", "to": "曇", "w": 0.3}, {"from": "晴", "to": "雨", "w": 0.1}, {"from": "曇", "to": "晴", "w": 0.4}, {"from": "曇", "to": "曇", "w": 0.4}, {"from": "曇", "to": "雨", "w": 0.2}, {"from": "雨", "to": "晴", "w": 0.2}, {"from": "雨", "to": "曇", "w": 0.4}, {"from": "雨", "to": "雨", "w": 0.4}],
-          "total": {"label": "この道筋の確率", "check": false},
-          "steps": [
-            {"current": "晴", "note": "晴の日から始める"},
-            {"current": "曇", "take": [["晴", "曇"]], "total": 0.3, "note": "晴 → 曇（確率 0.3）"},
-            {"current": "曇", "take": [["曇", "曇"]], "total": 0.12, "note": "曇 → 曇（確率 0.4）", "drop": [["晴", "曇"]]},
-            {"current": "曇", "take": [["曇", "曇"]], "total": 0.048, "note": "曇 → 曇（確率 0.4）", "drop": [["曇", "曇"]]},
-            {"current": "雨", "take": [["曇", "雨"]], "total": 0.0096, "note": "曇 → 雨（確率 0.2）", "drop": [["曇", "曇"]]}
-          ]
-        }
-      </script>
-    </m-network>
-  </div>
-</section>
-
-<section id="g-network-5" class="slide noconcl">
-  <h2>パス図：潜在変数と観測した変数（架空）</h2>
-  <div class="body">
-    <m-network style="height:540px">
-      <script type="application/json">
-        {
-          "directed": true,
-          "nodes": [{"id": "意欲", "x": 0, "y": 1, "shape": "ellipse"}, {"id": "学力", "x": 4, "y": 1, "shape": "ellipse"}, {"id": "国語", "x": 8, "y": 0, "shape": "box", "observed": true}, {"id": "数学", "x": 8, "y": 1, "shape": "box", "observed": true}, {"id": "英語", "x": 8, "y": 2, "shape": "box", "observed": true}, {"id": "家庭", "x": 0, "y": 3, "shape": "box", "observed": true}],
-          "edges": [{"from": "意欲", "to": "学力", "w": 0.45}, {"from": "学力", "to": "国語", "w": 0.82}, {"from": "学力", "to": "数学", "w": 0.75}, {"from": "学力", "to": "英語", "w": 0.79}, {"from": "家庭", "to": "意欲", "w": 0.3, "bi": true}],
-          "steps": [
-            {"current": "学力", "note": "楕円は潜在変数（直接は測れない）"},
-            {"current": "数学", "note": "塗った四角は観測した変数。矢印の数は係数（架空）"},
-            {"current": "家庭", "note": "両向きの破線は、測っていない共通の原因（交絡）"}
-          ]
-        }
-      </script>
-    </m-network>
-  </div>
-</section>
-
-<section id="g-network-6" class="slide noconcl">
-  <h2>プレート表記：同じものが N 個</h2>
-  <div class="body">
-    <m-network style="height:360px;width:640px;margin:0 auto">
-      <script type="application/json">
-        {
-          "directed": true,
-          "nodes": [{"id": "θ", "x": 0, "y": 0, "shape": "circle"}, {"id": "x", "x": 3, "y": 0, "label": "*x*_i", "observed": true}],
-          "edges": [{"from": "θ", "to": "x"}],
-          "plates": [{"nodes": ["x"], "label": "N"}],
-          "steps": [
-            {"current": "θ", "note": "θ（パラメータ）は観測しない"},
-            {"current": "x", "note": "枠は「同じものが N 個」。*x*_1 … *x*_N が θ から出る"}
-          ]
-        }
-      </script>
-    </m-network>
-  </div>
-</section>
-
-<section id="g-network-7" class="slide noconcl">
-  <h2>隠れマルコフモデルの格子とビタビ（架空）</h2>
-  <div class="body">
-    <m-network style="height:540px">
-      <script type="application/json">
-        {
-          "layout": "trellis",
-          "states": ["晴", "雨"],
-          "T": 4,
-          "transitions": [{"from": "晴", "to": "晴", "w": 0.7}, {"from": "晴", "to": "雨", "w": 0.3}, {"from": "雨", "to": "晴", "w": 0.4}, {"from": "雨", "to": "雨", "w": 0.6}],
-          "steps": [
-            {"current": "晴@1", "note": "観測：散歩・読書・読書・散歩。いちばん確からしい天気の並び（ビタビ）"},
-            {"current": "雨@2", "take": [["晴@1", "雨@2"]], "note": "時刻 2：雨（読書）"},
-            {"current": "雨@3", "take": [["雨@2", "雨@3"]], "note": "時刻 3：雨（読書）"},
-            {"current": "晴@4", "take": [["雨@3", "晴@4"]], "note": "時刻 4：晴（散歩）"}
-          ]
-        }
-      </script>
-    </m-network>
-  </div>
-</section>
-
-<section class="slide">
-  <h2>m-nnet（変わった、v2.15.0）</h2>
-  <div class="body">
-    <p>ニューラルネットの層を並べ、前向きの計算を層ごとに見せる。ニューロンはまとめた丸か、Σ（重み付きの和）と f（活性化関数）に分けた形</p>
-    <ul>
-      <li>伝えたいこと：仕組みをモデルで見る・手順・工程</li>
-      <li>見せ方：1 種類</li>
-      <li>内容の分野：情報　サンプルのスライド：3 枚</li>
-    </ul>
-  </div>
-</section>
-
-<section id="g-nnet-1" class="slide noconcl">
-  <h2>パーセプトロンで AND を計算する</h2>
-  <div class="body">
-    <m-nnet style="height:440px">
-      <script type="application/json">{"layers": [{"n": 2, "label": "入力", "names": ["*x*_1", "*x*_2"]}, {"n": 1, "label": "出力", "act": "step", "form": "split", "names": ["*y*"]}], "weights": [[[1.0, 1.0]]], "biases": [[-1.5]], "values": {"x": [1, 1], "z": [[0.5]], "a": [[1.0]]}}</script>
-    </m-nnet>
-  </div>
-</section>
-
-<section id="g-nnet-2" class="slide noconcl">
-  <h2>3–4–4–2 の前向きの計算（架空の重み）</h2>
-  <div class="body">
-    <m-nnet edges="weight" style="height:540px">
-      <script type="application/json">{"layers": [{"n": 3, "label": "入力層", "names": ["*x*_1", "*x*_2", "*x*_3"]}, {"n": 4, "label": "隠れ層 1", "act": "relu"}, {"n": 4, "label": "隠れ層 2", "act": "relu"}, {"n": 2, "label": "出力層", "act": "sigmoid", "names": ["*y*_1", "*y*_2"]}], "weights": [[[0.1, -0.11, 0.51], [0.08, -0.43, 0.29], [1.04, 0.76, -0.56], [-1.01, -0.5, 0.03]], [[-1.86, -0.18, -1.0, -0.59], [-0.44, -0.25, 0.33, 0.83], [-0.1, 1.09, -0.53, 0.28], [0.72, 0.08, -0.59, -0.74]], [[-0.37, 0.18, -0.81, -0.17], [-0.13, 0.43, 0.17, 0.28]]], "biases": [[-0.2, -0.04, 0.24, 0.45], [-0.38, 0.45, 0.4, 0.23], [0.08, -0.09]], "values": {"x": [0.5, -1.2, 0.8], "z": [[0.39, 0.75, -0.6, 0.57], [-1.58, 0.56, 1.34, 0.15], [-0.93, 0.42]], "a": [[0.39, 0.75, 0.0, 0.57], [0.0, 0.56, 1.34, 0.15], [0.28, 0.6]]}}</script>
-    </m-nnet>
-  </div>
-</section>
-
-<section id="g-nnet-3" class="slide noconcl">
-  <h2>隠れ層 2 を Σ と ReLU に分けて見る（架空）</h2>
-  <div class="body">
-    <m-nnet edges="weight" style="height:540px">
-      <script type="application/json">{"layers": [{"n": 3, "label": "入力層", "names": ["*x*_1", "*x*_2", "*x*_3"]}, {"n": 4, "label": "隠れ層 1", "act": "relu"}, {"n": 4, "label": "隠れ層 2", "act": "relu"}, {"n": 2, "label": "出力層", "act": "sigmoid", "names": ["*y*_1", "*y*_2"]}], "weights": [[[0.1, -0.11, 0.51], [0.08, -0.43, 0.29], [1.04, 0.76, -0.56], [-1.01, -0.5, 0.03]], [[-1.86, -0.18, -1.0, -0.59], [-0.44, -0.25, 0.33, 0.83], [-0.1, 1.09, -0.53, 0.28], [0.72, 0.08, -0.59, -0.74]], [[-0.37, 0.18, -0.81, -0.17], [-0.13, 0.43, 0.17, 0.28]]], "biases": [[-0.2, -0.04, 0.24, 0.45], [-0.38, 0.45, 0.4, 0.23], [0.08, -0.09]], "values": {"x": [0.5, -1.2, 0.8], "z": [[0.39, 0.75, -0.6, 0.57], [-1.58, 0.56, 1.34, 0.15], [-0.93, 0.42]], "a": [[0.39, 0.75, 0.0, 0.57], [0.0, 0.56, 1.34, 0.15], [0.28, 0.6]]}, "steps": [{"show": "x"}, {"layer": 1, "phase": "a"}, {"open": 2, "note": "隠れ層 2 を Σ と ReLU に分けて見る"}, {"layer": 2, "phase": "z"}, {"focus": [2, 0]}, {"layer": 2, "phase": "a"}, {"layer": 3, "phase": "a"}]}</script>
-    </m-nnet>
-  </div>
-</section>
-
-<section class="slide">
-  <h2>m-seq（変わった、v2.15.0）</h2>
-  <div class="body">
-    <p>観測を 1 つずつ加え、分布と数値が更新されていく様子を見せる（前の分布は薄く残す）</p>
-    <ul>
-      <li>伝えたいこと：ばらつき</li>
-      <li>見せ方：1 種類</li>
-      <li>内容の分野：数理・統計　サンプルのスライド：1 枚</li>
-    </ul>
-  </div>
-</section>
-
-<section id="g-seq-1" class="slide">
-  <h2>平均の事後分布が観測ごとに狭くなる（観測は架空）</h2>
-  <div class="body">
-    <m-seq per-step="2" xr="[-3,4]" yr="[0,1.25]" xt="[-2,0,2,4]" yt="[0,0.5,1]" yf="1" xl="平均 *θ*" yl="密度" style="height:420px">
-      <script type="application/json" id="seq-data">{}</script>
-    </m-seq>
-  </div>
-  <div class="concl"><span>→ 観測が増えるほど，事後分布は狭くなる</span></div>
-</section>
-
-<section class="slide">
-  <h2>m-sweep（変わった、v2.15.0）</h2>
-  <div class="body">
-    <p>パラメータを動かして関数の形の変化を見せる（前の形は灰色で残す）</p>
-    <ul>
-      <li>伝えたいこと：パラメータを動かす</li>
-      <li>見せ方：1 種類</li>
-      <li>内容の分野：数理・統計　サンプルのスライド：3 枚</li>
-    </ul>
-  </div>
-</section>
-
-<section id="g-sweep-1" class="slide">
-  <h2>幅のパラメータで形が変わる</h2>
-  <div class="body">
-    <m-sweep f="1/(1 + u*u/(c*c))" values="[0.5,1,2]" param="σ" xr="[-4,4]" yr="[0,1.2]" xt="[-4,-2,0,2,4]" yt="[0,0.5,1]"
-             xl="*u*" yl="重み" digits="1" style="height:400px"></m-sweep>
-  </div>
-  <div class="concl"><span>→ σ が大きいほど、遠くの点まで重みが届く</span></div>
-</section>
-
-<section id="g-sweep-2" class="slide">
-  <h2>学習率と誤差の減り方</h2>
-  <div class="body">
-    <m-sweep f="((1-c)**2)**u" values="[0.1,0.5,1.8,2.1]" param="ηa" xr="[0,10]" yr="[0,1.5]" xt="[0,5,10]" yt="[0,0.5,1,1.5]"
-             xl="*t*" yl="損失の比" digits="1" style="height:400px"></m-sweep>
-  </div>
-  <div class="concl"><span>→ ηa が 2 を超えると、誤差は減らずに増える</span></div>
-</section>
-
-<section id="g-sweep-3" class="slide">
-  <h2>審査が速くなると、待ち時間はどう変わる</h2>
-  <div class="body">
-    <m-sweep f="1/(c - u)" values="[10,12]" param="1 日に処理できる件数" xr="[6,9.9]" yr="[0,6]" xt="[6,7,8,9]" yt="[0,2,4,6]"
-             xl="1 日の申請" yl="平均待ち（日）" digits="0" size="36" at="[0.5]" point='{"u": 9.8, "label": "平均待ち {y} 日", "digits": 2}' style="height:400px"></m-sweep>
-  </div>
-  <div class="concl"><span>→ 混むほど、少し速くするだけで待ちが大きく減る（架空）</span></div>
-</section>
-
-<section class="slide">
-  <h2>m-timeline（変わった、v2.15.0）</h2>
-  <div class="body">
-    <p>年表。出来事を時間の軸の上に 1 つずつ出す。期間は軸に沿って長さのとおりに描き、重なれば段を分ける。end は含まない（"1912" は 1912 年の初め）</p>
-    <ul>
-      <li>伝えたいこと：年表・予定</li>
-      <li>見せ方：fade・draw・grow</li>
-      <li>内容の分野：標準パーツ　サンプルのスライド：4 枚</li>
-    </ul>
-  </div>
-</section>
-
-<section id="g-timeline-1" class="slide">
-  <h2>明治のおもな出来事</h2>
-  <div class="body">
-    <m-timeline style="height:430px">
-      <script type="application/json">{
-        "nodes": [
-          {"label": "明治維新", "when": "1868", "whenLabel": "明治元年", "note": "五箇条の御誓文"},
-          {"label": "廃藩置県", "when": "1871"},
-          {"label": "鉄道の開業", "when": "1872", "note": "新橋〜横浜"},
-          {"label": "西南戦争", "when": "1877"},
-          {"label": "憲法の発布", "when": "1889", "tone": "emph"},
-          {"label": "日清戦争", "when": "1894"},
-          {"label": "日露戦争", "when": "1904"}
-        ]
-      }</script>
-    </m-timeline>
-  </div>
-  <div class="concl"><span>→ 約 20 年で憲法をもつ国になった</span></div>
-</section>
-
-<section id="g-timeline-2" class="slide">
-  <h2>明治・大正の作家の生涯</h2>
-  <div class="body">
-    <m-timeline style="height:430px">
-      <script type="application/json">{
-        "nodes": [
-          {"label": "明治", "when": "1868", "end": "1912", "lane": "時代", "tone": "muted"},
-          {"label": "大正", "when": "1912", "end": "1926", "lane": "時代", "tone": "muted"},
-          {"label": "森鷗外", "when": "1862", "end": "1922", "lane": "作家"},
-          {"label": "夏目漱石", "when": "1867", "end": "1916", "lane": "作家"},
-          {"label": "正岡子規", "when": "1867", "end": "1902", "lane": "作家"},
-          {"label": "樋口一葉\n24 歳で没", "when": "1872", "end": "1896", "lane": "作家", "tone": "emph"},
-          {"label": "芥川龍之介", "when": "1892", "end": "1927", "lane": "作家"},
-          {"label": "宮沢賢治", "when": "1896", "end": "1933", "lane": "作家"}
-        ]
-      }</script>
-    </m-timeline>
-  </div>
-  <div class="concl"><span>→ 重なる生涯は段を分けて積む。漱石と子規は同じ年の生まれ</span></div>
-</section>
-
-<section id="g-timeline-3" class="slide">
-  <h2>アプリ開発の工程表（架空）</h2>
-  <div class="body">
-    <m-timeline unit="week" today="2026-11-02" style="height:400px">
-      <script type="application/json">{
-        "nodes": [
-          {"id": "req", "label": "要件定義", "when": "2026-10-05", "end": "2026-10-17", "lane": "設計", "progress": 100},
-          {"id": "ui", "label": "画面設計", "when": "2026-10-17", "end": "2026-11-07", "lane": "設計", "progress": 70, "after": ["req"]},
-          {"id": "dev", "label": "実装", "when": "2026-11-07", "end": "2026-12-05", "lane": "開発", "progress": 10, "after": ["ui"]},
-          {"id": "test", "label": "試験", "when": "2026-12-05", "end": "2026-12-19", "lane": "開発", "after": ["dev"]},
-          {"id": "rel", "label": "公開", "when": "2026-12-21", "lane": "開発", "tone": "emph", "after": ["test"]}
-        ]
-      }</script>
-    </m-timeline>
-  </div>
-  <div class="concl"><span>→ 矢印は「前の作業が終わってから」。画面設計の遅れは実装に響く</span></div>
-</section>
-
-<section id="g-timeline-4" class="slide">
-  <h2>見せ方の種類（variant）</h2>
-  <div class="body">
-    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:0 36px">
-      <div><p class="vcap">現れてから線（fade、既定）</p>
-        <m-timeline variant="fade" style="height:330px">
-          <script type="application/json">{"nodes": [{"label": "明治維新", "when": "1868"}, {"label": "明治", "when": "1868", "end": "1912"}, {"label": "憲法の発布", "when": "1889"}]}</script>
-        </m-timeline></div>
-      <div><p class="vcap">線を引いてから（draw）</p>
-        <m-timeline variant="draw" style="height:330px">
-          <script type="application/json">{"nodes": [{"label": "明治維新", "when": "1868"}, {"label": "明治", "when": "1868", "end": "1912"}, {"label": "憲法の発布", "when": "1889"}]}</script>
-        </m-timeline></div>
-      <div><p class="vcap">軸の側から大きくなる（grow）</p>
-        <m-timeline variant="grow" style="height:330px">
-          <script type="application/json">{"nodes": [{"label": "明治維新", "when": "1868"}, {"label": "明治", "when": "1868", "end": "1912"}, {"label": "憲法の発布", "when": "1889"}]}</script>
-        </m-timeline></div>
-    </div>
-  </div>
-  <div class="concl"><span>→ 書かなければ最初の見せ方（fade）になる</span></div>
-</section>
-
-<section class="slide">
-  <h2>m-balance</h2>
-  <div class="body">
-    <p>確率の重りを置き、支点が期待値でつり合う様子を示す</p>
-    <ul>
-      <li>伝えたいこと：仕組みをモデルで見る</li>
-      <li>見せ方：1 種類</li>
-      <li>内容の分野：数理・統計　サンプルのスライド：1 枚</li>
-    </ul>
-  </div>
-</section>
-
-<section id="g-balance-1" class="slide">
-  <h2>期待値でつり合う（架空データ）</h2>
-  <div class="body"><m-balance style="height:440px"><script type="application/json">{"values":[0,1,2,3],"probs":[0.1,0.3,0.4,0.2],"name":"X"}</script></m-balance></div>
-  <div class="concl"><span>架空の分布。確率を重りとすると期待値が支点になる</span></div>
-</section>
-
-<section class="slide">
-  <h2>m-bars</h2>
-  <div class="body">
-    <p>棒をステップごとに 0 から伸ばす（縦棒・横棒・組の棒・積み上げ棒）。値の軸の上限をステップで広げて「軸を突き抜ける伸び」も見せられる</p>
-    <ul>
-      <li>伝えたいこと：比べる（量・特徴）・順位・時間での変化・全体と内訳</li>
-      <li>見せ方：1 種類</li>
-      <li>内容の分野：標準パーツ　サンプルのスライド：7 枚</li>
-    </ul>
-  </div>
-</section>
-
-<section id="g-bars-1" class="slide">
-  <h2>年ごとの売上（架空）</h2>
-  <div class="body">
-    <m-bars unit="億円" digits="1" al="売上" style="height:400px">
-      <script type="application/json">{
-        "groups": [
-          {"label": "1 年目", "value": 0.4},
-          {"label": "2 年目", "value": 1.1},
-          {"label": "3 年目", "value": 2.6},
-          {"label": "4 年目", "value": 7.9, "tone": "emph", "step": 4}
-        ],
-        "scale": [{"step": 4, "max": 9, "at": 0.6}]
-      }</script>
-    </m-bars>
-  </div>
-  <div class="concl"><span>→ 4 年目は前の軸に収まらない伸び</span></div>
-</section>
-
-<section id="g-bars-2" class="slide">
-  <h2>聞き取りで多かった不満（架空）</h2>
-  <div class="body">
-    <m-bars orient="h" unit="人" per-step="0" ticks="false" style="height:400px">
-      <script type="application/json">{
-        "groups": [
-          {"label": "書く時間が足りない", "value": 23, "tone": "emph"},
-          {"label": "数字の転記の誤り", "value": 17},
-          {"label": "書式がそろわない", "value": 12},
-          {"label": "承認が遅い", "value": 7}
-        ]
-      }</script>
-    </m-bars>
-  </div>
-  <div class="concl"><span>→ 一番の不満は書く時間</span></div>
-</section>
-
-<section id="g-bars-3" class="slide">
-  <h2>2 つの系列を並べる（架空）</h2>
-  <div class="body">
-    <m-bars unit="%" style="height:400px">
-      <script type="application/json">{
-        "series": [{"label": "導入前"}, {"label": "導入後"}],
-        "groups": [
-          {"label": "A 部門", "values": [42, 18]},
-          {"label": "B 部門", "values": [35, 15]},
-          {"label": "C 部門", "values": [51, 20]}
-        ]
-      }</script>
-    </m-bars>
-  </div>
-  <div class="concl"><span>→ どの部門でも残業の割合が下がった</span></div>
-</section>
-
-<section id="g-bars-4" class="slide">
-  <h2>売上の内訳を積み上げる（stack。架空）</h2>
-  <div class="body">
-    <m-bars stack="true" unit="億円" digits="1" al="売上" style="height:420px">
-      <script type="application/json">{
-        "series": [{"label": "店頭"}, {"label": "通販"}, {"label": "卸"}],
-        "groups": [
-          {"label": "1 年目", "values": [2.4, 0.6, 1.0]},
-          {"label": "2 年目", "values": [2.5, 1.4, 1.1]},
-          {"label": "3 年目", "values": [2.3, 2.6, 1.2]},
-          {"label": "4 年目", "values": [2.2, 3.9, 1.2], "tone": "emph"}
-        ]
-      }</script>
-    </m-bars>
-  </div>
-  <div class="concl"><span>→ 伸びたのは通販。店頭はほぼ横ばい</span></div>
-</section>
-
-<section id="g-bars-5" class="slide">
-  <h2>前の年からの増減と、答えの割合（架空）</h2>
-  <div class="body">
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:40px">
-      <m-bars unit="%" digits="1" al="前年比" aria-label="店ごとの売上の前年比（負の値）" style="height:420px">
-        <script type="application/json">{
-          "groups": [
-            {"label": "北店", "value": 4.2},
-            {"label": "駅前店", "value": -3.1, "tone": "emph"},
-            {"label": "南店", "value": 1.5},
-            {"label": "西店", "value": -0.8}
-          ]
-        }</script>
-      </m-bars>
-      <m-bars stack="percent" orient="h" per-step="0" ticks="false" aria-label="学年ごとの答えの割合（100 % 積み上げ）" style="height:420px">
-        <script type="application/json">{
-          "series": [{"label": "はい"}, {"label": "いいえ"}, {"label": "未定"}],
-          "groups": [
-            {"label": "1 年", "values": [48, 30, 42]},
-            {"label": "2 年", "values": [66, 24, 30]},
-            {"label": "3 年", "values": [72, 24, 24]}
-          ]
-        }</script>
-      </m-bars>
-    </div>
-  </div>
-  <div class="concl"><span>→ 駅前店だけが大きく減った。学年が上がるほど「はい」が増える</span></div>
-</section>
-
-<section id="g-bars-6" class="slide">
-  <h2>3 つの教え方の平均点（誤差棒は 95 % 信頼区間、架空）</h2>
-  <div class="body">
-    <m-bars unit="点" digits="1" al="平均点" style="height:440px">
-      <script type="application/json">{
-        "groups": [
-          {"label": "講義だけ", "value": 61.2, "err": [57.0, 65.4]},
-          {"label": "演習あり", "value": 68.5, "err": [64.6, 72.4]},
-          {"label": "演習と\n振り返り", "value": 74.1, "err": [70.3, 77.9], "tone": "emph"}
-        ],
-        "sig": [{"from": 0, "to": 2, "label": "**"}, {"from": 0, "to": 1, "label": "*"}]
-      }</script>
-    </m-bars>
-  </div>
-  <div class="concl"><span>→ 振り返りを加えた組の平均点が最も高い</span></div>
-</section>
-
-<section id="g-bars-7" class="slide noconcl">
-  <h2>点と誤差棒（mark="dot"、95 % 信頼区間、架空）</h2>
-  <div class="body">
-    <m-bars mark="dot" unit="%" al="正答率" per-step="0" style="height:440px">
-      <script type="application/json">{
-        "series": [{"label": "図あり"}, {"label": "図なし"}],
-        "groups": [
-          {"label": "問 1", "values": [72, 58], "err": [[64, 80], [49, 67]]},
-          {"label": "問 2", "values": [55, 51], "err": [[46, 64], [42, 60]]}
-        ],
-        "sig": [{"group": 0, "from": 0, "to": 1}]
-      }</script>
-    </m-bars>
-  </div>
-</section>
-
-<section class="slide">
-  <h2>m-boxplot</h2>
-  <div class="body">
-    <p>箱ひげ図。値を並べ、中央値・四分位数を求める手順のとおりに組み立てる。群を並べて比べる</p>
-    <ul>
-      <li>伝えたいこと：ばらつき・比べる（量・特徴）</li>
-      <li>見せ方：fade・draw</li>
-      <li>内容の分野：数理・統計　サンプルのスライド：3 枚</li>
-    </ul>
-  </div>
-</section>
-
-<section id="g-boxplot-1" class="slide">
-  <h2>箱ひげ図のかき方：1 か月に読んだ本（架空の 11 人）</h2>
-  <div class="body">
-    <m-boxplot xl="冊数（冊）" xr="[0,20]" xt="[0,2,4,6,8,10,12,14,16,18,20]" style="height:440px">
-      <script type="application/json">{"groups": [{"values": [12, 5, 9, 18, 7, 3, 13, 8, 15, 6, 10]}]}</script>
-    </m-boxplot>
-  </div>
-  <div class="concl"><span>→ 小さい順に並べ、中央値と前半・後半の中央値（四分位数）で箱にする</span></div>
-</section>
-
-<section id="g-boxplot-2" class="slide">
-  <h2>3 つの組の数学の得点（架空の各 15 人）</h2>
-  <div class="body">
-    <m-boxplot orient="v" build="whole" dots="on" outliers="on" yl="得点（点）" yr="[30,100]" yt="[30,40,50,60,70,80,90,100]" style="height:440px">
-      <script type="application/json">{"groups": [
-        {"label": "A 組", "values": [42, 48, 51, 55, 57, 58, 60, 61, 63, 64, 66, 68, 70, 72, 75]},
-        {"label": "B 組", "values": [50, 56, 60, 62, 65, 67, 68, 70, 71, 73, 74, 76, 79, 82, 99]},
-        {"label": "C 組", "values": [35, 45, 52, 54, 58, 60, 61, 62, 64, 66, 67, 69, 71, 73, 80]}]}</script>
-    </m-boxplot>
-  </div>
-  <div class="concl"><span>→ B 組は箱が高い。99 点は 1.5 × 四分位範囲より外の外れ値</span></div>
-</section>
-
-<section id="g-boxplot-3" class="slide">
-  <h2>見せ方の種類（variant）</h2>
-  <div class="body">
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:0 36px">
-      <m-boxplot variant="fade" build="whole" dots="on" xl="フェード（fade、既定）" xr="[0,20]" style="height:400px">
-        <script type="application/json">{"groups": [{"label": "前", "values": [3, 5, 6, 7, 8, 9, 10, 12, 13, 15, 18]}, {"label": "後", "values": [6, 8, 9, 10, 11, 12, 12, 13, 14, 16, 17]}]}</script>
-      </m-boxplot>
-      <m-boxplot variant="draw" build="whole" dots="on" xl="線を引く（draw）" xr="[0,20]" style="height:400px">
-        <script type="application/json">{"groups": [{"label": "前", "values": [3, 5, 6, 7, 8, 9, 10, 12, 13, 15, 18]}, {"label": "後", "values": [6, 8, 9, 10, 11, 12, 12, 13, 14, 16, 17]}]}</script>
-      </m-boxplot>
-    </div>
-  </div>
-  <div class="concl"><span>→ 書かなければ最初の見せ方（fade）になる。値は架空</span></div>
-</section>
-
-<section class="slide">
-  <h2>m-callout</h2>
+  <h2>m-callout（変わった、v2.16.0）</h2>
   <div class="body">
     <p>画面の画像に番号の丸を置き、引き出し線で横の説明につなぐ。ステップごとに 1 つずつ（研修・手引き・操作の説明）</p>
     <ul>
@@ -862,182 +117,7 @@ document.addEventListener("DOMContentLoaded", function(){
 </section>
 
 <section class="slide">
-  <h2>m-checklist</h2>
-  <div class="body">
-    <p>確かめる項目を並べ、ステップごとに 1 つずつ印（✓・×）を描く。印はスライドの中身で、見ている人の操作を保存しない</p>
-    <ul>
-      <li>伝えたいこと：手順・工程</li>
-      <li>見せ方：1 種類</li>
-      <li>内容の分野：標準パーツ　サンプルのスライド：3 枚</li>
-    </ul>
-  </div>
-</section>
-
-<section id="g-checklist-1" class="slide">
-  <h2>実習に入る前に</h2>
-  <div class="body">
-    <m-checklist style="height:440px">
-      <script type="application/json">{
-        "items": [
-          {"label": "名札を胸に付けた"},
-          {"label": "指輪と腕時計を外した"},
-          {"label": "石けんで手を洗った", "note": "指の間と爪の先まで 30 秒"},
-          {"label": "手を乾かし、消毒した"}
-        ]
-      }</script>
-    </m-checklist>
-  </div>
-  <div class="concl"><span>→ 4 つがそろってから実習室に入る</span></div>
-</section>
-
-<section id="g-checklist-2" class="slide noconcl">
-  <h2>窓口に持ってくるもの（A 市の転入の手続き、架空）</h2>
-  <div class="body">
-    <m-checklist style="height:440px">
-      <script type="application/json">{
-        "items": [
-          {"label": "転出証明書", "note": "前に住んでいた市区町村で受け取る"},
-          {"label": "本人を確かめる書類", "note": "運転免許証・マイナンバーカードなど"},
-          {"label": "印鑑", "mark": "cross", "note": "要らない（署名でよい）"},
-          {"label": "国民健康保険の保険証", "mark": "none", "note": "加入している人だけ"}
-        ]
-      }</script>
-    </m-checklist>
-  </div>
-</section>
-
-<section id="g-checklist-3" class="slide noconcl">
-  <h2>項目も 1 つずつ出す（reveal="true"）</h2>
-  <div class="body">
-    <m-checklist reveal="true" style="height:440px">
-      <script type="application/json">{
-        "items": [
-          {"label": "患者さんの名前を、本人に言ってもらう"},
-          {"label": "リストバンドの名前と照らし合わせる"},
-          {"label": "これから行うことを説明する"}
-        ]
-      }</script>
-    </m-checklist>
-  </div>
-</section>
-
-<section class="slide">
-  <h2>m-ci</h2>
-  <div class="body">
-    <p>正規標本の区間を重ね、母平均を含む割合で信頼水準を説明する</p>
-    <ul>
-      <li>伝えたいこと：仕組みをモデルで見る・ばらつき</li>
-      <li>見せ方：1 種類</li>
-      <li>内容の分野：数理・統計　サンプルのスライド：1 枚</li>
-    </ul>
-  </div>
-</section>
-
-<section id="g-ci-1" class="slide">
-  <h2>95 % の区間を繰り返す（シミュレーション）</h2>
-  <div class="body"><m-ci style="height:440px"><script type="application/json">{"mu":50,"sigma":10,"n":25,"reps":40,"level":0.95,"seed":2}</script></m-ci></div>
-  <div class="concl"><span>架空の標本。95 % は繰り返した区間が μ を含む割合</span></div>
-</section>
-
-<section class="slide">
-  <h2>m-classify2d</h2>
-  <div class="body">
-    <p>scikit-learn の分類を 2 次元で描く。点・領域・境界・確率や決定関数の等高線・サポートベクトル・ボロノイ図・決定木の分割・k 平均法</p>
-    <ul>
-      <li>伝えたいこと：まとめる・分ける・仕組みをモデルで見る</li>
-      <li>見せ方：1 種類</li>
-      <li>内容の分野：数理・統計　サンプルのスライド：5 枚</li>
-    </ul>
-  </div>
-</section>
-
-<section id="g-classify2d-1" class="slide">
-  <h2>ロジスティック回帰は確率 0.5 の線で分ける</h2>
-  <div class="body">
-    <m-classify2d style="height:440px">
-      <script type="application/json">{"axes":{"x":{"label":"x₁","range":[-3.39,3.57]},"y":{"label":"x₂","range":[-4.056,3.576]}},"classes":[{"id":0,"label":"A"},{"id":1,"label":"B"}],"points":[[-2.81,-0.12,0],[-2.74,-1.63,0],[1.94,2.94,1],[2.55,2.33,1],[-1.78,-1.35,0],[0.63,1.03,1],[-2.27,-1.23,0],[0.48,1.9,1],[-0.38,-1.13,0],[2.14,1.25,1],[0.9,0.41,1],[-1.58,-1.63,0],[-2.42,-2.02,0],[2.99,-0.12,1],[1.35,2.77,1],[-0.62,0.71,0],[-0.01,-0.76,0],[-0.75,0.98,0],[-1.4,-2.86,0],[1.14,-0.74,1],[1.65,-0.06,1],[0.29,-0.56,0],[2.51,1.85,1],[1.98,1.68,1],[-2.52,-1.71,0],[0.1,2.39,1],[-0.75,0.73,1],[2.61,2.12,1],[-2.05,-2.55,0],[-2.69,-1.21,0],[0.9,-0.91,1],[-1.54,-1.48,0],[2.35,-0.86,1],[-1.45,-1.4,0],[-0.87,-1.16,0],[0.83,1.15,1],[-0.52,-2.1,0],[-2.3,-3.42,0],[1.3,2.77,1],[-0.12,1.65,1]],"grid":{"nx":48,"ny":32,"labels":"0*41 1*7 0*40 1*8 0*39 1*9 0*38 1*10 0*37 1*11 0*36 1*12 0*35 1*13 0*34 1*14 0*32 1*16 0*31 1*17 0*30 1*18 0*29 1*19 0*28 1*20 0*27 1*21 0*26 1*22 0*25 1*23 0*24 1*24 0*23 1*25 0*22 1*26 0*21 1*27 0*20 1*28 0*19 1*29 0*17 1*31 0*16 1*32 0*15 1*33 0*14 1*34 0*13 1*35 0*12 1*36 0*11 1*37 0*10 1*38 0*9 1*39 0*8 1*40"},"fields":[{"name":"P(B)","class":1,"values":[[6.822e-05,8.646e-05,0.0001096,0.0001389,0.000176,0.000223,0.0002826,0.0003581,0.0004538,0.000575,0.0007286,0.0009232,0.00117,0.001482,0.001877,0.002378,0.003012,0.003814,0.004829,0.006112,0.007733,0.00978,0.01236,0.01561,0.01971,0.02484,0.03128,0.03931,0.0493,0.06167,0.07689,0.09548,0.118,0.145,0.1769,0.214,0.2565,0.3043,0.3566,0.4126,0.4709,0.5301,0.5884,0.6444,0.6966,0.7443,0.7867,0.8238],[8.788e-05,0.0001114,0.0001411,0.0001789,0.0002267,0.0002872,0.000364,0.0004613,0.0005845,0.0007406,0.0009385,0.001189,0.001506,0.001908,0.002417,0.003061,0.003877,0.004908,0.006212,0.007859,0.009939,0.01256,0.01587,0.02003,0.02524,0.03178,0.03993,0.05007,0.06262,0.07805,0.0969,0.1197,0.147,0.1792,0.2168,0.2597,0.3077,0.3604,0.4166,0.475,0.5342,0.5924,0.6481,0.7001,0.7474,0.7894,0.8261,0.8576],[0.0001132,0.0001435,0.0001818,0.0002304,0.000292,0.00037,0.0004689,0.0005941,0.0007528,0.0009539,0.001209,0.001531,0.00194,0.002457,0.003112,0.00394,0.004988,0.006314,0.007988,0.0101,0.01277,0.01613,0.02035,0.02565,0.03228,0.04056,0.05086,0.06359,0.07924,0.09834,0.1214,0.1491,0.1817,0.2196,0.2628,0.3112,0.3641,0.4205,0.4791,0.5382,0.5963,0.6518,0.7035,0.7504,0.7921,0.8285,0.8596,0.8858],[0.0001458,0.0001848,0.0002342,0.0002968,0.0003761,0.0004766,0.0006039,0.0007652,0.0009696,0.001229,0.001556,0.001972,0.002497,0.003163,0.004005,0.00507,0.006417,0.008118,0.01027,0.01298,0.01639,0.02068,0.02606,0.0328,0.04121,0.05165,0.06457,0.08044,0.0998,0.1232,0.1511,0.1841,0.2224,0.266,0.3147,0.3679,0.4245,0.4832,0.5423,0.6003,0.6555,0.7069,0.7535,0.7948,0.8308,0.8615,0.8874,0.909],[0.0001879,0.0002381,0.0003017,0.0003823,0.0004844,0.0006139,0.0007779,0.0009856,0.001249,0.001582,0.002004,0.002538,0.003215,0.004071,0.005153,0.006522,0.008251,0.01043,0.01319,0.01665,0.02101,0.02648,0.03332,0.04186,0.05246,0.06556,0.08166,0.1013,0.125,0.1533,0.1866,0.2252,0.2692,0.3183,0.3717,0.4285,0.4873,0.5464,0.6042,0.6592,0.7103,0.7565,0.7975,0.8331,0.8635,0.8891,0.9104,0.9279],[0.000242,0.0003067,0.0003886,0.0004924,0.000624,0.0007907,0.001002,0.001269,0.001608,0.002037,0.00258,0.003268,0.004138,0.005238,0.006629,0.008386,0.0106,0.0134,0.01692,0.02135,0.0269,0.03385,0.04252,0.05328,0.06657,0.08289,0.1028,0.1268,0.1554,0.1891,0.2281,0.2724,0.3218,0.3756,0.4325,0.4914,0.5504,0.6081,0.6629,0.7136,0.7595,0.8001,0.8353,0.8654,0.8907,0.9117,0.929,0.9431],[0.0003117,0.000395,0.0005005,0.0006343,0.0008037,0.001018,0.00129,0.001635,0.002071,0.002623,0.003321,0.004206,0.005324,0.006737,0.008523,0.01078,0.01362,0.0172,0.02169,0.02734,0.03439,0.04319,0.05411,0.06759,0.08414,0.1043,0.1286,0.1575,0.1916,0.231,0.2757,0.3254,0.3794,0.4366,0.4954,0.5544,0.612,0.6665,0.717,0.7625,0.8027,0.8376,0.8673,0.8922,0.913,0.9301,0.944,0.9553],[0.0004015,0.0005088,0.0006447,0.0008169,0.001035,0.001311,0.001661,0.002105,0.002666,0.003376,0.004275,0.005411,0.006848,0.008662,0.01095,0.01384,0.01748,0.02204,0.02777,0.03494,0.04387,0.05495,0.06863,0.08541,0.1058,0.1304,0.1597,0.1941,0.2339,0.279,0.329,0.3833,0.4406,0.4995,0.5585,0.6158,0.6701,0.7203,0.7654,0.8053,0.8398,0.8691,0.8938,0.9143,0.9311,0.9449,0.956,0.9649],[0.0005172,0.0006553,0.0008304,0.001052,0.001333,0.001689,0.002139,0.00271,0.003431,0.004345,0.0055,0.00696,0.008804,0.01113,0.01407,0.01776,0.0224,0.02822,0.03549,0.04456,0.05581,0.06969,0.0867,0.1074,0.1323,0.1619,0.1967,0.2368,0.2823,0.3326,0.3871,0.4446,0.5036,0.5625,0.6197,0.6737,0.7235,0.7683,0.8078,0.842,0.871,0.8954,0.9156,0.9322,0.9457,0.9567,0.9655,0.9726],[0.0006661,0.0008441,0.001069,0.001355,0.001717,0.002174,0.002754,0.003488,0.004416,0.00559,0.007074,0.008948,0.01131,0.01429,0.01805,0.02276,0.02867,0.03606,0.04526,0.05667,0.07075,0.088,0.109,0.1342,0.1642,0.1993,0.2398,0.2856,0.3363,0.391,0.4487,0.5077,0.5665,0.6235,0.6773,0.7268,0.7712,0.8103,0.8441,0.8728,0.8969,0.9168,0.9332,0.9465,0.9573,0.966,0.973,0.9786],[0.000858,0.001087,0.001377,0.001745,0.00221,0.002799,0.003545,0.004489,0.005682,0.007189,0.009094,0.0115,0.01453,0.01834,0.02313,0.02913,0.03663,0.04597,0.05755,0.07184,0.08932,0.1106,0.1361,0.1664,0.2019,0.2428,0.289,0.3399,0.3949,0.4527,0.5118,0.5705,0.6274,0.6809,0.73,0.7741,0.8128,0.8463,0.8746,0.8984,0.9181,0.9342,0.9474,0.958,0.9666,0.9734,0.9789,0.9833],[0.001105,0.0014,0.001774,0.002247,0.002845,0.003603,0.004562,0.005775,0.007307,0.009242,0.01168,0.01476,0.01863,0.0235,0.02959,0.03721,0.04669,0.05845,0.07293,0.09066,0.1122,0.138,0.1687,0.2046,0.2458,0.2923,0.3436,0.3988,0.4568,0.5159,0.5745,0.6312,0.6844,0.7332,0.777,0.8153,0.8484,0.8764,0.8999,0.9193,0.9352,0.9482,0.9586,0.9671,0.9738,0.9792,0.9836,0.987],[0.001423,0.001803,0.002284,0.002892,0.003662,0.004637,0.005869,0.007427,0.009393,0.01187,0.015,0.01894,0.02388,0.03007,0.0378,0.04743,0.05935,0.07405,0.09202,0.1138,0.14,0.171,0.2072,0.2489,0.2957,0.3473,0.4028,0.4608,0.52,0.5785,0.635,0.688,0.7364,0.7798,0.8178,0.8505,0.8782,0.9013,0.9205,0.9362,0.949,0.9593,0.9676,0.9743,0.9796,0.9838,0.9872,0.9899],[0.001832,0.002321,0.00294,0.003723,0.004713,0.005966,0.007548,0.009547,0.01207,0.01524,0.01924,0.02426,0.03055,0.0384,0.04817,0.06027,0.07518,0.09339,0.1155,0.142,0.1733,0.2099,0.2519,0.2991,0.351,0.4067,0.4649,0.524,0.5825,0.6388,0.6915,0.7396,0.7826,0.8202,0.8525,0.8799,0.9028,0.9217,0.9372,0.9497,0.9599,0.9681,0.9747,0.9799,0.9841,0.9874,0.99,0.9921],[0.002359,0.002988,0.003784,0.00479,0.006063,0.007672,0.009703,0.01226,0.01549,0.01955,0.02465,0.03104,0.03901,0.04893,0.06121,0.07632,0.09479,0.1172,0.144,0.1757,0.2127,0.255,0.3026,0.3548,0.4107,0.469,0.5281,0.5865,0.6425,0.6949,0.7427,0.7853,0.8226,0.8546,0.8816,0.9042,0.9228,0.9381,0.9505,0.9605,0.9686,0.9751,0.9802,0.9843,0.9876,0.9902,0.9922,0.9939],[0.003037,0.003846,0.004869,0.006163,0.007797,0.009861,0.01246,0.01574,0.01987,0.02505,0.03153,0.03963,0.04969,0.06215,0.07748,0.0962,0.1189,0.146,0.1781,0.2154,0.2581,0.306,0.3585,0.4146,0.473,0.5322,0.5904,0.6463,0.6984,0.7458,0.7881,0.825,0.8566,0.8833,0.9056,0.924,0.9391,0.9513,0.9612,0.9691,0.9755,0.9805,0.9846,0.9878,0.9903,0.9924,0.994,0.9952],[0.003909,0.004949,0.006264,0.007925,0.01002,0.01267,0.016,0.02019,0.02545,0.03204,0.04025,0.05047,0.06311,0.07866,0.09763,0.1206,0.148,0.1805,0.2182,0.2613,0.3095,0.3623,0.4186,0.4771,0.5363,0.5944,0.65,0.7018,0.7489,0.7908,0.8273,0.8586,0.885,0.907,0.9251,0.94,0.952,0.9618,0.9696,0.9758,0.9808,0.9848,0.988,0.9905,0.9925,0.9941,0.9953,0.9963],[0.00503,0.006366,0.008054,0.01019,0.01287,0.01626,0.02052,0.02586,0.03255,0.04089,0.05126,0.06409,0.07985,0.09908,0.1223,0.1501,0.1829,0.221,0.2645,0.313,0.3661,0.4226,0.4812,0.5403,0.5983,0.6537,0.7052,0.752,0.7935,0.8296,0.8606,0.8866,0.9084,0.9263,0.9409,0.9528,0.9624,0.9701,0.9762,0.9811,0.9851,0.9882,0.9906,0.9926,0.9942,0.9954,0.9964,0.9971],[0.00647,0.008186,0.01035,0.01308,0.01652,0.02085,0.02627,0.03306,0.04154,0.05206,0.06507,0.08106,0.1006,0.1241,0.1522,0.1854,0.2238,0.2676,0.3165,0.3699,0.4266,0.4853,0.5444,0.6023,0.6574,0.7086,0.755,0.7962,0.8319,0.8625,0.8883,0.9097,0.9274,0.9418,0.9535,0.963,0.9705,0.9766,0.9814,0.9853,0.9884,0.9908,0.9927,0.9943,0.9955,0.9964,0.9972,0.9978],[0.00832,0.01052,0.0133,0.01679,0.02118,0.02669,0.03359,0.04219,0.05288,0.06608,0.08229,0.102,0.1259,0.1543,0.1878,0.2267,0.2709,0.3201,0.3737,0.4306,0.4894,0.5484,0.6062,0.6611,0.712,0.758,0.7988,0.8342,0.8644,0.8899,0.911,0.9285,0.9427,0.9542,0.9635,0.971,0.977,0.9817,0.9855,0.9886,0.9909,0.9928,0.9943,0.9955,0.9965,0.9972,0.9978,0.9983],[0.01069,0.01351,0.01706,0.02153,0.02712,0.03413,0.04286,0.0537,0.06709,0.08353,0.1035,0.1277,0.1565,0.1904,0.2296,0.2741,0.3237,0.3775,0.4346,0.4934,0.5525,0.6101,0.6647,0.7153,0.761,0.8014,0.8365,0.8663,0.8915,0.9124,0.9295,0.9436,0.9549,0.9641,0.9715,0.9773,0.982,0.9858,0.9887,0.9911,0.993,0.9944,0.9956,0.9965,0.9973,0.9978,0.9983,0.9987],[0.01373,0.01734,0.02187,0.02756,0.03467,0.04353,0.05454,0.06812,0.08479,0.1051,0.1295,0.1587,0.1929,0.2325,0.2774,0.3273,0.3814,0.4386,0.4975,0.5565,0.6139,0.6684,0.7186,0.764,0.804,0.8387,0.8682,0.893,0.9137,0.9306,0.9444,0.9556,0.9647,0.9719,0.9777,0.9823,0.986,0.9889,0.9912,0.9931,0.9945,0.9957,0.9966,0.9973,0.9979,0.9983,0.9987,0.999],[0.01762,0.02222,0.028,0.03522,0.04422,0.05539,0.06917,0.08607,0.1066,0.1314,0.1609,0.1954,0.2354,0.2807,0.3309,0.3852,0.4426,0.5016,0.5605,0.6178,0.672,0.7219,0.7669,0.8066,0.8409,0.8701,0.8946,0.9149,0.9317,0.9453,0.9563,0.9652,0.9723,0.9781,0.9826,0.9862,0.9891,0.9914,0.9932,0.9946,0.9957,0.9966,0.9973,0.9979,0.9983,0.9987,0.999,0.9992],[0.02258,0.02845,0.03578,0.04492,0.05625,0.07023,0.08736,0.1082,0.1333,0.1631,0.198,0.2384,0.284,0.3345,0.3891,0.4467,0.5057,0.5646,0.6217,0.6756,0.7252,0.7698,0.8091,0.8431,0.8719,0.8961,0.9162,0.9327,0.9461,0.957,0.9658,0.9728,0.9784,0.9829,0.9864,0.9893,0.9915,0.9933,0.9947,0.9958,0.9967,0.9974,0.9979,0.9984,0.9987,0.999,0.9992,0.9994],[0.0289,0.03635,0.04562,0.05712,0.0713,0.08867,0.1098,0.1352,0.1653,0.2006,0.2413,0.2873,0.3381,0.393,0.4507,0.5098,0.5686,0.6255,0.6792,0.7285,0.7727,0.8116,0.8452,0.8737,0.8976,0.9175,0.9337,0.947,0.9577,0.9663,0.9732,0.9787,0.9832,0.9867,0.9894,0.9917,0.9934,0.9948,0.9959,0.9967,0.9974,0.998,0.9984,0.9987,0.999,0.9992,0.9994,0.9995],[0.03693,0.04634,0.05801,0.07239,0.09,0.1114,0.1371,0.1676,0.2033,0.2443,0.2907,0.3418,0.3969,0.4548,0.5139,0.5726,0.6293,0.6827,0.7317,0.7756,0.8141,0.8473,0.8755,0.8991,0.9187,0.9347,0.9478,0.9583,0.9668,0.9736,0.9791,0.9834,0.9869,0.9896,0.9918,0.9935,0.9949,0.9959,0.9968,0.9975,0.998,0.9984,0.9988,0.999,0.9992,0.9994,0.9995,0.9996],[0.04707,0.05891,0.0735,0.09135,0.113,0.139,0.1699,0.2059,0.2474,0.2941,0.3455,0.4008,0.4588,0.518,0.5766,0.6331,0.6862,0.7349,0.7784,0.8166,0.8494,0.8773,0.9006,0.9199,0.9357,0.9486,0.959,0.9673,0.9741,0.9794,0.9837,0.9871,0.9898,0.9919,0.9936,0.995,0.996,0.9969,0.9975,0.998,0.9985,0.9988,0.999,0.9992,0.9994,0.9995,0.9996,0.9997],[0.05982,0.07462,0.09272,0.1147,0.141,0.1722,0.2086,0.2504,0.2975,0.3492,0.4048,0.4629,0.522,0.5806,0.6369,0.6897,0.738,0.7812,0.819,0.8515,0.8791,0.9021,0.9211,0.9367,0.9494,0.9596,0.9679,0.9745,0.9797,0.9839,0.9873,0.9899,0.992,0.9937,0.995,0.9961,0.9969,0.9976,0.9981,0.9985,0.9988,0.9991,0.9993,0.9994,0.9995,0.9996,0.9997,0.9998],[0.07576,0.0941,0.1163,0.143,0.1745,0.2113,0.2535,0.3009,0.3529,0.4087,0.467,0.5261,0.5845,0.6407,0.6932,0.7412,0.784,0.8214,0.8536,0.8808,0.9035,0.9223,0.9376,0.9501,0.9602,0.9684,0.9749,0.9801,0.9842,0.9875,0.9901,0.9922,0.9938,0.9951,0.9961,0.997,0.9976,0.9981,0.9985,0.9988,0.9991,0.9993,0.9994,0.9995,0.9996,0.9997,0.9998,0.9998],[0.09551,0.118,0.145,0.1769,0.2141,0.2566,0.3043,0.3567,0.4127,0.471,0.5302,0.5885,0.6444,0.6967,0.7443,0.7868,0.8238,0.8556,0.8825,0.9049,0.9234,0.9386,0.9509,0.9609,0.9689,0.9753,0.9804,0.9845,0.9877,0.9903,0.9923,0.9939,0.9952,0.9962,0.997,0.9976,0.9981,0.9985,0.9988,0.9991,0.9993,0.9994,0.9995,0.9996,0.9997,0.9998,0.9998,0.9999],[0.1197,0.147,0.1793,0.2168,0.2597,0.3078,0.3604,0.4166,0.4751,0.5343,0.5925,0.6482,0.7001,0.7474,0.7895,0.8262,0.8576,0.8842,0.9063,0.9246,0.9395,0.9517,0.9615,0.9693,0.9757,0.9807,0.9847,0.9879,0.9904,0.9924,0.994,0.9953,0.9963,0.9971,0.9977,0.9982,0.9985,0.9989,0.9991,0.9993,0.9994,0.9996,0.9996,0.9997,0.9998,0.9998,0.9999,0.9999],[0.1491,0.1817,0.2196,0.2629,0.3113,0.3642,0.4206,0.4792,0.5383,0.5964,0.6519,0.7036,0.7505,0.7922,0.8285,0.8596,0.8858,0.9077,0.9257,0.9405,0.9524,0.9621,0.9698,0.976,0.981,0.9849,0.9881,0.9906,0.9925,0.9941,0.9953,0.9963,0.9971,0.9977,0.9982,0.9986,0.9989,0.9991,0.9993,0.9994,0.9996,0.9997,0.9997,0.9998,0.9998,0.9999,0.9999,0.9999]],"levels":[0.25,0.5,0.75],"style":["dash","solid","dash"]}]}</script>
-    </m-classify2d>
-  </div>
-  <div class="concl"><span>確率 0.25・0.5・0.75 の線は平行に並ぶ（架空のデータ）</span></div>
-</section>
-
-<section id="g-classify2d-2" class="slide">
-  <h2>線形 SVM はマージンがいちばん広い境界を選ぶ</h2>
-  <div class="body">
-    <m-classify2d style="height:440px">
-      <script type="application/json">{"axes":{"x":{"label":"x₁","range":[-3.39,3.57]},"y":{"label":"x₂","range":[-4.056,3.576]}},"classes":[{"id":0,"label":"A"},{"id":1,"label":"B"}],"points":[[-2.81,-0.12,0],[-2.74,-1.63,0],[1.94,2.94,1],[2.55,2.33,1],[-1.78,-1.35,0],[0.63,1.03,1],[-2.27,-1.23,0],[0.48,1.9,1],[-0.38,-1.13,0],[2.14,1.25,1],[0.9,0.41,1],[-1.58,-1.63,0],[-2.42,-2.02,0],[2.99,-0.12,1],[1.35,2.77,1],[-0.62,0.71,0],[-0.01,-0.76,0],[-0.75,0.98,0],[-1.4,-2.86,0],[1.14,-0.74,1],[1.65,-0.06,1],[0.29,-0.56,0],[2.51,1.85,1],[1.98,1.68,1],[-2.52,-1.71,0],[0.1,2.39,1],[-0.75,0.73,1],[2.61,2.12,1],[-2.05,-2.55,0],[-2.69,-1.21,0],[0.9,-0.91,1],[-1.54,-1.48,0],[2.35,-0.86,1],[-1.45,-1.4,0],[-0.87,-1.16,0],[0.83,1.15,1],[-0.52,-2.1,0],[-2.3,-3.42,0],[1.3,2.77,1],[-0.12,1.65,1]],"grid":{"nx":48,"ny":32,"labels":"0*37 1*11 0*36 1*12 0*35 1*13 0*35 1*13 0*34 1*14 0*33 1*15 0*32 1*16 0*32 1*16 0*31 1*17 0*30 1*18 0*30 1*18 0*29 1*19 0*28 1*20 0*28 1*20 0*27 1*21 0*26 1*22 0*25 1*23 0*25 1*23 0*24 1*24 0*23 1*25 0*23 1*25 0*22 1*26 0*21 1*27 0*20 1*28 0*20 1*28 0*19 1*29 0*18 1*30 0*18 1*30 0*17 1*31 0*16 1*32 0*15 1*33 0*15 1*33"},"sv":[15,16,17,21,19,26,30,39],"fields":[{"name":"decision (B > 0)","class":1,"values":[[-9.249,-8.993,-8.738,-8.482,-8.227,-7.971,-7.715,-7.46,-7.204,-6.949,-6.693,-6.438,-6.182,-5.927,-5.671,-5.416,-5.16,-4.905,-4.649,-4.394,-4.138,-3.883,-3.627,-3.372,-3.116,-2.86,-2.605,-2.349,-2.094,-1.838,-1.583,-1.327,-1.072,-0.8162,-0.5607,-0.3052,-0.04967,0.2059,0.4614,0.7169,0.9724,1.228,1.483,1.739,1.995,2.25,2.506,2.761],[-9.068,-8.813,-8.557,-8.302,-8.046,-7.79,-7.535,-7.279,-7.024,-6.768,-6.513,-6.257,-6.002,-5.746,-5.491,-5.235,-4.98,-4.724,-4.469,-4.213,-3.958,-3.702,-3.447,-3.191,-2.935,-2.68,-2.424,-2.169,-1.913,-1.658,-1.402,-1.147,-0.8912,-0.6357,-0.3802,-0.1247,0.1309,0.3864,0.6419,0.8974,1.153,1.409,1.664,1.92,2.175,2.431,2.686,2.942],[-8.888,-8.632,-8.377,-8.121,-7.865,-7.61,-7.354,-7.099,-6.843,-6.588,-6.332,-6.077,-5.821,-5.566,-5.31,-5.055,-4.799,-4.544,-4.288,-4.033,-3.777,-3.522,-3.266,-3.01,-2.755,-2.499,-2.244,-1.988,-1.733,-1.477,-1.222,-0.9662,-0.7107,-0.4552,-0.1997,0.05587,0.3114,0.5669,0.8225,1.078,1.334,1.589,1.845,2.1,2.356,2.611,2.867,3.122],[-8.707,-8.452,-8.196,-7.94,-7.685,-7.429,-7.174,-6.918,-6.663,-6.407,-6.152,-5.896,-5.641,-5.385,-5.13,-4.874,-4.619,-4.363,-4.108,-3.852,-3.596,-3.341,-3.085,-2.83,-2.574,-2.319,-2.063,-1.808,-1.552,-1.297,-1.041,-0.7857,-0.5302,-0.2746,-0.01912,0.2364,0.4919,0.7475,1.003,1.259,1.514,1.77,2.025,2.281,2.536,2.792,3.047,3.303],[-8.527,-8.271,-8.015,-7.76,-7.504,-7.249,-6.993,-6.738,-6.482,-6.227,-5.971,-5.716,-5.46,-5.205,-4.949,-4.694,-4.438,-4.183,-3.927,-3.671,-3.416,-3.16,-2.905,-2.649,-2.394,-2.138,-1.883,-1.627,-1.372,-1.116,-0.8607,-0.6052,-0.3496,-0.09411,0.1614,0.4169,0.6725,0.928,1.184,1.439,1.695,1.95,2.206,2.461,2.717,2.972,3.228,3.483],[-8.346,-8.09,-7.835,-7.579,-7.324,-7.068,-6.813,-6.557,-6.302,-6.046,-5.791,-5.535,-5.28,-5.024,-4.769,-4.513,-4.258,-4.002,-3.746,-3.491,-3.235,-2.98,-2.724,-2.469,-2.213,-1.958,-1.702,-1.447,-1.191,-0.9357,-0.6802,-0.4246,-0.1691,0.08642,0.3419,0.5975,0.853,1.109,1.364,1.62,1.875,2.131,2.386,2.642,2.897,3.153,3.408,3.664],[-8.165,-7.91,-7.654,-7.399,-7.143,-6.888,-6.632,-6.377,-6.121,-5.866,-5.61,-5.355,-5.099,-4.844,-4.588,-4.333,-4.077,-3.821,-3.566,-3.31,-3.055,-2.799,-2.544,-2.288,-2.033,-1.777,-1.522,-1.266,-1.011,-0.7552,-0.4996,-0.2441,0.01142,0.267,0.5225,0.778,1.034,1.289,1.545,1.8,2.056,2.311,2.567,2.822,3.078,3.333,3.589,3.844],[-7.985,-7.729,-7.474,-7.218,-6.963,-6.707,-6.452,-6.196,-5.941,-5.685,-5.43,-5.174,-4.919,-4.663,-4.408,-4.152,-3.896,-3.641,-3.385,-3.13,-2.874,-2.619,-2.363,-2.108,-1.852,-1.597,-1.341,-1.086,-0.8301,-0.5746,-0.3191,-0.06357,0.192,0.4475,0.703,0.9585,1.214,1.47,1.725,1.981,2.236,2.492,2.747,3.003,3.258,3.514,3.769,4.025],[-7.804,-7.549,-7.293,-7.038,-6.782,-6.527,-6.271,-6.016,-5.76,-5.505,-5.249,-4.994,-4.738,-4.483,-4.227,-3.971,-3.716,-3.46,-3.205,-2.949,-2.694,-2.438,-2.183,-1.927,-1.672,-1.416,-1.161,-0.9051,-0.6496,-0.3941,-0.1386,0.117,0.3725,0.628,0.8835,1.139,1.395,1.65,1.906,2.161,2.417,2.672,2.928,3.183,3.439,3.694,3.95,4.205],[-7.624,-7.368,-7.113,-6.857,-6.602,-6.346,-6.091,-5.835,-5.58,-5.324,-5.069,-4.813,-4.558,-4.302,-4.046,-3.791,-3.535,-3.28,-3.024,-2.769,-2.513,-2.258,-2.002,-1.747,-1.491,-1.236,-0.9801,-0.7246,-0.4691,-0.2136,0.04197,0.2975,0.553,0.8086,1.064,1.32,1.575,1.831,2.086,2.342,2.597,2.853,3.108,3.364,3.619,3.875,4.13,4.386],[-7.443,-7.188,-6.932,-6.677,-6.421,-6.166,-5.91,-5.655,-5.399,-5.144,-4.888,-4.633,-4.377,-4.121,-3.866,-3.61,-3.355,-3.099,-2.844,-2.588,-2.333,-2.077,-1.822,-1.566,-1.311,-1.055,-0.7996,-0.5441,-0.2886,-0.03302,0.2225,0.478,0.7336,0.9891,1.245,1.5,1.756,2.011,2.267,2.522,2.778,3.033,3.289,3.544,3.8,4.055,4.311,4.566],[-7.263,-7.007,-6.752,-6.496,-6.241,-5.985,-5.73,-5.474,-5.219,-4.963,-4.708,-4.452,-4.196,-3.941,-3.685,-3.43,-3.174,-2.919,-2.663,-2.408,-2.152,-1.897,-1.641,-1.386,-1.13,-0.8746,-0.6191,-0.3635,-0.108,0.1475,0.403,0.6586,0.9141,1.17,1.425,1.681,1.936,2.192,2.447,2.703,2.958,3.214,3.469,3.725,3.98,4.236,4.491,4.747],[-7.082,-6.827,-6.571,-6.316,-6.06,-5.805,-5.549,-5.294,-5.038,-4.782,-4.527,-4.271,-4.016,-3.76,-3.505,-3.249,-2.994,-2.738,-2.483,-2.227,-1.972,-1.716,-1.461,-1.205,-0.9496,-0.6941,-0.4385,-0.183,0.07252,0.328,0.5836,0.8391,1.095,1.35,1.606,1.861,2.117,2.372,2.628,2.883,3.139,3.394,3.65,3.905,4.161,4.416,4.672,4.928],[-6.902,-6.646,-6.391,-6.135,-5.88,-5.624,-5.369,-5.113,-4.857,-4.602,-4.346,-4.091,-3.835,-3.58,-3.324,-3.069,-2.813,-2.558,-2.302,-2.047,-1.791,-1.536,-1.28,-1.025,-0.7691,-0.5135,-0.258,-0.002478,0.253,0.5086,0.7641,1.02,1.275,1.531,1.786,2.042,2.297,2.553,2.808,3.064,3.319,3.575,3.83,4.086,4.341,4.597,4.853,5.108],[-6.721,-6.466,-6.21,-5.955,-5.699,-5.444,-5.188,-4.932,-4.677,-4.421,-4.166,-3.91,-3.655,-3.399,-3.144,-2.888,-2.633,-2.377,-2.122,-1.866,-1.611,-1.355,-1.1,-0.8441,-0.5885,-0.333,-0.07747,0.1781,0.4336,0.6891,0.9446,1.2,1.456,1.711,1.967,2.222,2.478,2.733,2.989,3.244,3.5,3.755,4.011,4.266,4.522,4.778,5.033,5.289],[-6.541,-6.285,-6.03,-5.774,-5.519,-5.263,-5.007,-4.752,-4.496,-4.241,-3.985,-3.73,-3.474,-3.219,-2.963,-2.708,-2.452,-2.197,-1.941,-1.686,-1.43,-1.175,-0.919,-0.6635,-0.408,-0.1525,0.1031,0.3586,0.6141,0.8696,1.125,1.381,1.636,1.892,2.147,2.403,2.658,2.914,3.169,3.425,3.68,3.936,4.191,4.447,4.703,4.958,5.214,5.469],[-6.36,-6.105,-5.849,-5.594,-5.338,-5.082,-4.827,-4.571,-4.316,-4.06,-3.805,-3.549,-3.294,-3.038,-2.783,-2.527,-2.272,-2.016,-1.761,-1.505,-1.25,-0.994,-0.7385,-0.483,-0.2275,0.02807,0.2836,0.5391,0.7946,1.05,1.306,1.561,1.817,2.072,2.328,2.583,2.839,3.094,3.35,3.605,3.861,4.116,4.372,4.628,4.883,5.139,5.394,5.65],[-6.18,-5.924,-5.669,-5.413,-5.157,-4.902,-4.646,-4.391,-4.135,-3.88,-3.624,-3.369,-3.113,-2.858,-2.602,-2.347,-2.091,-1.836,-1.58,-1.325,-1.069,-0.8135,-0.558,-0.3025,-0.04693,0.2086,0.4641,0.7197,0.9752,1.231,1.486,1.742,1.997,2.253,2.508,2.764,3.019,3.275,3.53,3.786,4.042,4.297,4.553,4.808,5.064,5.319,5.575,5.83],[-5.999,-5.744,-5.488,-5.232,-4.977,-4.721,-4.466,-4.21,-3.955,-3.699,-3.444,-3.188,-2.933,-2.677,-2.422,-2.166,-1.911,-1.655,-1.4,-1.144,-0.8885,-0.633,-0.3774,-0.1219,0.1336,0.3891,0.6447,0.9002,1.156,1.411,1.667,1.922,2.178,2.433,2.689,2.944,3.2,3.455,3.711,3.967,4.222,4.478,4.733,4.989,5.244,5.5,5.755,6.011],[-5.819,-5.563,-5.307,-5.052,-4.796,-4.541,-4.285,-4.03,-3.774,-3.519,-3.263,-3.008,-2.752,-2.497,-2.241,-1.986,-1.73,-1.475,-1.219,-0.9635,-0.708,-0.4524,-0.1969,0.05861,0.3141,0.5697,0.8252,1.081,1.336,1.592,1.847,2.103,2.358,2.614,2.869,3.125,3.38,3.636,3.892,4.147,4.403,4.658,4.914,5.169,5.425,5.68,5.936,6.191],[-5.638,-5.382,-5.127,-4.871,-4.616,-4.36,-4.105,-3.849,-3.594,-3.338,-3.083,-2.827,-2.572,-2.316,-2.061,-1.805,-1.55,-1.294,-1.038,-0.783,-0.5274,-0.2719,-0.01638,0.2391,0.4947,0.7502,1.006,1.261,1.517,1.772,2.028,2.283,2.539,2.794,3.05,3.305,3.561,3.817,4.072,4.328,4.583,4.839,5.094,5.35,5.605,5.861,6.116,6.372],[-5.457,-5.202,-4.946,-4.691,-4.435,-4.18,-3.924,-3.669,-3.413,-3.158,-2.902,-2.647,-2.391,-2.136,-1.88,-1.625,-1.369,-1.113,-0.858,-0.6024,-0.3469,-0.09137,0.1642,0.4197,0.6752,0.9307,1.186,1.442,1.697,1.953,2.208,2.464,2.719,2.975,3.23,3.486,3.742,3.997,4.253,4.508,4.764,5.019,5.275,5.53,5.786,6.041,6.297,6.552],[-5.277,-5.021,-4.766,-4.51,-4.255,-3.999,-3.744,-3.488,-3.233,-2.977,-2.722,-2.466,-2.211,-1.955,-1.7,-1.444,-1.188,-0.9329,-0.6774,-0.4219,-0.1664,0.08916,0.3447,0.6002,0.8557,1.111,1.367,1.622,1.878,2.133,2.389,2.644,2.9,3.155,3.411,3.667,3.922,4.178,4.433,4.689,4.944,5.2,5.455,5.711,5.966,6.222,6.477,6.733],[-5.096,-4.841,-4.585,-4.33,-4.074,-3.819,-3.563,-3.308,-3.052,-2.797,-2.541,-2.286,-2.03,-1.775,-1.519,-1.263,-1.008,-0.7524,-0.4969,-0.2414,0.01416,0.2697,0.5252,0.7807,1.036,1.292,1.547,1.803,2.058,2.314,2.569,2.825,3.08,3.336,3.592,3.847,4.103,4.358,4.614,4.869,5.125,5.38,5.636,5.891,6.147,6.402,6.658,6.913],[-4.916,-4.66,-4.405,-4.149,-3.894,-3.638,-3.383,-3.127,-2.872,-2.616,-2.361,-2.105,-1.85,-1.594,-1.338,-1.083,-0.8274,-0.5719,-0.3164,-0.06083,0.1947,0.4502,0.7058,0.9613,1.217,1.472,1.728,1.983,2.239,2.494,2.75,3.005,3.261,3.517,3.772,4.028,4.283,4.539,4.794,5.05,5.305,5.561,5.816,6.072,6.327,6.583,6.838,7.094],[-4.735,-4.48,-4.224,-3.969,-3.713,-3.458,-3.202,-2.947,-2.691,-2.436,-2.18,-1.925,-1.669,-1.413,-1.158,-0.9024,-0.6469,-0.3914,-0.1358,0.1197,0.3752,0.6308,0.8863,1.142,1.397,1.653,1.908,2.164,2.419,2.675,2.93,3.186,3.442,3.697,3.953,4.208,4.464,4.719,4.975,5.23,5.486,5.741,5.997,6.252,6.508,6.763,7.019,7.274],[-4.555,-4.299,-4.044,-3.788,-3.533,-3.277,-3.022,-2.766,-2.511,-2.255,-2.0,-1.744,-1.488,-1.233,-0.9774,-0.7219,-0.4663,-0.2108,0.04471,0.3002,0.5558,0.8113,1.067,1.322,1.578,1.833,2.089,2.344,2.6,2.856,3.111,3.367,3.622,3.878,4.133,4.389,4.644,4.9,5.155,5.411,5.666,5.922,6.177,6.433,6.688,6.944,7.199,7.455],[-4.374,-4.119,-3.863,-3.608,-3.352,-3.097,-2.841,-2.586,-2.33,-2.074,-1.819,-1.563,-1.308,-1.052,-0.7969,-0.5413,-0.2858,-0.03028,0.2252,0.4808,0.7363,0.9918,1.247,1.503,1.758,2.014,2.269,2.525,2.781,3.036,3.292,3.547,3.803,4.058,4.314,4.569,4.825,5.08,5.336,5.591,5.847,6.102,6.358,6.613,6.869,7.124,7.38,7.636],[-4.194,-3.938,-3.683,-3.427,-3.172,-2.916,-2.661,-2.405,-2.149,-1.894,-1.638,-1.383,-1.127,-0.8719,-0.6163,-0.3608,-0.1053,0.1502,0.4058,0.6613,0.9168,1.172,1.428,1.683,1.939,2.194,2.45,2.706,2.961,3.217,3.472,3.728,3.983,4.239,4.494,4.75,5.005,5.261,5.516,5.772,6.027,6.283,6.538,6.794,7.049,7.305,7.561,7.816],[-4.013,-3.758,-3.502,-3.247,-2.991,-2.736,-2.48,-2.224,-1.969,-1.713,-1.458,-1.202,-0.9469,-0.6913,-0.4358,-0.1803,0.07526,0.3308,0.5863,0.8418,1.097,1.353,1.608,1.864,2.119,2.375,2.631,2.886,3.142,3.397,3.653,3.908,4.164,4.419,4.675,4.93,5.186,5.441,5.697,5.952,6.208,6.463,6.719,6.974,7.23,7.486,7.741,7.997],[-3.833,-3.577,-3.322,-3.066,-2.811,-2.555,-2.299,-2.044,-1.788,-1.533,-1.277,-1.022,-0.7663,-0.5108,-0.2553,0.0002616,0.2558,0.5113,0.7668,1.022,1.278,1.533,1.789,2.044,2.3,2.556,2.811,3.067,3.322,3.578,3.833,4.089,4.344,4.6,4.855,5.111,5.366,5.622,5.877,6.133,6.388,6.644,6.899,7.155,7.411,7.666,7.922,8.177],[-3.652,-3.397,-3.141,-2.886,-2.63,-2.374,-2.119,-1.863,-1.608,-1.352,-1.097,-0.8413,-0.5858,-0.3303,-0.07473,0.1808,0.4363,0.6918,0.9474,1.203,1.458,1.714,1.969,2.225,2.481,2.736,2.992,3.247,3.503,3.758,4.014,4.269,4.525,4.78,5.036,5.291,5.547,5.802,6.058,6.313,6.569,6.824,7.08,7.336,7.591,7.847,8.102,8.358]],"levels":[-1.0,0.0,1.0],"style":["dash","solid","dash"]}]}</script>
-    </m-classify2d>
-  </div>
-  <div class="concl"><span>境界を決めるのは輪の付いたサポートベクトルだけ（架空のデータ）</span></div>
-</section>
-
-<section id="g-classify2d-3" class="slide">
-  <h2>1 近傍法の領域は、点ごとのボロノイ図になる</h2>
-  <div class="body">
-    <m-classify2d style="height:440px">
-      <script type="application/json">{"axes":{"x":{"label":"x₁","range":[-3.368,3.328]},"y":{"label":"x₂","range":[-2.119,3.509]}},"classes":[{"id":0,"label":"A"},{"id":1,"label":"B"}],"points":[[-1.01,-1.36,0],[-2.81,-1.23,0],[2.77,3.04,1],[-0.33,0.23,1],[0.42,0.06,1],[1.17,-1.28,0],[1.11,1.66,1],[0.54,0.54,1],[-1.38,0.74,0],[-2.5,-1.65,0],[-0.16,1.71,1],[-1.29,-1.36,0]],"voronoi":{"seeds":[[-1.01,-1.36,0],[-2.81,-1.23,0],[2.77,3.04,1],[-0.33,0.23,1],[0.42,0.06,1],[1.17,-1.28,0],[1.11,1.66,1],[0.54,0.54,1],[-1.38,0.74,0],[-2.5,-1.65,0],[-0.16,1.71,1],[-1.29,-1.36,0]]}}</script>
-    </m-classify2d>
-  </div>
-  <div class="concl"><span>いちばん近い点のクラスに分ける（架空のデータ）</span></div>
-</section>
-
-<section id="g-classify2d-4" class="slide">
-  <h2>決定木は、軸に平行な線で 1 回ずつ分ける</h2>
-  <div class="body">
-    <m-classify2d style="height:440px">
-      <script type="application/json">{"axes":{"x":{"label":"x₁","range":[-3.39,3.57]},"y":{"label":"x₂","range":[-4.056,3.576]}},"classes":[{"id":0,"label":"A"},{"id":1,"label":"B"}],"points":[[-2.81,-0.12,0],[-2.74,-1.63,0],[1.94,2.94,1],[2.55,2.33,1],[-1.78,-1.35,0],[0.63,1.03,1],[-2.27,-1.23,0],[0.48,1.9,1],[-0.38,-1.13,0],[2.14,1.25,1],[0.9,0.41,1],[-1.58,-1.63,0],[-2.42,-2.02,0],[2.99,-0.12,1],[1.35,2.77,1],[-0.62,0.71,0],[-0.01,-0.76,0],[-0.75,0.98,0],[-1.4,-2.86,0],[1.14,-0.74,1],[1.65,-0.06,1],[0.29,-0.56,0],[2.51,1.85,1],[1.98,1.68,1],[-2.52,-1.71,0],[0.1,2.39,1],[-0.75,0.73,1],[2.61,2.12,1],[-2.05,-2.55,0],[-2.69,-1.21,0],[0.9,-0.91,1],[-1.54,-1.48,0],[2.35,-0.86,1],[-1.45,-1.4,0],[-0.87,-1.16,0],[0.83,1.15,1],[-0.52,-2.1,0],[-2.3,-3.42,0],[1.3,2.77,1],[-0.12,1.65,1]],"tree":{"nodes":[{"id":"n0","feature":0,"threshold":0.385,"left":"n1","right":"n4"},{"id":"n1","feature":1,"threshold":0.72,"left":"n2","right":"n3"},{"id":"n2","class":0},{"id":"n3","class":1},{"id":"n4","class":1}]}}</script>
-    </m-classify2d>
-  </div>
-  <div class="concl"><span>右はもう B だけなので、分割は 2 回で終わる（架空のデータ）</span></div>
-</section>
-
-<section id="g-classify2d-5" class="slide">
-  <h2>k 平均法は、割り当てと重心の更新を繰り返す</h2>
-  <div class="body">
-    <m-classify2d style="height:440px">
-      <script type="application/json">{"axes":{"x":{"label":"x₁","range":[-3.246,4.146]},"y":{"label":"x₂","range":[-3.449,3.979]}},"points":[[0.33,1.26],[0.63,-2.44],[2.08,-0.8],[-1.19,-0.52],[-2.0,-2.4],[3.53,-0.81],[1.89,-1.25],[1.2,1.83],[-0.24,3.04],[3.41,-1.26],[-0.15,0.58],[-0.08,3.36],[1.92,-0.05],[-2.31,0.62],[-0.24,1.06],[2.22,-1.42],[0.35,-1.53],[-0.3,0.47],[-1.6,-1.21],[1.2,1.77],[-2.63,-1.0],[-0.65,-1.37],[-0.68,-0.88],[-1.78,-2.22],[-0.16,1.53],[-1.16,-1.33],[2.67,-1.14],[-1.56,-0.9],[-0.95,1.16],[-1.97,-0.67],[2.31,0.8],[0.52,2.72],[-0.31,1.29],[-2.32,-2.83],[-2.5,-1.14],[0.68,-0.57],[0.85,-0.6],[1.04,0.17],[1.41,-0.14],[0.27,2.59],[2.45,-1.6],[-2.19,-2.16],[0.09,3.15],[1.22,2.54],[-2.04,-2.16]],"kmeans":{"iters":[{"centroids":[[-1.6,-1.21],[0.33,1.26],[3.53,-0.81]],"assign":[1,0,2,0,0,2,2,1,1,2,1,1,2,0,1,2,0,1,0,1,0,0,0,0,1,0,2,0,1,0,2,1,1,0,0,1,1,1,1,1,2,0,1,1,0]},{"centroids":[[-1.50588,-1.42],[0.335789,1.43211],[2.49778,-0.836667]],"assign":[1,0,2,0,0,2,2,1,1,2,1,1,2,0,1,2,0,1,0,1,0,0,0,0,1,0,2,0,1,0,2,1,1,0,0,2,2,1,2,1,2,0,1,1,0]},{"centroids":[[-1.50588,-1.42],[0.215,1.7825],[2.11833,-0.736667]],"assign":[1,2,2,0,0,2,2,1,1,2,1,1,2,0,1,2,0,1,0,1,0,0,0,0,1,0,2,0,1,0,2,1,1,0,0,2,2,2,2,1,2,0,1,1,0]},{"centroids":[[-1.63938,-1.35625],[0.16,1.89],[1.935,-0.793571]],"assign":[1,2,2,0,0,2,2,1,1,2,1,1,2,0,1,2,2,1,0,1,0,0,0,0,1,0,2,0,1,0,2,1,1,0,0,2,2,2,2,1,2,0,1,1,0]},{"centroids":[[-1.772,-1.34467],[0.16,1.89],[1.82933,-0.842667]],"assign":[1,2,2,0,0,2,2,1,1,2,1,1,2,0,1,2,2,1,0,1,0,0,0,0,1,0,2,0,1,0,2,1,1,0,0,2,2,2,2,1,2,0,1,1,0]}]}}</script>
-    </m-classify2d>
-  </div>
-  <div class="concl"><span>重心が動かなくなったら終わる（架空のデータ）</span></div>
-</section>
-
-<section class="slide">
-  <h2>m-code</h2>
-  <div class="body">
-    <p>短いコードを行ごとに説明し、最後に出力を見せる</p>
-    <ul>
-      <li>伝えたいこと：手順・工程・仕組みをモデルで見る</li>
-      <li>見せ方：1 種類</li>
-      <li>内容の分野：数理・統計　サンプルのスライド：4 枚</li>
-    </ul>
-  </div>
-</section>
-
-<section id="g-code-1" class="slide">
-  <h2>店ごとの売上平均を計算する</h2>
-  <div class="body"><m-code style="height:440px"><script type="application/json">{"lang":"python","code":"import pandas as pd\ndf = pd.read_csv(\"sales.csv\")\ndf.groupby(\"store\")[\"sales\"].mean()","steps":[{"lines":[1],"note":"pandas を読み込む"},{"lines":[2],"note":"CSV を表として読む"},{"lines":[3],"note":"店ごとの平均"}],"output":"store\nA    120.5\nB     98.0"}</script></m-code></div>
-  <div class="concl"><span>架空の売上データ。店ごとにまとめてから平均を求める</span></div>
-</section>
-
-<section id="g-code-2" class="slide">
-  <h2>繰り返しで平均を求める</h2>
-  <div class="body"><m-code style="height:440px"><script type="application/json">{"lang":"python","code":"def mean(values):\n    total = 0\n    for value in values:\n        total += value\n    return total / len(values)\n\nprint(mean([2, 4, 6]))","steps":[{"lines":[1,2],"note":"関数を定義し、合計を 0 にする"},{"lines":[3,4],"note":"値を一つずつ合計する"},{"lines":[5,7],"note":"個数で割り、関数の結果を表示"}],"output":"4.0"}</script></m-code></div>
-  <div class="concl"><span>合計を個数で割ると平均になる</span></div>
-</section>
-
-<section id="g-code-3" class="slide">
-  <h2>交差検証のコード（scikit-learn）</h2>
-  <div class="body"><m-code style="height:420px"><script type="application/json">{"lang": "python", "code": "from sklearn.model_selection import cross_val_score\nfrom sklearn.tree import DecisionTreeClassifier\nfrom sklearn.datasets import load_iris\nX, y = load_iris(return_X_y=True)\nmodel = DecisionTreeClassifier(max_depth=3, random_state=0)\nscores = cross_val_score(model, X, y, cv=5)\nprint(scores.mean())", "steps": [{"lines": [1, 3], "note": "ライブラリを読み込む"}, {"lines": [4], "note": "アヤメのデータ"}, {"lines": [5], "note": "決定木を用意"}, {"lines": [6, 7], "note": "5 分割の交差検証で平均の正解率を出す"}], "output": "0.96"}</script></m-code></div>
-  <div class="concl"><span>5 つのフォールドを 1 つずつ検証に使い、平均する</span></div>
-</section>
-
-<section id="g-code-4" class="slide noconcl">
-  <h2>長いコードはスクロールして見せる（14 行）</h2>
-  <div class="body"><m-code style="height:440px"><script type="application/json">{"lang": "python", "code": "import numpy as np\nfrom sklearn.datasets import load_iris\nfrom sklearn.model_selection import train_test_split\nfrom sklearn.linear_model import LogisticRegression\n\nX, y = load_iris(return_X_y=True)\nX_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.3, random_state=0)\n\nmodel = LogisticRegression(max_iter=200)\nmodel.fit(X_train, y_train)\n\npred = model.predict(X_test)\nacc = np.mean(pred == y_test)\nprint(round(acc, 3))", "steps": [{"lines": [1, 4], "note": "ライブラリを読み込む"}, {"lines": [6, 7], "note": "データを訓練用とテスト用に 7 対 3 で分ける"}, {"lines": [9, 10], "note": "ロジスティック回帰で学習"}, {"lines": [12, 14], "note": "テスト用で予測し、正解率を表示"}], "output": "0.978"}</script></m-code></div>
-</section>
-
-<section class="slide">
-  <h2>m-codetree</h2>
+  <h2>m-codetree（変わった、v2.16.0）</h2>
   <div class="body">
     <p>ハフマン木で 2 値の系列を 1 語ずつ復号する（MH 符号）。ランは画素の升目に伸びる</p>
     <ul>
@@ -1271,7 +351,7 @@ document.addEventListener("DOMContentLoaded", function(){
 </section>
 
 <section class="slide">
-  <h2>m-collect</h2>
+  <h2>m-collect（変わった、v2.16.0）</h2>
   <div class="body">
     <p>並んだカード（回答など）が動いて縮み、少数の箱（要約）にまとまる</p>
     <ul>
@@ -1297,6 +377,1121 @@ document.addEventListener("DOMContentLoaded", function(){
     </m-collect>
   </div>
   <div class="concl"><span>→ 次の予測には，この 2 つの値だけ持てばよい</span></div>
+</section>
+
+<section class="slide">
+  <h2>m-kakijun（変わった、v2.16.0）</h2>
+  <div class="body">
+    <p>かな（ひらがな・カタカナ）の書き順。字を 1 画ずつ、書く順と向きのとおりに書いて見せる</p>
+    <ul>
+      <li>伝えたいこと：手順・工程</li>
+      <li>見せ方：draw・pen</li>
+      <li>内容の分野：国語　サンプルのスライド：3 枚</li>
+    </ul>
+  </div>
+</section>
+
+<section id="g-kakijun-1" class="slide">
+  <h2>ひらがなの書き順：あさ</h2>
+  <div class="body">
+    <m-kakijun text="あさ" ends="on" style="height:400px"></m-kakijun>
+  </div>
+  <div class="concl"><span>→ 「あ」の 3 画目は、結びを作ってから右へはらう</span></div>
+</section>
+
+<section id="g-kakijun-2" class="slide">
+  <h2>濁点のあるカタカナ：ガム</h2>
+  <div class="body">
+    <m-kakijun text="ガム" style="height:400px"></m-kakijun>
+  </div>
+  <div class="concl"><span>→ 濁点は、字を書き終えてから左上から右下へ 2 つ</span></div>
+</section>
+
+<section id="g-kakijun-3" class="slide">
+  <h2>縦書きの小さい字：きょう</h2>
+  <div class="body">
+    <m-kakijun text="きょう" writing="tate" size="140" nums="off" style="height:440px"></m-kakijun>
+  </div>
+  <div class="concl"><span>→ 縦書きの「ょ」は、ます目の右上に小さく書く</span></div>
+</section>
+
+<section class="slide">
+  <h2>m-map-japan（変わった、v2.16.0）</h2>
+  <div class="body">
+    <p>日本の 47 都道府県の地図。地域の強調、統計の塗り分け、点、矢印、経度・緯度の重ね描きをステップごとに出す</p>
+    <ul>
+      <li>伝えたいこと：場所・地図</li>
+      <li>見せ方：fade・sweep・draw</li>
+      <li>内容の分野：地図（社会）　サンプルのスライド：5 枚</li>
+    </ul>
+  </div>
+</section>
+
+<section id="g-map-japan-1" class="slide">
+  <h2>日本の八地方区分</h2>
+  <div class="body">
+    <m-map-japan aria-label="八地方区分の地図" style="height:440px">
+      <script type="application/json">{
+        "regions": [
+          {"group": "hokkaido", "tone": "series-1", "step": 1},
+          {"group": "tohoku", "tone": "series-2", "step": 2},
+          {"group": "kanto", "tone": "series-3", "step": 3},
+          {"group": "chubu", "tone": "series-1", "step": 4},
+          {"group": "kinki", "tone": "series-4", "step": 5},
+          {"group": "chugoku", "tone": "series-2", "step": 6},
+          {"group": "shikoku", "tone": "series-3", "step": 7},
+          {"group": "kyushu", "tone": "series-1", "step": 8}
+        ]
+      }</script>
+    </m-map-japan>
+  </div>
+  <div class="concl"><span>→ 北から順に 8 つの地方に分ける</span></div>
+</section>
+
+<section id="g-map-japan-2" class="slide">
+  <h2>都道府県の人口（2020 年、国勢調査速報）</h2>
+  <div class="body">
+    <m-map-japan aria-label="都道府県別の人口の塗り分け" legend="人口" unit="万人" islands="all" style="height:440px">
+      <script type="application/json">{
+        "classes": [0, 100, 200, 500],
+        "values": {"01": 523, "02": 124, "03": 121, "04": 230, "05": 96, "06": 107, "07": 183, "08": 287, "09": 193, "10": 194,
+          "11": 735, "12": 629, "13": 1406, "14": 924, "15": 220, "16": 104, "17": 113, "18": 77, "19": 81, "20": 205,
+          "21": 198, "22": 364, "23": 755, "24": 177, "25": 141, "26": 258, "27": 884, "28": 547, "29": 133, "30": 92,
+          "31": 55, "32": 67, "33": 189, "34": 280, "35": 134, "36": 72, "37": 95, "38": 134, "39": 69, "40": 514,
+          "41": 81, "42": 131, "43": 174, "44": 112, "45": 107, "46": 159, "47": 147}
+      }</script>
+    </m-map-japan>
+  </div>
+  <div class="concl"><span>→ 500 万人以上の 9 都道府県は大都市のまわり</span></div>
+</section>
+
+<section id="g-map-japan-3" class="slide">
+  <h2>北前船の西廻り航路（江戸時代）</h2>
+  <div class="body">
+    <m-map-japan aria-label="北前船の航路" labels="none" style="height:440px">
+      <script type="application/json">{
+        "points": [
+          {"lon": 135.43, "lat": 34.65, "label": "大坂", "anchor": "below", "step": 1},
+          {"lon": 130.94, "lat": 33.96, "label": "下関", "anchor": "left", "step": 2},
+          {"lon": 139.84, "lat": 38.91, "label": "酒田", "anchor": "right", "step": 3},
+          {"lon": 140.10, "lat": 41.43, "label": "松前", "anchor": "left", "step": 4}
+        ],
+        "flows": [
+          {"from": [135.43, 34.65], "to": [130.94, 33.96], "step": 2,
+           "via": [[135.15, 34.5], [134.9, 34.6], [134.5, 34.42], [134.0, 34.41], [133.4, 34.18], [133.08, 34.08], [132.9, 34.15], [132.72, 34.08], [132.52, 33.8], [132.1, 33.62], [131.7, 33.84], [131.3, 33.85]]},
+          {"from": [130.94, 33.96], "to": [139.84, 38.91], "label": "日本海", "labelAt": [134.6, 38.4], "step": 3,
+           "via": [[130.5, 34.35], [130.85, 35.0], [131.5, 35.45], [132.4, 35.9], [133.2, 36.6], [134.3, 36.25], [135.3, 36.35], [136.2, 37.0], [136.45, 37.75], [137.4, 38.0], [138.0, 38.55], [138.8, 38.8], [139.4, 39.0]]},
+          {"from": [139.84, 38.91], "to": [140.10, 41.43], "step": 4,
+           "via": [[139.75, 39.4], [139.5, 40.0], [139.75, 40.6], [139.95, 41.2]]}
+        ]
+      }</script>
+    </m-map-japan>
+  </div>
+  <div class="concl"><span>→ 大坂から瀬戸内海・日本海を通って北へ</span></div>
+</section>
+
+<section id="g-map-japan-4" class="slide">
+  <h2>日本の範囲（本当の位置）</h2>
+  <!-- 東西南北の端：国土地理院「日本の東西南北端点の経度緯度」（https://www.gsi.go.jp/KOKUJYOHO/center.htm、2026-10-25 取得）。
+       東端 南鳥島 153°59′12″E・24°16′59″N、西端 与那国島 122°55′57″E・24°27′05″N、
+       南端 沖ノ鳥島 136°04′11″E・20°25′31″N、北端 択捉島 148°45′08″E・45°33′26″N（度に直して小数 4 桁に丸めた） -->
+  <div class="body">
+    <m-map-japan aria-label="日本の範囲と東西南北の端" layout="true" labels="none" style="height:440px">
+      <script type="application/json">{
+        "points": [
+          {"lon": 148.7522, "lat": 45.5572, "label": "択捉島（北端）", "step": 1},
+          {"lon": 153.9867, "lat": 24.2831, "label": "南鳥島（東端）", "step": 2},
+          {"lon": 136.0697, "lat": 20.4253, "label": "沖ノ鳥島（南端）", "step": 3},
+          {"lon": 122.9325, "lat": 24.4514, "label": "与那国島（西端）", "step": 4}
+        ]
+      }</script>
+    </m-map-japan>
+  </div>
+  <div class="concl"><span>→ 東西は経度で約 31°、南北は緯度で約 25° に広がる</span></div>
+</section>
+
+<section id="g-map-japan-5" class="slide">
+  <h2>見せ方の種類（variant）</h2>
+  <div class="body">
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:0 28px;text-align:center;font-size:27px">
+      <div>フェード（fade、既定）</div><div>西から順に（sweep）</div><div>輪郭から（draw）</div>
+      <m-map-japan variant="fade" labels="none" style="height:380px">
+        <script type="application/json">{"regions": [{"group": "kinki", "tone": "term"}, {"group": "kyushu", "tone": "emph"}, {"id": "01", "tone": "accent2"}]}</script>
+      </m-map-japan>
+      <m-map-japan variant="sweep" labels="none" style="height:380px">
+        <script type="application/json">{"regions": [{"group": "kinki", "tone": "term"}, {"group": "kyushu", "tone": "emph"}, {"id": "01", "tone": "accent2"}]}</script>
+      </m-map-japan>
+      <m-map-japan variant="draw" labels="none" style="height:380px">
+        <script type="application/json">{"regions": [{"group": "kinki", "tone": "term"}, {"group": "kyushu", "tone": "emph"}, {"id": "01", "tone": "accent2"}]}</script>
+      </m-map-japan>
+    </div>
+  </div>
+  <div class="concl"><span>→ 書かなければ最初の見せ方（fade）になる</span></div>
+</section>
+
+<section class="slide">
+  <h2>m-map-world（変わった、v2.16.0）</h2>
+  <div class="body">
+    <p>世界の国・地域の地図（太平洋が中央）。国や州の強調、区分と値の塗り分け、点、矢印をステップごとに出す</p>
+    <ul>
+      <li>伝えたいこと：場所・地図</li>
+      <li>見せ方：fade・sweep・draw</li>
+      <li>内容の分野：地図（社会）　サンプルのスライド：3 枚</li>
+    </ul>
+  </div>
+</section>
+
+<section id="g-map-world-1" class="slide">
+  <h2>世界の六つの州</h2>
+  <div class="body">
+    <m-map-world aria-label="六州の地図" style="height:440px">
+      <script type="application/json">{
+        "regions": [
+          {"group": "asia", "tone": "series-1", "step": 1},
+          {"group": "europe", "tone": "series-2", "step": 2},
+          {"group": "africa", "tone": "series-3", "step": 3},
+          {"group": "north-america", "tone": "series-4", "step": 4},
+          {"group": "south-america", "tone": "series-1", "step": 5},
+          {"group": "oceania", "tone": "series-2", "step": 6}
+        ]
+      }</script>
+    </m-map-world>
+  </div>
+  <div class="concl"><span>→ 六つの州に分けて世界を見る</span></div>
+</section>
+
+<section id="g-map-world-2" class="slide">
+  <h2>国別の値の塗り分け（架空の値）</h2>
+  <div class="body">
+    <m-map-world aria-label="架空の値の塗り分け" legend="架空の指標" unit="点" style="height:440px">
+      <script type="application/json">{
+        "classes": [0, 20, 40, 60],
+        "values": {"JPN": 72, "CHN": 48, "TWN": 66, "KOR": 61, "IND": 18, "IDN": 27, "AUS": 64, "NZL": 58, "USA": 75, "CAN": 69,
+          "MEX": 33, "BRA": 36, "ARG": 41, "CHL": 45, "GBR": 67, "FRA": 63, "DEU": 70, "ITA": 52, "ESP": 49, "RUS": 38,
+          "TUR": 31, "SAU": 44, "EGY": 15, "NGA": 9, "ZAF": 29, "KEN": 12, "ETH": 6, "VNM": 24, "THA": 35, "PHL": 22}
+      }</script>
+    </m-map-world>
+  </div>
+  <div class="concl"><span>→ 値は架空。台湾は台湾自身の値で塗る</span></div>
+</section>
+
+<section id="g-map-world-3" class="slide">
+  <h2>東京から世界の都市へ</h2>
+  <div class="body">
+    <m-map-world aria-label="東京と世界の都市を結ぶ矢印" labels="none" grid="equator" style="height:440px">
+      <script type="application/json">{
+        "points": [
+          {"lon": 139.69, "lat": 35.69, "label": "東京", "anchor": "above", "step": 1},
+          {"lon": -118.24, "lat": 34.05, "label": "ロサンゼルス", "anchor": "below", "step": 2},
+          {"lon": 103.82, "lat": 1.35, "label": "シンガポール", "anchor": "left", "step": 3},
+          {"lon": 151.21, "lat": -33.87, "label": "シドニー", "anchor": "right", "step": 4},
+          {"lon": -0.13, "lat": 51.51, "label": "ロンドン", "anchor": "above", "step": 5}
+        ],
+        "flows": [
+          {"from": [139.69, 35.69], "to": [-118.24, 34.05], "step": 2},
+          {"from": [139.69, 35.69], "to": [103.82, 1.35], "bend": -0.2, "step": 3},
+          {"from": [139.69, 35.69], "to": [151.21, -33.87], "bend": -0.15, "step": 4},
+          {"from": [103.82, 1.35], "to": [-0.13, 51.51], "step": 5}
+        ]
+      }</script>
+    </m-map-world>
+  </div>
+  <div class="concl"><span>→ 太平洋が中央の地図では、日本が真ん中に来る</span></div>
+</section>
+
+<section class="slide">
+  <h2>m-market（変わった、v2.16.0）</h2>
+  <div class="body">
+    <p>市場規模の入れ子の円（TAM / SAM / SOM）。外の円から 1 つずつ、前の円の大きさから縮んで現れる</p>
+    <ul>
+      <li>伝えたいこと：全体と内訳</li>
+      <li>見せ方：1 種類</li>
+      <li>内容の分野：ビジネス　サンプルのスライド：2 枚</li>
+    </ul>
+  </div>
+</section>
+
+<section id="g-market-1" class="slide">
+  <h2>市場の大きさ（架空）</h2>
+  <div class="body">
+    <m-market unit="億円" style="height:420px">
+      <script type="application/json">{
+        "rings": [
+          {"key": "TAM", "value": 2400, "basis": "社内文書を書くすべての時間"},
+          {"key": "SAM", "value": 520, "basis": "定型の報告書（月報・週報）"},
+          {"key": "SOM", "value": 26, "basis": "5 年で取る中堅企業 800 社"}
+        ]
+      }</script>
+    </m-market>
+  </div>
+  <div class="concl"><span>→ まず定型の報告書から始める</span></div>
+</section>
+
+<section id="g-market-2" class="slide">
+  <h2>面積を値に比例させる</h2>
+  <div class="body">
+    <m-market unit="万人" scale="area" layout="center" count="true" style="height:420px">
+      <script type="application/json">{
+        "rings": [
+          {"key": "全体", "value": 900, "basis": "架空の母集団"},
+          {"key": "対象", "value": 300, "basis": "条件に合う人"},
+          {"key": "初年度", "value": 12, "basis": "最初に届く人"}
+        ]
+      }</script>
+    </m-market>
+  </div>
+  <div class="concl"><span>→ 面積で見ると最初の一歩は小さい</span></div>
+</section>
+
+<section class="slide">
+  <h2>m-numberline（変わった、v2.16.0）</h2>
+  <div class="body">
+    <p>数直線。点・□・ジャンプ・不等式の範囲・0.1 の拡大。2 本で比例数直線</p>
+    <ul>
+      <li>伝えたいこと：比べる（量・特徴）</li>
+      <li>見せ方：fade・draw</li>
+      <li>内容の分野：数理・統計　サンプルのスライド：4 枚</li>
+    </ul>
+  </div>
+</section>
+
+<section id="g-numberline-1" class="slide">
+  <h2>3 + 4 − 2 を数直線で</h2>
+  <div class="body">
+    <m-numberline style="height:400px">
+      <script type="application/json">{"lines": [{"from": 0, "to": 10, "step": 1}],
+        "marks": [{"at": 3}, {"at": 5, "kind": "open", "label": "答え", "show": 5}],
+        "jumps": [{"from": 3, "to": 7, "label": "+4"}, {"from": 7, "to": 5, "label": "−2"}]}</script>
+    </m-numberline>
+  </div>
+  <div class="concl"><span>→ たすときは右へ、ひくときは左へ進む</span></div>
+</section>
+
+<section id="g-numberline-2" class="slide">
+  <h2>1 と 2 の間を 10 に分ける</h2>
+  <div class="body">
+    <m-numberline build="ticks,magnify,marks" style="height:440px">
+      <script type="application/json">{"lines": [{"from": 0, "to": 3, "step": 1, "unit": "L"}],
+        "magnify": [{"from": 1, "to": 2}],
+        "marks": [{"at": 1.3, "line": 1}]}</script>
+    </m-numberline>
+  </div>
+  <div class="concl"><span>→ 1 目盛りは 0.1。1.3 は 1 と 0.1 が 3 つ</span></div>
+</section>
+
+<section id="g-numberline-3" class="slide">
+  <h2>1200 円の 2/3 はいくら（2 本の数直線）</h2>
+  <div class="body">
+    <m-numberline build="ticks,links,jumps,marks" style="height:440px">
+      <script type="application/json">{"lines": [{"from": 0, "to": 1200, "step": 400, "label": "代金", "unit": "円", "labels": [0, 1200]},
+                 {"from": 0, "to": 1, "step": "1/3", "label": "割合"}],
+        "link": [[1200, 1], [800, "2/3"]],
+        "jumps": [{"from": 1200, "to": 800, "label": "×2/3"}],
+        "marks": [{"at": 800, "kind": "box"}]}</script>
+    </m-numberline>
+  </div>
+</section>
+
+<section id="g-numberline-4" class="slide">
+  <h2>連立不等式の解（見せ方の種類）</h2>
+  <div class="body">
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:0 36px">
+      <m-numberline variant="fade" arrow="on" style="height:400px">
+        <script type="application/json">{"lines": [{"from": -3, "to": 5, "step": 1, "label": "フェード"}],
+          "ranges": [{"from": -1, "incl": [false, false], "label": "*x* > −1"}, {"to": 3, "incl": [true, true], "label": "*x* ≦ 3"}]}</script>
+      </m-numberline>
+      <m-numberline variant="draw" arrow="on" style="height:400px">
+        <script type="application/json">{"lines": [{"from": -3, "to": 5, "step": 1, "label": "線を引く"}],
+          "ranges": [{"from": -1, "incl": [false, false], "label": "*x* > −1"}, {"to": 3, "incl": [true, true], "label": "*x* ≦ 3"}]}</script>
+      </m-numberline>
+    </div>
+  </div>
+  <div class="concl"><span>→ 重なる部分が解：−1 &lt; <i>x</i> ≦ 3（左はフェード、右は線を引く）</span></div>
+</section>
+
+<section class="slide">
+  <h2>m-pie（変わった、v2.16.0）</h2>
+  <div class="body">
+    <p>円グラフとドーナツグラフ。切れの名前と値・割合は、大きい切れなら中に、小さい切れなら外に引き出し線で書く</p>
+    <ul>
+      <li>伝えたいこと：全体と内訳</li>
+      <li>見せ方：fade・sweep・grow</li>
+      <li>内容の分野：標準パーツ　サンプルのスライド：3 枚</li>
+    </ul>
+  </div>
+</section>
+
+<section id="g-pie-1" class="slide">
+  <h2>1 か月の支出の内訳（架空）</h2>
+  <div class="body">
+    <m-pie unit="万円" digits="1" show="both" style="height:440px">
+      <script type="application/json">{
+        "slices": [
+          {"label": "住まい", "value": 8.5},
+          {"label": "食費", "value": 7.2},
+          {"label": "教育・娯楽", "value": 3.1},
+          {"label": "光熱・通信", "value": 2.6},
+          {"label": "交通", "value": 1.8},
+          {"label": "その他", "value": 2.0, "tone": "muted"}
+        ]
+      }</script>
+    </m-pie>
+  </div>
+  <div class="concl"><span>→ 住まいと食費で支出の 6 割を超える</span></div>
+</section>
+
+<section id="g-pie-2" class="slide">
+  <h2>通学の手段（ドーナツ、1 切れずつ。架空）</h2>
+  <div class="body">
+    <m-pie donut="0.56" unit="人" per-step="1" style="height:440px">
+      <script type="application/json">{
+        "center": "回答\n{total}",
+        "slices": [
+          {"label": "自転車", "value": 41},
+          {"label": "徒歩", "value": 32},
+          {"label": "バス", "value": 18},
+          {"label": "電車", "value": 9}
+        ]
+      }</script>
+    </m-pie>
+  </div>
+  <div class="concl"><span>→ 7 割が自転車か徒歩で通っている</span></div>
+</section>
+
+<section id="g-pie-3" class="slide">
+  <h2>見せ方の種類（variant）</h2>
+  <div class="body">
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:0 28px;text-align:center;font-size:27px">
+      <div>フェード（fade、既定）</div><div>掃くように（sweep）</div><div>大きくなる（grow）</div>
+      <m-pie variant="fade" style="height:340px">
+        <script type="application/json">{"slices": [{"label": "A", "value": 50}, {"label": "B", "value": 30}, {"label": "C", "value": 20}]}</script>
+      </m-pie>
+      <m-pie variant="sweep" style="height:340px">
+        <script type="application/json">{"slices": [{"label": "A", "value": 50}, {"label": "B", "value": 30}, {"label": "C", "value": 20}]}</script>
+      </m-pie>
+      <m-pie variant="grow" style="height:340px">
+        <script type="application/json">{"slices": [{"label": "A", "value": 50}, {"label": "B", "value": 30}, {"label": "C", "value": 20}]}</script>
+      </m-pie>
+    </div>
+  </div>
+  <div class="concl"><span>→ 書かなければ最初の見せ方（fade）になる。数字は架空</span></div>
+</section>
+
+<section class="slide">
+  <h2>m-scatter（変わった、v2.16.0）</h2>
+  <div class="body">
+    <p>散布図。点の組（系列）をステップごとに出し、そのあと傾向の線（最小二乗の直線か、書いた 2 点）を引く</p>
+    <ul>
+      <li>伝えたいこと：2 つの量の関係</li>
+      <li>見せ方：fade・sweep・grow</li>
+      <li>内容の分野：標準パーツ　サンプルのスライド：3 枚</li>
+    </ul>
+  </div>
+</section>
+
+<section id="g-scatter-1" class="slide">
+  <h2>最高気温とアイスの売上：平日と休日（架空）</h2>
+  <div class="body">
+    <m-scatter xr="[20,36]" yr="[0,600]" xt="[20,24,28,32,36]" yt="[0,200,400,600]" xl="最高気温（℃）" yl="売上（個）" style="height:430px">
+      <script type="application/json">{
+        "series": [
+          {"label": "平日", "points": [[21.2, 53], [22.6, 8], [22.9, 144], [27.5, 180], [27.6, 188], [29.0, 268], [29.7, 230], [31.4, 279], [31.7, 316], [33.8, 355], [34.2, 261], [34.2, 281]]},
+          {"label": "休日", "points": [[23.0, 257], [23.3, 269], [23.9, 270], [23.9, 303], [25.1, 321], [29.4, 380], [29.6, 373], [30.5, 379], [33.2, 452], [33.2, 561], [33.5, 446], [34.5, 457]]}
+        ],
+        "trend": [{"fit": "linear", "series": 0, "tone": "series-1", "dash": true}, {"fit": "linear", "series": 1, "tone": "series-2", "dash": true}]
+      }</script>
+    </m-scatter>
+  </div>
+  <div class="concl"><span>→ 休日はどの気温でも平日より多く売れる</span></div>
+</section>
+
+<section id="g-scatter-2" class="slide">
+  <h2>傾向の強さと外れた日（架空）</h2>
+  <div class="body">
+    <m-scatter xr="[20,36]" yr="[0,500]" xt="[20,24,28,32,36]" yt="[0,100,200,300,400,500]" xl="最高気温（℃）" yl="売上（個）" style="height:430px">
+      <script type="application/json">{
+        "series": [{"points": [[23.1, 176], [24.0, 206], [24.3, 159], [24.6, 223], [25.2, 314], [26.5, 277], [27.6, 310],
+          {"x": 27.6, "y": 440, "label": "花火大会の日", "anchor": "left"},
+          [29.3, 370], [29.5, 334], [29.8, 361], [29.9, 394], [30.4, 441], [31.1, 442], [31.4, 359], [32.7, 372], [32.7, 439],
+          [33.3, 472], [33.9, 420], [34.1, 428]]}],
+        "trend": {"fit": "linear", "label": "傾向（r = {r}）", "tone": "emph"}
+      }</script>
+    </m-scatter>
+  </div>
+  <div class="concl"><span>→ 暑い日ほど売れる。1 ℃ 上がると約 23 個増える</span></div>
+</section>
+
+<section id="g-scatter-3" class="slide">
+  <h2>見せ方の種類（variant）</h2>
+  <div class="body">
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:0 28px">
+      <m-scatter variant="fade" xr="[0,10]" yr="[0,10]" xt="[0,5,10]" yt="[0,5,10]" style="height:400px">
+        <script type="application/json">{"series": [{"label": "フェード（fade、既定）", "points": [[1, 2.2], [2, 2.1], [3, 3.9], [4, 3.6], [5, 5.4], [6, 5.1], [7, 7.2], [8, 6.6], [9, 8.4]]}], "trend": "linear"}</script>
+      </m-scatter>
+      <m-scatter variant="sweep" xr="[0,10]" yr="[0,10]" xt="[0,5,10]" yt="[0,5,10]" style="height:400px">
+        <script type="application/json">{"series": [{"label": "左から（sweep）", "points": [[1, 2.2], [2, 2.1], [3, 3.9], [4, 3.6], [5, 5.4], [6, 5.1], [7, 7.2], [8, 6.6], [9, 8.4]]}], "trend": "linear"}</script>
+      </m-scatter>
+      <m-scatter variant="grow" xr="[0,10]" yr="[0,10]" xt="[0,5,10]" yt="[0,5,10]" style="height:400px">
+        <script type="application/json">{"series": [{"label": "大きくなる（grow）", "points": [[1, 2.2], [2, 2.1], [3, 3.9], [4, 3.6], [5, 5.4], [6, 5.1], [7, 7.2], [8, 6.6], [9, 8.4]]}], "trend": "linear"}</script>
+      </m-scatter>
+    </div>
+  </div>
+  <div class="concl"><span>→ 書かなければ最初の見せ方（fade）になる。数字は架空</span></div>
+</section>
+
+<section class="slide">
+  <h2>m-seq（変わった、v2.16.0）</h2>
+  <div class="body">
+    <p>観測を 1 つずつ加え、分布と数値が更新されていく様子を見せる（前の分布は薄く残す）</p>
+    <ul>
+      <li>伝えたいこと：ばらつき</li>
+      <li>見せ方：1 種類</li>
+      <li>内容の分野：数理・統計　サンプルのスライド：1 枚</li>
+    </ul>
+  </div>
+</section>
+
+<section id="g-seq-1" class="slide">
+  <h2>平均の事後分布が観測ごとに狭くなる（観測は架空）</h2>
+  <div class="body">
+    <m-seq per-step="2" xr="[-3,4]" yr="[0,1.25]" xt="[-2,0,2,4]" yt="[0,0.5,1]" yf="1" xl="平均 *θ*" yl="密度" style="height:420px">
+      <script type="application/json" id="seq-data">{}</script>
+    </m-seq>
+  </div>
+  <div class="concl"><span>→ 観測が増えるほど，事後分布は狭くなる</span></div>
+</section>
+
+<section class="slide">
+  <h2>m-tape（変わった、v2.16.0）</h2>
+  <div class="body">
+    <p>テープ図・線分図。全体や部分を括弧で括り、わからない量は □ か ?。行から行へ「2 倍」の矢印</p>
+    <ul>
+      <li>伝えたいこと：全体と内訳・比べる（量・特徴）</li>
+      <li>見せ方：fade・grow</li>
+      <li>内容の分野：数理・統計　サンプルのスライド：4 枚</li>
+    </ul>
+  </div>
+</section>
+
+<section id="g-tape-1" class="slide">
+  <h2>2 つの量をくらべる：B のリボンは何 m？</h2>
+  <div class="body">
+    <m-tape style="height:440px">
+      <script type="application/json">{"rows": [
+          {"label": "A", "segs": [{"v": 12, "label": "12 m"}]},
+          {"label": "B", "segs": [{"v": 12, "label": "12 m"}, {"v": 5, "label": "5 m"}]}],
+        "brace": [{"row": 1, "from": 0, "to": 1, "label": "□ m", "side": "below"}]}</script>
+    </m-tape>
+  </div>
+  <div class="concl"><span>→ B は A より 5 m 長い。□ = 12 + 5 = 17</span></div>
+</section>
+
+<section id="g-tape-2" class="slide">
+  <h2>□を使った式：みかんははじめに何こ？</h2>
+  <div class="body">
+    <m-tape style="height:360px">
+      <script type="application/json">{"rows": [{"segs": [{"v": 8, "label": "食べた 8 こ"}, {"v": 15, "label": "のこり 15 こ"}]}],
+        "brace": [{"row": 0, "from": 0, "to": 1, "label": "はじめ □ こ", "side": "above"}]}</script>
+    </m-tape>
+  </div>
+  <div class="concl"><span>→ □ − 8 = 15 だから、□ = 15 + 8 = 23</span></div>
+</section>
+
+<section id="g-tape-3" class="slide">
+  <h2>B のテープは A のテープの何倍？（線分図）</h2>
+  <div class="body">
+    <m-tape kind="line" style="height:380px">
+      <script type="application/json">{"rows": [
+          {"label": "A のテープ", "segs": [{"v": 12, "label": "12 m"}]},
+          {"label": "B のテープ", "segs": [{"v": 12}, {"v": 12}, {"v": 12}]}],
+        "brace": [{"row": 1, "from": 0, "to": 2, "label": "36 m", "side": "below"}],
+        "times": [{"from": 0, "to": 1, "label": "□ 倍"}]}</script>
+    </m-tape>
+  </div>
+  <div class="concl"><span>→ B は A（12 m）の 3 つ分で 36 m。36 ÷ 12 = 3 で 3 倍</span></div>
+</section>
+
+<section id="g-tape-4" class="slide">
+  <h2>見せ方の種類（variant）</h2>
+  <div class="body">
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:0 36px">
+      <m-tape variant="fade" build="rows" style="height:400px">
+        <script type="application/json">{"rows": [{"label": "弟", "segs": [{"v": 20, "label": "20 まい"}]},
+          {"label": "兄", "segs": [{"v": 40, "unknown": "□", "label": "まい"}]}],
+          "times": [{"from": 0, "to": 1, "label": "2 倍"}]}</script>
+      </m-tape>
+      <m-tape variant="grow" build="rows" style="height:400px">
+        <script type="application/json">{"rows": [{"label": "弟", "segs": [{"v": 20, "label": "20 まい"}]},
+          {"label": "兄", "segs": [{"v": 40, "unknown": "□", "label": "まい"}]}],
+          "times": [{"from": 0, "to": 1, "label": "2 倍"}]}</script>
+      </m-tape>
+    </div>
+  </div>
+  <div class="concl"><span>→ 左はフェード（既定）、右は左から伸びる</span></div>
+</section>
+
+<section class="slide">
+  <h2>m-vector（変わった、v2.16.0）</h2>
+  <div class="body">
+    <p>平面のベクトルの和・差・スカラー倍・正射影・内積と、2 × 2 の行列の 1 次変換・固有ベクトル・基底の取り替えを 1 ステップずつ。右に式</p>
+    <ul>
+      <li>伝えたいこと：仕組みをモデルで見る・場所・地図</li>
+      <li>見せ方：1 種類</li>
+      <li>内容の分野：数理・統計　サンプルのスライド：4 枚</li>
+    </ul>
+  </div>
+</section>
+
+<section id="g-vector-1" class="slide">
+  <h2>ベクトルの和は、矢印を先につないで求める</h2>
+  <div class="body">
+    <m-vector style="height:400px">
+      <script type="application/json">{"range": [-3, 4, -1, 4], "vectors": [{"id": "a", "v": [2, 1]}, {"id": "b", "v": [-1, 2]}], "ops": [{"sum": ["a", "b"], "as": "c", "value": [1, 3]}, {"dot": ["a", "b"], "value": 0}]}</script>
+    </m-vector>
+  </div>
+  <div class="concl"><span>内積が 0 なので、a と b は直交している</span></div>
+</section>
+
+<section id="g-vector-2" class="slide">
+  <h2>正射影の長さと内積の関係</h2>
+  <div class="body">
+    <m-vector style="height:400px">
+      <script type="application/json">{"range": [-1, 4, -1, 4], "vectors": [{"id": "a", "v": [1, 3]}, {"id": "b", "v": [3, 1]}], "ops": [{"proj": ["a", "b"], "value": [1.8, 0.6]}, {"dot": ["a", "b"], "value": 6}]}</script>
+    </m-vector>
+  </div>
+  <div class="concl"><span>正射影は、内積 ÷ |b|² を b に掛けたもの</span></div>
+</section>
+
+<section id="g-vector-3" class="slide">
+  <h2>行列で平面を動かすと、固有ベクトルの向きは変わらない</h2>
+  <div class="body">
+    <m-vector style="height:400px">
+      <script type="application/json">{"vectors": [{"id": "v", "v": [1, 1]}, {"id": "w", "v": [1, 0]}], "matrix": [[2, 1], [1, 2]], "show": ["grid", "unit", "eigen"]}</script>
+    </m-vector>
+  </div>
+  <div class="concl"><span>v は 3 倍に伸びるだけで、向きは同じまま</span></div>
+</section>
+
+<section id="g-vector-4" class="slide">
+  <h2>基底を取り替えて、同じベクトルを別の座標で読む</h2>
+  <div class="body">
+    <m-vector style="height:400px">
+      <script type="application/json">{"vectors": [{"id": "a", "v": [2, 1]}], "basis": [[1, 1], [-1, 1]]}</script>
+    </m-vector>
+  </div>
+  <div class="concl"><span>同じ矢印でも、基底が変われば座標の数が変わる</span></div>
+</section>
+
+<section class="slide">
+  <h2>m-venn（変わった、v2.16.0）</h2>
+  <div class="body">
+    <p>2 つか 3 つの集合の円（ベン図）。集合を 1 つずつ出し、最後に重なりを強めてその中の項目を出す</p>
+    <ul>
+      <li>伝えたいこと：重なり</li>
+      <li>見せ方：fade・draw</li>
+      <li>内容の分野：標準パーツ　サンプルのスライド：3 枚</li>
+    </ul>
+  </div>
+</section>
+
+<section id="g-venn-1" class="slide">
+  <h2>哺乳類と海の生き物</h2>
+  <div class="body">
+    <m-venn style="height:420px">
+      <script type="application/json">{
+        "sets": [{"label": "哺乳類"}, {"label": "海の生き物"}],
+        "regions": {
+          "A": ["ライオン", "ウマ", "コウモリ"],
+          "B": ["マグロ", "タコ", "サンゴ"],
+          "AB": ["クジラ", "イルカ", "ジュゴン"]
+        }
+      }</script>
+    </m-venn>
+  </div>
+  <div class="concl"><span>→ クジラもイルカも、海にすむ哺乳類</span></div>
+</section>
+
+<section id="g-venn-2" class="slide">
+  <h2>3 つのスキルの重なり（架空）</h2>
+  <div class="body">
+    <m-venn style="height:430px">
+      <script type="application/json">{
+        "sets": [{"label": "統計"}, {"label": "プログラミング"}, {"label": "現場の知識"}],
+        "regions": {
+          "AB": "機械学習",
+          "AC": "調査",
+          "BC": "自動化",
+          "ABC": "データ\n活用"
+        }
+      }</script>
+    </m-venn>
+  </div>
+  <div class="concl"><span>→ 3 つが重なるところで、データが仕事に生きる</span></div>
+</section>
+
+<section id="g-venn-3" class="slide">
+  <h2>見せ方の種類（variant）</h2>
+  <div class="body">
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:0 40px">
+      <div><p class="vlabel">fade（既定）</p>
+      <m-venn variant="fade" style="height:330px">
+        <script type="application/json">{"sets": [{"label": "朝型"}, {"label": "運動部"}], "regions": {"AB": ["早朝練習"]}}</script>
+      </m-venn></div>
+      <div><p class="vlabel">draw（線を引いてから塗る）</p>
+      <m-venn variant="draw" style="height:330px">
+        <script type="application/json">{"sets": [{"label": "朝型"}, {"label": "運動部"}], "regions": {"AB": ["早朝練習"]}}</script>
+      </m-venn></div>
+    </div>
+  </div>
+  <div class="concl"><span>→ 書かなければ最初の見せ方（fade）になる。例は架空</span></div>
+</section>
+
+<section class="slide">
+  <h2>m-balance</h2>
+  <div class="body">
+    <p>確率の重りを置き、支点が期待値でつり合う様子を示す</p>
+    <ul>
+      <li>伝えたいこと：仕組みをモデルで見る</li>
+      <li>見せ方：1 種類</li>
+      <li>内容の分野：数理・統計　サンプルのスライド：1 枚</li>
+    </ul>
+  </div>
+</section>
+
+<section id="g-balance-1" class="slide">
+  <h2>期待値でつり合う（架空データ）</h2>
+  <div class="body"><m-balance style="height:440px"><script type="application/json">{"values":[0,1,2,3],"probs":[0.1,0.3,0.4,0.2],"name":"X"}</script></m-balance></div>
+  <div class="concl"><span>架空の分布。確率を重りとすると期待値が支点になる</span></div>
+</section>
+
+<section class="slide">
+  <h2>m-bars</h2>
+  <div class="body">
+    <p>棒をステップごとに 0 から伸ばす（縦棒・横棒・組の棒・積み上げ棒）。値の軸の上限をステップで広げて「軸を突き抜ける伸び」も見せられる</p>
+    <ul>
+      <li>伝えたいこと：比べる（量・特徴）・順位・時間での変化・全体と内訳</li>
+      <li>見せ方：1 種類</li>
+      <li>内容の分野：標準パーツ　サンプルのスライド：7 枚</li>
+    </ul>
+  </div>
+</section>
+
+<section id="g-bars-1" class="slide">
+  <h2>年ごとの売上（架空）</h2>
+  <div class="body">
+    <m-bars unit="億円" digits="1" al="売上" style="height:400px">
+      <script type="application/json">{
+        "groups": [
+          {"label": "1 年目", "value": 0.4},
+          {"label": "2 年目", "value": 1.1},
+          {"label": "3 年目", "value": 2.6},
+          {"label": "4 年目", "value": 7.9, "tone": "emph", "step": 4}
+        ],
+        "scale": [{"step": 4, "max": 9, "at": 0.6}]
+      }</script>
+    </m-bars>
+  </div>
+  <div class="concl"><span>→ 4 年目は前の軸に収まらない伸び</span></div>
+</section>
+
+<section id="g-bars-2" class="slide">
+  <h2>聞き取りで多かった不満（架空）</h2>
+  <div class="body">
+    <m-bars orient="h" unit="人" per-step="0" ticks="false" style="height:400px">
+      <script type="application/json">{
+        "groups": [
+          {"label": "書く時間が足りない", "value": 23, "tone": "emph"},
+          {"label": "数字の転記の誤り", "value": 17},
+          {"label": "書式がそろわない", "value": 12},
+          {"label": "承認が遅い", "value": 7}
+        ]
+      }</script>
+    </m-bars>
+  </div>
+  <div class="concl"><span>→ 一番の不満は書く時間</span></div>
+</section>
+
+<section id="g-bars-3" class="slide">
+  <h2>2 つの系列を並べる（架空）</h2>
+  <div class="body">
+    <m-bars unit="%" style="height:400px">
+      <script type="application/json">{
+        "series": [{"label": "導入前"}, {"label": "導入後"}],
+        "groups": [
+          {"label": "A 部門", "values": [42, 18]},
+          {"label": "B 部門", "values": [35, 15]},
+          {"label": "C 部門", "values": [51, 20]}
+        ]
+      }</script>
+    </m-bars>
+  </div>
+  <div class="concl"><span>→ どの部門でも残業の割合が下がった</span></div>
+</section>
+
+<section id="g-bars-4" class="slide">
+  <h2>売上の内訳を積み上げる（stack。架空）</h2>
+  <div class="body">
+    <m-bars stack="true" unit="億円" digits="1" al="売上" style="height:420px">
+      <script type="application/json">{
+        "series": [{"label": "店頭"}, {"label": "通販"}, {"label": "卸"}],
+        "groups": [
+          {"label": "1 年目", "values": [2.4, 0.6, 1.0]},
+          {"label": "2 年目", "values": [2.5, 1.4, 1.1]},
+          {"label": "3 年目", "values": [2.3, 2.6, 1.2]},
+          {"label": "4 年目", "values": [2.2, 3.9, 1.2], "tone": "emph"}
+        ]
+      }</script>
+    </m-bars>
+  </div>
+  <div class="concl"><span>→ 伸びたのは通販。店頭はほぼ横ばい</span></div>
+</section>
+
+<section id="g-bars-5" class="slide">
+  <h2>前の年からの増減と、答えの割合（架空）</h2>
+  <div class="body">
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:40px">
+      <m-bars unit="%" digits="1" al="前年比" aria-label="店ごとの売上の前年比（負の値）" style="height:420px">
+        <script type="application/json">{
+          "groups": [
+            {"label": "北店", "value": 4.2},
+            {"label": "駅前店", "value": -3.1, "tone": "emph"},
+            {"label": "南店", "value": 1.5},
+            {"label": "西店", "value": -0.8}
+          ]
+        }</script>
+      </m-bars>
+      <m-bars stack="percent" orient="h" per-step="0" ticks="false" aria-label="学年ごとの答えの割合（100 % 積み上げ）" style="height:420px">
+        <script type="application/json">{
+          "series": [{"label": "はい"}, {"label": "いいえ"}, {"label": "未定"}],
+          "groups": [
+            {"label": "1 年", "values": [48, 30, 42]},
+            {"label": "2 年", "values": [66, 24, 30]},
+            {"label": "3 年", "values": [72, 24, 24]}
+          ]
+        }</script>
+      </m-bars>
+    </div>
+  </div>
+  <div class="concl"><span>→ 駅前店だけが大きく減った。学年が上がるほど「はい」が増える</span></div>
+</section>
+
+<section id="g-bars-6" class="slide">
+  <h2>3 つの教え方の平均点（誤差棒は 95 % 信頼区間、架空）</h2>
+  <div class="body">
+    <m-bars unit="点" digits="1" al="平均点" style="height:440px">
+      <script type="application/json">{
+        "groups": [
+          {"label": "講義だけ", "value": 61.2, "err": [57.0, 65.4]},
+          {"label": "演習あり", "value": 68.5, "err": [64.6, 72.4]},
+          {"label": "演習と\n振り返り", "value": 74.1, "err": [70.3, 77.9], "tone": "emph"}
+        ],
+        "sig": [{"from": 0, "to": 2, "label": "**"}, {"from": 0, "to": 1, "label": "*"}]
+      }</script>
+    </m-bars>
+  </div>
+  <div class="concl"><span>→ 振り返りを加えた組の平均点が最も高い</span></div>
+</section>
+
+<section id="g-bars-7" class="slide noconcl">
+  <h2>点と誤差棒（mark="dot"、95 % 信頼区間、架空）</h2>
+  <div class="body">
+    <m-bars mark="dot" unit="%" al="正答率" per-step="0" style="height:440px">
+      <script type="application/json">{
+        "series": [{"label": "図あり"}, {"label": "図なし"}],
+        "groups": [
+          {"label": "問 1", "values": [72, 58], "err": [[64, 80], [49, 67]]},
+          {"label": "問 2", "values": [55, 51], "err": [[46, 64], [42, 60]]}
+        ],
+        "sig": [{"group": 0, "from": 0, "to": 1}]
+      }</script>
+    </m-bars>
+  </div>
+</section>
+
+<section class="slide">
+  <h2>m-boxplot</h2>
+  <div class="body">
+    <p>箱ひげ図。値を並べ、中央値・四分位数を求める手順のとおりに組み立てる。群を並べて比べる</p>
+    <ul>
+      <li>伝えたいこと：ばらつき・比べる（量・特徴）</li>
+      <li>見せ方：fade・draw</li>
+      <li>内容の分野：数理・統計　サンプルのスライド：3 枚</li>
+    </ul>
+  </div>
+</section>
+
+<section id="g-boxplot-1" class="slide">
+  <h2>箱ひげ図のかき方：1 か月に読んだ本（架空の 11 人）</h2>
+  <div class="body">
+    <m-boxplot xl="冊数（冊）" xr="[0,20]" xt="[0,2,4,6,8,10,12,14,16,18,20]" style="height:440px">
+      <script type="application/json">{"groups": [{"values": [12, 5, 9, 18, 7, 3, 13, 8, 15, 6, 10]}]}</script>
+    </m-boxplot>
+  </div>
+  <div class="concl"><span>→ 小さい順に並べ、中央値と前半・後半の中央値（四分位数）で箱にする</span></div>
+</section>
+
+<section id="g-boxplot-2" class="slide">
+  <h2>3 つの組の数学の得点（架空の各 15 人）</h2>
+  <div class="body">
+    <m-boxplot orient="v" build="whole" dots="on" outliers="on" yl="得点（点）" yr="[30,100]" yt="[30,40,50,60,70,80,90,100]" style="height:440px">
+      <script type="application/json">{"groups": [
+        {"label": "A 組", "values": [42, 48, 51, 55, 57, 58, 60, 61, 63, 64, 66, 68, 70, 72, 75]},
+        {"label": "B 組", "values": [50, 56, 60, 62, 65, 67, 68, 70, 71, 73, 74, 76, 79, 82, 99]},
+        {"label": "C 組", "values": [35, 45, 52, 54, 58, 60, 61, 62, 64, 66, 67, 69, 71, 73, 80]}]}</script>
+    </m-boxplot>
+  </div>
+  <div class="concl"><span>→ B 組は箱が高い。99 点は 1.5 × 四分位範囲より外の外れ値</span></div>
+</section>
+
+<section id="g-boxplot-3" class="slide">
+  <h2>見せ方の種類（variant）</h2>
+  <div class="body">
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:0 36px">
+      <m-boxplot variant="fade" build="whole" dots="on" xl="フェード（fade、既定）" xr="[0,20]" style="height:400px">
+        <script type="application/json">{"groups": [{"label": "前", "values": [3, 5, 6, 7, 8, 9, 10, 12, 13, 15, 18]}, {"label": "後", "values": [6, 8, 9, 10, 11, 12, 12, 13, 14, 16, 17]}]}</script>
+      </m-boxplot>
+      <m-boxplot variant="draw" build="whole" dots="on" xl="線を引く（draw）" xr="[0,20]" style="height:400px">
+        <script type="application/json">{"groups": [{"label": "前", "values": [3, 5, 6, 7, 8, 9, 10, 12, 13, 15, 18]}, {"label": "後", "values": [6, 8, 9, 10, 11, 12, 12, 13, 14, 16, 17]}]}</script>
+      </m-boxplot>
+    </div>
+  </div>
+  <div class="concl"><span>→ 書かなければ最初の見せ方（fade）になる。値は架空</span></div>
+</section>
+
+<section class="slide">
+  <h2>m-cards</h2>
+  <div class="body">
+    <p>カード（番号の丸・アイコン・見出し・説明）を横一列か 2 段に並べ、ステップごとに出す。矢印で順を、枠の色で強調を見せる</p>
+    <ul>
+      <li>伝えたいこと：手順・工程・まとめる・分ける</li>
+      <li>見せ方：rise・fade・draw</li>
+      <li>内容の分野：標準パーツ　サンプルのスライド：3 枚</li>
+    </ul>
+  </div>
+</section>
+
+<section id="g-cards-1" class="slide">
+  <h2>新しい窓口の進め方（架空の会社）</h2>
+  <div class="body">
+    <m-cards arrows nums style="height:330px">
+      <script type="application/json">{
+        "cards": [
+          {"icon": "messages", "title": "聞く", "text": "店に来た人の困りごとを 5 分で聞き取る"},
+          {"icon": "clipboard-list", "title": "まとめる", "text": "聞いたことを 1 枚の紙にまとめる"},
+          {"icon": "users", "title": "相談する", "text": "週に 1 回、担当の 3 人で話し合う"},
+          {"icon": "circle-check", "title": "返す", "text": "1 週間以内に答えを返す"}
+        ]
+      }</script>
+    </m-cards>
+  </div>
+  <div class="concl"><span>→ 聞いてから答えるまでを 1 週間に</span></div>
+</section>
+
+<section id="g-cards-2" class="slide">
+  <h2>4 つの店の工夫（架空）</h2>
+  <div class="body">
+    <m-cards layout="grid" hilite="4" style="height:420px">
+      <script type="application/json">{
+        "cards": [
+          {"n": "A", "icon": "building-store", "title": "駅前店", "text": "朝の 30 分だけ、受け取り専用の列を作った"},
+          {"n": "B", "icon": "calendar-event", "title": "川沿い店", "text": "予約の日を前の日に電話で知らせるようにした"},
+          {"n": "C", "icon": "map-pin", "title": "山の手店", "text": "店の場所の地図を、紙で配るのをやめて看板にした"},
+          {"n": "D", "icon": "chart-bar", "title": "港町店", "text": "待ち時間を毎日数えて、壁に貼り出した。来た人の 8 割が「待ちが短くなった」と答えた", "tone": "emph"}
+        ]
+      }</script>
+    </m-cards>
+  </div>
+  <div class="concl"><span>→ 数えて見せた店で、待ちが短くなったと感じる人がいちばん多い</span></div>
+</section>
+
+<section id="g-cards-3" class="slide">
+  <h2>まとめて出す（per-step="0"、見せ方 draw）</h2>
+  <div class="body">
+    <m-cards per-step="0" variant="draw" hilite="last" style="height:300px">
+      <script type="application/json">{
+        "cards": [
+          {"icon": "leaf", "title": "材料", "text": "地元の野菜を使う"},
+          {"icon": "truck", "title": "運ぶ", "text": "朝に届けて、その日のうちに売る"},
+          {"icon": "heart", "title": "残さない", "text": "売れ残りは翌日の総菜に"}
+        ]
+      }</script>
+    </m-cards>
+  </div>
+</section>
+
+<section class="slide">
+  <h2>m-checklist</h2>
+  <div class="body">
+    <p>確かめる項目を並べ、ステップごとに 1 つずつ印（✓・×）を描く。印はスライドの中身で、見ている人の操作を保存しない</p>
+    <ul>
+      <li>伝えたいこと：手順・工程</li>
+      <li>見せ方：1 種類</li>
+      <li>内容の分野：標準パーツ　サンプルのスライド：3 枚</li>
+    </ul>
+  </div>
+</section>
+
+<section id="g-checklist-1" class="slide">
+  <h2>実習に入る前に</h2>
+  <div class="body">
+    <m-checklist style="height:440px">
+      <script type="application/json">{
+        "items": [
+          {"label": "名札を胸に付けた"},
+          {"label": "指輪と腕時計を外した"},
+          {"label": "石けんで手を洗った", "note": "指の間と爪の先まで 30 秒"},
+          {"label": "手を乾かし、消毒した"}
+        ]
+      }</script>
+    </m-checklist>
+  </div>
+  <div class="concl"><span>→ 4 つがそろってから実習室に入る</span></div>
+</section>
+
+<section id="g-checklist-2" class="slide noconcl">
+  <h2>窓口に持ってくるもの（A 市の転入の手続き、架空）</h2>
+  <div class="body">
+    <m-checklist style="height:440px">
+      <script type="application/json">{
+        "items": [
+          {"label": "転出証明書", "note": "前に住んでいた市区町村で受け取る"},
+          {"label": "本人を確かめる書類", "note": "運転免許証・マイナンバーカードなど"},
+          {"label": "印鑑", "mark": "cross", "note": "要らない（署名でよい）"},
+          {"label": "国民健康保険の保険証", "mark": "none", "note": "加入している人だけ"}
+        ]
+      }</script>
+    </m-checklist>
+  </div>
+</section>
+
+<section id="g-checklist-3" class="slide noconcl">
+  <h2>項目も 1 つずつ出す（reveal="true"）</h2>
+  <div class="body">
+    <m-checklist reveal="true" style="height:440px">
+      <script type="application/json">{
+        "items": [
+          {"label": "患者さんの名前を、本人に言ってもらう"},
+          {"label": "リストバンドの名前と照らし合わせる"},
+          {"label": "これから行うことを説明する"}
+        ]
+      }</script>
+    </m-checklist>
+  </div>
+</section>
+
+<section class="slide">
+  <h2>m-ci</h2>
+  <div class="body">
+    <p>正規標本の区間を重ね、母平均を含む割合で信頼水準を説明する</p>
+    <ul>
+      <li>伝えたいこと：仕組みをモデルで見る・ばらつき</li>
+      <li>見せ方：1 種類</li>
+      <li>内容の分野：数理・統計　サンプルのスライド：1 枚</li>
+    </ul>
+  </div>
+</section>
+
+<section id="g-ci-1" class="slide">
+  <h2>95 % の区間を繰り返す（シミュレーション）</h2>
+  <div class="body"><m-ci style="height:440px"><script type="application/json">{"mu":50,"sigma":10,"n":25,"reps":40,"level":0.95,"seed":2}</script></m-ci></div>
+  <div class="concl"><span>架空の標本。95 % は繰り返した区間が μ を含む割合</span></div>
+</section>
+
+<section class="slide">
+  <h2>m-classify2d</h2>
+  <div class="body">
+    <p>scikit-learn の分類を 2 次元で描く。点・領域・境界・確率や決定関数の等高線・サポートベクトル・ボロノイ図・決定木の分割・k 平均法</p>
+    <ul>
+      <li>伝えたいこと：まとめる・分ける・仕組みをモデルで見る</li>
+      <li>見せ方：1 種類</li>
+      <li>内容の分野：数理・統計　サンプルのスライド：5 枚</li>
+    </ul>
+  </div>
+</section>
+
+<section id="g-classify2d-1" class="slide">
+  <h2>ロジスティック回帰は確率 0.5 の線で分ける</h2>
+  <div class="body">
+    <m-classify2d style="height:440px">
+      <script type="application/json">{"axes":{"x":{"label":"x₁","range":[-3.39,3.57]},"y":{"label":"x₂","range":[-4.056,3.576]}},"classes":[{"id":0,"label":"A"},{"id":1,"label":"B"}],"points":[[-2.81,-0.12,0],[-2.74,-1.63,0],[1.94,2.94,1],[2.55,2.33,1],[-1.78,-1.35,0],[0.63,1.03,1],[-2.27,-1.23,0],[0.48,1.9,1],[-0.38,-1.13,0],[2.14,1.25,1],[0.9,0.41,1],[-1.58,-1.63,0],[-2.42,-2.02,0],[2.99,-0.12,1],[1.35,2.77,1],[-0.62,0.71,0],[-0.01,-0.76,0],[-0.75,0.98,0],[-1.4,-2.86,0],[1.14,-0.74,1],[1.65,-0.06,1],[0.29,-0.56,0],[2.51,1.85,1],[1.98,1.68,1],[-2.52,-1.71,0],[0.1,2.39,1],[-0.75,0.73,1],[2.61,2.12,1],[-2.05,-2.55,0],[-2.69,-1.21,0],[0.9,-0.91,1],[-1.54,-1.48,0],[2.35,-0.86,1],[-1.45,-1.4,0],[-0.87,-1.16,0],[0.83,1.15,1],[-0.52,-2.1,0],[-2.3,-3.42,0],[1.3,2.77,1],[-0.12,1.65,1]],"grid":{"nx":48,"ny":32,"labels":"0*41 1*7 0*40 1*8 0*39 1*9 0*38 1*10 0*37 1*11 0*36 1*12 0*35 1*13 0*34 1*14 0*32 1*16 0*31 1*17 0*30 1*18 0*29 1*19 0*28 1*20 0*27 1*21 0*26 1*22 0*25 1*23 0*24 1*24 0*23 1*25 0*22 1*26 0*21 1*27 0*20 1*28 0*19 1*29 0*17 1*31 0*16 1*32 0*15 1*33 0*14 1*34 0*13 1*35 0*12 1*36 0*11 1*37 0*10 1*38 0*9 1*39 0*8 1*40"},"fields":[{"name":"P(B)","class":1,"values":[[6.822e-05,8.646e-05,0.0001096,0.0001389,0.000176,0.000223,0.0002826,0.0003581,0.0004538,0.000575,0.0007286,0.0009232,0.00117,0.001482,0.001877,0.002378,0.003012,0.003814,0.004829,0.006112,0.007733,0.00978,0.01236,0.01561,0.01971,0.02484,0.03128,0.03931,0.0493,0.06167,0.07689,0.09548,0.118,0.145,0.1769,0.214,0.2565,0.3043,0.3566,0.4126,0.4709,0.5301,0.5884,0.6444,0.6966,0.7443,0.7867,0.8238],[8.788e-05,0.0001114,0.0001411,0.0001789,0.0002267,0.0002872,0.000364,0.0004613,0.0005845,0.0007406,0.0009385,0.001189,0.001506,0.001908,0.002417,0.003061,0.003877,0.004908,0.006212,0.007859,0.009939,0.01256,0.01587,0.02003,0.02524,0.03178,0.03993,0.05007,0.06262,0.07805,0.0969,0.1197,0.147,0.1792,0.2168,0.2597,0.3077,0.3604,0.4166,0.475,0.5342,0.5924,0.6481,0.7001,0.7474,0.7894,0.8261,0.8576],[0.0001132,0.0001435,0.0001818,0.0002304,0.000292,0.00037,0.0004689,0.0005941,0.0007528,0.0009539,0.001209,0.001531,0.00194,0.002457,0.003112,0.00394,0.004988,0.006314,0.007988,0.0101,0.01277,0.01613,0.02035,0.02565,0.03228,0.04056,0.05086,0.06359,0.07924,0.09834,0.1214,0.1491,0.1817,0.2196,0.2628,0.3112,0.3641,0.4205,0.4791,0.5382,0.5963,0.6518,0.7035,0.7504,0.7921,0.8285,0.8596,0.8858],[0.0001458,0.0001848,0.0002342,0.0002968,0.0003761,0.0004766,0.0006039,0.0007652,0.0009696,0.001229,0.001556,0.001972,0.002497,0.003163,0.004005,0.00507,0.006417,0.008118,0.01027,0.01298,0.01639,0.02068,0.02606,0.0328,0.04121,0.05165,0.06457,0.08044,0.0998,0.1232,0.1511,0.1841,0.2224,0.266,0.3147,0.3679,0.4245,0.4832,0.5423,0.6003,0.6555,0.7069,0.7535,0.7948,0.8308,0.8615,0.8874,0.909],[0.0001879,0.0002381,0.0003017,0.0003823,0.0004844,0.0006139,0.0007779,0.0009856,0.001249,0.001582,0.002004,0.002538,0.003215,0.004071,0.005153,0.006522,0.008251,0.01043,0.01319,0.01665,0.02101,0.02648,0.03332,0.04186,0.05246,0.06556,0.08166,0.1013,0.125,0.1533,0.1866,0.2252,0.2692,0.3183,0.3717,0.4285,0.4873,0.5464,0.6042,0.6592,0.7103,0.7565,0.7975,0.8331,0.8635,0.8891,0.9104,0.9279],[0.000242,0.0003067,0.0003886,0.0004924,0.000624,0.0007907,0.001002,0.001269,0.001608,0.002037,0.00258,0.003268,0.004138,0.005238,0.006629,0.008386,0.0106,0.0134,0.01692,0.02135,0.0269,0.03385,0.04252,0.05328,0.06657,0.08289,0.1028,0.1268,0.1554,0.1891,0.2281,0.2724,0.3218,0.3756,0.4325,0.4914,0.5504,0.6081,0.6629,0.7136,0.7595,0.8001,0.8353,0.8654,0.8907,0.9117,0.929,0.9431],[0.0003117,0.000395,0.0005005,0.0006343,0.0008037,0.001018,0.00129,0.001635,0.002071,0.002623,0.003321,0.004206,0.005324,0.006737,0.008523,0.01078,0.01362,0.0172,0.02169,0.02734,0.03439,0.04319,0.05411,0.06759,0.08414,0.1043,0.1286,0.1575,0.1916,0.231,0.2757,0.3254,0.3794,0.4366,0.4954,0.5544,0.612,0.6665,0.717,0.7625,0.8027,0.8376,0.8673,0.8922,0.913,0.9301,0.944,0.9553],[0.0004015,0.0005088,0.0006447,0.0008169,0.001035,0.001311,0.001661,0.002105,0.002666,0.003376,0.004275,0.005411,0.006848,0.008662,0.01095,0.01384,0.01748,0.02204,0.02777,0.03494,0.04387,0.05495,0.06863,0.08541,0.1058,0.1304,0.1597,0.1941,0.2339,0.279,0.329,0.3833,0.4406,0.4995,0.5585,0.6158,0.6701,0.7203,0.7654,0.8053,0.8398,0.8691,0.8938,0.9143,0.9311,0.9449,0.956,0.9649],[0.0005172,0.0006553,0.0008304,0.001052,0.001333,0.001689,0.002139,0.00271,0.003431,0.004345,0.0055,0.00696,0.008804,0.01113,0.01407,0.01776,0.0224,0.02822,0.03549,0.04456,0.05581,0.06969,0.0867,0.1074,0.1323,0.1619,0.1967,0.2368,0.2823,0.3326,0.3871,0.4446,0.5036,0.5625,0.6197,0.6737,0.7235,0.7683,0.8078,0.842,0.871,0.8954,0.9156,0.9322,0.9457,0.9567,0.9655,0.9726],[0.0006661,0.0008441,0.001069,0.001355,0.001717,0.002174,0.002754,0.003488,0.004416,0.00559,0.007074,0.008948,0.01131,0.01429,0.01805,0.02276,0.02867,0.03606,0.04526,0.05667,0.07075,0.088,0.109,0.1342,0.1642,0.1993,0.2398,0.2856,0.3363,0.391,0.4487,0.5077,0.5665,0.6235,0.6773,0.7268,0.7712,0.8103,0.8441,0.8728,0.8969,0.9168,0.9332,0.9465,0.9573,0.966,0.973,0.9786],[0.000858,0.001087,0.001377,0.001745,0.00221,0.002799,0.003545,0.004489,0.005682,0.007189,0.009094,0.0115,0.01453,0.01834,0.02313,0.02913,0.03663,0.04597,0.05755,0.07184,0.08932,0.1106,0.1361,0.1664,0.2019,0.2428,0.289,0.3399,0.3949,0.4527,0.5118,0.5705,0.6274,0.6809,0.73,0.7741,0.8128,0.8463,0.8746,0.8984,0.9181,0.9342,0.9474,0.958,0.9666,0.9734,0.9789,0.9833],[0.001105,0.0014,0.001774,0.002247,0.002845,0.003603,0.004562,0.005775,0.007307,0.009242,0.01168,0.01476,0.01863,0.0235,0.02959,0.03721,0.04669,0.05845,0.07293,0.09066,0.1122,0.138,0.1687,0.2046,0.2458,0.2923,0.3436,0.3988,0.4568,0.5159,0.5745,0.6312,0.6844,0.7332,0.777,0.8153,0.8484,0.8764,0.8999,0.9193,0.9352,0.9482,0.9586,0.9671,0.9738,0.9792,0.9836,0.987],[0.001423,0.001803,0.002284,0.002892,0.003662,0.004637,0.005869,0.007427,0.009393,0.01187,0.015,0.01894,0.02388,0.03007,0.0378,0.04743,0.05935,0.07405,0.09202,0.1138,0.14,0.171,0.2072,0.2489,0.2957,0.3473,0.4028,0.4608,0.52,0.5785,0.635,0.688,0.7364,0.7798,0.8178,0.8505,0.8782,0.9013,0.9205,0.9362,0.949,0.9593,0.9676,0.9743,0.9796,0.9838,0.9872,0.9899],[0.001832,0.002321,0.00294,0.003723,0.004713,0.005966,0.007548,0.009547,0.01207,0.01524,0.01924,0.02426,0.03055,0.0384,0.04817,0.06027,0.07518,0.09339,0.1155,0.142,0.1733,0.2099,0.2519,0.2991,0.351,0.4067,0.4649,0.524,0.5825,0.6388,0.6915,0.7396,0.7826,0.8202,0.8525,0.8799,0.9028,0.9217,0.9372,0.9497,0.9599,0.9681,0.9747,0.9799,0.9841,0.9874,0.99,0.9921],[0.002359,0.002988,0.003784,0.00479,0.006063,0.007672,0.009703,0.01226,0.01549,0.01955,0.02465,0.03104,0.03901,0.04893,0.06121,0.07632,0.09479,0.1172,0.144,0.1757,0.2127,0.255,0.3026,0.3548,0.4107,0.469,0.5281,0.5865,0.6425,0.6949,0.7427,0.7853,0.8226,0.8546,0.8816,0.9042,0.9228,0.9381,0.9505,0.9605,0.9686,0.9751,0.9802,0.9843,0.9876,0.9902,0.9922,0.9939],[0.003037,0.003846,0.004869,0.006163,0.007797,0.009861,0.01246,0.01574,0.01987,0.02505,0.03153,0.03963,0.04969,0.06215,0.07748,0.0962,0.1189,0.146,0.1781,0.2154,0.2581,0.306,0.3585,0.4146,0.473,0.5322,0.5904,0.6463,0.6984,0.7458,0.7881,0.825,0.8566,0.8833,0.9056,0.924,0.9391,0.9513,0.9612,0.9691,0.9755,0.9805,0.9846,0.9878,0.9903,0.9924,0.994,0.9952],[0.003909,0.004949,0.006264,0.007925,0.01002,0.01267,0.016,0.02019,0.02545,0.03204,0.04025,0.05047,0.06311,0.07866,0.09763,0.1206,0.148,0.1805,0.2182,0.2613,0.3095,0.3623,0.4186,0.4771,0.5363,0.5944,0.65,0.7018,0.7489,0.7908,0.8273,0.8586,0.885,0.907,0.9251,0.94,0.952,0.9618,0.9696,0.9758,0.9808,0.9848,0.988,0.9905,0.9925,0.9941,0.9953,0.9963],[0.00503,0.006366,0.008054,0.01019,0.01287,0.01626,0.02052,0.02586,0.03255,0.04089,0.05126,0.06409,0.07985,0.09908,0.1223,0.1501,0.1829,0.221,0.2645,0.313,0.3661,0.4226,0.4812,0.5403,0.5983,0.6537,0.7052,0.752,0.7935,0.8296,0.8606,0.8866,0.9084,0.9263,0.9409,0.9528,0.9624,0.9701,0.9762,0.9811,0.9851,0.9882,0.9906,0.9926,0.9942,0.9954,0.9964,0.9971],[0.00647,0.008186,0.01035,0.01308,0.01652,0.02085,0.02627,0.03306,0.04154,0.05206,0.06507,0.08106,0.1006,0.1241,0.1522,0.1854,0.2238,0.2676,0.3165,0.3699,0.4266,0.4853,0.5444,0.6023,0.6574,0.7086,0.755,0.7962,0.8319,0.8625,0.8883,0.9097,0.9274,0.9418,0.9535,0.963,0.9705,0.9766,0.9814,0.9853,0.9884,0.9908,0.9927,0.9943,0.9955,0.9964,0.9972,0.9978],[0.00832,0.01052,0.0133,0.01679,0.02118,0.02669,0.03359,0.04219,0.05288,0.06608,0.08229,0.102,0.1259,0.1543,0.1878,0.2267,0.2709,0.3201,0.3737,0.4306,0.4894,0.5484,0.6062,0.6611,0.712,0.758,0.7988,0.8342,0.8644,0.8899,0.911,0.9285,0.9427,0.9542,0.9635,0.971,0.977,0.9817,0.9855,0.9886,0.9909,0.9928,0.9943,0.9955,0.9965,0.9972,0.9978,0.9983],[0.01069,0.01351,0.01706,0.02153,0.02712,0.03413,0.04286,0.0537,0.06709,0.08353,0.1035,0.1277,0.1565,0.1904,0.2296,0.2741,0.3237,0.3775,0.4346,0.4934,0.5525,0.6101,0.6647,0.7153,0.761,0.8014,0.8365,0.8663,0.8915,0.9124,0.9295,0.9436,0.9549,0.9641,0.9715,0.9773,0.982,0.9858,0.9887,0.9911,0.993,0.9944,0.9956,0.9965,0.9973,0.9978,0.9983,0.9987],[0.01373,0.01734,0.02187,0.02756,0.03467,0.04353,0.05454,0.06812,0.08479,0.1051,0.1295,0.1587,0.1929,0.2325,0.2774,0.3273,0.3814,0.4386,0.4975,0.5565,0.6139,0.6684,0.7186,0.764,0.804,0.8387,0.8682,0.893,0.9137,0.9306,0.9444,0.9556,0.9647,0.9719,0.9777,0.9823,0.986,0.9889,0.9912,0.9931,0.9945,0.9957,0.9966,0.9973,0.9979,0.9983,0.9987,0.999],[0.01762,0.02222,0.028,0.03522,0.04422,0.05539,0.06917,0.08607,0.1066,0.1314,0.1609,0.1954,0.2354,0.2807,0.3309,0.3852,0.4426,0.5016,0.5605,0.6178,0.672,0.7219,0.7669,0.8066,0.8409,0.8701,0.8946,0.9149,0.9317,0.9453,0.9563,0.9652,0.9723,0.9781,0.9826,0.9862,0.9891,0.9914,0.9932,0.9946,0.9957,0.9966,0.9973,0.9979,0.9983,0.9987,0.999,0.9992],[0.02258,0.02845,0.03578,0.04492,0.05625,0.07023,0.08736,0.1082,0.1333,0.1631,0.198,0.2384,0.284,0.3345,0.3891,0.4467,0.5057,0.5646,0.6217,0.6756,0.7252,0.7698,0.8091,0.8431,0.8719,0.8961,0.9162,0.9327,0.9461,0.957,0.9658,0.9728,0.9784,0.9829,0.9864,0.9893,0.9915,0.9933,0.9947,0.9958,0.9967,0.9974,0.9979,0.9984,0.9987,0.999,0.9992,0.9994],[0.0289,0.03635,0.04562,0.05712,0.0713,0.08867,0.1098,0.1352,0.1653,0.2006,0.2413,0.2873,0.3381,0.393,0.4507,0.5098,0.5686,0.6255,0.6792,0.7285,0.7727,0.8116,0.8452,0.8737,0.8976,0.9175,0.9337,0.947,0.9577,0.9663,0.9732,0.9787,0.9832,0.9867,0.9894,0.9917,0.9934,0.9948,0.9959,0.9967,0.9974,0.998,0.9984,0.9987,0.999,0.9992,0.9994,0.9995],[0.03693,0.04634,0.05801,0.07239,0.09,0.1114,0.1371,0.1676,0.2033,0.2443,0.2907,0.3418,0.3969,0.4548,0.5139,0.5726,0.6293,0.6827,0.7317,0.7756,0.8141,0.8473,0.8755,0.8991,0.9187,0.9347,0.9478,0.9583,0.9668,0.9736,0.9791,0.9834,0.9869,0.9896,0.9918,0.9935,0.9949,0.9959,0.9968,0.9975,0.998,0.9984,0.9988,0.999,0.9992,0.9994,0.9995,0.9996],[0.04707,0.05891,0.0735,0.09135,0.113,0.139,0.1699,0.2059,0.2474,0.2941,0.3455,0.4008,0.4588,0.518,0.5766,0.6331,0.6862,0.7349,0.7784,0.8166,0.8494,0.8773,0.9006,0.9199,0.9357,0.9486,0.959,0.9673,0.9741,0.9794,0.9837,0.9871,0.9898,0.9919,0.9936,0.995,0.996,0.9969,0.9975,0.998,0.9985,0.9988,0.999,0.9992,0.9994,0.9995,0.9996,0.9997],[0.05982,0.07462,0.09272,0.1147,0.141,0.1722,0.2086,0.2504,0.2975,0.3492,0.4048,0.4629,0.522,0.5806,0.6369,0.6897,0.738,0.7812,0.819,0.8515,0.8791,0.9021,0.9211,0.9367,0.9494,0.9596,0.9679,0.9745,0.9797,0.9839,0.9873,0.9899,0.992,0.9937,0.995,0.9961,0.9969,0.9976,0.9981,0.9985,0.9988,0.9991,0.9993,0.9994,0.9995,0.9996,0.9997,0.9998],[0.07576,0.0941,0.1163,0.143,0.1745,0.2113,0.2535,0.3009,0.3529,0.4087,0.467,0.5261,0.5845,0.6407,0.6932,0.7412,0.784,0.8214,0.8536,0.8808,0.9035,0.9223,0.9376,0.9501,0.9602,0.9684,0.9749,0.9801,0.9842,0.9875,0.9901,0.9922,0.9938,0.9951,0.9961,0.997,0.9976,0.9981,0.9985,0.9988,0.9991,0.9993,0.9994,0.9995,0.9996,0.9997,0.9998,0.9998],[0.09551,0.118,0.145,0.1769,0.2141,0.2566,0.3043,0.3567,0.4127,0.471,0.5302,0.5885,0.6444,0.6967,0.7443,0.7868,0.8238,0.8556,0.8825,0.9049,0.9234,0.9386,0.9509,0.9609,0.9689,0.9753,0.9804,0.9845,0.9877,0.9903,0.9923,0.9939,0.9952,0.9962,0.997,0.9976,0.9981,0.9985,0.9988,0.9991,0.9993,0.9994,0.9995,0.9996,0.9997,0.9998,0.9998,0.9999],[0.1197,0.147,0.1793,0.2168,0.2597,0.3078,0.3604,0.4166,0.4751,0.5343,0.5925,0.6482,0.7001,0.7474,0.7895,0.8262,0.8576,0.8842,0.9063,0.9246,0.9395,0.9517,0.9615,0.9693,0.9757,0.9807,0.9847,0.9879,0.9904,0.9924,0.994,0.9953,0.9963,0.9971,0.9977,0.9982,0.9985,0.9989,0.9991,0.9993,0.9994,0.9996,0.9996,0.9997,0.9998,0.9998,0.9999,0.9999],[0.1491,0.1817,0.2196,0.2629,0.3113,0.3642,0.4206,0.4792,0.5383,0.5964,0.6519,0.7036,0.7505,0.7922,0.8285,0.8596,0.8858,0.9077,0.9257,0.9405,0.9524,0.9621,0.9698,0.976,0.981,0.9849,0.9881,0.9906,0.9925,0.9941,0.9953,0.9963,0.9971,0.9977,0.9982,0.9986,0.9989,0.9991,0.9993,0.9994,0.9996,0.9997,0.9997,0.9998,0.9998,0.9999,0.9999,0.9999]],"levels":[0.25,0.5,0.75],"style":["dash","solid","dash"]}]}</script>
+    </m-classify2d>
+  </div>
+  <div class="concl"><span>確率 0.25・0.5・0.75 の線は平行に並ぶ（架空のデータ）</span></div>
+</section>
+
+<section id="g-classify2d-2" class="slide">
+  <h2>線形 SVM はマージンがいちばん広い境界を選ぶ</h2>
+  <div class="body">
+    <m-classify2d style="height:440px">
+      <script type="application/json">{"axes":{"x":{"label":"x₁","range":[-3.39,3.57]},"y":{"label":"x₂","range":[-4.056,3.576]}},"classes":[{"id":0,"label":"A"},{"id":1,"label":"B"}],"points":[[-2.81,-0.12,0],[-2.74,-1.63,0],[1.94,2.94,1],[2.55,2.33,1],[-1.78,-1.35,0],[0.63,1.03,1],[-2.27,-1.23,0],[0.48,1.9,1],[-0.38,-1.13,0],[2.14,1.25,1],[0.9,0.41,1],[-1.58,-1.63,0],[-2.42,-2.02,0],[2.99,-0.12,1],[1.35,2.77,1],[-0.62,0.71,0],[-0.01,-0.76,0],[-0.75,0.98,0],[-1.4,-2.86,0],[1.14,-0.74,1],[1.65,-0.06,1],[0.29,-0.56,0],[2.51,1.85,1],[1.98,1.68,1],[-2.52,-1.71,0],[0.1,2.39,1],[-0.75,0.73,1],[2.61,2.12,1],[-2.05,-2.55,0],[-2.69,-1.21,0],[0.9,-0.91,1],[-1.54,-1.48,0],[2.35,-0.86,1],[-1.45,-1.4,0],[-0.87,-1.16,0],[0.83,1.15,1],[-0.52,-2.1,0],[-2.3,-3.42,0],[1.3,2.77,1],[-0.12,1.65,1]],"grid":{"nx":48,"ny":32,"labels":"0*37 1*11 0*36 1*12 0*35 1*13 0*35 1*13 0*34 1*14 0*33 1*15 0*32 1*16 0*32 1*16 0*31 1*17 0*30 1*18 0*30 1*18 0*29 1*19 0*28 1*20 0*28 1*20 0*27 1*21 0*26 1*22 0*25 1*23 0*25 1*23 0*24 1*24 0*23 1*25 0*23 1*25 0*22 1*26 0*21 1*27 0*20 1*28 0*20 1*28 0*19 1*29 0*18 1*30 0*18 1*30 0*17 1*31 0*16 1*32 0*15 1*33 0*15 1*33"},"sv":[15,16,17,21,19,26,30,39],"fields":[{"name":"decision (B > 0)","class":1,"values":[[-9.249,-8.993,-8.738,-8.482,-8.227,-7.971,-7.715,-7.46,-7.204,-6.949,-6.693,-6.438,-6.182,-5.927,-5.671,-5.416,-5.16,-4.905,-4.649,-4.394,-4.138,-3.883,-3.627,-3.372,-3.116,-2.86,-2.605,-2.349,-2.094,-1.838,-1.583,-1.327,-1.072,-0.8162,-0.5607,-0.3052,-0.04967,0.2059,0.4614,0.7169,0.9724,1.228,1.483,1.739,1.995,2.25,2.506,2.761],[-9.068,-8.813,-8.557,-8.302,-8.046,-7.79,-7.535,-7.279,-7.024,-6.768,-6.513,-6.257,-6.002,-5.746,-5.491,-5.235,-4.98,-4.724,-4.469,-4.213,-3.958,-3.702,-3.447,-3.191,-2.935,-2.68,-2.424,-2.169,-1.913,-1.658,-1.402,-1.147,-0.8912,-0.6357,-0.3802,-0.1247,0.1309,0.3864,0.6419,0.8974,1.153,1.409,1.664,1.92,2.175,2.431,2.686,2.942],[-8.888,-8.632,-8.377,-8.121,-7.865,-7.61,-7.354,-7.099,-6.843,-6.588,-6.332,-6.077,-5.821,-5.566,-5.31,-5.055,-4.799,-4.544,-4.288,-4.033,-3.777,-3.522,-3.266,-3.01,-2.755,-2.499,-2.244,-1.988,-1.733,-1.477,-1.222,-0.9662,-0.7107,-0.4552,-0.1997,0.05587,0.3114,0.5669,0.8225,1.078,1.334,1.589,1.845,2.1,2.356,2.611,2.867,3.122],[-8.707,-8.452,-8.196,-7.94,-7.685,-7.429,-7.174,-6.918,-6.663,-6.407,-6.152,-5.896,-5.641,-5.385,-5.13,-4.874,-4.619,-4.363,-4.108,-3.852,-3.596,-3.341,-3.085,-2.83,-2.574,-2.319,-2.063,-1.808,-1.552,-1.297,-1.041,-0.7857,-0.5302,-0.2746,-0.01912,0.2364,0.4919,0.7475,1.003,1.259,1.514,1.77,2.025,2.281,2.536,2.792,3.047,3.303],[-8.527,-8.271,-8.015,-7.76,-7.504,-7.249,-6.993,-6.738,-6.482,-6.227,-5.971,-5.716,-5.46,-5.205,-4.949,-4.694,-4.438,-4.183,-3.927,-3.671,-3.416,-3.16,-2.905,-2.649,-2.394,-2.138,-1.883,-1.627,-1.372,-1.116,-0.8607,-0.6052,-0.3496,-0.09411,0.1614,0.4169,0.6725,0.928,1.184,1.439,1.695,1.95,2.206,2.461,2.717,2.972,3.228,3.483],[-8.346,-8.09,-7.835,-7.579,-7.324,-7.068,-6.813,-6.557,-6.302,-6.046,-5.791,-5.535,-5.28,-5.024,-4.769,-4.513,-4.258,-4.002,-3.746,-3.491,-3.235,-2.98,-2.724,-2.469,-2.213,-1.958,-1.702,-1.447,-1.191,-0.9357,-0.6802,-0.4246,-0.1691,0.08642,0.3419,0.5975,0.853,1.109,1.364,1.62,1.875,2.131,2.386,2.642,2.897,3.153,3.408,3.664],[-8.165,-7.91,-7.654,-7.399,-7.143,-6.888,-6.632,-6.377,-6.121,-5.866,-5.61,-5.355,-5.099,-4.844,-4.588,-4.333,-4.077,-3.821,-3.566,-3.31,-3.055,-2.799,-2.544,-2.288,-2.033,-1.777,-1.522,-1.266,-1.011,-0.7552,-0.4996,-0.2441,0.01142,0.267,0.5225,0.778,1.034,1.289,1.545,1.8,2.056,2.311,2.567,2.822,3.078,3.333,3.589,3.844],[-7.985,-7.729,-7.474,-7.218,-6.963,-6.707,-6.452,-6.196,-5.941,-5.685,-5.43,-5.174,-4.919,-4.663,-4.408,-4.152,-3.896,-3.641,-3.385,-3.13,-2.874,-2.619,-2.363,-2.108,-1.852,-1.597,-1.341,-1.086,-0.8301,-0.5746,-0.3191,-0.06357,0.192,0.4475,0.703,0.9585,1.214,1.47,1.725,1.981,2.236,2.492,2.747,3.003,3.258,3.514,3.769,4.025],[-7.804,-7.549,-7.293,-7.038,-6.782,-6.527,-6.271,-6.016,-5.76,-5.505,-5.249,-4.994,-4.738,-4.483,-4.227,-3.971,-3.716,-3.46,-3.205,-2.949,-2.694,-2.438,-2.183,-1.927,-1.672,-1.416,-1.161,-0.9051,-0.6496,-0.3941,-0.1386,0.117,0.3725,0.628,0.8835,1.139,1.395,1.65,1.906,2.161,2.417,2.672,2.928,3.183,3.439,3.694,3.95,4.205],[-7.624,-7.368,-7.113,-6.857,-6.602,-6.346,-6.091,-5.835,-5.58,-5.324,-5.069,-4.813,-4.558,-4.302,-4.046,-3.791,-3.535,-3.28,-3.024,-2.769,-2.513,-2.258,-2.002,-1.747,-1.491,-1.236,-0.9801,-0.7246,-0.4691,-0.2136,0.04197,0.2975,0.553,0.8086,1.064,1.32,1.575,1.831,2.086,2.342,2.597,2.853,3.108,3.364,3.619,3.875,4.13,4.386],[-7.443,-7.188,-6.932,-6.677,-6.421,-6.166,-5.91,-5.655,-5.399,-5.144,-4.888,-4.633,-4.377,-4.121,-3.866,-3.61,-3.355,-3.099,-2.844,-2.588,-2.333,-2.077,-1.822,-1.566,-1.311,-1.055,-0.7996,-0.5441,-0.2886,-0.03302,0.2225,0.478,0.7336,0.9891,1.245,1.5,1.756,2.011,2.267,2.522,2.778,3.033,3.289,3.544,3.8,4.055,4.311,4.566],[-7.263,-7.007,-6.752,-6.496,-6.241,-5.985,-5.73,-5.474,-5.219,-4.963,-4.708,-4.452,-4.196,-3.941,-3.685,-3.43,-3.174,-2.919,-2.663,-2.408,-2.152,-1.897,-1.641,-1.386,-1.13,-0.8746,-0.6191,-0.3635,-0.108,0.1475,0.403,0.6586,0.9141,1.17,1.425,1.681,1.936,2.192,2.447,2.703,2.958,3.214,3.469,3.725,3.98,4.236,4.491,4.747],[-7.082,-6.827,-6.571,-6.316,-6.06,-5.805,-5.549,-5.294,-5.038,-4.782,-4.527,-4.271,-4.016,-3.76,-3.505,-3.249,-2.994,-2.738,-2.483,-2.227,-1.972,-1.716,-1.461,-1.205,-0.9496,-0.6941,-0.4385,-0.183,0.07252,0.328,0.5836,0.8391,1.095,1.35,1.606,1.861,2.117,2.372,2.628,2.883,3.139,3.394,3.65,3.905,4.161,4.416,4.672,4.928],[-6.902,-6.646,-6.391,-6.135,-5.88,-5.624,-5.369,-5.113,-4.857,-4.602,-4.346,-4.091,-3.835,-3.58,-3.324,-3.069,-2.813,-2.558,-2.302,-2.047,-1.791,-1.536,-1.28,-1.025,-0.7691,-0.5135,-0.258,-0.002478,0.253,0.5086,0.7641,1.02,1.275,1.531,1.786,2.042,2.297,2.553,2.808,3.064,3.319,3.575,3.83,4.086,4.341,4.597,4.853,5.108],[-6.721,-6.466,-6.21,-5.955,-5.699,-5.444,-5.188,-4.932,-4.677,-4.421,-4.166,-3.91,-3.655,-3.399,-3.144,-2.888,-2.633,-2.377,-2.122,-1.866,-1.611,-1.355,-1.1,-0.8441,-0.5885,-0.333,-0.07747,0.1781,0.4336,0.6891,0.9446,1.2,1.456,1.711,1.967,2.222,2.478,2.733,2.989,3.244,3.5,3.755,4.011,4.266,4.522,4.778,5.033,5.289],[-6.541,-6.285,-6.03,-5.774,-5.519,-5.263,-5.007,-4.752,-4.496,-4.241,-3.985,-3.73,-3.474,-3.219,-2.963,-2.708,-2.452,-2.197,-1.941,-1.686,-1.43,-1.175,-0.919,-0.6635,-0.408,-0.1525,0.1031,0.3586,0.6141,0.8696,1.125,1.381,1.636,1.892,2.147,2.403,2.658,2.914,3.169,3.425,3.68,3.936,4.191,4.447,4.703,4.958,5.214,5.469],[-6.36,-6.105,-5.849,-5.594,-5.338,-5.082,-4.827,-4.571,-4.316,-4.06,-3.805,-3.549,-3.294,-3.038,-2.783,-2.527,-2.272,-2.016,-1.761,-1.505,-1.25,-0.994,-0.7385,-0.483,-0.2275,0.02807,0.2836,0.5391,0.7946,1.05,1.306,1.561,1.817,2.072,2.328,2.583,2.839,3.094,3.35,3.605,3.861,4.116,4.372,4.628,4.883,5.139,5.394,5.65],[-6.18,-5.924,-5.669,-5.413,-5.157,-4.902,-4.646,-4.391,-4.135,-3.88,-3.624,-3.369,-3.113,-2.858,-2.602,-2.347,-2.091,-1.836,-1.58,-1.325,-1.069,-0.8135,-0.558,-0.3025,-0.04693,0.2086,0.4641,0.7197,0.9752,1.231,1.486,1.742,1.997,2.253,2.508,2.764,3.019,3.275,3.53,3.786,4.042,4.297,4.553,4.808,5.064,5.319,5.575,5.83],[-5.999,-5.744,-5.488,-5.232,-4.977,-4.721,-4.466,-4.21,-3.955,-3.699,-3.444,-3.188,-2.933,-2.677,-2.422,-2.166,-1.911,-1.655,-1.4,-1.144,-0.8885,-0.633,-0.3774,-0.1219,0.1336,0.3891,0.6447,0.9002,1.156,1.411,1.667,1.922,2.178,2.433,2.689,2.944,3.2,3.455,3.711,3.967,4.222,4.478,4.733,4.989,5.244,5.5,5.755,6.011],[-5.819,-5.563,-5.307,-5.052,-4.796,-4.541,-4.285,-4.03,-3.774,-3.519,-3.263,-3.008,-2.752,-2.497,-2.241,-1.986,-1.73,-1.475,-1.219,-0.9635,-0.708,-0.4524,-0.1969,0.05861,0.3141,0.5697,0.8252,1.081,1.336,1.592,1.847,2.103,2.358,2.614,2.869,3.125,3.38,3.636,3.892,4.147,4.403,4.658,4.914,5.169,5.425,5.68,5.936,6.191],[-5.638,-5.382,-5.127,-4.871,-4.616,-4.36,-4.105,-3.849,-3.594,-3.338,-3.083,-2.827,-2.572,-2.316,-2.061,-1.805,-1.55,-1.294,-1.038,-0.783,-0.5274,-0.2719,-0.01638,0.2391,0.4947,0.7502,1.006,1.261,1.517,1.772,2.028,2.283,2.539,2.794,3.05,3.305,3.561,3.817,4.072,4.328,4.583,4.839,5.094,5.35,5.605,5.861,6.116,6.372],[-5.457,-5.202,-4.946,-4.691,-4.435,-4.18,-3.924,-3.669,-3.413,-3.158,-2.902,-2.647,-2.391,-2.136,-1.88,-1.625,-1.369,-1.113,-0.858,-0.6024,-0.3469,-0.09137,0.1642,0.4197,0.6752,0.9307,1.186,1.442,1.697,1.953,2.208,2.464,2.719,2.975,3.23,3.486,3.742,3.997,4.253,4.508,4.764,5.019,5.275,5.53,5.786,6.041,6.297,6.552],[-5.277,-5.021,-4.766,-4.51,-4.255,-3.999,-3.744,-3.488,-3.233,-2.977,-2.722,-2.466,-2.211,-1.955,-1.7,-1.444,-1.188,-0.9329,-0.6774,-0.4219,-0.1664,0.08916,0.3447,0.6002,0.8557,1.111,1.367,1.622,1.878,2.133,2.389,2.644,2.9,3.155,3.411,3.667,3.922,4.178,4.433,4.689,4.944,5.2,5.455,5.711,5.966,6.222,6.477,6.733],[-5.096,-4.841,-4.585,-4.33,-4.074,-3.819,-3.563,-3.308,-3.052,-2.797,-2.541,-2.286,-2.03,-1.775,-1.519,-1.263,-1.008,-0.7524,-0.4969,-0.2414,0.01416,0.2697,0.5252,0.7807,1.036,1.292,1.547,1.803,2.058,2.314,2.569,2.825,3.08,3.336,3.592,3.847,4.103,4.358,4.614,4.869,5.125,5.38,5.636,5.891,6.147,6.402,6.658,6.913],[-4.916,-4.66,-4.405,-4.149,-3.894,-3.638,-3.383,-3.127,-2.872,-2.616,-2.361,-2.105,-1.85,-1.594,-1.338,-1.083,-0.8274,-0.5719,-0.3164,-0.06083,0.1947,0.4502,0.7058,0.9613,1.217,1.472,1.728,1.983,2.239,2.494,2.75,3.005,3.261,3.517,3.772,4.028,4.283,4.539,4.794,5.05,5.305,5.561,5.816,6.072,6.327,6.583,6.838,7.094],[-4.735,-4.48,-4.224,-3.969,-3.713,-3.458,-3.202,-2.947,-2.691,-2.436,-2.18,-1.925,-1.669,-1.413,-1.158,-0.9024,-0.6469,-0.3914,-0.1358,0.1197,0.3752,0.6308,0.8863,1.142,1.397,1.653,1.908,2.164,2.419,2.675,2.93,3.186,3.442,3.697,3.953,4.208,4.464,4.719,4.975,5.23,5.486,5.741,5.997,6.252,6.508,6.763,7.019,7.274],[-4.555,-4.299,-4.044,-3.788,-3.533,-3.277,-3.022,-2.766,-2.511,-2.255,-2.0,-1.744,-1.488,-1.233,-0.9774,-0.7219,-0.4663,-0.2108,0.04471,0.3002,0.5558,0.8113,1.067,1.322,1.578,1.833,2.089,2.344,2.6,2.856,3.111,3.367,3.622,3.878,4.133,4.389,4.644,4.9,5.155,5.411,5.666,5.922,6.177,6.433,6.688,6.944,7.199,7.455],[-4.374,-4.119,-3.863,-3.608,-3.352,-3.097,-2.841,-2.586,-2.33,-2.074,-1.819,-1.563,-1.308,-1.052,-0.7969,-0.5413,-0.2858,-0.03028,0.2252,0.4808,0.7363,0.9918,1.247,1.503,1.758,2.014,2.269,2.525,2.781,3.036,3.292,3.547,3.803,4.058,4.314,4.569,4.825,5.08,5.336,5.591,5.847,6.102,6.358,6.613,6.869,7.124,7.38,7.636],[-4.194,-3.938,-3.683,-3.427,-3.172,-2.916,-2.661,-2.405,-2.149,-1.894,-1.638,-1.383,-1.127,-0.8719,-0.6163,-0.3608,-0.1053,0.1502,0.4058,0.6613,0.9168,1.172,1.428,1.683,1.939,2.194,2.45,2.706,2.961,3.217,3.472,3.728,3.983,4.239,4.494,4.75,5.005,5.261,5.516,5.772,6.027,6.283,6.538,6.794,7.049,7.305,7.561,7.816],[-4.013,-3.758,-3.502,-3.247,-2.991,-2.736,-2.48,-2.224,-1.969,-1.713,-1.458,-1.202,-0.9469,-0.6913,-0.4358,-0.1803,0.07526,0.3308,0.5863,0.8418,1.097,1.353,1.608,1.864,2.119,2.375,2.631,2.886,3.142,3.397,3.653,3.908,4.164,4.419,4.675,4.93,5.186,5.441,5.697,5.952,6.208,6.463,6.719,6.974,7.23,7.486,7.741,7.997],[-3.833,-3.577,-3.322,-3.066,-2.811,-2.555,-2.299,-2.044,-1.788,-1.533,-1.277,-1.022,-0.7663,-0.5108,-0.2553,0.0002616,0.2558,0.5113,0.7668,1.022,1.278,1.533,1.789,2.044,2.3,2.556,2.811,3.067,3.322,3.578,3.833,4.089,4.344,4.6,4.855,5.111,5.366,5.622,5.877,6.133,6.388,6.644,6.899,7.155,7.411,7.666,7.922,8.177],[-3.652,-3.397,-3.141,-2.886,-2.63,-2.374,-2.119,-1.863,-1.608,-1.352,-1.097,-0.8413,-0.5858,-0.3303,-0.07473,0.1808,0.4363,0.6918,0.9474,1.203,1.458,1.714,1.969,2.225,2.481,2.736,2.992,3.247,3.503,3.758,4.014,4.269,4.525,4.78,5.036,5.291,5.547,5.802,6.058,6.313,6.569,6.824,7.08,7.336,7.591,7.847,8.102,8.358]],"levels":[-1.0,0.0,1.0],"style":["dash","solid","dash"]}]}</script>
+    </m-classify2d>
+  </div>
+  <div class="concl"><span>境界を決めるのは輪の付いたサポートベクトルだけ（架空のデータ）</span></div>
+</section>
+
+<section id="g-classify2d-3" class="slide">
+  <h2>1 近傍法の領域は、点ごとのボロノイ図になる</h2>
+  <div class="body">
+    <m-classify2d style="height:440px">
+      <script type="application/json">{"axes":{"x":{"label":"x₁","range":[-3.368,3.328]},"y":{"label":"x₂","range":[-2.119,3.509]}},"classes":[{"id":0,"label":"A"},{"id":1,"label":"B"}],"points":[[-1.01,-1.36,0],[-2.81,-1.23,0],[2.77,3.04,1],[-0.33,0.23,1],[0.42,0.06,1],[1.17,-1.28,0],[1.11,1.66,1],[0.54,0.54,1],[-1.38,0.74,0],[-2.5,-1.65,0],[-0.16,1.71,1],[-1.29,-1.36,0]],"voronoi":{"seeds":[[-1.01,-1.36,0],[-2.81,-1.23,0],[2.77,3.04,1],[-0.33,0.23,1],[0.42,0.06,1],[1.17,-1.28,0],[1.11,1.66,1],[0.54,0.54,1],[-1.38,0.74,0],[-2.5,-1.65,0],[-0.16,1.71,1],[-1.29,-1.36,0]]}}</script>
+    </m-classify2d>
+  </div>
+  <div class="concl"><span>いちばん近い点のクラスに分ける（架空のデータ）</span></div>
+</section>
+
+<section id="g-classify2d-4" class="slide">
+  <h2>決定木は、軸に平行な線で 1 回ずつ分ける</h2>
+  <div class="body">
+    <m-classify2d style="height:440px">
+      <script type="application/json">{"axes":{"x":{"label":"x₁","range":[-3.39,3.57]},"y":{"label":"x₂","range":[-4.056,3.576]}},"classes":[{"id":0,"label":"A"},{"id":1,"label":"B"}],"points":[[-2.81,-0.12,0],[-2.74,-1.63,0],[1.94,2.94,1],[2.55,2.33,1],[-1.78,-1.35,0],[0.63,1.03,1],[-2.27,-1.23,0],[0.48,1.9,1],[-0.38,-1.13,0],[2.14,1.25,1],[0.9,0.41,1],[-1.58,-1.63,0],[-2.42,-2.02,0],[2.99,-0.12,1],[1.35,2.77,1],[-0.62,0.71,0],[-0.01,-0.76,0],[-0.75,0.98,0],[-1.4,-2.86,0],[1.14,-0.74,1],[1.65,-0.06,1],[0.29,-0.56,0],[2.51,1.85,1],[1.98,1.68,1],[-2.52,-1.71,0],[0.1,2.39,1],[-0.75,0.73,1],[2.61,2.12,1],[-2.05,-2.55,0],[-2.69,-1.21,0],[0.9,-0.91,1],[-1.54,-1.48,0],[2.35,-0.86,1],[-1.45,-1.4,0],[-0.87,-1.16,0],[0.83,1.15,1],[-0.52,-2.1,0],[-2.3,-3.42,0],[1.3,2.77,1],[-0.12,1.65,1]],"tree":{"nodes":[{"id":"n0","feature":0,"threshold":0.385,"left":"n1","right":"n4"},{"id":"n1","feature":1,"threshold":0.72,"left":"n2","right":"n3"},{"id":"n2","class":0},{"id":"n3","class":1},{"id":"n4","class":1}]}}</script>
+    </m-classify2d>
+  </div>
+  <div class="concl"><span>右はもう B だけなので、分割は 2 回で終わる（架空のデータ）</span></div>
+</section>
+
+<section id="g-classify2d-5" class="slide">
+  <h2>k 平均法は、割り当てと重心の更新を繰り返す</h2>
+  <div class="body">
+    <m-classify2d style="height:440px">
+      <script type="application/json">{"axes":{"x":{"label":"x₁","range":[-3.246,4.146]},"y":{"label":"x₂","range":[-3.449,3.979]}},"points":[[0.33,1.26],[0.63,-2.44],[2.08,-0.8],[-1.19,-0.52],[-2.0,-2.4],[3.53,-0.81],[1.89,-1.25],[1.2,1.83],[-0.24,3.04],[3.41,-1.26],[-0.15,0.58],[-0.08,3.36],[1.92,-0.05],[-2.31,0.62],[-0.24,1.06],[2.22,-1.42],[0.35,-1.53],[-0.3,0.47],[-1.6,-1.21],[1.2,1.77],[-2.63,-1.0],[-0.65,-1.37],[-0.68,-0.88],[-1.78,-2.22],[-0.16,1.53],[-1.16,-1.33],[2.67,-1.14],[-1.56,-0.9],[-0.95,1.16],[-1.97,-0.67],[2.31,0.8],[0.52,2.72],[-0.31,1.29],[-2.32,-2.83],[-2.5,-1.14],[0.68,-0.57],[0.85,-0.6],[1.04,0.17],[1.41,-0.14],[0.27,2.59],[2.45,-1.6],[-2.19,-2.16],[0.09,3.15],[1.22,2.54],[-2.04,-2.16]],"kmeans":{"iters":[{"centroids":[[-1.6,-1.21],[0.33,1.26],[3.53,-0.81]],"assign":[1,0,2,0,0,2,2,1,1,2,1,1,2,0,1,2,0,1,0,1,0,0,0,0,1,0,2,0,1,0,2,1,1,0,0,1,1,1,1,1,2,0,1,1,0]},{"centroids":[[-1.50588,-1.42],[0.335789,1.43211],[2.49778,-0.836667]],"assign":[1,0,2,0,0,2,2,1,1,2,1,1,2,0,1,2,0,1,0,1,0,0,0,0,1,0,2,0,1,0,2,1,1,0,0,2,2,1,2,1,2,0,1,1,0]},{"centroids":[[-1.50588,-1.42],[0.215,1.7825],[2.11833,-0.736667]],"assign":[1,2,2,0,0,2,2,1,1,2,1,1,2,0,1,2,0,1,0,1,0,0,0,0,1,0,2,0,1,0,2,1,1,0,0,2,2,2,2,1,2,0,1,1,0]},{"centroids":[[-1.63938,-1.35625],[0.16,1.89],[1.935,-0.793571]],"assign":[1,2,2,0,0,2,2,1,1,2,1,1,2,0,1,2,2,1,0,1,0,0,0,0,1,0,2,0,1,0,2,1,1,0,0,2,2,2,2,1,2,0,1,1,0]},{"centroids":[[-1.772,-1.34467],[0.16,1.89],[1.82933,-0.842667]],"assign":[1,2,2,0,0,2,2,1,1,2,1,1,2,0,1,2,2,1,0,1,0,0,0,0,1,0,2,0,1,0,2,1,1,0,0,2,2,2,2,1,2,0,1,1,0]}]}}</script>
+    </m-classify2d>
+  </div>
+  <div class="concl"><span>重心が動かなくなったら終わる（架空のデータ）</span></div>
+</section>
+
+<section class="slide">
+  <h2>m-code</h2>
+  <div class="body">
+    <p>短いコードを行ごとに説明し、最後に出力を見せる</p>
+    <ul>
+      <li>伝えたいこと：手順・工程・仕組みをモデルで見る</li>
+      <li>見せ方：1 種類</li>
+      <li>内容の分野：数理・統計　サンプルのスライド：4 枚</li>
+    </ul>
+  </div>
+</section>
+
+<section id="g-code-1" class="slide">
+  <h2>店ごとの売上平均を計算する</h2>
+  <div class="body"><m-code style="height:440px"><script type="application/json">{"lang":"python","code":"import pandas as pd\ndf = pd.read_csv(\"sales.csv\")\ndf.groupby(\"store\")[\"sales\"].mean()","steps":[{"lines":[1],"note":"pandas を読み込む"},{"lines":[2],"note":"CSV を表として読む"},{"lines":[3],"note":"店ごとの平均"}],"output":"store\nA    120.5\nB     98.0"}</script></m-code></div>
+  <div class="concl"><span>架空の売上データ。店ごとにまとめてから平均を求める</span></div>
+</section>
+
+<section id="g-code-2" class="slide">
+  <h2>繰り返しで平均を求める</h2>
+  <div class="body"><m-code style="height:440px"><script type="application/json">{"lang":"python","code":"def mean(values):\n    total = 0\n    for value in values:\n        total += value\n    return total / len(values)\n\nprint(mean([2, 4, 6]))","steps":[{"lines":[1,2],"note":"関数を定義し、合計を 0 にする"},{"lines":[3,4],"note":"値を一つずつ合計する"},{"lines":[5,7],"note":"個数で割り、関数の結果を表示"}],"output":"4.0"}</script></m-code></div>
+  <div class="concl"><span>合計を個数で割ると平均になる</span></div>
+</section>
+
+<section id="g-code-3" class="slide">
+  <h2>交差検証のコード（scikit-learn）</h2>
+  <div class="body"><m-code style="height:420px"><script type="application/json">{"lang": "python", "code": "from sklearn.model_selection import cross_val_score\nfrom sklearn.tree import DecisionTreeClassifier\nfrom sklearn.datasets import load_iris\nX, y = load_iris(return_X_y=True)\nmodel = DecisionTreeClassifier(max_depth=3, random_state=0)\nscores = cross_val_score(model, X, y, cv=5)\nprint(scores.mean())", "steps": [{"lines": [1, 3], "note": "ライブラリを読み込む"}, {"lines": [4], "note": "アヤメのデータ"}, {"lines": [5], "note": "決定木を用意"}, {"lines": [6, 7], "note": "5 分割の交差検証で平均の正解率を出す"}], "output": "0.96"}</script></m-code></div>
+  <div class="concl"><span>5 つのフォールドを 1 つずつ検証に使い、平均する</span></div>
+</section>
+
+<section id="g-code-4" class="slide noconcl">
+  <h2>長いコードはスクロールして見せる（14 行）</h2>
+  <div class="body"><m-code style="height:440px"><script type="application/json">{"lang": "python", "code": "import numpy as np\nfrom sklearn.datasets import load_iris\nfrom sklearn.model_selection import train_test_split\nfrom sklearn.linear_model import LogisticRegression\n\nX, y = load_iris(return_X_y=True)\nX_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.3, random_state=0)\n\nmodel = LogisticRegression(max_iter=200)\nmodel.fit(X_train, y_train)\n\npred = model.predict(X_test)\nacc = np.mean(pred == y_test)\nprint(round(acc, 3))", "steps": [{"lines": [1, 4], "note": "ライブラリを読み込む"}, {"lines": [6, 7], "note": "データを訓練用とテスト用に 7 対 3 で分ける"}, {"lines": [9, 10], "note": "ロジスティック回帰で学習"}, {"lines": [12, 14], "note": "テスト用で予測し、正解率を表示"}], "output": "0.978"}</script></m-code></div>
 </section>
 
 <section class="slide">
@@ -1514,6 +1709,76 @@ document.addEventListener("DOMContentLoaded", function(){
     </m-curves>
   </div>
   <div class="concl"><span>→ 両端の 5 % に入れば帰無仮説を棄却する</span></div>
+</section>
+
+<section class="slide">
+  <h2>m-cycle</h2>
+  <div class="body">
+    <p>循環の図。項目の箱を円の上に 12 時から時計回りに並べ、円に沿った矢印でつなぐ（最後から最初へ戻る矢印も）</p>
+    <ul>
+      <li>伝えたいこと：循環</li>
+      <li>見せ方：fade・draw・grow</li>
+      <li>内容の分野：標準パーツ　サンプルのスライド：3 枚</li>
+    </ul>
+  </div>
+</section>
+
+<section id="g-cycle-1" class="slide">
+  <h2>PDCA サイクル</h2>
+  <div class="body">
+    <m-cycle style="height:430px">
+      <script type="application/json">{
+        "center": {"label": "PDCA"},
+        "nodes": [
+          {"label": "計画（Plan）", "note": "目標と手順を決める"},
+          {"label": "実行（Do）", "note": "計画どおりにやってみる"},
+          {"label": "評価（Check）", "note": "結果を目標と比べる"},
+          {"label": "改善（Act）", "note": "やり方を直して次へ", "tone": "emph"}
+        ]
+      }</script>
+    </m-cycle>
+  </div>
+  <div class="concl"><span>→ 1 周ごとに、やり方が少しずつよくなる</span></div>
+</section>
+
+<section id="g-cycle-2" class="slide">
+  <h2>水の循環</h2>
+  <div class="body">
+    <m-cycle style="height:430px">
+      <script type="application/json">{
+        "center": {"label": "水の循環", "note": "太陽の熱で動く"},
+        "nodes": [
+          {"label": "蒸発", "note": "海や地面の水が水蒸気に"},
+          {"label": "雲ができる", "note": "上空で冷えて水や氷の粒に"},
+          {"label": "雨・雪", "note": "粒が大きくなって落ちる"},
+          {"label": "しみこむ・流れる", "note": "地下水や川になる"},
+          {"label": "海へ", "note": "川が海に注ぐ"}
+        ]
+      }</script>
+    </m-cycle>
+  </div>
+  <div class="concl"><span>→ 水は形を変えながら、地球の上を回り続ける</span></div>
+</section>
+
+<section id="g-cycle-3" class="slide">
+  <h2>見せ方の種類（variant）</h2>
+  <div class="body">
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:0 36px">
+      <div><p class="vcap">現れてから矢印（fade、既定）</p>
+        <m-cycle variant="fade" style="height:360px">
+          <script type="application/json">{"nodes": [{"label": "計画"}, {"label": "実行"}, {"label": "評価"}, {"label": "改善"}]}</script>
+        </m-cycle></div>
+      <div><p class="vcap">矢印を引いてから（draw）</p>
+        <m-cycle variant="draw" style="height:360px">
+          <script type="application/json">{"nodes": [{"label": "計画"}, {"label": "実行"}, {"label": "評価"}, {"label": "改善"}]}</script>
+        </m-cycle></div>
+      <div><p class="vcap">前の箱の側から大きくなる（grow）</p>
+        <m-cycle variant="grow" style="height:360px">
+          <script type="application/json">{"nodes": [{"label": "計画"}, {"label": "実行"}, {"label": "評価"}, {"label": "改善"}]}</script>
+        </m-cycle></div>
+    </div>
+  </div>
+  <div class="concl"><span>→ 書かなければ最初の見せ方（fade）になる</span></div>
 </section>
 
 <section class="slide">
@@ -1965,42 +2230,6 @@ document.addEventListener("DOMContentLoaded", function(){
 </section>
 
 <section class="slide">
-  <h2>m-kakijun</h2>
-  <div class="body">
-    <p>かな（ひらがな・カタカナ）の書き順。字を 1 画ずつ、書く順と向きのとおりに書いて見せる</p>
-    <ul>
-      <li>伝えたいこと：手順・工程</li>
-      <li>見せ方：draw・pen</li>
-      <li>内容の分野：国語　サンプルのスライド：3 枚</li>
-    </ul>
-  </div>
-</section>
-
-<section id="g-kakijun-1" class="slide">
-  <h2>ひらがなの書き順：あさ</h2>
-  <div class="body">
-    <m-kakijun text="あさ" ends="on" style="height:400px"></m-kakijun>
-  </div>
-  <div class="concl"><span>→ 「あ」の 3 画目は、結びを作ってから右へはらう</span></div>
-</section>
-
-<section id="g-kakijun-2" class="slide">
-  <h2>濁点のあるカタカナ：ガム</h2>
-  <div class="body">
-    <m-kakijun text="ガム" style="height:400px"></m-kakijun>
-  </div>
-  <div class="concl"><span>→ 濁点は、字を書き終えてから左上から右下へ 2 つ</span></div>
-</section>
-
-<section id="g-kakijun-3" class="slide">
-  <h2>縦書きの小さい字：きょう</h2>
-  <div class="body">
-    <m-kakijun text="きょう" writing="tate" size="140" nums="off" style="height:440px"></m-kakijun>
-  </div>
-  <div class="concl"><span>→ 縦書きの「ょ」は、ます目の右上に小さく書く</span></div>
-</section>
-
-<section class="slide">
   <h2>m-kanbun</h2>
   <div class="body">
     <p>白文に返り点・送り仮名を付け、訓読の順に字をたどり（返り点で上へ戻るところに弧）、書き下し文にする（縦書き）</p>
@@ -2207,231 +2436,39 @@ document.addEventListener("DOMContentLoaded", function(){
 </section>
 
 <section class="slide">
-  <h2>m-map-japan</h2>
+  <h2>m-mapping</h2>
   <div class="body">
-    <p>日本の 47 都道府県の地図。地域の強調、統計の塗り分け、点、矢印、経度・緯度の重ね描きをステップごとに出す</p>
+    <p>実験の結果を数値へ対応させ、同じ値になる結果をまとめて確率分布を作る</p>
     <ul>
-      <li>伝えたいこと：場所・地図</li>
-      <li>見せ方：fade・sweep・draw</li>
-      <li>内容の分野：地図（社会）　サンプルのスライド：5 枚</li>
-    </ul>
-  </div>
-</section>
-
-<section id="g-map-japan-1" class="slide">
-  <h2>日本の八地方区分</h2>
-  <div class="body">
-    <m-map-japan aria-label="八地方区分の地図" style="height:440px">
-      <script type="application/json">{
-        "regions": [
-          {"group": "hokkaido", "tone": "series-1", "step": 1},
-          {"group": "tohoku", "tone": "series-2", "step": 2},
-          {"group": "kanto", "tone": "series-3", "step": 3},
-          {"group": "chubu", "tone": "series-1", "step": 4},
-          {"group": "kinki", "tone": "series-4", "step": 5},
-          {"group": "chugoku", "tone": "series-2", "step": 6},
-          {"group": "shikoku", "tone": "series-3", "step": 7},
-          {"group": "kyushu", "tone": "series-1", "step": 8}
-        ]
-      }</script>
-    </m-map-japan>
-  </div>
-  <div class="concl"><span>→ 北から順に 8 つの地方に分ける</span></div>
-</section>
-
-<section id="g-map-japan-2" class="slide">
-  <h2>都道府県の人口（2020 年、国勢調査速報）</h2>
-  <div class="body">
-    <m-map-japan aria-label="都道府県別の人口の塗り分け" legend="人口" unit="万人" islands="all" style="height:440px">
-      <script type="application/json">{
-        "classes": [0, 100, 200, 500],
-        "values": {"01": 523, "02": 124, "03": 121, "04": 230, "05": 96, "06": 107, "07": 183, "08": 287, "09": 193, "10": 194,
-          "11": 735, "12": 629, "13": 1406, "14": 924, "15": 220, "16": 104, "17": 113, "18": 77, "19": 81, "20": 205,
-          "21": 198, "22": 364, "23": 755, "24": 177, "25": 141, "26": 258, "27": 884, "28": 547, "29": 133, "30": 92,
-          "31": 55, "32": 67, "33": 189, "34": 280, "35": 134, "36": 72, "37": 95, "38": 134, "39": 69, "40": 514,
-          "41": 81, "42": 131, "43": 174, "44": 112, "45": 107, "46": 159, "47": 147}
-      }</script>
-    </m-map-japan>
-  </div>
-  <div class="concl"><span>→ 500 万人以上の 9 都道府県は大都市のまわり</span></div>
-</section>
-
-<section id="g-map-japan-3" class="slide">
-  <h2>北前船の西廻り航路（江戸時代）</h2>
-  <div class="body">
-    <m-map-japan aria-label="北前船の航路" labels="none" style="height:440px">
-      <script type="application/json">{
-        "points": [
-          {"lon": 135.43, "lat": 34.65, "label": "大坂", "anchor": "below", "step": 1},
-          {"lon": 130.94, "lat": 33.96, "label": "下関", "anchor": "left", "step": 2},
-          {"lon": 139.84, "lat": 38.91, "label": "酒田", "anchor": "right", "step": 3},
-          {"lon": 140.10, "lat": 41.43, "label": "松前", "anchor": "left", "step": 4}
-        ],
-        "flows": [
-          {"from": [135.43, 34.65], "to": [130.94, 33.96], "step": 2,
-           "via": [[135.15, 34.5], [134.9, 34.6], [134.5, 34.42], [134.0, 34.41], [133.4, 34.18], [133.08, 34.08], [132.9, 34.15], [132.72, 34.08], [132.52, 33.8], [132.1, 33.62], [131.7, 33.84], [131.3, 33.85]]},
-          {"from": [130.94, 33.96], "to": [139.84, 38.91], "label": "日本海", "labelAt": [134.6, 38.4], "step": 3,
-           "via": [[130.5, 34.35], [130.85, 35.0], [131.5, 35.45], [132.4, 35.9], [133.2, 36.6], [134.3, 36.25], [135.3, 36.35], [136.2, 37.0], [136.45, 37.75], [137.4, 38.0], [138.0, 38.55], [138.8, 38.8], [139.4, 39.0]]},
-          {"from": [139.84, 38.91], "to": [140.10, 41.43], "step": 4,
-           "via": [[139.75, 39.4], [139.5, 40.0], [139.75, 40.6], [139.95, 41.2]]}
-        ]
-      }</script>
-    </m-map-japan>
-  </div>
-  <div class="concl"><span>→ 大坂から瀬戸内海・日本海を通って北へ</span></div>
-</section>
-
-<section id="g-map-japan-4" class="slide">
-  <h2>日本の範囲（本当の位置）</h2>
-  <!-- 東西南北の端：国土地理院「日本の東西南北端点の経度緯度」（https://www.gsi.go.jp/KOKUJYOHO/center.htm、2026-10-25 取得）。
-       東端 南鳥島 153°59′12″E・24°16′59″N、西端 与那国島 122°55′57″E・24°27′05″N、
-       南端 沖ノ鳥島 136°04′11″E・20°25′31″N、北端 択捉島 148°45′08″E・45°33′26″N（度に直して小数 4 桁に丸めた） -->
-  <div class="body">
-    <m-map-japan aria-label="日本の範囲と東西南北の端" layout="true" labels="none" style="height:440px">
-      <script type="application/json">{
-        "points": [
-          {"lon": 148.7522, "lat": 45.5572, "label": "択捉島（北端）", "step": 1},
-          {"lon": 153.9867, "lat": 24.2831, "label": "南鳥島（東端）", "step": 2},
-          {"lon": 136.0697, "lat": 20.4253, "label": "沖ノ鳥島（南端）", "step": 3},
-          {"lon": 122.9325, "lat": 24.4514, "label": "与那国島（西端）", "step": 4}
-        ]
-      }</script>
-    </m-map-japan>
-  </div>
-  <div class="concl"><span>→ 東西は経度で約 31°、南北は緯度で約 25° に広がる</span></div>
-</section>
-
-<section id="g-map-japan-5" class="slide">
-  <h2>見せ方の種類（variant）</h2>
-  <div class="body">
-    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:0 28px;text-align:center;font-size:27px">
-      <div>フェード（fade、既定）</div><div>西から順に（sweep）</div><div>輪郭から（draw）</div>
-      <m-map-japan variant="fade" labels="none" style="height:380px">
-        <script type="application/json">{"regions": [{"group": "kinki", "tone": "term"}, {"group": "kyushu", "tone": "emph"}, {"id": "01", "tone": "accent2"}]}</script>
-      </m-map-japan>
-      <m-map-japan variant="sweep" labels="none" style="height:380px">
-        <script type="application/json">{"regions": [{"group": "kinki", "tone": "term"}, {"group": "kyushu", "tone": "emph"}, {"id": "01", "tone": "accent2"}]}</script>
-      </m-map-japan>
-      <m-map-japan variant="draw" labels="none" style="height:380px">
-        <script type="application/json">{"regions": [{"group": "kinki", "tone": "term"}, {"group": "kyushu", "tone": "emph"}, {"id": "01", "tone": "accent2"}]}</script>
-      </m-map-japan>
-    </div>
-  </div>
-  <div class="concl"><span>→ 書かなければ最初の見せ方（fade）になる</span></div>
-</section>
-
-<section class="slide">
-  <h2>m-map-world</h2>
-  <div class="body">
-    <p>世界の国・地域の地図（太平洋が中央）。国や州の強調、区分と値の塗り分け、点、矢印をステップごとに出す</p>
-    <ul>
-      <li>伝えたいこと：場所・地図</li>
-      <li>見せ方：fade・sweep・draw</li>
-      <li>内容の分野：地図（社会）　サンプルのスライド：3 枚</li>
-    </ul>
-  </div>
-</section>
-
-<section id="g-map-world-1" class="slide">
-  <h2>世界の六つの州</h2>
-  <div class="body">
-    <m-map-world aria-label="六州の地図" style="height:440px">
-      <script type="application/json">{
-        "regions": [
-          {"group": "asia", "tone": "series-1", "step": 1},
-          {"group": "europe", "tone": "series-2", "step": 2},
-          {"group": "africa", "tone": "series-3", "step": 3},
-          {"group": "north-america", "tone": "series-4", "step": 4},
-          {"group": "south-america", "tone": "series-1", "step": 5},
-          {"group": "oceania", "tone": "series-2", "step": 6}
-        ]
-      }</script>
-    </m-map-world>
-  </div>
-  <div class="concl"><span>→ 六つの州に分けて世界を見る</span></div>
-</section>
-
-<section id="g-map-world-2" class="slide">
-  <h2>国別の値の塗り分け（架空の値）</h2>
-  <div class="body">
-    <m-map-world aria-label="架空の値の塗り分け" legend="架空の指標" unit="点" style="height:440px">
-      <script type="application/json">{
-        "classes": [0, 20, 40, 60],
-        "values": {"JPN": 72, "CHN": 48, "TWN": 66, "KOR": 61, "IND": 18, "IDN": 27, "AUS": 64, "NZL": 58, "USA": 75, "CAN": 69,
-          "MEX": 33, "BRA": 36, "ARG": 41, "CHL": 45, "GBR": 67, "FRA": 63, "DEU": 70, "ITA": 52, "ESP": 49, "RUS": 38,
-          "TUR": 31, "SAU": 44, "EGY": 15, "NGA": 9, "ZAF": 29, "KEN": 12, "ETH": 6, "VNM": 24, "THA": 35, "PHL": 22}
-      }</script>
-    </m-map-world>
-  </div>
-  <div class="concl"><span>→ 値は架空。台湾は台湾自身の値で塗る</span></div>
-</section>
-
-<section id="g-map-world-3" class="slide">
-  <h2>東京から世界の都市へ</h2>
-  <div class="body">
-    <m-map-world aria-label="東京と世界の都市を結ぶ矢印" labels="none" grid="equator" style="height:440px">
-      <script type="application/json">{
-        "points": [
-          {"lon": 139.69, "lat": 35.69, "label": "東京", "anchor": "above", "step": 1},
-          {"lon": -118.24, "lat": 34.05, "label": "ロサンゼルス", "anchor": "below", "step": 2},
-          {"lon": 103.82, "lat": 1.35, "label": "シンガポール", "anchor": "left", "step": 3},
-          {"lon": 151.21, "lat": -33.87, "label": "シドニー", "anchor": "right", "step": 4},
-          {"lon": -0.13, "lat": 51.51, "label": "ロンドン", "anchor": "above", "step": 5}
-        ],
-        "flows": [
-          {"from": [139.69, 35.69], "to": [-118.24, 34.05], "step": 2},
-          {"from": [139.69, 35.69], "to": [103.82, 1.35], "bend": -0.2, "step": 3},
-          {"from": [139.69, 35.69], "to": [151.21, -33.87], "bend": -0.15, "step": 4},
-          {"from": [103.82, 1.35], "to": [-0.13, 51.51], "step": 5}
-        ]
-      }</script>
-    </m-map-world>
-  </div>
-  <div class="concl"><span>→ 太平洋が中央の地図では、日本が真ん中に来る</span></div>
-</section>
-
-<section class="slide">
-  <h2>m-market</h2>
-  <div class="body">
-    <p>市場規模の入れ子の円（TAM / SAM / SOM）。外の円から 1 つずつ、前の円の大きさから縮んで現れる</p>
-    <ul>
-      <li>伝えたいこと：全体と内訳</li>
+      <li>伝えたいこと：仕組みをモデルで見る・まとめる・分ける</li>
       <li>見せ方：1 種類</li>
-      <li>内容の分野：ビジネス　サンプルのスライド：2 枚</li>
+      <li>内容の分野：数理・統計　サンプルのスライド：4 枚</li>
     </ul>
   </div>
 </section>
 
-<section id="g-market-1" class="slide">
-  <h2>市場の大きさ（架空）</h2>
-  <div class="body">
-    <m-market unit="億円" style="height:420px">
-      <script type="application/json">{
-        "rings": [
-          {"key": "TAM", "value": 2400, "basis": "社内文書を書くすべての時間"},
-          {"key": "SAM", "value": 520, "basis": "定型の報告書（月報・週報）"},
-          {"key": "SOM", "value": 26, "basis": "5 年で取る中堅企業 800 社"}
-        ]
-      }</script>
-    </m-market>
-  </div>
-  <div class="concl"><span>→ まず定型の報告書から始める</span></div>
+<section id="g-mapping-1" class="slide">
+  <h2>硬貨を 2 回投げる</h2>
+  <div class="body"><m-mapping style="height:440px"><script type="application/json">{"outcomes":[{"label":"表表","x":2},{"label":"表裏","x":1},{"label":"裏表","x":1},{"label":"裏裏","x":0}],"picture":"coins","name":"X"}</script></m-mapping></div>
+  <div class="concl"><span>X は表の数。同じ値になる結果の確率を足す</span></div>
 </section>
 
-<section id="g-market-2" class="slide">
-  <h2>面積を値に比例させる</h2>
-  <div class="body">
-    <m-market unit="万人" scale="area" layout="center" count="true" style="height:420px">
-      <script type="application/json">{
-        "rings": [
-          {"key": "全体", "value": 900, "basis": "架空の母集団"},
-          {"key": "対象", "value": 300, "basis": "条件に合う人"},
-          {"key": "初年度", "value": 12, "basis": "最初に届く人"}
-        ]
-      }</script>
-    </m-market>
-  </div>
-  <div class="concl"><span>→ 面積で見ると最初の一歩は小さい</span></div>
+<section id="g-mapping-2" class="slide">
+  <h2>さいころ：5 以上なら当たり（X = 1）</h2>
+  <div class="body"><m-mapping style="height:440px"><script type="application/json">{"outcomes":[{"label":"1","x":0},{"label":"2","x":0},{"label":"3","x":0},{"label":"4","x":0},{"label":"5","x":1},{"label":"6","x":1}],"name":"X","picture":"dice"}</script></m-mapping></div>
+  <div class="concl"><span>当たりは 6 通りのうち 2 通り。P(X = 1) = 1/3</span></div>
+</section>
+
+<section id="g-mapping-3" class="slide">
+  <h2>ぶどうの粒の数を X にする（架空）</h2>
+  <div class="body"><m-mapping style="height:440px"><script type="application/json">{"outcomes":[{"label":"房 A","x":3},{"label":"房 B","x":5},{"label":"房 C","x":3},{"label":"房 D","x":4}],"name":"X","picture":"grapes"}</script></m-mapping></div>
+  <div class="concl"><span>粒の数を数えると X の値になる</span></div>
+</section>
+
+<section id="g-mapping-4" class="slide">
+  <h2>袋から玉を 2 個取り出す（戻さない）</h2>
+  <div class="body"><m-mapping style="height:440px"><script type="application/json">{"outcomes":[{"label":"赤赤","x":2},{"label":"赤青","x":1},{"label":"青赤","x":1}],"name":"X","picture":"balls"}</script></m-mapping></div>
+  <div class="concl"><span>赤 2 個・青 1 個から 2 個。X は赤の数</span></div>
 </section>
 
 <section class="slide">
@@ -2495,69 +2532,216 @@ document.addEventListener("DOMContentLoaded", function(){
 </section>
 
 <section class="slide">
-  <h2>m-numberline</h2>
+  <h2>m-network</h2>
   <div class="body">
-    <p>数直線。点・□・ジャンプ・不等式の範囲・0.1 の拡大。2 本で比例数直線</p>
+    <p>グラフの探索（幅優先・ダイクストラなど）や巡回路を 1 ステップずつ。今の頂点・候補・訪れた頂点、選んだ辺、合計</p>
     <ul>
-      <li>伝えたいこと：比べる（量・特徴）</li>
-      <li>見せ方：fade・draw</li>
-      <li>内容の分野：数理・統計　サンプルのスライド：4 枚</li>
+      <li>伝えたいこと：手順・工程・仕組みをモデルで見る</li>
+      <li>見せ方：1 種類</li>
+      <li>内容の分野：情報　サンプルのスライド：7 枚</li>
     </ul>
   </div>
 </section>
 
-<section id="g-numberline-1" class="slide">
-  <h2>3 + 4 − 2 を数直線で</h2>
+<section id="g-network-1" class="slide noconcl">
+  <h2>幅優先探索：近い順に広げる（待ち行列）</h2>
   <div class="body">
-    <m-numberline style="height:400px">
-      <script type="application/json">{"lines": [{"from": 0, "to": 10, "step": 1}],
-        "marks": [{"at": 3}, {"at": 5, "kind": "open", "label": "答え", "show": 5}],
-        "jumps": [{"from": 3, "to": 7, "label": "+4"}, {"from": 7, "to": 5, "label": "−2"}]}</script>
-    </m-numberline>
-  </div>
-  <div class="concl"><span>→ たすときは右へ、ひくときは左へ進む</span></div>
-</section>
-
-<section id="g-numberline-2" class="slide">
-  <h2>1 と 2 の間を 10 に分ける</h2>
-  <div class="body">
-    <m-numberline build="ticks,magnify,marks" style="height:440px">
-      <script type="application/json">{"lines": [{"from": 0, "to": 3, "step": 1, "unit": "L"}],
-        "magnify": [{"from": 1, "to": 2}],
-        "marks": [{"at": 1.3, "line": 1}]}</script>
-    </m-numberline>
-  </div>
-  <div class="concl"><span>→ 1 目盛りは 0.1。1.3 は 1 と 0.1 が 3 つ</span></div>
-</section>
-
-<section id="g-numberline-3" class="slide">
-  <h2>1200 円の 2/3 はいくら（2 本の数直線）</h2>
-  <div class="body">
-    <m-numberline build="ticks,links,jumps,marks" style="height:440px">
-      <script type="application/json">{"lines": [{"from": 0, "to": 1200, "step": 400, "label": "代金", "unit": "円", "labels": [0, 1200]},
-                 {"from": 0, "to": 1, "step": "1/3", "label": "割合"}],
-        "link": [[1200, 1], [800, "2/3"]],
-        "jumps": [{"from": 1200, "to": 800, "label": "×2/3"}],
-        "marks": [{"at": 800, "kind": "box"}]}</script>
-    </m-numberline>
+    <m-network style="height:540px">
+      <script type="application/json">
+        {
+          "nodes": [{"id": "A", "x": 0, "y": 2}, {"id": "B", "x": 3, "y": 0}, {"id": "C", "x": 3, "y": 4}, {"id": "D", "x": 6, "y": 1}, {"id": "E", "x": 6, "y": 4}, {"id": "F", "x": 9, "y": 2}],
+          "edges": [{"from": "A", "to": "B"}, {"from": "A", "to": "C"}, {"from": "B", "to": "C"}, {"from": "B", "to": "D"}, {"from": "C", "to": "E"}, {"from": "D", "to": "E"}, {"from": "D", "to": "F"}, {"from": "E", "to": "F"}],
+          "frontierKind": "queue",
+          "steps": [
+            {"frontier": ["A"], "note": "A から始める"},
+            {"current": "A", "visited": ["A"], "frontier": ["B", "C"], "parent": {"B": "A", "C": "A"}, "note": "A を取り出し、隣の B・C を後ろへ"},
+            {"current": "B", "visited": ["A", "B"], "frontier": ["C", "D"], "parent": {"D": "B"}, "note": "B を取り出し、隣の D を後ろへ"},
+            {"current": "C", "visited": ["A", "B", "C"], "frontier": ["D", "E"], "parent": {"E": "C"}, "note": "C を取り出し、隣の E を後ろへ"},
+            {"current": "D", "visited": ["A", "B", "C", "D"], "frontier": ["E", "F"], "parent": {"F": "D"}, "note": "D を取り出し、隣の F を後ろへ"},
+            {"current": "E", "visited": ["A", "B", "C", "D", "E"], "frontier": ["F"], "note": "E を取り出す（新しい隣はない）"},
+            {"current": "F", "visited": ["A", "B", "C", "D", "E", "F"], "frontier": [], "note": "F を取り出す（新しい隣はない）"},
+            {"current": null, "note": "全部の頂点を訪れた"}
+          ]
+        }
+      </script>
+    </m-network>
   </div>
 </section>
 
-<section id="g-numberline-4" class="slide">
-  <h2>連立不等式の解（見せ方の種類）</h2>
+<section id="g-network-2" class="slide noconcl">
+  <h2>ダイクストラ法：A から F への最短経路</h2>
   <div class="body">
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:0 36px">
-      <m-numberline variant="fade" arrow="on" style="height:400px">
-        <script type="application/json">{"lines": [{"from": -3, "to": 5, "step": 1, "label": "フェード"}],
-          "ranges": [{"from": -1, "incl": [false, false], "label": "*x* > −1"}, {"to": 3, "incl": [true, true], "label": "*x* ≦ 3"}]}</script>
-      </m-numberline>
-      <m-numberline variant="draw" arrow="on" style="height:400px">
-        <script type="application/json">{"lines": [{"from": -3, "to": 5, "step": 1, "label": "線を引く"}],
-          "ranges": [{"from": -1, "incl": [false, false], "label": "*x* > −1"}, {"to": 3, "incl": [true, true], "label": "*x* ≦ 3"}]}</script>
-      </m-numberline>
-    </div>
+    <m-network style="height:540px">
+      <script type="application/json">
+        {
+          "nodes": [{"id": "A", "x": 0, "y": 2}, {"id": "B", "x": 3, "y": 0}, {"id": "C", "x": 3, "y": 4}, {"id": "D", "x": 6, "y": 1}, {"id": "E", "x": 6, "y": 4}, {"id": "F", "x": 9, "y": 2}],
+          "edges": [{"from": "A", "to": "B", "w": 4}, {"from": "A", "to": "C", "w": 2}, {"from": "B", "to": "C", "w": 1}, {"from": "B", "to": "D", "w": 5}, {"from": "C", "to": "E", "w": 8}, {"from": "D", "to": "E", "w": 2}, {"from": "D", "to": "F", "w": 6}, {"from": "E", "to": "F", "w": 3}],
+          "frontierKind": "pq",
+          "total": {"label": "距離"},
+          "steps": [
+            {"frontier": [["A", 0]], "note": "A の距離を 0 に"},
+            {"current": "A", "visited": ["A"], "frontier": [["C", 2], ["B", 4]], "parent": {"B": "A", "C": "A"}, "note": "A（距離 0）を確定"},
+            {"current": "C", "visited": ["A", "C"], "frontier": [["B", 3], ["E", 10]], "parent": {"B": "C", "E": "C"}, "note": "C（距離 2）を確定"},
+            {"current": "B", "visited": ["A", "C", "B"], "frontier": [["D", 8], ["E", 10]], "parent": {"D": "B"}, "note": "B（距離 3）を確定"},
+            {"current": "D", "visited": ["A", "C", "B", "D"], "frontier": [["E", 10], ["F", 14]], "parent": {"F": "D"}, "note": "D（距離 8）を確定"},
+            {"current": "E", "visited": ["A", "C", "B", "D", "E"], "frontier": [["F", 13]], "parent": {"F": "E"}, "note": "E（距離 10）を確定"},
+            {"current": "F", "visited": ["A", "C", "B", "D", "E", "F"], "frontier": [], "note": "F（距離 13）を確定"},
+            {"current": "F", "frontier": [], "parent": {"B": null, "C": null, "E": null, "D": null, "F": null}, "take": [["A", "C"], ["C", "E"], ["E", "F"]], "total": 13, "note": "A から F への最短経路"}
+          ]
+        }
+      </script>
+    </m-network>
   </div>
-  <div class="concl"><span>→ 重なる部分が解：−1 &lt; <i>x</i> ≦ 3（左はフェード、右は線を引く）</span></div>
+</section>
+
+<section id="g-network-3" class="slide noconcl">
+  <h2>巡回路：最近傍法から 2-opt へ（架空）</h2>
+  <div class="body">
+    <m-network style="height:540px">
+      <script type="application/json">
+        {
+          "nodes": [{"id": "P", "x": 6, "y": 3}, {"id": "Q", "x": 0, "y": 2}, {"id": "R", "x": 8, "y": 3}, {"id": "S", "x": 9, "y": 1}, {"id": "T", "x": 4, "y": 1}, {"id": "U", "x": 1, "y": 4}, {"id": "V", "x": 4, "y": 4}],
+          "complete": true,
+          "total": {"label": "巡回路の長さ", "check": false},
+          "steps": [
+            {"current": "R", "visited": ["P", "R"], "take": [["P", "R"]], "total": 2.0, "note": "P からいちばん近い R へ"},
+            {"current": "S", "visited": ["P", "R", "S"], "take": [["R", "S"]], "total": 4.24, "note": "R からいちばん近い S へ"},
+            {"current": "T", "visited": ["P", "R", "S", "T"], "take": [["S", "T"]], "total": 9.24, "note": "S からいちばん近い T へ"},
+            {"current": "V", "visited": ["P", "R", "S", "T", "V"], "take": [["T", "V"]], "total": 12.24, "note": "T からいちばん近い V へ"},
+            {"current": "U", "visited": ["P", "R", "S", "T", "V", "U"], "take": [["V", "U"]], "total": 15.24, "note": "V からいちばん近い U へ"},
+            {"current": "Q", "visited": ["P", "R", "S", "T", "V", "U", "Q"], "take": [["U", "Q"]], "total": 17.47, "note": "U からいちばん近い Q へ"},
+            {"current": "P", "take": [["Q", "P"]], "total": 23.55, "note": "出発点へ戻る（最近傍法）"},
+            {"current": null, "drop": [["T", "V"], ["Q", "P"]], "take": [["T", "Q"], ["V", "P"]], "total": 20.83, "note": "T–V と Q–P を T–Q と V–P に（2-opt）"}
+          ]
+        }
+      </script>
+    </m-network>
+  </div>
+</section>
+
+<section id="g-network-4" class="slide noconcl">
+  <h2>マルコフ連鎖：天気の移り変わり（架空）</h2>
+  <div class="body">
+    <m-network style="height:540px">
+      <script type="application/json">
+        {
+          "directed": true,
+          "stochastic": true,
+          "nodes": [{"id": "晴", "x": 0, "y": 0}, {"id": "曇", "x": 4, "y": 0}, {"id": "雨", "x": 2, "y": 3}],
+          "edges": [{"from": "晴", "to": "晴", "w": 0.6}, {"from": "晴", "to": "曇", "w": 0.3}, {"from": "晴", "to": "雨", "w": 0.1}, {"from": "曇", "to": "晴", "w": 0.4}, {"from": "曇", "to": "曇", "w": 0.4}, {"from": "曇", "to": "雨", "w": 0.2}, {"from": "雨", "to": "晴", "w": 0.2}, {"from": "雨", "to": "曇", "w": 0.4}, {"from": "雨", "to": "雨", "w": 0.4}],
+          "total": {"label": "この道筋の確率", "check": false},
+          "steps": [
+            {"current": "晴", "note": "晴の日から始める"},
+            {"current": "曇", "take": [["晴", "曇"]], "total": 0.3, "note": "晴 → 曇（確率 0.3）"},
+            {"current": "曇", "take": [["曇", "曇"]], "total": 0.12, "note": "曇 → 曇（確率 0.4）", "drop": [["晴", "曇"]]},
+            {"current": "曇", "take": [["曇", "曇"]], "total": 0.048, "note": "曇 → 曇（確率 0.4）", "drop": [["曇", "曇"]]},
+            {"current": "雨", "take": [["曇", "雨"]], "total": 0.0096, "note": "曇 → 雨（確率 0.2）", "drop": [["曇", "曇"]]}
+          ]
+        }
+      </script>
+    </m-network>
+  </div>
+</section>
+
+<section id="g-network-5" class="slide noconcl">
+  <h2>パス図：潜在変数と観測した変数（架空）</h2>
+  <div class="body">
+    <m-network style="height:540px">
+      <script type="application/json">
+        {
+          "directed": true,
+          "nodes": [{"id": "意欲", "x": 0, "y": 1, "shape": "ellipse"}, {"id": "学力", "x": 4, "y": 1, "shape": "ellipse"}, {"id": "国語", "x": 8, "y": 0, "shape": "box", "observed": true}, {"id": "数学", "x": 8, "y": 1, "shape": "box", "observed": true}, {"id": "英語", "x": 8, "y": 2, "shape": "box", "observed": true}, {"id": "家庭", "x": 0, "y": 3, "shape": "box", "observed": true}],
+          "edges": [{"from": "意欲", "to": "学力", "w": 0.45}, {"from": "学力", "to": "国語", "w": 0.82}, {"from": "学力", "to": "数学", "w": 0.75}, {"from": "学力", "to": "英語", "w": 0.79}, {"from": "家庭", "to": "意欲", "w": 0.3, "bi": true}],
+          "steps": [
+            {"current": "学力", "note": "楕円は潜在変数（直接は測れない）"},
+            {"current": "数学", "note": "塗った四角は観測した変数。矢印の数は係数（架空）"},
+            {"current": "家庭", "note": "両向きの破線は、測っていない共通の原因（交絡）"}
+          ]
+        }
+      </script>
+    </m-network>
+  </div>
+</section>
+
+<section id="g-network-6" class="slide noconcl">
+  <h2>プレート表記：同じものが N 個</h2>
+  <div class="body">
+    <m-network style="height:360px;width:640px;margin:0 auto">
+      <script type="application/json">
+        {
+          "directed": true,
+          "nodes": [{"id": "θ", "x": 0, "y": 0, "shape": "circle"}, {"id": "x", "x": 3, "y": 0, "label": "*x*_i", "observed": true}],
+          "edges": [{"from": "θ", "to": "x"}],
+          "plates": [{"nodes": ["x"], "label": "N"}],
+          "steps": [
+            {"current": "θ", "note": "θ（パラメータ）は観測しない"},
+            {"current": "x", "note": "枠は「同じものが N 個」。*x*_1 … *x*_N が θ から出る"}
+          ]
+        }
+      </script>
+    </m-network>
+  </div>
+</section>
+
+<section id="g-network-7" class="slide noconcl">
+  <h2>隠れマルコフモデルの格子とビタビ（架空）</h2>
+  <div class="body">
+    <m-network style="height:540px">
+      <script type="application/json">
+        {
+          "layout": "trellis",
+          "states": ["晴", "雨"],
+          "T": 4,
+          "transitions": [{"from": "晴", "to": "晴", "w": 0.7}, {"from": "晴", "to": "雨", "w": 0.3}, {"from": "雨", "to": "晴", "w": 0.4}, {"from": "雨", "to": "雨", "w": 0.6}],
+          "steps": [
+            {"current": "晴@1", "note": "観測：散歩・読書・読書・散歩。いちばん確からしい天気の並び（ビタビ）"},
+            {"current": "雨@2", "take": [["晴@1", "雨@2"]], "note": "時刻 2：雨（読書）"},
+            {"current": "雨@3", "take": [["雨@2", "雨@3"]], "note": "時刻 3：雨（読書）"},
+            {"current": "晴@4", "take": [["雨@3", "晴@4"]], "note": "時刻 4：晴（散歩）"}
+          ]
+        }
+      </script>
+    </m-network>
+  </div>
+</section>
+
+<section class="slide">
+  <h2>m-nnet</h2>
+  <div class="body">
+    <p>ニューラルネットの層を並べ、前向きの計算を層ごとに見せる。ニューロンはまとめた丸か、Σ（重み付きの和）と f（活性化関数）に分けた形</p>
+    <ul>
+      <li>伝えたいこと：仕組みをモデルで見る・手順・工程</li>
+      <li>見せ方：1 種類</li>
+      <li>内容の分野：情報　サンプルのスライド：3 枚</li>
+    </ul>
+  </div>
+</section>
+
+<section id="g-nnet-1" class="slide noconcl">
+  <h2>パーセプトロンで AND を計算する</h2>
+  <div class="body">
+    <m-nnet style="height:440px">
+      <script type="application/json">{"layers": [{"n": 2, "label": "入力", "names": ["*x*_1", "*x*_2"]}, {"n": 1, "label": "出力", "act": "step", "form": "split", "names": ["*y*"]}], "weights": [[[1.0, 1.0]]], "biases": [[-1.5]], "values": {"x": [1, 1], "z": [[0.5]], "a": [[1.0]]}}</script>
+    </m-nnet>
+  </div>
+</section>
+
+<section id="g-nnet-2" class="slide noconcl">
+  <h2>3–4–4–2 の前向きの計算（架空の重み）</h2>
+  <div class="body">
+    <m-nnet edges="weight" style="height:540px">
+      <script type="application/json">{"layers": [{"n": 3, "label": "入力層", "names": ["*x*_1", "*x*_2", "*x*_3"]}, {"n": 4, "label": "隠れ層 1", "act": "relu"}, {"n": 4, "label": "隠れ層 2", "act": "relu"}, {"n": 2, "label": "出力層", "act": "sigmoid", "names": ["*y*_1", "*y*_2"]}], "weights": [[[0.1, -0.11, 0.51], [0.08, -0.43, 0.29], [1.04, 0.76, -0.56], [-1.01, -0.5, 0.03]], [[-1.86, -0.18, -1.0, -0.59], [-0.44, -0.25, 0.33, 0.83], [-0.1, 1.09, -0.53, 0.28], [0.72, 0.08, -0.59, -0.74]], [[-0.37, 0.18, -0.81, -0.17], [-0.13, 0.43, 0.17, 0.28]]], "biases": [[-0.2, -0.04, 0.24, 0.45], [-0.38, 0.45, 0.4, 0.23], [0.08, -0.09]], "values": {"x": [0.5, -1.2, 0.8], "z": [[0.39, 0.75, -0.6, 0.57], [-1.58, 0.56, 1.34, 0.15], [-0.93, 0.42]], "a": [[0.39, 0.75, 0.0, 0.57], [0.0, 0.56, 1.34, 0.15], [0.28, 0.6]]}}</script>
+    </m-nnet>
+  </div>
+</section>
+
+<section id="g-nnet-3" class="slide noconcl">
+  <h2>隠れ層 2 を Σ と ReLU に分けて見る（架空）</h2>
+  <div class="body">
+    <m-nnet edges="weight" style="height:540px">
+      <script type="application/json">{"layers": [{"n": 3, "label": "入力層", "names": ["*x*_1", "*x*_2", "*x*_3"]}, {"n": 4, "label": "隠れ層 1", "act": "relu"}, {"n": 4, "label": "隠れ層 2", "act": "relu"}, {"n": 2, "label": "出力層", "act": "sigmoid", "names": ["*y*_1", "*y*_2"]}], "weights": [[[0.1, -0.11, 0.51], [0.08, -0.43, 0.29], [1.04, 0.76, -0.56], [-1.01, -0.5, 0.03]], [[-1.86, -0.18, -1.0, -0.59], [-0.44, -0.25, 0.33, 0.83], [-0.1, 1.09, -0.53, 0.28], [0.72, 0.08, -0.59, -0.74]], [[-0.37, 0.18, -0.81, -0.17], [-0.13, 0.43, 0.17, 0.28]]], "biases": [[-0.2, -0.04, 0.24, 0.45], [-0.38, 0.45, 0.4, 0.23], [0.08, -0.09]], "values": {"x": [0.5, -1.2, 0.8], "z": [[0.39, 0.75, -0.6, 0.57], [-1.58, 0.56, 1.34, 0.15], [-0.93, 0.42]], "a": [[0.39, 0.75, 0.0, 0.57], [0.0, 0.56, 1.34, 0.15], [0.28, 0.6]]}, "steps": [{"show": "x"}, {"layer": 1, "phase": "a"}, {"open": 2, "note": "隠れ層 2 を Σ と ReLU に分けて見る"}, {"layer": 2, "phase": "z"}, {"focus": [2, 0]}, {"layer": 2, "phase": "a"}, {"layer": 3, "phase": "a"}]}</script>
+    </m-nnet>
+  </div>
 </section>
 
 <section class="slide">
@@ -2636,74 +2820,6 @@ document.addEventListener("DOMContentLoaded", function(){
   <h2>炭素の燃焼</h2>
   <div class="body"><m-particles mode="reaction" style="height:440px"><script type="application/json">{"reactants":[{"formula":"C","n":1},{"formula":"O2","n":1}],"products":[{"formula":"CO2","n":1}]}</script></m-particles></div>
   <div class="concl"><span>炭素と酸素から二酸化炭素ができる</span></div>
-</section>
-
-<section class="slide">
-  <h2>m-pie</h2>
-  <div class="body">
-    <p>円グラフとドーナツグラフ。切れの名前と値・割合は、大きい切れなら中に、小さい切れなら外に引き出し線で書く</p>
-    <ul>
-      <li>伝えたいこと：全体と内訳</li>
-      <li>見せ方：fade・sweep・grow</li>
-      <li>内容の分野：標準パーツ　サンプルのスライド：3 枚</li>
-    </ul>
-  </div>
-</section>
-
-<section id="g-pie-1" class="slide">
-  <h2>1 か月の支出の内訳（架空）</h2>
-  <div class="body">
-    <m-pie unit="万円" digits="1" show="both" style="height:440px">
-      <script type="application/json">{
-        "slices": [
-          {"label": "住まい", "value": 8.5},
-          {"label": "食費", "value": 7.2},
-          {"label": "教育・娯楽", "value": 3.1},
-          {"label": "光熱・通信", "value": 2.6},
-          {"label": "交通", "value": 1.8},
-          {"label": "その他", "value": 2.0, "tone": "muted"}
-        ]
-      }</script>
-    </m-pie>
-  </div>
-  <div class="concl"><span>→ 住まいと食費で支出の 6 割を超える</span></div>
-</section>
-
-<section id="g-pie-2" class="slide">
-  <h2>通学の手段（ドーナツ、1 切れずつ。架空）</h2>
-  <div class="body">
-    <m-pie donut="0.56" unit="人" per-step="1" style="height:440px">
-      <script type="application/json">{
-        "center": "回答\n{total}",
-        "slices": [
-          {"label": "自転車", "value": 41},
-          {"label": "徒歩", "value": 32},
-          {"label": "バス", "value": 18},
-          {"label": "電車", "value": 9}
-        ]
-      }</script>
-    </m-pie>
-  </div>
-  <div class="concl"><span>→ 7 割が自転車か徒歩で通っている</span></div>
-</section>
-
-<section id="g-pie-3" class="slide">
-  <h2>見せ方の種類（variant）</h2>
-  <div class="body">
-    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:0 28px;text-align:center;font-size:27px">
-      <div>フェード（fade、既定）</div><div>掃くように（sweep）</div><div>大きくなる（grow）</div>
-      <m-pie variant="fade" style="height:340px">
-        <script type="application/json">{"slices": [{"label": "A", "value": 50}, {"label": "B", "value": 30}, {"label": "C", "value": 20}]}</script>
-      </m-pie>
-      <m-pie variant="sweep" style="height:340px">
-        <script type="application/json">{"slices": [{"label": "A", "value": 50}, {"label": "B", "value": 30}, {"label": "C", "value": 20}]}</script>
-      </m-pie>
-      <m-pie variant="grow" style="height:340px">
-        <script type="application/json">{"slices": [{"label": "A", "value": 50}, {"label": "B", "value": 30}, {"label": "C", "value": 20}]}</script>
-      </m-pie>
-    </div>
-  </div>
-  <div class="concl"><span>→ 書かなければ最初の見せ方（fade）になる。数字は架空</span></div>
 </section>
 
 <section class="slide">
@@ -2852,68 +2968,6 @@ document.addEventListener("DOMContentLoaded", function(){
 </section>
 
 <section class="slide">
-  <h2>m-scatter</h2>
-  <div class="body">
-    <p>散布図。点の組（系列）をステップごとに出し、そのあと傾向の線（最小二乗の直線か、書いた 2 点）を引く</p>
-    <ul>
-      <li>伝えたいこと：2 つの量の関係</li>
-      <li>見せ方：fade・sweep・grow</li>
-      <li>内容の分野：標準パーツ　サンプルのスライド：3 枚</li>
-    </ul>
-  </div>
-</section>
-
-<section id="g-scatter-1" class="slide">
-  <h2>最高気温とアイスの売上：平日と休日（架空）</h2>
-  <div class="body">
-    <m-scatter xr="[20,36]" yr="[0,600]" xt="[20,24,28,32,36]" yt="[0,200,400,600]" xl="最高気温（℃）" yl="売上（個）" style="height:430px">
-      <script type="application/json">{
-        "series": [
-          {"label": "平日", "points": [[21.2, 53], [22.6, 8], [22.9, 144], [27.5, 180], [27.6, 188], [29.0, 268], [29.7, 230], [31.4, 279], [31.7, 316], [33.8, 355], [34.2, 261], [34.2, 281]]},
-          {"label": "休日", "points": [[23.0, 257], [23.3, 269], [23.9, 270], [23.9, 303], [25.1, 321], [29.4, 380], [29.6, 373], [30.5, 379], [33.2, 452], [33.2, 561], [33.5, 446], [34.5, 457]]}
-        ],
-        "trend": [{"fit": "linear", "series": 0, "tone": "series-1", "dash": true}, {"fit": "linear", "series": 1, "tone": "series-2", "dash": true}]
-      }</script>
-    </m-scatter>
-  </div>
-  <div class="concl"><span>→ 休日はどの気温でも平日より多く売れる</span></div>
-</section>
-
-<section id="g-scatter-2" class="slide">
-  <h2>傾向の強さと外れた日（架空）</h2>
-  <div class="body">
-    <m-scatter xr="[20,36]" yr="[0,500]" xt="[20,24,28,32,36]" yt="[0,100,200,300,400,500]" xl="最高気温（℃）" yl="売上（個）" style="height:430px">
-      <script type="application/json">{
-        "series": [{"points": [[23.1, 176], [24.0, 206], [24.3, 159], [24.6, 223], [25.2, 314], [26.5, 277], [27.6, 310],
-          {"x": 27.6, "y": 440, "label": "花火大会の日", "anchor": "left"},
-          [29.3, 370], [29.5, 334], [29.8, 361], [29.9, 394], [30.4, 441], [31.1, 442], [31.4, 359], [32.7, 372], [32.7, 439],
-          [33.3, 472], [33.9, 420], [34.1, 428]]}],
-        "trend": {"fit": "linear", "label": "傾向（r = {r}）", "tone": "emph"}
-      }</script>
-    </m-scatter>
-  </div>
-  <div class="concl"><span>→ 暑い日ほど売れる。1 ℃ 上がると約 23 個増える</span></div>
-</section>
-
-<section id="g-scatter-3" class="slide">
-  <h2>見せ方の種類（variant）</h2>
-  <div class="body">
-    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:0 28px">
-      <m-scatter variant="fade" xr="[0,10]" yr="[0,10]" xt="[0,5,10]" yt="[0,5,10]" style="height:400px">
-        <script type="application/json">{"series": [{"label": "フェード（fade、既定）", "points": [[1, 2.2], [2, 2.1], [3, 3.9], [4, 3.6], [5, 5.4], [6, 5.1], [7, 7.2], [8, 6.6], [9, 8.4]]}], "trend": "linear"}</script>
-      </m-scatter>
-      <m-scatter variant="sweep" xr="[0,10]" yr="[0,10]" xt="[0,5,10]" yt="[0,5,10]" style="height:400px">
-        <script type="application/json">{"series": [{"label": "左から（sweep）", "points": [[1, 2.2], [2, 2.1], [3, 3.9], [4, 3.6], [5, 5.4], [6, 5.1], [7, 7.2], [8, 6.6], [9, 8.4]]}], "trend": "linear"}</script>
-      </m-scatter>
-      <m-scatter variant="grow" xr="[0,10]" yr="[0,10]" xt="[0,5,10]" yt="[0,5,10]" style="height:400px">
-        <script type="application/json">{"series": [{"label": "大きくなる（grow）", "points": [[1, 2.2], [2, 2.1], [3, 3.9], [4, 3.6], [5, 5.4], [6, 5.1], [7, 7.2], [8, 6.6], [9, 8.4]]}], "trend": "linear"}</script>
-      </m-scatter>
-    </div>
-  </div>
-  <div class="concl"><span>→ 書かなければ最初の見せ方（fade）になる。数字は架空</span></div>
-</section>
-
-<section class="slide">
   <h2>m-score</h2>
   <div class="body">
     <p>楽譜（五線譜）を 1 音・和音ずつ、または 1 小節ずつ出して音も鳴らす。ABC 記譜法で書く</p>
@@ -2966,6 +3020,45 @@ document.addEventListener("DOMContentLoaded", function(){
 </section>
 
 <section class="slide">
+  <h2>m-sweep</h2>
+  <div class="body">
+    <p>パラメータを動かして関数の形の変化を見せる（前の形は灰色で残す）</p>
+    <ul>
+      <li>伝えたいこと：パラメータを動かす</li>
+      <li>見せ方：1 種類</li>
+      <li>内容の分野：数理・統計　サンプルのスライド：3 枚</li>
+    </ul>
+  </div>
+</section>
+
+<section id="g-sweep-1" class="slide">
+  <h2>幅のパラメータで形が変わる</h2>
+  <div class="body">
+    <m-sweep f="1/(1 + u*u/(c*c))" values="[0.5,1,2]" param="σ" xr="[-4,4]" yr="[0,1.2]" xt="[-4,-2,0,2,4]" yt="[0,0.5,1]"
+             xl="*u*" yl="重み" digits="1" style="height:400px"></m-sweep>
+  </div>
+  <div class="concl"><span>→ σ が大きいほど、遠くの点まで重みが届く</span></div>
+</section>
+
+<section id="g-sweep-2" class="slide">
+  <h2>学習率と誤差の減り方</h2>
+  <div class="body">
+    <m-sweep f="((1-c)**2)**u" values="[0.1,0.5,1.8,2.1]" param="ηa" xr="[0,10]" yr="[0,1.5]" xt="[0,5,10]" yt="[0,0.5,1,1.5]"
+             xl="*t*" yl="損失の比" digits="1" style="height:400px"></m-sweep>
+  </div>
+  <div class="concl"><span>→ ηa が 2 を超えると、誤差は減らずに増える</span></div>
+</section>
+
+<section id="g-sweep-3" class="slide">
+  <h2>審査が速くなると、待ち時間はどう変わる</h2>
+  <div class="body">
+    <m-sweep f="1/(c - u)" values="[10,12]" param="1 日に処理できる件数" xr="[6,9.9]" yr="[0,6]" xt="[6,7,8,9]" yt="[0,2,4,6]"
+             xl="1 日の申請" yl="平均待ち（日）" digits="0" size="36" at="[0.5]" point='{"u": 9.8, "label": "平均待ち {y} 日", "digits": 2}' style="height:400px"></m-sweep>
+  </div>
+  <div class="concl"><span>→ 混むほど、少し速くするだけで待ちが大きく減る（架空）</span></div>
+</section>
+
+<section class="slide">
   <h2>m-syntax</h2>
   <div class="body">
     <p>英文の構造：S V O C M の記号、句と節の括弧、修飾の矢印、品詞、それから和訳</p>
@@ -3010,72 +3103,95 @@ document.addEventListener("DOMContentLoaded", function(){
 </section>
 
 <section class="slide">
-  <h2>m-tape</h2>
+  <h2>m-timeline</h2>
   <div class="body">
-    <p>テープ図・線分図。全体や部分を括弧で括り、わからない量は □ か ?。行から行へ「2 倍」の矢印</p>
+    <p>年表。出来事を時間の軸の上に 1 つずつ出す。期間は軸に沿って長さのとおりに描き、重なれば段を分ける。end は含まない（"1912" は 1912 年の初め）</p>
     <ul>
-      <li>伝えたいこと：全体と内訳・比べる（量・特徴）</li>
-      <li>見せ方：fade・grow</li>
-      <li>内容の分野：数理・統計　サンプルのスライド：4 枚</li>
+      <li>伝えたいこと：年表・予定</li>
+      <li>見せ方：fade・draw・grow</li>
+      <li>内容の分野：標準パーツ　サンプルのスライド：4 枚</li>
     </ul>
   </div>
 </section>
 
-<section id="g-tape-1" class="slide">
-  <h2>2 つの量をくらべる：B のリボンは何 m？</h2>
+<section id="g-timeline-1" class="slide">
+  <h2>明治のおもな出来事</h2>
   <div class="body">
-    <m-tape style="height:440px">
-      <script type="application/json">{"rows": [
-          {"label": "A", "segs": [{"v": 12, "label": "12 m"}]},
-          {"label": "B", "segs": [{"v": 12, "label": "12 m"}, {"v": 5, "label": "5 m"}]}],
-        "brace": [{"row": 1, "from": 0, "to": 1, "label": "□ m", "side": "below"}]}</script>
-    </m-tape>
+    <m-timeline style="height:430px">
+      <script type="application/json">{
+        "nodes": [
+          {"label": "明治維新", "when": "1868", "whenLabel": "明治元年", "note": "五箇条の御誓文"},
+          {"label": "廃藩置県", "when": "1871"},
+          {"label": "鉄道の開業", "when": "1872", "note": "新橋〜横浜"},
+          {"label": "西南戦争", "when": "1877"},
+          {"label": "憲法の発布", "when": "1889", "tone": "emph"},
+          {"label": "日清戦争", "when": "1894"},
+          {"label": "日露戦争", "when": "1904"}
+        ]
+      }</script>
+    </m-timeline>
   </div>
-  <div class="concl"><span>→ B は A より 5 m 長い。□ = 12 + 5 = 17</span></div>
+  <div class="concl"><span>→ 約 20 年で憲法をもつ国になった</span></div>
 </section>
 
-<section id="g-tape-2" class="slide">
-  <h2>□を使った式：みかんははじめに何こ？</h2>
+<section id="g-timeline-2" class="slide">
+  <h2>明治・大正の作家の生涯</h2>
   <div class="body">
-    <m-tape style="height:360px">
-      <script type="application/json">{"rows": [{"segs": [{"v": 8, "label": "食べた 8 こ"}, {"v": 15, "label": "のこり 15 こ"}]}],
-        "brace": [{"row": 0, "from": 0, "to": 1, "label": "はじめ □ こ", "side": "above"}]}</script>
-    </m-tape>
+    <m-timeline style="height:430px">
+      <script type="application/json">{
+        "nodes": [
+          {"label": "明治", "when": "1868", "end": "1912", "lane": "時代", "tone": "muted"},
+          {"label": "大正", "when": "1912", "end": "1926", "lane": "時代", "tone": "muted"},
+          {"label": "森鷗外", "when": "1862", "end": "1922", "lane": "作家"},
+          {"label": "夏目漱石", "when": "1867", "end": "1916", "lane": "作家"},
+          {"label": "正岡子規", "when": "1867", "end": "1902", "lane": "作家"},
+          {"label": "樋口一葉\n24 歳で没", "when": "1872", "end": "1896", "lane": "作家", "tone": "emph"},
+          {"label": "芥川龍之介", "when": "1892", "end": "1927", "lane": "作家"},
+          {"label": "宮沢賢治", "when": "1896", "end": "1933", "lane": "作家"}
+        ]
+      }</script>
+    </m-timeline>
   </div>
-  <div class="concl"><span>→ □ − 8 = 15 だから、□ = 15 + 8 = 23</span></div>
+  <div class="concl"><span>→ 重なる生涯は段を分けて積む。漱石と子規は同じ年の生まれ</span></div>
 </section>
 
-<section id="g-tape-3" class="slide">
-  <h2>B のテープは A のテープの何倍？（線分図）</h2>
+<section id="g-timeline-3" class="slide">
+  <h2>アプリ開発の工程表（架空）</h2>
   <div class="body">
-    <m-tape kind="line" style="height:380px">
-      <script type="application/json">{"rows": [
-          {"label": "A のテープ", "segs": [{"v": 12, "label": "12 m"}]},
-          {"label": "B のテープ", "segs": [{"v": 12}, {"v": 12}, {"v": 12}]}],
-        "brace": [{"row": 1, "from": 0, "to": 2, "label": "36 m", "side": "below"}],
-        "times": [{"from": 0, "to": 1, "label": "□ 倍"}]}</script>
-    </m-tape>
+    <m-timeline unit="week" today="2026-11-02" style="height:400px">
+      <script type="application/json">{
+        "nodes": [
+          {"id": "req", "label": "要件定義", "when": "2026-10-05", "end": "2026-10-17", "lane": "設計", "progress": 100},
+          {"id": "ui", "label": "画面設計", "when": "2026-10-17", "end": "2026-11-07", "lane": "設計", "progress": 70, "after": ["req"]},
+          {"id": "dev", "label": "実装", "when": "2026-11-07", "end": "2026-12-05", "lane": "開発", "progress": 10, "after": ["ui"]},
+          {"id": "test", "label": "試験", "when": "2026-12-05", "end": "2026-12-19", "lane": "開発", "after": ["dev"]},
+          {"id": "rel", "label": "公開", "when": "2026-12-21", "lane": "開発", "tone": "emph", "after": ["test"]}
+        ]
+      }</script>
+    </m-timeline>
   </div>
-  <div class="concl"><span>→ B は A（12 m）の 3 つ分で 36 m。36 ÷ 12 = 3 で 3 倍</span></div>
+  <div class="concl"><span>→ 矢印は「前の作業が終わってから」。画面設計の遅れは実装に響く</span></div>
 </section>
 
-<section id="g-tape-4" class="slide">
+<section id="g-timeline-4" class="slide">
   <h2>見せ方の種類（variant）</h2>
   <div class="body">
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:0 36px">
-      <m-tape variant="fade" build="rows" style="height:400px">
-        <script type="application/json">{"rows": [{"label": "弟", "segs": [{"v": 20, "label": "20 まい"}]},
-          {"label": "兄", "segs": [{"v": 40, "unknown": "□", "label": "まい"}]}],
-          "times": [{"from": 0, "to": 1, "label": "2 倍"}]}</script>
-      </m-tape>
-      <m-tape variant="grow" build="rows" style="height:400px">
-        <script type="application/json">{"rows": [{"label": "弟", "segs": [{"v": 20, "label": "20 まい"}]},
-          {"label": "兄", "segs": [{"v": 40, "unknown": "□", "label": "まい"}]}],
-          "times": [{"from": 0, "to": 1, "label": "2 倍"}]}</script>
-      </m-tape>
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:0 36px">
+      <div><p class="vcap">現れてから線（fade、既定）</p>
+        <m-timeline variant="fade" style="height:330px">
+          <script type="application/json">{"nodes": [{"label": "明治維新", "when": "1868"}, {"label": "明治", "when": "1868", "end": "1912"}, {"label": "憲法の発布", "when": "1889"}]}</script>
+        </m-timeline></div>
+      <div><p class="vcap">線を引いてから（draw）</p>
+        <m-timeline variant="draw" style="height:330px">
+          <script type="application/json">{"nodes": [{"label": "明治維新", "when": "1868"}, {"label": "明治", "when": "1868", "end": "1912"}, {"label": "憲法の発布", "when": "1889"}]}</script>
+        </m-timeline></div>
+      <div><p class="vcap">軸の側から大きくなる（grow）</p>
+        <m-timeline variant="grow" style="height:330px">
+          <script type="application/json">{"nodes": [{"label": "明治維新", "when": "1868"}, {"label": "明治", "when": "1868", "end": "1912"}, {"label": "憲法の発布", "when": "1889"}]}</script>
+        </m-timeline></div>
     </div>
   </div>
-  <div class="concl"><span>→ 左はフェード（既定）、右は左から伸びる</span></div>
+  <div class="concl"><span>→ 書かなければ最初の見せ方（fade）になる</span></div>
 </section>
 
 <section class="slide">
@@ -3272,122 +3388,6 @@ document.addEventListener("DOMContentLoaded", function(){
     </m-tree>
   </div>
   <div class="concl"><span>→ 道に沿って枝の確率をかける：雨で遅れる確率は 0.12</span></div>
-</section>
-
-<section class="slide">
-  <h2>m-vector</h2>
-  <div class="body">
-    <p>平面のベクトルの和・差・スカラー倍・正射影・内積と、2 × 2 の行列の 1 次変換・固有ベクトル・基底の取り替えを 1 ステップずつ。右に式</p>
-    <ul>
-      <li>伝えたいこと：仕組みをモデルで見る・場所・地図</li>
-      <li>見せ方：1 種類</li>
-      <li>内容の分野：数理・統計　サンプルのスライド：4 枚</li>
-    </ul>
-  </div>
-</section>
-
-<section id="g-vector-1" class="slide">
-  <h2>ベクトルの和は、矢印を先につないで求める</h2>
-  <div class="body">
-    <m-vector style="height:400px">
-      <script type="application/json">{"range": [-3, 4, -1, 4], "vectors": [{"id": "a", "v": [2, 1]}, {"id": "b", "v": [-1, 2]}], "ops": [{"sum": ["a", "b"], "as": "c", "value": [1, 3]}, {"dot": ["a", "b"], "value": 0}]}</script>
-    </m-vector>
-  </div>
-  <div class="concl"><span>内積が 0 なので、a と b は直交している</span></div>
-</section>
-
-<section id="g-vector-2" class="slide">
-  <h2>正射影の長さと内積の関係</h2>
-  <div class="body">
-    <m-vector style="height:400px">
-      <script type="application/json">{"range": [-1, 4, -1, 4], "vectors": [{"id": "a", "v": [1, 3]}, {"id": "b", "v": [3, 1]}], "ops": [{"proj": ["a", "b"], "value": [1.8, 0.6]}, {"dot": ["a", "b"], "value": 6}]}</script>
-    </m-vector>
-  </div>
-  <div class="concl"><span>正射影は、内積 ÷ |b|² を b に掛けたもの</span></div>
-</section>
-
-<section id="g-vector-3" class="slide">
-  <h2>行列で平面を動かすと、固有ベクトルの向きは変わらない</h2>
-  <div class="body">
-    <m-vector style="height:400px">
-      <script type="application/json">{"vectors": [{"id": "v", "v": [1, 1]}, {"id": "w", "v": [1, 0]}], "matrix": [[2, 1], [1, 2]], "show": ["grid", "unit", "eigen"]}</script>
-    </m-vector>
-  </div>
-  <div class="concl"><span>v は 3 倍に伸びるだけで、向きは同じまま</span></div>
-</section>
-
-<section id="g-vector-4" class="slide">
-  <h2>基底を取り替えて、同じベクトルを別の座標で読む</h2>
-  <div class="body">
-    <m-vector style="height:400px">
-      <script type="application/json">{"vectors": [{"id": "a", "v": [2, 1]}], "basis": [[1, 1], [-1, 1]]}</script>
-    </m-vector>
-  </div>
-  <div class="concl"><span>同じ矢印でも、基底が変われば座標の数が変わる</span></div>
-</section>
-
-<section class="slide">
-  <h2>m-venn</h2>
-  <div class="body">
-    <p>2 つか 3 つの集合の円（ベン図）。集合を 1 つずつ出し、最後に重なりを強めてその中の項目を出す</p>
-    <ul>
-      <li>伝えたいこと：重なり</li>
-      <li>見せ方：fade・draw</li>
-      <li>内容の分野：標準パーツ　サンプルのスライド：3 枚</li>
-    </ul>
-  </div>
-</section>
-
-<section id="g-venn-1" class="slide">
-  <h2>哺乳類と海の生き物</h2>
-  <div class="body">
-    <m-venn style="height:420px">
-      <script type="application/json">{
-        "sets": [{"label": "哺乳類"}, {"label": "海の生き物"}],
-        "regions": {
-          "A": ["ライオン", "ウマ", "コウモリ"],
-          "B": ["マグロ", "タコ", "サンゴ"],
-          "AB": ["クジラ", "イルカ", "ジュゴン"]
-        }
-      }</script>
-    </m-venn>
-  </div>
-  <div class="concl"><span>→ クジラもイルカも、海にすむ哺乳類</span></div>
-</section>
-
-<section id="g-venn-2" class="slide">
-  <h2>3 つのスキルの重なり（架空）</h2>
-  <div class="body">
-    <m-venn style="height:430px">
-      <script type="application/json">{
-        "sets": [{"label": "統計"}, {"label": "プログラミング"}, {"label": "現場の知識"}],
-        "regions": {
-          "AB": "機械学習",
-          "AC": "調査",
-          "BC": "自動化",
-          "ABC": "データ\n活用"
-        }
-      }</script>
-    </m-venn>
-  </div>
-  <div class="concl"><span>→ 3 つが重なるところで、データが仕事に生きる</span></div>
-</section>
-
-<section id="g-venn-3" class="slide">
-  <h2>見せ方の種類（variant）</h2>
-  <div class="body">
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:0 40px">
-      <div><p class="vlabel">fade（既定）</p>
-      <m-venn variant="fade" style="height:330px">
-        <script type="application/json">{"sets": [{"label": "朝型"}, {"label": "運動部"}], "regions": {"AB": ["早朝練習"]}}</script>
-      </m-venn></div>
-      <div><p class="vlabel">draw（線を引いてから塗る）</p>
-      <m-venn variant="draw" style="height:330px">
-        <script type="application/json">{"sets": [{"label": "朝型"}, {"label": "運動部"}], "regions": {"AB": ["早朝練習"]}}</script>
-      </m-venn></div>
-    </div>
-  </div>
-  <div class="concl"><span>→ 書かなければ最初の見せ方（fade）になる。例は架空</span></div>
 </section>
 
 </div>
