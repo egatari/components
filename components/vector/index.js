@@ -7,7 +7,7 @@
 // （JSON の終わり）</m-vector>
 // 色：ベクトル --term、そのステップの結果 --emph、補助の線（平行移動・垂線）--muted の破線、変換した格子・新しい基底 --accent2、
 // 固有ベクトルの向き --emph の破線。
-egatariParts.define({name: "vector", version: "2.0.1", requires: {base: "1.3.0"}, element: "m-vector"}, function(deps){
+egatariParts.define({name: "vector", version: "2.1.0", requires: {base: "1.3.0"}, element: "m-vector"}, function(deps){
 "use strict";
 var base = deps.base, D = base, clipN = 0;
 var NUM = {type: "number"}, V2 = {type: "array", minItems: 2, maxItems: 2, items: NUM}, ID = {type: "string"};
@@ -208,21 +208,22 @@ return class extends base.MotionElement {
     // 矢印（線と先の三角）。描くたびに座標を書く
     var arrowG = D.el("g", {}, svg);
     var all = this.allArrows = [], labs = this.allLabels = [];
-    var mk = function(col, dash, wd){ var g = D.el("g", {opacity: 0}, arrowG); return all[all.length] = {g: g, line: D.el("line", Object.assign({stroke: col, "stroke-width": wd || 4, "stroke-linecap": "round"}, dash ? {"stroke-dasharray": "10 8"} : {}), g), head: D.el("path", {fill: col}, g), col: col}; };
+    // marks for the geometry check (spec §8.4): each arrow is an edge (its line, not the head) between unnamed ends, and a name is a label of its arrow
+    var mk = function(col, dash, wd, id){ var g = D.el("g", {opacity: 0, "data-part": "edge", "data-part-id": id, "data-part-from": "@" + id, "data-part-to": "@" + id}, arrowG); return all[all.length] = {g: g, line: D.el("line", Object.assign({"data-part-line": "", stroke: col, "stroke-width": wd || 4, "stroke-linecap": "round"}, dash ? {"stroke-dasharray": "10 8"} : {}), g), head: D.el("path", {fill: col}, g), col: col}; };
     this.arrows = {};
-    Object.keys(pl.vec).forEach(function(k){ if (pl.vec[k].base) self.arrows[k] = mk("var(--term)"); });
+    Object.keys(pl.vec).forEach(function(k){ if (pl.vec[k].base) self.arrows[k] = mk("var(--term)", false, 0, "v-" + k); });
     this.labG = D.el("g", {}, svg);
     this.labels = {};
     // 添え字（_1・^2）のある名前は 32px 以上で組む：mtext の添え字は 24px より小さくしないので、本文が 24〜26px だと同じ大きさに見える
-    var mkLab = function(t){ var g = D.el("g", {opacity: 0}, self.labG); D.mtext(g, 0, 0, t, {"font-size": /(^|[^\\])[_^]./.test(t) ? Math.max(fs, 32) : fs, "text-anchor": "middle", fill: "var(--fg)"}); labs.push(g); return g; };
-    Object.keys(pl.vec).forEach(function(k){ if (pl.vec[k].base) self.labels[k] = mkLab(pl.vec[k].label); });
+    var mkLab = function(t, id){ var g = D.el("g", {opacity: 0}, self.labG); D.mtext(g, 0, 0, t, {"data-part": "label", "data-part-id": id, "data-part-of": "edge", "font-size": /(^|[^\\])[_^]./.test(t) ? Math.max(fs, 32) : fs, "text-anchor": "middle", fill: "var(--fg)"}); labs.push(g); return g; };
+    Object.keys(pl.vec).forEach(function(k){ if (pl.vec[k].base) self.labels[k] = mkLab(pl.vec[k].label, "v-" + k); });
     // ステップごとの補助と結果
-    this.opG = pl.steps.map(function(st){
-      var o = {};
-      if (st.kind === "sum" || st.kind === "diff" || st.kind === "proj" || st.kind === "dot") o.help = mk("var(--muted)", true, 3);
+    this.opG = pl.steps.map(function(st, si){
+      var o = {}, sid = "step" + (si + 1);
+      if (st.kind === "sum" || st.kind === "diff" || st.kind === "proj" || st.kind === "dot") o.help = mk("var(--muted)", true, 3, sid + "-help");
       if (st.kind === "proj" || st.kind === "dot"){ var b2 = pl.vec[st.b].v, nb = Math.hypot(b2[0], b2[1]) || 1, RR = 1000; o.lineB = D.el("line", {x1: X(-RR * b2[0] / nb), y1: Y(-RR * b2[1] / nb), x2: X(RR * b2[0] / nb), y2: Y(RR * b2[1] / nb), stroke: "var(--muted)", "stroke-width": 1.5, opacity: 0}, plane); }
-      if (st.kind !== "vectors" && st.kind !== "matrix" && st.kind !== "basis" && st.kind !== "none"){ o.res = mk("var(--emph)", false, 5); if (st.label) o.lab = mkLab(st.label); }
-      if (st.kind === "basis"){ o.b1 = mk("var(--accent2)", false, 5); o.b2 = mk("var(--accent2)", false, 5); o.l1 = mkLab(st.labels[0]); o.l2 = mkLab(st.labels[1]); }
+      if (st.kind !== "vectors" && st.kind !== "matrix" && st.kind !== "basis" && st.kind !== "none"){ o.res = mk("var(--emph)", false, 5, sid); if (st.label) o.lab = mkLab(st.label, sid); }
+      if (st.kind === "basis"){ o.b1 = mk("var(--accent2)", false, 5, sid + "-b1"); o.b2 = mk("var(--accent2)", false, 5, sid + "-b2"); o.l1 = mkLab(st.labels[0], sid + "-b1"); o.l2 = mkLab(st.labels[1], sid + "-b2"); }
       return o;
     });
     // 右の欄
