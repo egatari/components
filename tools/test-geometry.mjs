@@ -29,7 +29,7 @@ if (!have()) {
     fs.writeFileSync(dest, git(['show', SHA + ':' + f]));
   }
 }
-const { geometryScan } = await import(pathToFileURL(path.join(geoDir, SHA, FILES[0])).href);
+const { geometryScan, geometryWithin, WITHIN_ATTRS } = await import(pathToFileURL(path.join(geoDir, SHA, FILES[0])).href);
 const { TEXT_BANDS, DEFAULT_BAND } = await import(pathToFileURL(path.join(geoDir, SHA, FILES[1])).href);
 
 const args = process.argv.slice(2);
@@ -51,6 +51,17 @@ fs.writeFileSync(path.join(control, 'deck.html'), `<!doctype html>
 <g data-part="edge" data-part-id="ab" data-part-from="a" data-part-to="b"><line data-part-line="" x1="180" y1="140" x2="720" y2="140" stroke="currentColor" stroke-width="3"/>
 </g><text data-part="label" data-part-id="a" data-part-of="box" x="275" y="148" font-size="24" text-anchor="middle">線の上</text>
 </svg></div></section>
+<section class="slide noconcl" id="s-control2"><h2>対照 2</h2><div class="body"><svg viewBox="0 0 900 300" width="900" height="300">
+<circle data-part="box" data-part-id="p" cx="100" cy="150" r="60" fill="none" stroke="currentColor"/>
+<circle data-part="box" data-part-id="q" cx="450" cy="150" r="60" fill="none" stroke="currentColor"/>
+<circle data-part="box" data-part-id="r" cx="800" cy="150" r="60" fill="none" stroke="currentColor"/>
+<g data-part="edge" data-part-id="pr" data-part-from="p" data-part-to="r"><line data-part-line="" x1="160" y1="150" x2="740" y2="150" stroke="currentColor" stroke-width="3"/></g>
+<circle data-part="mark" data-part-id="m" cx="100" cy="260" r="6" fill="currentColor"/>
+<g data-part="edge" data-part-id="lead" data-part-from="m" data-part-to="m"><line data-part-line="" x1="106" y1="260" x2="300" y2="260" stroke="currentColor" stroke-width="2"/></g>
+<text data-part="label" data-part-id="m" data-part-of="mark" data-part-at="outside" x="310" y="268" font-size="24">点の名前</text>
+<g data-overlap="ok"><rect data-part="box" data-part-id="s" x="560" y="20" width="120" height="60" fill="none" stroke="currentColor"/>
+<g data-part="edge" data-part-id="ov" data-part-from="@x" data-part-to="@y"><line data-part-line="" x1="520" y1="50" x2="720" y2="50" stroke="currentColor" stroke-width="2"/></g></g>
+</svg></div></section>
 </div></body></html>
 `);
 const scan = async (b, out) => {
@@ -59,7 +70,7 @@ const scan = async (b, out) => {
   p.on('pageerror', (e) => log.push(e.message));
   await p.goto(S.browser.fileUrl(out));
   await p.waitForFunction(() => window.DECK && DECK.ready, null, { timeout: 30000 });
-  await p.evaluate(`window.__geometryScan = ${geometryScan}`);
+  await p.evaluate(`window.__geometryScan = ${geometryScan}; window.__geometryWithin = ${geometryWithin}`);
   const r = await p.evaluate(async (GEO) => {
     const found = [];
     let n = 0;
@@ -70,9 +81,13 @@ const scan = async (b, out) => {
       const el = s.el || document.querySelectorAll('section.slide')[i];
       if (el.querySelector('[data-part]')) n++;
       for (const f of window.__geometryScan(el, GEO)) found.push({ slide: el.id || String(i), ...f });
+      // a shape that must stay inside its frame is measured at the end of every step (spec §8.4 Frames)
+      const fw = window.__geometryWithin(el, GEO, (k) => DECK.seek(i, k, Infinity), window.__geometryScan);
+      for (const f of fw) found.push({ slide: el.id || String(i), ...f });
+      if (fw.length) { DECK.seek(i, s._max, Infinity); }
     }
     return { found, n };
-  }, { bands: TEXT_BANDS, dflt: DEFAULT_BAND });
+  }, { bands: TEXT_BANDS, dflt: DEFAULT_BAND, overlap: 'data-overlap', within: WITHIN_ATTRS.within, frame: WITHIN_ATTRS.frame });
   await p.close();
   return { ...r, log };
 };
@@ -81,9 +96,14 @@ try {
   S.build(path.join(control, 'deck.html'), path.join(work, '_control.out.html'));
   const c = await scan(b, path.join(work, '_control.out.html'));
   const codes = new Set(c.found.map((f) => f.code));
-  const okc = codes.has('geoEdgeThroughBox') && codes.has('geoLineOverLabel');
+  const on = (id) => c.found.filter((f) => f.slide === id);
+  const c2 = on('s-control2');
+  // control 2: a circle box crossed by an edge is found; a leader from a mark to its own label and a box under data-overlap="ok" are not
+  const okc = codes.has('geoEdgeThroughBox') && codes.has('geoLineOverLabel')
+    && c2.length === 1 && c2[0].code === 'geoEdgeThroughBox' && JSON.stringify(c2[0].a).includes('"q"');
+  if (!okc) for (const f of c.found) console.log('       ' + f.slide + ' ' + f.code + ' ' + JSON.stringify(f.a));
   if (!okc) fails++;
-  console.log((okc ? 'ok   ' : 'FAIL ') + 'control: an edge through a box and a label on a line are found (' + [...codes].join(', ') + ')');
+  console.log((okc ? 'ok   ' : 'FAIL ') + 'control: an edge through a rect or a circle box and a label on a line are found, a leader and data-overlap="ok" are not (' + [...codes].join(', ') + ')');
   for (const name of names) {
     const out = path.join(work, name + '.out.html');
     S.build(S.produced(path.join(ROOT, 'components', name, 'demo.html'), S.compDir(name)), out);
