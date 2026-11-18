@@ -12,7 +12,7 @@
 // どちらも長さは dur で、段階の数・長さ・最後の中身は変わらない
 // 2.0（Egatari spec §6.1 の部品）：base の MotionElement・el・mtext・prog・lerp・variant・previewOpacity を使い、プレイヤーのグローバルは使わない。
 // 切り抜き（clipPath）の id は venn-2-0-3-<n>-in<i>・-out<i>（部品の名前と版。n はこの部品の数え。1.x は m-venn-<n>）
-egatariParts.define({name: "venn", version: "2.0.4", requires: {base: "1.3.0"}, element: "m-venn"}, function(deps){
+egatariParts.define({name: "venn", version: "2.1.0", requires: {base: "1.3.0"}, element: "m-venn"}, function(deps){
 "use strict";
 var base = deps.base;
 var ID = "venn-2-0-4-", count = 0;   // ids this part writes: its name and version, and a counter of its own (spec §6.1 Identifiers)
@@ -152,12 +152,14 @@ return class extends base.MotionElement {
       var p = L.pos[k];
       if (!p) return;
       var y0 = p.y - (p.lines.length - 1) * L.lh / 2 + L.fs * 0.36;
-      p.lines.forEach(function(s, j){ D.mtext(g, p.x, y0 + j * L.lh, s, {"text-anchor": "middle", "font-size": L.fs, fill: "var(--fg)", "font-weight": bold ? 700 : 400}); });
+      // an item is a label of the first set of its region (it lies inside that circle)
+      p.lines.forEach(function(s, j){ D.mtext(g, p.x, y0 + j * L.lh, s, {"data-part": "label", "data-part-id": k.charAt(0), "data-part-of": "box", "text-anchor": "middle", "font-size": L.fs, fill: "var(--fg)", "font-weight": bold ? 700 : 400}); });
     };
     // 集合：塗り・線・名前・その集合だけの項目
     this.sets = C.map(function(c, i){
       var col = tone(i), st = i + 1;
-      var fill = D.el("circle", {cx: c.x, cy: c.y, r: r, fill: col, "fill-opacity": 0.13, opacity: 0}, gFill);
+      // marks for the geometry check (spec §8.4): each set's circle is a box (id A, B, C), its name a label outside it
+      var fill = D.el("circle", {"data-part": "box", "data-part-id": LET[i], cx: c.x, cy: c.y, r: r, fill: col, "fill-opacity": 0.13, opacity: 0}, gFill);
       var line = D.el("circle", {cx: c.x, cy: c.y, r: r, fill: "none", stroke: col, "stroke-width": 3, pathLength: 1, opacity: 0,
         transform: "rotate(" + (i === 0 ? 180 : i === 1 ? 0 : 90) + " " + c.x.toFixed(2) + " " + c.y.toFixed(2) + ")"}, gLine);
       var gt = D.el("g", {opacity: 0}, gText);
@@ -165,7 +167,7 @@ return class extends base.MotionElement {
       var ang = n === 3 ? [150, 30, -30][i] : [135, 45][i], ca = Math.cos(ang * Math.PI / 180), sa = Math.sin(ang * Math.PI / 180);
       var lx = c.x + ca * (r + 12), ly = c.y - sa * (r + 12) + (sa < 0 ? LS * 0.8 : 0);
       // 灰色の集合（--muted・--series-4）の名前は、ほかの円の薄い塗りに重なると 4.5:1 に届かないので --fg（共通の決まり §2.3）
-      D.mtext(gt, lx, ly, sets[i].label, {"text-anchor": ca < 0 ? "end" : "start", "font-size": LS, "font-weight": 700, fill: /muted|series-4/.test(col) ? "var(--fg)" : col});
+      D.mtext(gt, lx, ly, sets[i].label, {"data-part": "label", "data-part-id": LET[i], "data-part-of": "box", "data-part-at": "outside", "text-anchor": ca < 0 ? "end" : "start", "font-size": LS, "font-weight": 700, fill: /muted|series-4/.test(col) ? "var(--fg)" : col});
       text(gt, LET[i], false);
       return {fill: fill, line: line, gt: gt, step: st};
     });

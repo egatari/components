@@ -9,7 +9,7 @@
 // grow（中心から少し小さい大きさで現れて元の大きさに戻る）。段階の数・長さ・最後の中身は同じ
 // 2.0（Egatari spec §6.1 の部品）：base の MotionElement・el・mtext・prog・variant・previewOpacity を使い、プレイヤーのグローバルは使わない。
 // 負の値と、字が収まらないことは ctx.report で知らせる（1.x の console.warn の代わり）
-egatariParts.define({name: "pie", version: "2.0.4", requires: {base: "1.3.0"}, element: "m-pie"}, function(deps){
+egatariParts.define({name: "pie", version: "2.1.0", requires: {base: "1.3.0"}, element: "m-pie"}, function(deps){
 "use strict";
 var base = deps.base;
 return class extends base.MotionElement {
@@ -159,14 +159,18 @@ return class extends base.MotionElement {
         // 引き出し線：切れの外の縁から、円の外側を回って字の列へ
         var p1 = pt(cx, cy, R + 4, s.mid), dy = s.yc - cy, rr = R + 14;
         var qx = cx + side * Math.max(Math.abs((R + 16) * Math.sin(s.mid)), Math.sqrt(Math.max(0, rr * rr - dy * dy)));
-        s.leader = D.el("path", {d: "M" + p1[0].toFixed(1) + "," + p1[1].toFixed(1) + "L" + qx.toFixed(1) + "," + s.yc.toFixed(1) + "L" + (colX - side * 6).toFixed(1) + "," + s.yc.toFixed(1),
-          fill: "none", stroke: "var(--muted)", "stroke-width": 1.5}, gL);
+        // the leader is an edge from its slice (a box) to the slice's own label (spec §8.4)
+        var sid = "s" + (sl.indexOf(s) + 1);
+        s.leader = D.el("path", {"data-part-line": "", d: "M" + p1[0].toFixed(1) + "," + p1[1].toFixed(1) + "L" + qx.toFixed(1) + "," + s.yc.toFixed(1) + "L" + (colX - side * 6).toFixed(1) + "," + s.yc.toFixed(1),
+          fill: "none", stroke: "var(--muted)", "stroke-width": 1.5}, D.el("g", {"data-part": "edge", "data-part-id": "lead-" + sid, "data-part-from": sid, "data-part-to": sid}, gL));
         s.tx = colX; s.anchor = side > 0 ? "start" : "end";
         if (side > 0 ? colX + s.w > W + 1 : colX - s.w < -1) ctx.report("size", "[pie] the label \"" + s.lines[0].t + "\" is wider than the space beside the pie");
       });
     });
     sl.forEach(function(s){
-      s.path = D.el("path", {d: "", fill: s.col, "fill-opacity": s.light ? 0.5 : 1, stroke: "var(--bg)", "stroke-width": 2, "stroke-linejoin": "round"}, gS);
+      // marks for the geometry check (spec §8.4): each slice is a box, its text a label (outside the slice when it stands beside the pie)
+      var sid = "s" + (sl.indexOf(s) + 1);
+      s.path = D.el("path", {"data-part": "box", "data-part-id": sid, d: "", fill: s.col, "fill-opacity": s.light ? 0.5 : 1, stroke: "var(--bg)", "stroke-width": 2, "stroke-linejoin": "round"}, gS);
       if (!s.lines.length) return;
       var g = s.g = D.el("g", {opacity: 0}, gL), x, y0;
       if (s.inside){
@@ -176,7 +180,7 @@ return class extends base.MotionElement {
       // 中の字は切れの色の上なので背景の色（濃い色の切れ）か本文の色（薄い切れ）
       var fill = s.inside ? (s.light ? "var(--fg)" : "var(--bg)") : "var(--fg)";
       s.lines.forEach(function(l, j){
-        D.mtext(g, x, y0 + j * 30 + 24, l.t, {"text-anchor": s.inside ? "middle" : s.anchor, "font-size": l.size, "font-weight": l.bold ? 700 : 400, fill: fill});
+        D.mtext(g, x, y0 + j * 30 + 24, l.t, Object.assign({"data-part": "label", "data-part-id": sid, "data-part-of": "box"}, s.inside ? {} : {"data-part-at": "outside"}, {"text-anchor": s.inside ? "middle" : s.anchor, "font-size": l.size, "font-weight": l.bold ? 700 : 400, fill: fill}));
       });
     });
     // ドーナツの中の字（{total} は合計）
