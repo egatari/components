@@ -24,7 +24,7 @@
 // 復号の規則は codetree-core（試験は tools/test-codetree.mjs）
 // 2.0（Egatari spec §6.1 の部品）：base の MotionElement・el・prog・lerp・previewOpacity と、表・木・復号の codetree-core を使い、
 // プレイヤーのグローバルは使わない
-egatariParts.define({name: "codetree", version: "2.0.7", requires: {base: "1.3.0", "codetree-core": "1.0.0"}, element: "m-codetree"}, function(deps){
+egatariParts.define({name: "codetree", version: "2.1.0", requires: {base: "1.3.0", "codetree-core": "1.0.0"}, element: "m-codetree"}, function(deps){
 "use strict";
 var base = deps.base;
 var D = base;
@@ -213,8 +213,9 @@ return class extends base.MotionElement {
     L.deep = null;
     COLORS.forEach(function(c){ paths[c].forEach(function(q){ if (!L.deep || q.length > L.deep.code.length) L.deep = {color: c, code: q}; }); });
     // 0 と 1 を書く枝：今の道（とまとめのすべての道）の節の 2 つの子へ。根から色の木への枝はいつも
-    var lab = {w: 1, b: 1};
-    COLORS.forEach(function(c){ paths[c].forEach(function(q){ for (var i = 0; i < q.length; i++){ var pre = LETTER[c] + q.slice(0, i); lab[pre + "0"] = 1; lab[pre + "1"] = 1; } }); });
+    // 段の間が WIN_GAP より狭いまとめ（窓なしで全部の道）は、たどった枝の字だけ（両方の子に書くと、0・1 の字が隣の枝の線と字に重なる。handoff #45）
+    var lab = {w: 1, b: 1}, both01 = L.follow || gap >= WIN_GAP;
+    COLORS.forEach(function(c){ paths[c].forEach(function(q){ for (var i = 0; i < q.length; i++){ var pre = LETTER[c] + q.slice(0, i); if (both01){ lab[pre + "0"] = 1; lab[pre + "1"] = 1; } else lab[pre + q.charAt(i)] = 1; } }); });
     if (cur && cur.bad){ var pre = LETTER[cur.color] + cur.code; lab[pre + "0"] = 1; lab[pre + "1"] = 1; }
     L.lab = lab; L.sw = sw; L.gap = gap; L.cur = cur; L.paths = paths; L.both = both; L.focus = focus; L.sumGap = sumGap; L.sumLv = sumLv;
     return L;
@@ -308,11 +309,15 @@ return class extends base.MotionElement {
     this.lay.forEach(function(L){ Object.keys(L.nodes).forEach(function(id){ all[id] = L.nodes[id]; }); });
     this.els = {};
     Object.keys(all).forEach(function(id){
+      // marks for the geometry check (spec §8.4): each node's circle is a box (id = the node id), each branch an edge from the parent
+      // with its bit (or colour) as its label, a leaf's run length a label under its node
       var o = all[id], e = {id: id, parent: o.parent};
       if (o.parent){
-        e.edge = D2.el("line", {stroke: "var(--line)", "stroke-width": 2.5}, gE);
+        e.edge = D2.el("line", {"data-part-line": "", stroke: "var(--line)", "stroke-width": 2.5},
+          D2.el("g", {"data-part": "edge", "data-part-id": "e-" + id, "data-part-from": o.parent, "data-part-to": id}, gE));
         var top = o.parent === "r";
-        e.lab = D2.el("text", {"font-size": 24, "text-anchor": "middle", fill: "var(--muted)"}, gE);
+        // the bit is haloed: in a dense summary it stands on its branch (render)
+        e.lab = D2.el("text", {"data-part": "label", "data-part-id": "e-" + id, "data-part-of": "edge", "data-part-halo": "", stroke: "var(--bg)", "stroke-width": 6, "paint-order": "stroke", "font-size": 24, "text-anchor": "middle", fill: "var(--muted)"}, gE);
         e.lab.textContent = top ? Lb[o.c] : id.slice(-1);
         e.bit = id.slice(-1);
       }
@@ -321,12 +326,12 @@ return class extends base.MotionElement {
       else g.setAttribute("data-mark", MK + "-root");
       e.fan = D2.el("path", {d: "M0,13L-15,36L15,36Z", fill: "var(--line)", opacity: 0}, g);
       if (o.leaf){
-        e.dot = D2.el("circle", {r: 13, fill: "var(--accent2)"}, g);
+        e.dot = D2.el("circle", {"data-part": "box", "data-part-id": id, r: 13, fill: "var(--accent2)"}, g);
         e.ring = D2.el("circle", {r: 13, fill: "none", stroke: "var(--emph)", "stroke-width": 3, opacity: 0}, g);
-        e.num = D2.el("text", {y: 42, "font-size": 24, "text-anchor": "middle", fill: "var(--fg)", "data-mark": MK + "-" + LETTER[o.c] + (o.leaf.run === "EOL" ? "eol" : o.leaf.run)}, g);
+        e.num = D2.el("text", {"data-part": "label", "data-part-id": id, "data-part-of": "box", "data-part-at": "outside", y: 42, "font-size": 24, "text-anchor": "middle", fill: "var(--fg)", "data-mark": MK + "-" + LETTER[o.c] + (o.leaf.run === "EOL" ? "eol" : o.leaf.run)}, g);
         e.num.textContent = o.leaf.run === "EOL" ? "EOL" : String(o.leaf.run);
-      } else if (id === "r") e.dot = D2.el("circle", {r: 9, fill: "var(--fg)"}, g);
-      else e.dot = D2.el("circle", {r: o.lv === 1 ? 12 : 10, fill: o.c === "black" ? "var(--fg)" : "var(--bg)", stroke: "var(--fg)", "stroke-width": 2.5}, g);
+      } else if (id === "r") e.dot = D2.el("circle", {"data-part": "box", "data-part-id": id, r: 9, fill: "var(--fg)"}, g);
+      else e.dot = D2.el("circle", {"data-part": "box", "data-part-id": id, r: o.lv === 1 ? 12 : 10, fill: o.c === "black" ? "var(--fg)" : "var(--bg)", stroke: "var(--fg)", "stroke-width": 2.5}, g);
       e.g = g;
       self.els[id] = e;
     });
@@ -441,6 +446,7 @@ return class extends base.MotionElement {
     var hit = {};   // 葉に着いた（葉の数字を強調）
     if (p && p.type === "tok"){ var tk = dec.tokens[p.tok]; if (t >= T.A) hit[LETTER[tk.color] + tk.code] = 1; }
     if (p && p.type === "sum") dec.tokens.forEach(function(x){ hit[LETTER[x.color] + x.code] = 1; });
+    var labAt = {};
     Object.keys(this.els).forEach(function(id){
       var e = self.els[id], q = pos[id];
       e.g.setAttribute("transform", "translate(" + q.x.toFixed(2) + " " + q.y.toFixed(2) + ")");
@@ -454,7 +460,13 @@ return class extends base.MotionElement {
         e.edge.setAttribute("opacity", a.y < lim ? 0 : Math.min(q.op, 1.6 * a.op).toFixed(3));
         // 枝の字：根からの枝は線の中ほどの上、0 と 1 は親に近いところの外側
         // 線に垂直に、外側（0 は左上、1 は右上）へ離す
-        var top = e.parent === "r", lp = labelAt(a, q, top ? 0.5 : 0.42, top ? 20 : 17);
+        // 段の間が WIN_GAP より狭いまとめでは、段の間が字（24 px）より狭く、線の横に置くと隣の段の線に掛かる。
+        // そのときは線の中ほどの上に、地の色の縁取りを付けて置く（handoff #45。根からの枝はいつも横に）
+        // 急な枝が続くと、親の枝の字と縦に重なる：そのときは枝の先の方（7 割 5 分）へずらす
+        var top = e.parent === "r", dense = !top && !B.follow && B.gap < WIN_GAP, lp = labelAt(a, q, top ? 0.5 : dense ? 0.5 : 0.42, top ? 20 : dense ? 0 : 17);
+        var pl0 = dense && labAt[e.parent];
+        if (pl0 && Math.abs(pl0.x - lp.x) < 18 && Math.abs(pl0.y - lp.y) < 28) lp = labelAt(a, q, 0.75, 0);
+        labAt[id] = lp;
         e.lab.setAttribute("x", lp.x.toFixed(2)); e.lab.setAttribute("y", lp.y.toFixed(2));
         e.lab.setAttribute("opacity", Math.min(q.op, q.lab, wf(lp.y - 8)).toFixed(3));
         e.lab.setAttribute("style", "fill:" + (onPath[id] ? "var(--emph)" : "var(--muted)") + ";");

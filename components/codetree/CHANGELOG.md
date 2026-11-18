@@ -2,6 +2,11 @@
 
 The part's own versions (Egatari spec §6.1). Releases of the whole library are in the repository's CHANGELOG.md.
 
+## 2.1.0 (components 2.16.0)
+
+- Marks what it draws for Studio's geometry check (R-geometry, spec §8.4): each node's circle is a box (id = the node id), each branch an edge from its parent with its bit (or colour) as label, and a leaf's run length a label outside its node.
+- The bits no longer collide in a dense summary. When the summary shows every decoded path with less than 40 px between levels (a 12-bit code, for one), it wrote 0 and 1 on both children of every node on the paths, beside the branch; the levels were closer than a 24 px digit, so the digits lay on the neighbouring branches and on each other (the check found 25 such overlaps in the demo). Now such a summary writes only the bit that was taken, on the middle of its branch, and moves it further along when it would meet its parent's bit. Every bit has a halo in the background colour. Views with 40 px or more between levels are drawn as before.
+
 ## 2.0.7 (components 2.14.0)
 
 - Requires base 1.3.0 (sub- and superscripts in `mtext` at 0.7 of the text, at least 17 px).
