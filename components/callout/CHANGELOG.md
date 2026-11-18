@@ -2,6 +2,10 @@
 
 The part's own versions (Egatari spec §6.1). Releases of the whole library are in the repository's CHANGELOG.md.
 
+## 2.1.0 (components 2.16.0)
+
+- Marks what it draws for Studio's geometry check (R-geometry, spec §8.4): each numbered circle is a mark, the leader an edge from it to its text, the number and the text its labels (the text outside), and the highlight rectangle a box. The drawing does not change.
+
 ## 2.0.1 (components 2.14.0)
 
 - Requires base 1.3.0 (sub- and superscripts in `mtext` at 0.7 of the text, at least 17 px).

@@ -1,7 +1,7 @@
 ---
 name: m-vector
 display: ベクトルと行列 / Vectors and matrices
-version: 2.0.1
+version: 2.1.0
 series: academic
 tier: specialized
 set: univ

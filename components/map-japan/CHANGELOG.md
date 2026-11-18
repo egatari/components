@@ -2,6 +2,10 @@
 
 The part's own versions (Egatari spec §6.1). Releases of the whole library are in the repository's CHANGELOG.md.
 
+## 2.3.0 (components 2.16.0)
+
+- Marks what it draws for Studio's geometry check (R-geometry, spec §8.4): an island drawn as a point, a point the author wrote and the dot of a leader are marks, a leader is an edge from its mark, and a name chip's text is a label outside its mark. The drawing does not change.
+
 ## 2.2.1 (components 2.14.0)
 
 - Requires base 1.3.0 (sub- and superscripts in `mtext` at 0.7 of the text, at least 17 px).

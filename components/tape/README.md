@@ -1,6 +1,6 @@
 ---
 name: m-tape
-version: 2.0.5
+version: 2.1.0
 series: academic
 tier: specialized
 set: math

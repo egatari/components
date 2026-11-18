@@ -1,6 +1,6 @@
 ---
 name: m-pie
-version: 2.0.4
+version: 2.1.0
 series: common
 tier: standard
 summary: 円グラフとドーナツグラフ。切れの名前と値・割合は、大きい切れなら中に、小さい切れなら外に引き出し線で書く

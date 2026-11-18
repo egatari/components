@@ -2,6 +2,10 @@
 
 The part's own versions (Egatari spec §6.1). Releases of the whole library are in the repository's CHANGELOG.md.
 
+## 2.1.0 (components 2.16.0)
+
+- Marks what it draws for Studio's geometry check (R-geometry, spec §8.4): each tape segment is a box with its text (outside when it stands above the tape), a brace and a "times" arrow are edges with their names as labels, and a row's name is a label outside the row. The drawing does not change.
+
 ## 2.0.5 (components 2.14.0)
 
 - Requires base 1.3.0 (sub- and superscripts in `mtext` at 0.7 of the text, at least 17 px).
