@@ -6,7 +6,7 @@
 // steps[0] は始めの状態（段階 0）。steps[1..] が 1 回ずつの更新。1 段階に per-step 回の更新を、等しい時間枠で順に動かす。
 // 今の分布は濃く、前の分布は薄い線で残す。右の欄に readout の数値（桁をそろえる）。mark は今回の観測の位置
 // 2.0（Egatari spec §6.1 の部品）：base の MotionElement・el・mtext・prog・lerp・previewOpacity と plot の Plot を使い、プレイヤーのグローバルは使わない
-egatariParts.define({name: "seq", version: "2.1.0", requires: {base: "1.3.0", plot: "1.1.3"}, element: "m-seq"}, function(deps){
+egatariParts.define({name: "seq", version: "2.2.0", requires: {base: "1.3.0", plot: "1.1.3"}, element: "m-seq"}, function(deps){
 "use strict";
 var base = deps.base, plot = deps.plot;
 // 点列の d。null の所で線を切り、次の有限な点から M で引き直す（plot の p.d と同じ字。切れ目がなければ同じ d）
@@ -118,18 +118,20 @@ return class extends base.MotionElement {
     });
     this.cur = D.el("path", {fill: "none", stroke: "var(--term)", "stroke-width": 3.5, "stroke-linejoin": "round", "clip-path": p.clip}, p.svg);
     // 観測の印：今回は縦の点線と名前、前の観測は横軸の上の小さな点
-    this.dots = data.steps.map(function(s){
-      return s.mark === undefined ? null : D.el("circle", {cx: p.x(s.mark), cy: p.H - p.m.b - 7, r: 6, fill: "var(--muted)", opacity: 0}, p.svg);
+    // marks for the geometry check (spec §8.4): an earlier observation is a mark, the current one's dashed line an edge with its name,
+    // the readout panel a box with its names and values, a grey curve's name a haloed label outside the curve
+    this.dots = data.steps.map(function(s, i){
+      return s.mark === undefined ? null : D.el("circle", {"data-part": "mark", "data-part-id": "@obs" + i, cx: p.x(s.mark), cy: p.H - p.m.b - 7, r: 6, fill: "var(--muted)", opacity: 0}, p.svg);
     });
-    this.markLine = D.el("line", {x1: 0, x2: 0, y1: p.m.t + 34, y2: p.H - p.m.b, stroke: "var(--emph)", "stroke-width": 2.5, "stroke-dasharray": "7 6", opacity: 0}, p.svg);
-    this.markLab = D.mtext(p.svg, 0, p.m.t + 24, data.markLabel || "", {"text-anchor": "middle", fill: "var(--emph)", "font-size": 26, opacity: 0});
+    this.markLine = D.el("line", {"data-part-line": "", x1: 0, x2: 0, y1: p.m.t + 34, y2: p.H - p.m.b, stroke: "var(--emph)", "stroke-width": 2.5, "stroke-dasharray": "7 6", opacity: 0}, D.el("g", {"data-part": "edge", "data-part-id": "obs", "data-part-from": "@obs", "data-part-to": "@obs"}, p.svg));
+    this.markLab = D.mtext(p.svg, 0, p.m.t + 24, data.markLabel || "", {"data-part": "label", "data-part-id": "obs", "data-part-of": "edge", "text-anchor": "middle", fill: "var(--emph)", "font-size": 26, opacity: 0});
     // 数値の欄（名前は左寄せ、値は右寄せ。等幅の数字）
     var keys = Object.keys(data.steps[0].readout || {}), px = p.W - pw + 8, px2 = p.W - 8;
-    D.el("rect", {x: px - 8, y: p.m.t, width: pw, height: 40 + keys.length * 44, rx: 10, fill: "var(--term-tint)", stroke: "var(--line)", "stroke-width": 1.5}, p.svg);
+    D.el("rect", {"data-part": "box", "data-part-id": "readout", x: px - 8, y: p.m.t, width: pw, height: 40 + keys.length * 44, rx: 10, fill: "var(--term-tint)", stroke: "var(--line)", "stroke-width": 1.5}, p.svg);
     this.rows = keys.map(function(key, j){
       var y = p.m.t + 44 + j * 44;
-      D.mtext(p.svg, px + 12, y, key, {"font-size": 28});
-      var v = D.el("text", {x: px2 - 12, y: y, "text-anchor": "end", "font-size": 28, style: "font-variant-numeric:tabular-nums;font-feature-settings:'tnum'"}, p.svg);
+      D.mtext(p.svg, px + 12, y, key, {"data-part": "label", "data-part-id": "readout", "data-part-of": "box", "font-size": 28});
+      var v = D.el("text", {"data-part": "label", "data-part-id": "readout", "data-part-of": "box", x: px2 - 12, y: y, "text-anchor": "end", "font-size": 28, style: "font-variant-numeric:tabular-nums;font-feature-settings:'tnum'"}, p.svg);
       return {key: key, el: v, dg: (data.digits || {})[key] !== undefined ? data.digits[key] : self.props.digits};
     });
     // readout に書いていない名前は、前の値のまま出す（1 回だけ知らせる）
@@ -166,7 +168,7 @@ return class extends base.MotionElement {
       var at = placeOn(gp[i], wOf(str), fs, lines, boxes, bd, cl);
       if (!at){ ctx.report("layout", "[seq] no free place for the name of the grey curve " + JSON.stringify(str) + " (not drawn)"); return; }
       boxes.push(at.box);
-      self.glabs.push({i: i, el: D.mtext(p.svg, +at.x.toFixed(1), +at.y.toFixed(1), str, {"text-anchor": "middle", fill: "var(--muted)", stroke: "var(--bg)", "stroke-width": 6, "paint-order": "stroke", "font-size": fs, opacity: 0})});
+      self.glabs.push({i: i, el: D.mtext(p.svg, +at.x.toFixed(1), +at.y.toFixed(1), str, {"data-part": "label", "data-part-id": "@curve" + i, "data-part-of": "mark", "data-part-at": "outside", "data-part-halo": "", "text-anchor": "middle", fill: "var(--muted)", stroke: "var(--bg)", "stroke-width": 6, "paint-order": "stroke", "font-size": fs, opacity: 0})});
     });
   }
   // 段階 i までで readout の key に最後に書かれた値（なければ undefined）
