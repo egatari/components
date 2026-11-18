@@ -3,7 +3,7 @@
 // (KFold with shuffle, StratifiedKFold = クラスの比率を保つ KFold, GroupKFold, TimeSeriesSplit, a holdout): test cells as the
 // validation block, train cells as before, unused cells empty; class colours and names, group runs, time order. The k mode
 // draws exactly as 2.0.1.
-egatariParts.define({name: "folds", version: "2.1.1", requires: {base: "1.3.0"}, element: "m-folds"}, function(deps){
+egatariParts.define({name: "folds", version: "2.1.2", requires: {base: "1.3.0"}, element: "m-folds"}, function(deps){
 "use strict";
 var base = deps.base;
 var TEXT = {
@@ -178,7 +178,8 @@ return class extends base.MotionElement {
       for (var i = 1; i <= n; i++) if (i === n || samples[i].group !== samples[i0].group){
         base.el("rect", {x: left + i0 * cw + 1, y: sy + 4, width: Math.max(1, (i - i0) * cw - 2), height: line - 12, fill: "none", stroke: "var(--muted)", "stroke-width": 2, rx: 4}, head);
         var gname = samples[i0].group === undefined ? "" : String(samples[i0].group);
-        if (gname && width(gname) <= (i - i0) * cw - 8) self.label(head, left + (i0 + (i - i0) / 2) * cw, sy + fs * 0.85, gname, "middle");
+        // 名前は枠（sy + 4 から line − 12）の縦の中ほどに：基線を sy + 0.85 字にすると、字の上が枠から 5 px 出ていた（Studio の svgTextBox、handoff #45）
+        if (gname && width(gname) <= (i - i0) * cw - 8) self.label(head, left + (i0 + (i - i0) / 2) * cw, sy + 4 + (line - 12) / 2 + fs * 0.35, gname, "middle");
         i0 = i;
       }
       sy += line;

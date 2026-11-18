@@ -1,5 +1,9 @@
 # m-folds changelog
 
+## 2.1.2 (components 2.16.0)
+
+- A group's name stands in the middle of its frame. Its baseline was 0.85 of the text size below the row's top, so the top of the letters stood about 5 px above the frame (Studio's svgTextBox found it in the demo's GroupKFold slide). The frames, the legend and the rows do not move.
+
 ## 2.1.1 (components 2.14.0)
 
 - Requires base 1.3.0 (sub- and superscripts in `mtext` at 0.7 of the text, at least 17 px).
