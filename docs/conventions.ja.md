@@ -289,6 +289,22 @@ audiences: primary-junior, high-school
 - `tools/lint.mjs` は、一覧にない id・予約の id・空の値・同じ id の繰り返し・ライブラリのパーツに書いたものを落とす。`tools/release.mjs` は、書いてあるときだけ `manifest.json` のパーツの項に `subjects`・`audiences` を出し、2 つの一覧を `purposes` の隣に出す。`tools/catalog.mjs` は CATALOG.md に欄と「題材・読み手 → パーツ」の表を足す。
 - Studio での使い方（handoff #43）：題材は新規作成で選ぶ（任意）。読み手は使う場面から決まる。選んだものと違うラベルのパーツは、合うパーツの後ろに置く。ラベルのないパーツはその間。
 
+### 4.4 由来
+
+パーツは、どこから来たかを書いてよい（handoff #58、2026-11-20）。授業・研究・ほかの人から来たパーツを数えるためのもの。任意で、AI への指示にも `manifest.json` にも入らない。
+
+```yaml
+origin:
+  kind: maintainer
+  from: lesson
+```
+
+- `kind`（`origin:` の下に必ず書く）：`maintainer`（Egatari を作っている開発者が作った）、`colleague`（ほかの教員のスライドから）、`student`（研究室の学生から）、`contributor`（このリポジトリの Issue・プルリクエストからの提案）、`library`（外のオープンソースのライブラリの書き直し）
+- `from`（任意）：`lesson`（授業・講義）、`research`（研究発表・論文）、`talk`（LT・講演）、`library`（外のライブラリ）
+- `ref`（任意）：`contributor` のときだけ本人の GitHub の名前（`"@name"`）、`library` のときは元のリポジトリの URL とライセンス（`"https://…, MIT"`）
+- **人の名前は書かない。** 同僚と学生は種類だけ。**分からないときは `origin:` ごと書かない**（`unknown` とも書かない）
+- `tools/lint.mjs` は、`kind` がない・一覧にない、`from` や欄が一覧にない、ほかの種類に `ref` がある、`origin` を 1 行に書いた、を落とす
+
 ## 5. 決まったことと、後に回したこと
 
 規格化の確認（2026-10-24）で次のように決まった。

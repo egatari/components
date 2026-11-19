@@ -1,7 +1,7 @@
-// subjects: / audiences: in a README frontmatter (docs/conventions.md §4.3): ids from subjects.json and audiences.json,
+// subjects: / audiences: in a README frontmatter (docs/conventions.md §4.3), and origin: (§4.4): ids from subjects.json and audiences.json,
 // not reserved, not empty, not repeated; the list files themselves have unique lower-case ids with ja and en
 //   node tools/test-labels.mjs
-import { labelErrors, labelListErrors, labelIds } from './lint.mjs';
+import { labelErrors, labelListErrors, labelIds, originOf, originErrors } from './lint.mjs';
 import { ROOT } from './studio.mjs';
 
 let fails = 0;
@@ -18,5 +18,21 @@ ok(/audiences: repeats an id/.test(errs({ audiences: 'university, university' })
 ok(labelListErrors('subjects', { subjects: [{ id: 'a', ja: 'あ', en: 'A' }, { id: 'a', ja: 'い', en: 'I' }] }).length === 1, 'a repeated id in the list file');
 ok(labelListErrors('audiences', { audiences: [{ id: 'Big', ja: 'x', en: 'x' }, { id: 'b', ja: 'x' }] }).length === 2, 'a bad id and a missing en in the list file');
 ok(labelListErrors('subjects', {}).length === 1, 'a list file without its array');
+// origin: indented kind / from / ref under "origin:"; no names of people
+const fm = (body) => `---\nname: m-x\n${body}\nsummary: s\n---\nbody`;
+const oe = (body) => originErrors('x', originOf(fm(body))).join('\n');
+ok(originOf(fm('purposes: compare')) === null && oe('purposes: compare') === '', 'origin left out: no error');
+ok(oe('origin:\n  kind: maintainer') === '', 'origin with kind only');
+ok(JSON.stringify(originOf(fm('origin:\n  kind: student\n  from: talk'))) === '{"kind":"student","from":"talk"}', 'origin read with kind and from, ending at the next field');
+ok(oe('origin:\n  kind: contributor\n  ref: "@octo-cat"') === '', 'a contributor with a GitHub handle');
+ok(oe('origin:\n  kind: library\n  from: library\n  ref: "https://github.com/x/y, MIT"') === '', 'a library with URL and licence');
+ok(/kind is missing/.test(oe('origin:\n  from: lesson')), 'origin without kind');
+ok(/kind owner is not one of/.test(oe('origin:\n  kind: owner')), 'an unknown kind');
+ok(/from slides is not one of/.test(oe('origin:\n  kind: colleague\n  from: slides')), 'an unknown from');
+ok(/no names of people/.test(oe('origin:\n  kind: colleague\n  ref: 山田先生')), 'a ref for a colleague (a name) is refused');
+ok(/GitHub handle/.test(oe('origin:\n  kind: contributor\n  ref: Taro Yamada')), 'a contributor ref that is not a handle');
+ok(/URL and its licence/.test(oe('origin:\n  kind: library\n  ref: "https://github.com/x/y"')), 'a library ref without a licence');
+ok(/who is not a field/.test(oe('origin:\n  kind: student\n  who: B4')), 'an unknown field');
+ok(/indented lines/.test(oe('origin: maintainer')), 'origin written on one line');
 if (fails) { console.log(`\n${fails} failure(s)`); process.exit(1); }
 console.log('\nOK');

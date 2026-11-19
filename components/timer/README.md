@@ -7,6 +7,8 @@ set: tools
 summary: グループワークの進行タイマー。区切りごとに残り時間を大きく数え、区切りの一覧で今の区切りを示す
 steps: 0 準備の画面、区切り 1 つが 1 ステップ（その長さ = sec 秒）
 purposes: timebox
+origin:
+  kind: maintainer
 variants: fade
 props: （なし）
 ---

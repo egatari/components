@@ -83,6 +83,36 @@ export function labelListErrors(kind, j) {
   return errs;
 }
 // a part's subjects: / audiences: (optional; none written = fits every one): ids from the lists, not reserved, not repeated
+// origin: in a README frontmatter (docs/conventions.md §4.4): where a part came from, as indented lines under "origin:".
+// kind is required; from and ref are optional; no names of people (a contributor's GitHub handle only); left out when not known
+export const ORIGIN_KINDS = ['maintainer', 'colleague', 'student', 'contributor', 'library'];
+export const ORIGIN_FROM = ['lesson', 'research', 'talk', 'library'];
+export function originOf(text) {
+  const m = text.replace(/\r\n?/g, '\n').match(/^---\n([\s\S]*?)\n---/);
+  if (!m) return null;
+  let o = null;
+  for (const line of m[1].split('\n')) {
+    const x = line.match(/^([\w-]+):\s*(.*)$/), sub = line.match(/^ {2}([\w-]+):\s*(.*)$/);
+    if (x) { if (o) break; if (x[1] === 'origin') o = x[2].trim() === '' ? {} : { '': x[2].trim() }; }
+    else if (sub && o) o[sub[1]] = sub[2].trim().replace(/^"(.*)"$/, '$1');
+  }
+  return o;
+}
+export function originErrors(name, o) {
+  if (o === null) return [];
+  const at = `components/${name}/README.md: origin`, errs = [];
+  if ('' in o) return [`${at}: write kind (and from, ref) on indented lines under "origin:", not on its line`];
+  for (const k of Object.keys(o)) if (!['kind', 'from', 'ref'].includes(k)) errs.push(`${at}: ${k} is not a field (kind, from, ref)`);
+  if (!o.kind) errs.push(`${at}: kind is missing (leave origin: out when it is not known)`);
+  else if (!ORIGIN_KINDS.includes(o.kind)) errs.push(`${at}: kind ${o.kind} is not one of ${ORIGIN_KINDS.join(', ')}`);
+  if ('from' in o && !ORIGIN_FROM.includes(o.from)) errs.push(`${at}: from ${o.from} is not one of ${ORIGIN_FROM.join(', ')}`);
+  if ('ref' in o) {
+    if (o.kind === 'contributor') { if (!/^@[A-Za-z0-9](?:[A-Za-z0-9-]{0,38})$/.test(o.ref)) errs.push(`${at}: ref for a contributor is their GitHub handle (@name)`); }
+    else if (o.kind === 'library') { if (!/https:\/\/\S+/.test(o.ref) || !/\S\s*[,;]\s*\S|\s\(\S/.test(o.ref)) errs.push(`${at}: ref for a library is the source repository URL and its licence ("https://… , MIT")`); }
+    else errs.push(`${at}: ref is only for a contributor (GitHub handle) or a library (URL and licence); no names of people`);
+  }
+  return errs;
+}
 export function labelErrors(name, f, lists) {
   const errs = [];
   for (const kind of Object.keys(LABEL_KINDS)) {
@@ -393,6 +423,7 @@ export function lint(root, warns = []) {
       else if (ids.get(p).reserved) errs.push(`components/${name}/README.md: purpose ${p} is reserved in purposes.json (remove "reserved" there when a component serves it)`);
     }
     errs.push(...labelErrors(name, f, labelLists));
+    errs.push(...originErrors(name, originOf(rtext)));
     const fl = flags(js);
     if (fl.operable && !fl.interactive) errs.push(`components/${name}/index.js: the viewer can operate it (an input() method, a click/pointer/key/input/change listener, a link or control, or links as data): declare static interactive = true;`);
     // groups of parts the user chooses (docs/conventions.md §7): today only "tool"; a tool needs its own new-deck tile

@@ -289,6 +289,22 @@ audiences: primary-junior, high-school
 - `tools/lint.mjs` rejects an id that is not in the list or is reserved, an empty or repeated value, and either field on a library part. `tools/release.mjs` puts `subjects` and `audiences` on the part's entry in `manifest.json` (only when written) and both lists at the top, next to `purposes`. `tools/catalog.mjs` adds the columns and a "subject and audience → parts" table to CATALOG.md.
 - How Studio uses them (handoff #43): the subject is chosen in the new-deck flow (optional), the audience follows from the scene. A part with a label that differs from the chosen one goes after the parts that fit; a part without one sits between the two.
 
+### 4.4 Origin
+
+A part may say where it came from (handoff #58, 2026-11-20), so that the parts that came from teaching, research and other people can be counted. It is optional and is not in the AI instructions or in `manifest.json`.
+
+```yaml
+origin:
+  kind: maintainer
+  from: lesson
+```
+
+- `kind` (required under `origin:`): `maintainer` (made by the people who build Egatari), `colleague` (from another teacher's slides), `student` (from a student in the lab), `contributor` (proposed through this repository's issues or pull requests), `library` (rewritten from an outside open-source library).
+- `from` (optional): `lesson` (a class or lecture), `research` (a research talk or paper), `talk` (a lightning talk or invited talk), `library` (an outside library).
+- `ref` (optional): only for `contributor`, their GitHub handle (`"@name"`), and for `library`, the source repository URL and its licence (`"https://…, MIT"`).
+- **No names of people.** A colleague or a student is given by kind only. **Leave `origin:` out when it is not known** (do not write `unknown`).
+- `tools/lint.mjs` rejects a missing or unknown `kind`, an unknown `from` or field, a `ref` for any other kind, and `origin` written on one line.
+
 ## 5. Decided and deferred
 
 Decided in the standards review (2026-10-24):
