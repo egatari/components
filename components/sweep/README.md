@@ -8,6 +8,9 @@ summary: パラメータを動かして関数の形の変化を見せる（前�
 steps: values の数 − 1（at があれば 1）
 purposes: parameter
 subjects: mathematics
+origin:
+  kind: colleague
+  from: research
 props: f, values, param, xr, yr, xt, yt, xl, yl, digits, dur, at, point, size
 ---
 

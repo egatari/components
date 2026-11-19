@@ -9,6 +9,9 @@ steps: ceil((steps の数 − 1) / per-step)
 purposes: spread
 subjects: statistics
 audiences: university
+origin:
+  kind: colleague
+  from: research
 props: per-step, slot, xr, yr, xt, yt, xf, yf, xl, yl, digits, panel, ghosts
 ---
 
