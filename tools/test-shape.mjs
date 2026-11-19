@@ -95,6 +95,10 @@ const slides = comps.map((t, j) => `<section class="slide noconcl" id="s-w${j}">
   <m-compare id="w-cmp-better" aria-label="better が列の外" style="height:200px"><script type="application/json">{"sides": [{"label": "A 案"}, {"label": "B 案"}], "rows": [{"label": "日数", "values": ["3 日", "5 日"], "better": 2}]}</script></m-compare>
   <m-venn id="w-venn-c" aria-label="集合 2 つで C の領域" style="height:200px"><script type="application/json">{"sets": [{"label": "哺乳類"}, {"label": "海の生き物"}], "regions": {"A": ["ライオン"], "AC": ["クジラ"]}}</script></m-venn></div>
 </section>
+<section class="slide noconcl" id="s-narrow">
+  <h2>狭い幅</h2>
+  <div class="body"><m-folds id="ok-folds-narrow" aria-label="幅の狭い分け方" style="width:20px;height:300px"><script type="application/json">{"samples":[{"class":0},{"class":1},{"class":0},{"class":1}],"classes":[{"id":0,"label":"A"},{"id":1,"label":"B"}],"splitter":"StratifiedKFold","splits":[{"test":[0,1],"train":[2,3]},{"test":[2,3],"train":[0,1]}]}</script></m-folds></div>
+</section>
 <section class="slide noconcl" id="s-throw">
   <h2>描くときの例外</h2>
   <div class="body"><m-curves aria-label="式が書けていない線" style="height:300px"><script type="application/json">[{"label": "a", "f": "10 - ("}]</script></m-curves></div>
@@ -172,6 +176,9 @@ try {
   ok(semOk('m-compare', /rows\[0\]\.values has 1 value/), 'm-compare: values not one per side is refused at mount');
   ok(semOk('m-compare', /rows\[0\]\.better is 2/), 'm-compare: better outside the sides is refused at mount');
   ok(semOk('m-venn', /regions AC need a third set/), 'm-venn: a region with C in a two-set diagram is refused at mount');
+  // 狭い幅（cw が負になる）でも負の rx・width・height を書かない（m-folds 2.1.1 は rx を負にしていた）
+  const neg = await page.evaluate(() => [...document.querySelectorAll('#ok-folds-narrow rect')].filter((e) => ['rx', 'width', 'height'].some((a) => parseFloat(e.getAttribute(a)) < 0)).length);
+  ok(!!r.seen.find((x) => x.id === 'ok-folds-narrow' && !x.box) && neg === 0, 'm-folds: a narrow element draws without negative rx, width or height (' + neg + ' negative)');
   const th = r.errs.find((x) => keyOf(x) === 's-throw');
   ok(th && thrown(th, 'm-curves', 'mount') && /^SyntaxError/.test(strip(th)) && r.seen.filter((x) => x.tag === 'm-curves' && !x.id).every((x) => x.box), 'mount exception: placeholder, recorded with the message only');
   // 算術の外の式（Egatari spec §6）：コードとして動かさず、札を出し、mount の段の SyntaxError として載る

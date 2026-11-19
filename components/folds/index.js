@@ -196,7 +196,7 @@ return class extends base.MotionElement {
       var g = base.el("g", {opacity: 0}, svg), y = top + r * rh;
       self.label(g, left - 12, y + bh / 2 + fs * 0.31, String(r + 1), "end");
       a.forEach(function(v, i){
-        base.el("rect", {x: left + i * cw + 1, y: y, width: Math.max(1, cw - 2), height: bh, rx: Math.min(3, cw / 4), fill: v === 2 ? "var(--emph-tint)" : v === 1 ? "var(--term-tint)" : "var(--bg)", stroke: v === 2 ? "var(--emph)" : v === 0 ? "var(--line)" : "none", "stroke-width": v === 2 ? 2.5 : 1.5, "stroke-dasharray": v === 0 ? "4 3" : null}, g);
+        base.el("rect", {x: left + i * cw + 1, y: y, width: Math.max(1, cw - 2), height: bh, rx: Math.max(0, Math.min(3, cw / 4)), fill: v === 2 ? "var(--emph-tint)" : v === 1 ? "var(--term-tint)" : "var(--bg)", stroke: v === 2 ? "var(--emph)" : v === 0 ? "var(--line)" : "none", "stroke-width": v === 2 ? 2.5 : 1.5, "stroke-dasharray": v === 0 ? "4 3" : null}, g);
       });
       if (errors) self.label(g, ex, y + bh / 2 + fs * 0.31, fmt(errors[r]));
       return {g: g};
