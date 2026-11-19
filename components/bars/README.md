@@ -6,6 +6,9 @@ tier: standard
 summary: 棒をステップごとに 0 から伸ばす（縦棒・横棒・組の棒・積み上げ棒）。値の軸の上限をステップで広げて「軸を突き抜ける伸び」も見せられる
 steps: 組の step と scale の step の最大（既定は組 1 つ = 1 ステップ。per-step で n 組ずつ）
 purposes: compare, ranking, change, part-whole
+origin:
+  kind: maintainer
+  from: research
 props: orient, max, unit, digits, per-step, dur, stagger, count, ticks, zoom, al, stack, mark
 ---
 

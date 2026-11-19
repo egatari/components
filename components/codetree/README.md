@@ -9,6 +9,9 @@ steps: 符号語の数 ＋ まとめの 1（summary="false" なら足さない�
 purposes: hierarchy, process
 subjects: informatics
 audiences: high-school
+origin:
+  kind: maintainer
+  from: lesson
 props: bits, depth, bit, move, fill, summary, mark, window
 ---
 
