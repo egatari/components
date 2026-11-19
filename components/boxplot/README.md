@@ -5,7 +5,7 @@ series: academic
 tier: specialized
 set: stats
 summary: 箱ひげ図。値を並べ、中央値・四分位数を求める手順のとおりに組み立てる。群を並べて比べる
-steps: steps（既定）：点 → 中央値 → 第1・第3四分位数 → 箱 → ひげ。whole：群 1 つ = 1 ステップ
+steps: steps（既定）：点 → 中央値 → 第 1・第 3 四分位数 → 箱 → ひげ。whole：群 1 つ = 1 ステップ
 purposes: spread, compare
 subjects: statistics, mathematics
 audiences: primary-junior, high-school
@@ -13,7 +13,7 @@ variants: fade, draw
 props: orient, xr, yr, xt, yt, xf, yf, xl, yl, method, outliers, dots, build, unit, digits, dur
 ---
 
-子の JSON：`{"groups": [{"label", "tone", "values": [...]}]}`。値の代わりに `"five": [最小値, 第1四分位数, 中央値, 第3四分位数, 最大値]` も書ける。
+子の JSON：`{"groups": [{"label", "tone", "values": [...]}]}`。値の代わりに `"five": [最小値, 第 1 四分位数, 中央値, 第 3 四分位数, 最大値]` も書ける。
 
 - `orient`：`h`（既定）か `v`
 - `method`：`jp`（既定、教科書）・`inc`・`exc`（表計算の QUARTILE.INC / EXC）
