@@ -67,9 +67,9 @@ Standard (標準): offered for every file. Specialized (専門): offered by set 
 not offered; used when a file clearly needs one (read its README). Local (ローカル): in no chat pack; its data comes from a local
 tool (m-trace: a tracer script), so only Claude Code and local authoring use it. The set is how specialized parts are loaded and
 evaluated together.
-標準はどのファイルにも出す。専門は場面やタイトルから束ごとにすすめる。特殊は一覧に出さず、材料がはっきり要るときに README を読んで使う。
+標準はどのファイルにも出す。専門は場面やタイトルからセットごとにすすめる。特殊は一覧に出さず、材料がはっきり要るときに README を読んで使う。
 
-| 段 | 束 | パーツ |
+| 段 | セット | パーツ |
 |---|---|---|
 | 標準 | — | `<m-bars>` `<m-cards>` `<m-compare>` `<m-curves>` `<m-cycle>` `<m-fishbone>` `<m-flow>` `<m-kpi>` `<m-menu>` `<m-pie>` `<m-predict>` `<m-quad>` `<m-scatter>` `<m-timeline>` `<m-tree>` `<m-venn>` |
 | 専門 | 統計 | `<m-boxplot>` `<m-heatmap>` `<m-hist>` `<m-seq>` |

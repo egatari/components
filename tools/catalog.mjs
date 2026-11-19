@@ -8,7 +8,7 @@ import { frontmatter, list, purposeIds, labelIds, LABEL_KINDS, SERIES_LABEL, fla
 
 const cell = (s) => String(s ?? '').replace(/\|/g, '\\|').replace(/\n/g, ' ');
 const rows = [], byPurpose = new Map(), byTier = new Map();
-// 段（tier）: 標準・専門（束）・特殊 (tools/lint.mjs TIER_LABEL, SET_LABEL)
+// 段（tier）: 標準・専門（セット）・特殊 (tools/lint.mjs TIER_LABEL, SET_LABEL)
 const tierText = (f) => (TIER_LABEL[f.tier] || f.tier || '') + (f.set ? `（${SET_LABEL[f.set] || f.set}）` : '');
 const ids = purposeIds(ROOT);
 // subjects / audiences (docs/conventions.md §4.3): id → entry, and id → the parts that name it
@@ -42,9 +42,9 @@ Standard (標準): offered for every file. Specialized (専門): offered by set 
 not offered; used when a file clearly needs one (read its README). Local (ローカル): in no chat pack; its data comes from a local
 tool (m-trace: a tracer script), so only Claude Code and local authoring use it. The set is how specialized parts are loaded and
 evaluated together.
-標準はどのファイルにも出す。専門は場面やタイトルから束ごとにすすめる。特殊は一覧に出さず、材料がはっきり要るときに README を読んで使う。
+標準はどのファイルにも出す。専門は場面やタイトルからセットごとにすすめる。特殊は一覧に出さず、材料がはっきり要るときに README を読んで使う。
 
-| 段 | 束 | パーツ |
+| 段 | セット | パーツ |
 |---|---|---|
 ${[...TIERS.flatMap((t) => (t === 'specialized' ? SETS.map((x) => [t, x, `specialized:${x}`]) : [[t, null, t]]))].filter(([, , k]) => byTier.has(k)).map(([t, x, k]) => `| ${TIER_LABEL[t]} | ${x ? SET_LABEL[x] : '—'} | ${byTier.get(k).join(' ')} |`).join('\n')}
 
