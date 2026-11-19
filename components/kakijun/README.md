@@ -6,6 +6,8 @@ tier: extra
 summary: かな（ひらがな・カタカナ）の書き順。字を 1 画ずつ、書く順と向きのとおりに書いて見せる
 steps: 字 1 つ＝1 ステップ（ステップの中で 1 画ずつ）。per="stroke" なら 1 画＝1 ステップ
 purposes: process
+subjects: japanese
+audiences: primary-junior
 variants: draw, pen
 props: text, per, writing, grid, ghost, nums, ends, size, dur
 license: MIT AND OFL-1.1

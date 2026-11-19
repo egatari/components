@@ -8,6 +8,8 @@ set: data
 summary: 母集団から標本を取り、比率・平均の標本分布を積む
 steps: 母集団→抽出→統計量と点→反復の 4 ステップ
 purposes: model, spread
+subjects: statistics, mathematics
+audiences: high-school, university
 props: dur, stagger, fast, size
 ---
 

@@ -8,6 +8,8 @@ set: data
 summary: 正規標本の区間を重ね、母平均を含む割合で信頼水準を説明する
 steps: 軸と μ→区間を順に→含む数と外れの強調（3 ステップ）
 purposes: model, spread
+subjects: statistics
+audiences: high-school, university
 props: dur, fast, size
 ---
 

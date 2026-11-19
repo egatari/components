@@ -43,7 +43,7 @@ The demo is `demo.html`. Companies and numbers are fictional.
 <!-- llm: omit -->
 Notes for authors of parts
 
-- Icons come by name from the library part `icons` (Tabler outline, MIT); a build keeps only the names a lesson uses. Colour: `currentColor`
+- Icons come by name from the library part `icons` (Tabler outline, MIT); a build keeps only the names a file uses. Colour: `currentColor`
 - Sizes: icon 32–64 px, title 26–34 px, text 24 px
 - Overflow is cut with … and reported once (`layout`)
 - Screen readers: svg `role="list"`, cards `role="listitem"` with number, title and text; icons and arrows `aria-hidden`

@@ -7,6 +7,8 @@ set: music
 summary: ピアノの鍵盤。音階・和音・半音と全音を光らせて音も鳴らす
 steps: steps の 1 つ = 1 ステップ（鍵盤は t でずらして順に光る）
 purposes: music
+subjects: music
+audiences: primary-junior
 variants: light, press, rise
 props: （なし。子の JSON）
 ---

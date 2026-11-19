@@ -271,6 +271,24 @@ purposes: change, compare
 | `m-pie` | part-whole |
 | `m-venn` | overlap |
 
+### 4.3 題材と読み手
+
+パーツは伝えたいことのほかに、合う題材（「題材」 / "Subject"）と読み手（「読み手」 / "Audience"）を書いてよい（handoff #43、作者 2026-11-19）。Studio の新規作成と、AI への指示に載せるパーツの順の手がかりで、形式の決まりではない。仕様は変えない（§6 で registry manifest はほかの members を持ってよく、読み手は知らない members を無視する）。
+
+- 一覧は `subjects.json` と `audiences.json`。形は `purposes.json` と同じ（`id`・`ja`・`en`、まだパーツのない id は `reserved`）。id は変えない。一覧は増やしてよい。
+  - 題材：`statistics` 統計、`mathematics` 数学、`informatics` 情報、`science` 理科、`social-studies` 社会、`japanese` 国語、`english` 英語、`music` 音楽、`business` 経営。予約：`medicine` 医療、`disaster` 防災
+  - 読み手：`primary-junior` 小中、`high-school` 高校、`university` 大学、`working-adult` 社会人、`general` 一般
+- README の先頭の `purposes:` の後に `subjects:` と `audiences:` を書く。どちらも任意。**書かないのは、どの題材（読み手）にも合うという意味**。`m-bars`・`m-flow` のような汎用のパーツはどちらも書かない。id は README の使い道か demo で示せるときだけ書き、パーツの名前から推して書かない。
+
+```yaml
+purposes: spread, compare
+subjects: statistics, mathematics
+audiences: primary-junior, high-school
+```
+
+- `tools/lint.mjs` は、一覧にない id・予約の id・空の値・同じ id の繰り返し・ライブラリのパーツに書いたものを落とす。`tools/release.mjs` は、書いてあるときだけ `manifest.json` のパーツの項に `subjects`・`audiences` を出し、2 つの一覧を `purposes` の隣に出す。`tools/catalog.mjs` は CATALOG.md に欄と「題材・読み手 → パーツ」の表を足す。
+- Studio での使い方（handoff #43）：題材は新規作成で選ぶ（任意）。読み手は使う場面から決まる。選んだものと違うラベルのパーツは、合うパーツの後ろに置く。ラベルのないパーツはその間。
+
 ## 5. 決まったことと、後に回したこと
 
 規格化の確認（2026-10-24）で次のように決まった。

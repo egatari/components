@@ -2,7 +2,7 @@
 name: expr
 version: 1.0.0
 kind: library
-summary: 2.0 のパーツが属性やデータに書かれた式を計算するための、算術だけの安全な式の評価器（コードとしては動かさない）。教材の作者が直接は書かない
+summary: 2.0 のパーツが属性やデータに書かれた式を計算するための、算術だけの安全な式の評価器（コードとしては動かさない）。作成者が直接は書かない
 ---
 
 A library part (Egatari spec §6.1): it defines no element. A part that

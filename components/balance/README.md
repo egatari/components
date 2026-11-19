@@ -8,6 +8,8 @@ set: data
 summary: 確率の重りを置き、支点が期待値でつり合う様子を示す
 steps: 数直線と重り→支点を期待値へ→値と和の式（3 ステップ）
 purposes: model
+subjects: statistics, mathematics
+audiences: high-school, university
 props: dur, digits, size
 ---
 

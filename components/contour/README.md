@@ -8,6 +8,8 @@ set: ml
 summary: 2 変数の関数の等高線を値ごとに引き、勾配の矢印と、勾配降下法などの反復の道を 1 点ずつ見せる
 steps: 等高線の値ごと（by="all" なら 1）→ 勾配 → 道の点ごと
 purposes: model, change
+subjects: mathematics, informatics
+audiences: university
 props: dur, size, by
 ---
 

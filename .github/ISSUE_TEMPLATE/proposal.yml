@@ -9,19 +9,19 @@ body:
         Check [CATALOG.md](https://github.com/egatari/components/blob/main/CATALOG.md) first: a new attribute on an existing part may be enough. Read [CONTRIBUTING.md](https://github.com/egatari/components/blob/main/CONTRIBUTING.md) for what happens next. **The maintainer decides the part's name at this stage**; you do not need to choose one.
         まず [CATALOG.md](https://github.com/egatari/components/blob/main/CATALOG.md) を見てください。既存のパーツに属性を足すだけで済むこともあります。この後の流れは [CONTRIBUTING.ja.md](https://github.com/egatari/components/blob/main/CONTRIBUTING.ja.md)。**パーツの名前はこのステップで管理者が決めます**（決めてこなくて構いません）。
 
-        Do not paste unpublished lesson content you may not share. / 公開できない教材の中身は貼らないでください。
+        Do not paste unpublished content you may not share. / 公開できないファイルの中身は貼らないでください。
   - type: textarea
     id: example
     attributes:
       label: Example / 例
-      description: "The figure as it should look: an inline-SVG figure from a lesson, or an image (sketch, screenshot, photo of a board). / 目指す図：教材の中のインライン SVG の図、または画像（スケッチ・スクリーンショット・板書の写真）"
+      description: "The figure as it should look: an inline-SVG figure from your slides, or an image (sketch, screenshot, photo of a board). / 目指す図：スライドの中のインライン SVG の図、または画像（スケッチ・スクリーンショット・板書の写真）"
     validations:
       required: true
   - type: textarea
     id: lesson
     attributes:
-      label: Lesson used in / 使った授業・発表
-      description: "Where you used (or will use) it: subject, level, the step of the explanation it serves. A link if public. / どの授業・発表で使ったか（使うか）：科目・対象・説明のどの場面か。公開されていればリンク"
+      label: Used in / 使ったファイル
+      description: "Where you used (or will use) it: the topic, the audience, the step of the explanation it serves. A link if public. / どこで使ったか（使うか）：題材・対象・説明のどの場面か。公開されていればリンク"
     validations:
       required: true
   - type: textarea
@@ -49,7 +49,7 @@ body:
     id: why
     attributes:
       label: Why inline SVG and the motion primitives are not enough / インライン SVG と動きの素では足りない理由
-      description: "A lesson can already draw inline SVG and animate it with data-step, marks, morph and camera. What does this figure need that those cannot give (computed layout, many elements from data, interaction, reuse across lessons)? / 教材はすでにインライン SVG と data-step・印・モーフ・カメラで動かせます。この図にはそれでは足りない何が要るか（データからの配置の計算、多くの要素、操作、授業をまたぐ再利用など）"
+      description: "Slides can already draw inline SVG and animate it with data-step, marks, morph and camera. What does this figure need that those cannot give (computed layout, many elements from data, interaction, reuse across files)? / スライドはすでにインライン SVG と data-step・印・モーフ・カメラで動かせます。この図にはそれでは足りない何が要るか（データからの配置の計算、多くの要素、操作、ファイルをまたぐ再利用など）"
     validations:
       required: true
   - type: textarea
@@ -69,8 +69,8 @@ body:
   - type: textarea
     id: reuse
     attributes:
-      label: Other fields and lessons / ほかの分野・授業での使い道
-      description: "Other subjects or lessons that would use the same part. / 同じパーツを使えそうなほかの科目・授業"
+      label: Other fields and uses / ほかの分野での使い道
+      description: "Other subjects or topics that would use the same part. / 同じパーツを使えそうなほかの科目・題材"
     validations:
       required: true
   - type: checkboxes

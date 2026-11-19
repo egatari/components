@@ -271,6 +271,24 @@ Proposed declarations for existing and v1.2.0 parts:
 | `m-pie` | part-whole |
 | `m-venn` | overlap |
 
+### 4.3 Subjects and audiences
+
+Besides its purposes, a part may say which subjects (shown as 「題材」 / "Subject") and which audiences (「読み手」 / "Audience") it fits (handoff #43, owner 2026-11-19). They are hints for Studio's new-deck flow and for the order of the parts in the AI instructions, not rules of the format: the spec is unchanged (§6 lets a registry manifest carry other members, and readers ignore members they do not know).
+
+- The lists are `subjects.json` and `audiences.json`, in the same form as `purposes.json`: `id`, `ja`, `en`, and `reserved` for an id with no part yet. An id never changes; the lists may grow.
+  - subjects: `statistics` 統計, `mathematics` 数学, `informatics` 情報, `science` 理科, `social-studies` 社会, `japanese` 国語, `english` 英語, `music` 音楽, `business` 経営; reserved `medicine` 医療, `disaster` 防災
+  - audiences: `primary-junior` 小中, `high-school` 高校, `university` 大学, `working-adult` 社会人, `general` 一般
+- The README frontmatter gets `subjects:` and `audiences:` after `purposes:`, both optional. **Leaving one out means the part fits every subject (or audience)**; general parts such as `m-bars` and `m-flow` write neither. Write an id only when the README's uses or the demo show it, not from the part's name.
+
+```yaml
+purposes: spread, compare
+subjects: statistics, mathematics
+audiences: primary-junior, high-school
+```
+
+- `tools/lint.mjs` rejects an id that is not in the list or is reserved, an empty or repeated value, and either field on a library part. `tools/release.mjs` puts `subjects` and `audiences` on the part's entry in `manifest.json` (only when written) and both lists at the top, next to `purposes`. `tools/catalog.mjs` adds the columns and a "subject and audience → parts" table to CATALOG.md.
+- How Studio uses them (handoff #43): the subject is chosen in the new-deck flow (optional), the audience follows from the scene. A part with a label that differs from the chosen one goes after the parts that fit; a part without one sits between the two.
+
 ## 5. Decided and deferred
 
 Decided in the standards review (2026-10-24):

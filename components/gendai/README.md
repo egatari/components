@@ -7,6 +7,8 @@ set: kokugo
 summary: 現代文の読解の図：傍線・二重傍線を引き、指示語から指す内容へ矢印、段落を役割（主張・具体例・対比）の枠で囲んで線でつなぐ
 steps: 中身のある phases の数（既定 marks refs roles）
 purposes: text-structure
+subjects: japanese
+audiences: primary-junior, high-school
 props: size, tate, phases, draw
 ---
 

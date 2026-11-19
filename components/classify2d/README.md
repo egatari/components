@@ -8,6 +8,8 @@ set: ml
 summary: scikit-learn の分類を 2 次元で描く。点・領域・境界・確率や決定関数の等高線・サポートベクトル・ボロノイ図・決定木の分割・k 平均法
 steps: 点 → 領域 → 等高線 → サポートベクトル（決定木は分割 1 つずつ → 葉、k 平均法は割り当てと更新を交互に）
 purposes: grouping, model
+subjects: informatics, statistics
+audiences: university
 props: dur, size, marker
 ---
 

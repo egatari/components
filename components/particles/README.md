@@ -8,6 +8,8 @@ set: science
 summary: 状態変化の粒子の並び方と間隔、化学変化で保存される原子の数を見せる
 steps: state は states の数 − 1（既定 2）。reaction は反応前→原子に分かれる→反応後の 3 ステップ
 purposes: model, process, compare
+subjects: science
+audiences: primary-junior, high-school
 props: mode, count, size, dur, volume, motion
 ---
 
@@ -23,7 +25,7 @@ props: mode, count, size, dur, volume, motion
 
 - `states`：1 個以上の状態名（`solid`・`liquid`・`gas`）。並び順に移る。逆順や固体↔気体も使える。1 個ならステップなし
 - `substance`：容器の上に出す物質名（省略可）
-- `labels`：各状態の表示名。`null` は既定の固体・液体・気体、`""` は名前なし。英語の教材では Solid・Liquid・Gas
+- `labels`：各状態の表示名。`null` は既定の固体・液体・気体、`""` は名前なし。英語のスライドでは Solid・Liquid・Gas
 - ステップ 0 は容器の下に最初の状態名だけを出す。ステップ 1 以降は「液体 → 気体（沸騰）」のように、出発点・到着点・変化名を 1 行で出す。英語は `Liquid → Gas (boiling)`
 - 変化の名前は状態の組から決める（融解・沸騰・凝固・凝縮・昇華）。英語は melting・boiling・freezing・condensation・sublimation
 
@@ -44,7 +46,7 @@ props: mode, count, size, dur, volume, motion
 
 属性：`count` は state の粒子数（6〜30、既定 16）、`size` は名前と式の文字サイズ（24px 以上、既定 28）、`dur` は各ステップの秒数（既定 1.2）。`volume="true"` は気体の容器を広くする（既定 false。固体・液体の幅も粒子の層が入る幅を保つ）。`motion="false"` で state の運動の印を消す（既定 true）。`states` は属性ではなく子の JSON に書く。
 
-要素の言語に従い日本語・英語で表示する。読み上げは最後の状態と保存される数を説明する。作者の `aria-label` があれば保つ。縦書きの教材でも図は横書き。
+要素の言語に従い日本語・英語で表示する。読み上げは最後の状態と保存される数を説明する。作者の `aria-label` があれば保つ。縦書きのスライドでも図は横書き。
 
 <!-- llm: omit -->
 形の既定値：H2O・H2S・SO2 は bent、CO2 は linear、NH3 は N を中心とする trigonal、CH4 は C を中心とする tetrahedral（平面の十字）。2 原子の分子（H2・O2・N2・Cl2・HCl など）は接する対。未知の 3 原子分子を折れ線と推測しない。

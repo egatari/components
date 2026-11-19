@@ -2,7 +2,7 @@
 
 [English](README.md)（英語が正本）
 
-[Egatari Studio](https://github.com/egatari/egatari-studio) のパーツ（Web Components）です。ステップごとに伸びる棒、組み上がる流れ図、1 本ずつ引く線、読む順に字をたどる漢文など。Studio がこれらを Egatari の教材（[形式](https://github.com/egatari/egatari-spec)。オフラインで再生できる 1 つの HTML）に組み込みます。
+[Egatari Studio](https://github.com/egatari/egatari-studio) のパーツ（Web Components）です。ステップごとに伸びる棒、組み上がる流れ図、1 本ずつ引く線、読む順に字をたどる漢文など。Studio がこれらを Egatari ファイル（[形式](https://github.com/egatari/egatari-spec)。オフラインで再生できる 1 つの HTML）に組み込みます。
 
 一覧は **[CATALOG.md](CATALOG.md)**。パーツは 1 つずつ `components/<名前>/` にあります。
 
@@ -20,15 +20,15 @@
 node tools/components2-update.mjs v2.9.0 --default
 ```
 
-を使います。リリースの tarball を取ってきて `manifest.json` と照らし、取り込んだバージョンをすべて残します（古いバージョンで組んだ教材も、そのとおりに組み直せるように）。
+を使います。リリースの tarball を取ってきて `manifest.json` と照らし、取り込んだバージョンをすべて残します（古いバージョンで組んだファイルも、そのとおりに組み直せるように）。
 
 ## リリースとバージョン
 
 - リリースはタグ `vX.Y.Z` と 2 つのファイル：`egatari-components-vX.Y.Z.tar.gz`（全パーツのファイルと `LICENSE`）と `manifest.json`（`name`・`version`・tarball の SHA-256・各ファイルの SHA-256。`index.js` も）。リリースの説明にも tarball の SHA-256 を書きます。tarball の hash はバイトのまま、各ファイルの hash は[仕様 §6](https://github.com/egatari/egatari-spec/blob/main/egatari-1.0.md#6-components-and-profiles)の同一性の hash です（字のファイルは、CRLF と単独の CR を LF にし、先頭の UTF-8 の BOM を除いてから hash する。どの OS の checkout でも同じ hash）。ファイルは LF で置きます。
 - **取り下げ（yank）。** リリースは、たとえば安全性の修正のあとに取り下げられます。取り下げたバージョンも手に入るままで、最新のリリースの `manifest.json` の `yanked` に、置き換え先のバージョン（`replacement`）・理由（`reason`）・日付（`date`）とともに載ります。2.0 からは、パーツの 1 つのバージョンも同じように取り下げられ、そのパーツの項目の `withdrawn` に載ります（[SECURITY.md](SECURITY.md#yanked-versions)）。編集アプリは組み直しを勧め、黙って置き換えてはなりません（[仕様 §6](https://github.com/egatari/egatari-spec/blob/main/egatari-1.0.md#6-components-and-profiles)）。
 - **タグは付け替えず、使い回しません。** 直しは新しいバージョンにします。
-- Egatari のファイルはパーツライブラリのパーツを `{name, version, sha256}` で記録し、`sha256` は `index.js` だけのハッシュです（[仕様 §6](https://github.com/egatari/egatari-spec/blob/main/egatari-1.0.md#6-components-and-profiles)）。`index.js` を（改行のほかで）変えるとハッシュが変わるので、編集アプリは教材が要るバージョンを見分けられます。
-- バージョンの番号：今ある教材の見え方（配置・時間・ステップ）が変わりうる変更はマイナー以上、教材が書くデータの形を壊す変更はメジャー。
+- Egatari のファイルはパーツライブラリのパーツを `{name, version, sha256}` で記録し、`sha256` は `index.js` だけのハッシュです（[仕様 §6](https://github.com/egatari/egatari-spec/blob/main/egatari-1.0.md#6-components-and-profiles)）。`index.js` を（改行のほかで）変えるとハッシュが変わるので、編集アプリはファイルが要るバージョンを見分けられます。
+- バージョンの番号：今あるファイルの見え方（配置・時間・ステップ）が変わりうる変更はマイナー以上、ファイルが書くデータの形を壊す変更はメジャー。
 
 リリースの手順は [RELEASING.md](RELEASING.md)。
 
@@ -36,7 +36,7 @@ node tools/components2-update.mjs v2.9.0 --default
 
 [提案の Issue](https://github.com/egatari/components/issues/new?template=proposal.yml) を開いてください。例・使った授業・データの形の案・最終状態・インライン SVG と Studio の動きの素では足りない理由・権利・静止したときに読めなければならないもの・ほかの分野での使い道を聞きます。名前はこのステップで管理者が決めます。詳しくは [CONTRIBUTING.ja.md](CONTRIBUTING.ja.md)。
 
-パーツの不具合は[不具合の報告](https://github.com/egatari/components/issues/new?template=bug.yml)へ。編集アプリ・組み立て・教材の不具合は [Egatari Studio](https://github.com/egatari/egatari-studio/issues) へ。
+パーツの不具合は[不具合の報告](https://github.com/egatari/components/issues/new?template=bug.yml)へ。Studio・ビルド・ファイルの不具合は [Egatari Studio](https://github.com/egatari/egatari-studio/issues) へ。
 
 ## 試験
 

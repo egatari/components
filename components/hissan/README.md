@@ -7,6 +7,8 @@ set: math
 summary: 筆算（たし算・ひき算・かけ算・わり算、小数も）。式を書けば、パーツが教科書の手順で計算して書く
 steps: ＋−は位ごと、×は 1 段ごと（fine で 1 けたずつ）→たす、÷は商 1 けたごと（per="phase" で たてる・かける・ひく・おろす ごと）
 purposes: process
+subjects: mathematics
+audiences: primary-junior
 variants: fade, draw
 props: expr, build, fine, per, kari, rem, digits, carry, words, focus, dur
 ---

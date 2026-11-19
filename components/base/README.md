@@ -2,7 +2,7 @@
 name: base
 version: 1.3.0
 kind: library
-summary: 2.0 の要素のパーツが使う土台（基底のクラス MotionElement と、SVG・時間・見せ方の補助）。データの形は mount の前に確かめる。教材の作者が直接は書かない
+summary: 2.0 の要素のパーツが使う土台（基底のクラス MotionElement と、SVG・時間・見せ方の補助）。データの形は mount の前に確かめる。作成者が直接は書かない
 requires: shape@1.0.0
 ---
 

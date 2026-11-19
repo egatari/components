@@ -2,7 +2,7 @@
 name: boxplot-core
 version: 1.0.0
 kind: library
-summary: m-boxplot の四分位数の計算（中央値、教科書の求め方 jp と表計算の inc・exc の四分位数、1.5×四分位範囲の外れ値）。教材の作者が直接は書かない
+summary: m-boxplot の四分位数の計算（中央値、教科書の求め方 jp と表計算の inc・exc の四分位数、1.5×四分位範囲の外れ値）。作成者が直接は書かない
 ---
 
 A library part (Egatari spec §6.1): it defines no element.

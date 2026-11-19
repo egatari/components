@@ -8,12 +8,13 @@ set: tools
 summary: 画面の画像に番号の丸を置き、引き出し線で横の説明につなぐ。ステップごとに 1 つずつ（研修・手引き・操作の説明）
 steps: 説明の step の最大（既定は説明 1 つ = 1 ステップ。per-step で n 個ずつ）
 purposes: process
+audiences: working-adult, general
 props: side, label-width, per-step, dur, size
 ---
 
 研修・職員向けの手引き・アプリの使い方で、画面のどこをどの順に操作するかを 1 つずつ見せる。
 
-画像は子の `<img src="screens/apply.png" alt="…" width="1280" height="800">`（作業フォルダの画像。ビルドのときに教材に埋め込む）。
+画像は子の `<img src="screens/apply.png" alt="…" width="1280" height="800">`（作業フォルダの画像。ビルドのときにファイルに埋め込む）。
 
 - **画面の画像に本当の個人の情報を写さない**（名前・番号・住民や患者の記録など）。架空のデータで画面を作るか、ぼかしてから使う
 - `alt`（何の画面か）・`width`・`height`（画像の px）は必ず書く（ないと data）。1 MiB を超える画像は size

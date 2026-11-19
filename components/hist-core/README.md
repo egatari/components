@@ -2,7 +2,7 @@
 name: hist-core
 version: 1.0.0
 kind: library
-summary: m-hist の代表値と度数の計算（平均値・中央値・最頻値、階級への数え上げ、度数分布表からの代表値）。教材の作者が直接は書かない
+summary: m-hist の代表値と度数の計算（平均値・中央値・最頻値、階級への数え上げ、度数分布表からの代表値）。作成者が直接は書かない
 ---
 
 A library part (Egatari spec §6.1): it defines no element. `m-hist`

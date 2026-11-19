@@ -11,7 +11,7 @@ example: {"lang":"python","code":"total = 0\nfor x in [3, 1]:\n    total += x\np
 
 JSON from `uv run tools/trace.py prog.py --out trace.json`, never by hand.
 <!-- llm: omit -->
-- Not in any chat pack (tier local): a chat AI cannot run the tracer. Use it from Claude Code or locally.
+- Not in any chat pack (tier local): an AI chatbot cannot run the tracer. Use it from Claude Code or locally.
 - `steps[i]`: `line` or `lines: [a, b]`, `vars` (the FULL state after the line, not a delta), `out` (what the line printed), `note` (added by hand after tracing, ≤2 band rows).
 - Values: numbers, strings (≤40 chars), booleans, null, lists (≤12, or 2-D ≤6×6), dicts (≤8 keys), nesting ≤2, else `{"repr": "…"}`.
 - Caps: 16 code lines, 60 steps, 6 variables (`show` picks them), 8 output lines.

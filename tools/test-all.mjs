@@ -11,7 +11,7 @@
 //      (also tools/test-yanked.mjs: yanked.json becomes manifest.json's `yanked`; tools/test-gallery-pack.mjs: the gallery of a
 //       release from its pack and manifest alone (gallery.mjs --pack): every demo slide, unique slide ids, refused if a file
 //       is not the manifest's, marks against --previous, no git; tools/test-changed-without-bump.mjs: release.mjs --previous
-//       lists same-version parts whose other files changed; tools/test-variant.mjs: the variant choice;
+//       lists same-version parts whose other files changed; tools/test-variant.mjs: the variant choice; tools/test-labels.mjs: subjects / audiences ids;
 //       tools/test-stats.mjs: m-hist / m-boxplot mean, median, mode, classes and quartiles by jp / inc / exc;
 //       tools/test-numberline.mjs: m-numberline tick positions and labels, fractions, two lines aligned at 0, range levels and shared part)
 //       tools/test-hissan.mjs: m-hissan's written calculations reproduce plain arithmetic; places in columns, quotient over the right digits;
@@ -111,6 +111,7 @@ const TESTS = [
   ['test-gallery-pack', ['tools/test-gallery-pack.mjs']],
   ['test-changed-without-bump', ['tools/test-changed-without-bump.mjs']],
   ['test-variant', ['tools/test-variant.mjs']],
+  ['test-labels', ['tools/test-labels.mjs']],
   ['test-stats', ['tools/test-stats.mjs']],
   ['test-numberline', ['tools/test-numberline.mjs']],
   ['test-hissan', ['tools/test-hissan.mjs']],

@@ -2,7 +2,7 @@
 name: kanbun-core
 version: 1.0.0
 kind: library
-summary: 漢文の読み取り（白文・返り点・送り仮名・振り仮名）と訓読の順・書き下し文の計算。m-kanbun が使う。教材の作者が直接は書かない
+summary: 漢文の読み取り（白文・返り点・送り仮名・振り仮名）と訓読の順・書き下し文の計算。m-kanbun が使う。作成者が直接は書かない
 ---
 
 A library part (Egatari spec §6.1): it defines no element and requires

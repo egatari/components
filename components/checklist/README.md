@@ -8,6 +8,7 @@ set: tools
 summary: 確かめる項目を並べ、ステップごとに 1 つずつ印（✓・×）を描く。印はスライドの中身で、見ている人の操作を保存しない
 steps: 項目の step の最大（既定は項目 1 つ = 1 ステップ。per-step で n 個ずつ）
 purposes: process
+audiences: working-adult, general
 props: reveal, per-step, dur, stagger, size
 ---
 

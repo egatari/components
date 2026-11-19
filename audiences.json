@@ -1,0 +1,10 @@
+{
+  "note": "Who the slides are for (shown to people as 「読み手」 / \"Audience\"; docs/conventions.md §4.3). An id never changes; the list may grow. A component lists its ids in its README frontmatter (audiences:); none written means it fits every audience. reserved: an id kept with no component yet.",
+  "audiences": [
+    {"id": "primary-junior", "ja": "小中", "en": "Primary and junior high"},
+    {"id": "high-school", "ja": "高校", "en": "High school"},
+    {"id": "university", "ja": "大学", "en": "University"},
+    {"id": "working-adult", "ja": "社会人", "en": "Working adults"},
+    {"id": "general", "ja": "一般", "en": "General public"}
+  ]
+}

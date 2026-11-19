@@ -7,6 +7,8 @@ set: maps
 summary: 世界の国・地域の地図（太平洋が中央）。国や州の強調、区分と値の塗り分け、点、矢印をステップごとに出す
 steps: 項目の step の最大（既定 1）。地図そのものはステップ 0 から出ている
 purposes: spatial
+subjects: social-studies
+audiences: primary-junior, high-school
 variants: fade, sweep, draw
 props: labels, grid, show, territory-islands, unit, digits, legend, dur
 data-credit: 地図データ：Natural Earth（パブリックドメイン）を加工

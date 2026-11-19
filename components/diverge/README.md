@@ -8,6 +8,7 @@ set: business
 summary: 基準の棒から始め、増減の棒を前の棒の端から上下に積んで、最後に合計の棒を立てる（ウォーターフォール）
 steps: 棒の step の最大（既定は棒 1 本 = 1 ステップ。per-step で n 本ずつ）
 purposes: deviation, compare
+subjects: business, social-studies
 props: unit, digits, per-step, dur, stagger, min, ticks, links, al
 ---
 

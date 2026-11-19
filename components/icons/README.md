@@ -2,10 +2,10 @@
 name: icons
 version: 1.0.0
 kind: library
-summary: 名前で引く線のアイコン（Tabler Icons outline 3.49.0、MIT、4,808 個。brand-* と塗りのアイコンは入れない）。教材の作者が直接は書かない
+summary: 名前で引く線のアイコン（Tabler Icons outline 3.49.0、MIT、4,808 個。brand-* と塗りのアイコンは入れない）。作成者が直接は書かない
 ---
 
-A library part (Egatari spec §6.1): it defines no element. Parts that draw an icon the lesson names (`m-cards`) require it
+A library part (Egatari spec §6.1): it defines no element. Parts that draw an icon the file names (`m-cards`) require it
 as `requires: {icons: "1.0.0"}`:
 
 ```js
@@ -13,13 +13,13 @@ var I = deps.icons;
 var g = I.svg("chart-bar", {x: 10, y: 10, size: 40, cls: "term", missing: function(m){ ctx.report("data", "[cards] " + m); }});
 I.has("chart-bar");   // true
 I.near("chart-barr"); // ["chart-bar", …] up to 3 carried names by edit distance
-I.names();            // the names this copy carries (in a lesson, only the ones it names)
+I.names();            // the names this copy carries (in a file, only the ones it names)
 ```
 
 - `svg` returns an SVG `<g aria-hidden="true">`: the 24-unit box scaled to `size`, stroke `currentColor` (2 units), round caps
   and joins. The colour comes from the caller's class (`term`, `emph`, `muted`); nothing is hard-coded.
 - An unknown name draws an empty dashed box of the same size (`data-missing`) and calls `missing` once with the closest names.
-- The lesson's names: `m-cards` lists the curated names (about 120) in its README. Any Tabler outline name works; the full
+- The file's names: `m-cards` lists the curated names (about 120) in its README. Any Tabler outline name works; the full
   list is `names.txt` (one per line), for the quality check's "did you mean".
 
 <!-- llm: omit -->

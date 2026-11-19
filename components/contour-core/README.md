@@ -2,7 +2,7 @@
 name: contour-core
 version: 1.0.0
 kind: library
-summary: 格子の上の値から等高線を引く計算（マーチング・スクエア）。m-classify2d と m-contour が使う。教材の作者が直接は書かない
+summary: 格子の上の値から等高線を引く計算（マーチング・スクエア）。m-classify2d と m-contour が使う。作成者が直接は書かない
 ---
 
 A library part (Egatari spec §6.1): it defines no element. `m-classify2d` 2.0.0 requires it as

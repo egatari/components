@@ -2,7 +2,7 @@
 
 [日本語](README.ja.md)
 
-Animated figures (Web Components) for [Egatari Studio](https://github.com/egatari/egatari-studio): bars that grow step by step, flow diagrams that assemble, curves drawn one by one, kanbun read in order, and more. Studio builds them into Egatari lessons ([format](https://github.com/egatari/egatari-spec)): one HTML file that plays offline.
+Animated figures (Web Components) for [Egatari Studio](https://github.com/egatari/egatari-studio): bars that grow step by step, flow diagrams that assemble, curves drawn one by one, kanbun read in order, and more. Studio builds them into Egatari files ([format](https://github.com/egatari/egatari-spec)): one HTML file that plays offline.
 
 The list is in **[CATALOG.md](CATALOG.md)**. Each part lives in `components/<name>/`:
 
@@ -10,7 +10,7 @@ The list is in **[CATALOG.md](CATALOG.md)**. Each part lives in `components/<nam
 |---|---|
 | `index.js` | the custom element `<m-<name>>` (it follows Studio's [part contract](https://github.com/egatari/egatari-studio/blob/main/docs/contract.md#3-components-web-components)) |
 | `README.md` | frontmatter (`name`, `version`, `series`, `tier` (and `set`), `summary`, `steps`, `props`) and how to use it |
-| `demo.html` | a 1–2 slide sample lesson |
+| `demo.html` | a 1–2 slide sample file |
 
 ## Using them
 
@@ -20,23 +20,23 @@ You do not install anything from here. Each Studio release carries a copy of the
 node tools/components2-update.mjs v2.9.0 --default
 ```
 
-which downloads the release tarball, checks it against `manifest.json` and keeps every version it has ever brought in, so that a lesson built with an older version can still be rebuilt exactly.
+which downloads the release tarball, checks it against `manifest.json` and keeps every version it has ever brought in, so that a file built with an older version can still be rebuilt exactly.
 
 ## Releases and versions
 
 - A release is a tag `vX.Y.Z` with two assets: `egatari-components-vX.Y.Z.tar.gz` (every part's files and `LICENSE`) and `manifest.json` (`name`, `version`, the SHA-256 of the tarball, and the SHA-256 of every file, including each `index.js`). The release notes repeat the tarball's SHA-256. The tarball's hash is byte-exact; the per-file hashes are identity hashes as in [spec §6](https://github.com/egatari/egatari-spec/blob/main/egatari-1.0.md#6-components-and-profiles): for text files, CRLF and lone CR become LF and a leading UTF-8 BOM is removed before hashing, so a checkout on any system gives the same hash. Files are stored with LF.
 - **Yanked releases.** A release may be withdrawn (for example after a security fix). It stays available; the newest release's `manifest.json` lists it under `yanked` with the `replacement` version, a `reason` and a `date`. From 2.0, a single part's version may be withdrawn the same way: the part's entry lists it under `withdrawn` ([SECURITY.md](SECURITY.md#yanked-versions)). Editors offer a rebuild and never substitute silently ([spec §6](https://github.com/egatari/egatari-spec/blob/main/egatari-1.0.md#6-components-and-profiles)).
 - **Tags are never moved or reused.** A fix is a new version.
-- An Egatari file records each registry part as `{name, version, sha256}`, where `sha256` covers `index.js` only ([spec §6](https://github.com/egatari/egatari-spec/blob/main/egatari-1.0.md#6-components-and-profiles)). Changing a part's `index.js` (other than its line endings) changes its hash, so editors can tell which version a lesson needs.
-- Version numbers: a change that can alter how an existing lesson looks (layout, timing, steps) is a minor or major version; a major version also breaks the data a lesson writes.
+- An Egatari file records each registry part as `{name, version, sha256}`, where `sha256` covers `index.js` only ([spec §6](https://github.com/egatari/egatari-spec/blob/main/egatari-1.0.md#6-components-and-profiles)). Changing a part's `index.js` (other than its line endings) changes its hash, so editors can tell which version a file needs.
+- Version numbers: a change that can alter how an existing file looks (layout, timing, steps) is a minor or major version; a major version also breaks the data a file writes.
 
 How a release is made: [RELEASING.md](RELEASING.md).
 
 ## Proposing a part
 
-Open a [proposal issue](https://github.com/egatari/components/issues/new?template=proposal.yml). It asks for an example, the lesson you used it in, a draft of the data, the final state, why inline SVG with Studio's motion primitives is not enough, the rights to everything in it, what must stay readable when static, and where else it would help. The maintainer decides the name at that stage. Details: [CONTRIBUTING.md](CONTRIBUTING.md).
+Open a [proposal issue](https://github.com/egatari/components/issues/new?template=proposal.yml). It asks for an example, where you used it, a draft of the data, the final state, why inline SVG with Studio's motion primitives is not enough, the rights to everything in it, what must stay readable when static, and where else it would help. The maintainer decides the name at that stage. Details: [CONTRIBUTING.md](CONTRIBUTING.md).
 
-Bugs in a part: [bug report](https://github.com/egatari/components/issues/new?template=bug.yml). Bugs in the editor, the build or a lesson go to [Egatari Studio](https://github.com/egatari/egatari-studio/issues).
+Bugs in a part: [bug report](https://github.com/egatari/components/issues/new?template=bug.yml). Bugs in Studio, the build or a file go to [Egatari Studio](https://github.com/egatari/egatari-studio/issues).
 
 ## Tests
 
@@ -48,7 +48,7 @@ Node 22 or later and Chrome, Edge or Playwright's Chromium. The tests build ever
 
 ## Security
 
-Parts never run a lesson's data as code; `m-sweep` and `m-curves` evaluate their formulas with a small arithmetic parser. Grammar, audit and how to report a vulnerability: [SECURITY.md](SECURITY.md).
+Parts never run a file's data as code; `m-sweep` and `m-curves` evaluate their formulas with a small arithmetic parser. Grammar, audit and how to report a vulnerability: [SECURITY.md](SECURITY.md).
 
 ## History
 

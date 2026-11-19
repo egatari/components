@@ -2,7 +2,7 @@
 name: shape
 version: 1.0.0
 kind: library
-summary: 2.0 のパーツのデータの形（static shape）を確かめる小さなライブラリ。base が使う。教材の作者が直接は書かない
+summary: 2.0 のパーツのデータの形（static shape）を確かめる小さなライブラリ。base が使う。作成者が直接は書かない
 ---
 
 A library part (Egatari spec §6.1 "Data shapes": a part checks its own

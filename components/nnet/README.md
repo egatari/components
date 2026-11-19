@@ -8,6 +8,8 @@ set: ml
 summary: ニューラルネットの層を並べ、前向きの計算を層ごとに見せる。ニューロンはまとめた丸か、Σ（重み付きの和）と f（活性化関数）に分けた形
 steps: 入力 1 ＋ まとめた層 1・分けた層 2（steps を書けばその数）
 purposes: model, process
+subjects: informatics
+audiences: university
 props: dur, digits, edges, size
 ---
 

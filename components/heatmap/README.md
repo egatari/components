@@ -7,6 +7,8 @@ set: stats
 summary: ヒートマップ。値で塗ったセルの格子（混同行列・相関行列・注意の重み）
 steps: rows：行を 1 つずつ（normalize="row" の既定）。whole：全体を 1 ステップ。cells：全体、それから強調を 1 つずつ（highlight があるときの既定）
 purposes: compare, correlation
+subjects: statistics, informatics
+audiences: high-school, university
 variants: fade, sweep
 props: scale, center, range, tone, lowtone, normalize, show, numbers, diag, build, rotate, xl, yl, unit, digits, dur
 ---

@@ -7,7 +7,9 @@ tier: specialized
 set: univ
 summary: 平面のベクトルの和・差・スカラー倍・正射影・内積と、2 × 2 の行列の 1 次変換・固有ベクトル・基底の取り替えを 1 ステップずつ。右に式
 steps: ベクトル → ops を 1 つずつ → 行列の変換（matrix があれば）→ 新しい基底（basis があれば）
-purposes: model, spatial
+purposes: model
+subjects: mathematics
+audiences: university
 props: dur, size
 ---
 

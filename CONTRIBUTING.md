@@ -4,11 +4,11 @@
 
 Proposals, bug reports and pull requests are welcome. English or Japanese both work.
 
-## 1. Before a part: write the figure in your lesson
+## 1. Before a part: write the figure in your slides
 
-Most figures do not need a part. A lesson can draw inline SVG and animate it with `data-step`, emphasis (`{mark}`), morphs and the camera (Studio's motion primitives; see Studio's [contract](https://github.com/egatari/egatari-studio/blob/main/docs/contract.md)). If one lesson needs something more, write a **deck-local** part in `<deck>/components/<name>/index.js`; Studio's build looks there first. The `motion-components` skill in Studio walks through it.
+Most figures do not need a part. Slides can draw inline SVG and animate it with `data-step`, emphasis (`{mark}`), morphs and the camera (Studio's motion primitives; see Studio's [contract](https://github.com/egatari/egatari-studio/blob/main/docs/contract.md)). If one file needs something more, write a **deck-local** part in `<deck>/components/<name>/index.js`; Studio's build looks there first. The `motion-components` skill in Studio walks through it.
 
-A figure becomes a proposal here when it has served a real lesson and would serve others.
+A figure becomes a proposal here when it has served a real file and would serve others.
 
 ## 2. Propose it in an issue
 
@@ -16,16 +16,16 @@ Open a [proposal](https://github.com/egatari/components/issues/new?template=prop
 
 | Field | Why |
 |---|---|
-| **Example** | an inline-SVG figure from your lesson, or an image (sketch, screenshot, photo of a board) |
-| **Lesson used in** | parts here come from lessons people actually taught |
+| **Example** | an inline-SVG figure from your slides, or an image (sketch, screenshot, photo of a board) |
+| **Used in** | parts here come from files people actually used |
 | **Data shape (draft)** | what an author (or an AI) will write: the child JSON or text, and the attributes |
 | **Final state** | what the last step shows: this is what is printed and what is shown when motion is off |
-| **Why inline SVG and the motion primitives are not enough** | a part is code every lesson trusts; it has to earn that |
+| **Why inline SVG and the motion primitives are not enough** | a part is code every file trusts; it has to earn that |
 | **Rights** | the sources and licences of the text, data, images and code in the example and the demo |
 | **What must be readable when static** | in print, on the reading surface and for a screen reader |
-| **Other fields and lessons** | a part is for more than one lesson |
+| **Other fields and uses** | a part is for more than one file |
 
-**The maintainer decides the name** (`m-<name>`, a registry name `^[a-z][a-z0-9-]{0,63}$`) in the issue, before any code is merged. Names are permanent: a lesson records the name, and it is never reused for a different part.
+**The maintainer decides the name** (`m-<name>`, a registry name `^[a-z][a-z0-9-]{0,63}$`) in the issue, before any code is merged. Names are permanent: a file records the name, and it is never reused for a different part.
 
 ## 3. Pull request
 
@@ -35,13 +35,13 @@ After the proposal is accepted and named, open a pull request that adds `compone
 - [ ] the part's own texts never overlap each other or its lines, whatever the data (Studio's check warns about svg text on svg text); where an overlap is intended, put `data-overlap="ok"` on that `<text>` or an ancestor `<g>` (like Studio's `data-clip` for text cut on purpose)
 - [ ] no eval-like code (`npm test` runs `tools/scan-code.mjs`): no `eval`, `Function`, `constructor`, string timers, `import`, `innerHTML` and similar; a formula an author writes is evaluated with `tools/expr.js` (copy it in with `node tools/expr-sync.mjs` and add the part to its `USERS`), never as JavaScript ([SECURITY.md](SECURITY.md))
 - [ ] `README.md` with frontmatter `name`, `version` (the part's own version, X.Y.Z; 1.x parts carry the catalogue version they were last released in), `series` (`common` = Standard parts, `academic`, `business`, `kokugo`, `info`, `social`, `music` or `english`), `tier` (`standard`, `specialized` or `extra`; a specialized part also has `set`: `stats`, `math`, `maps`, `kokugo`, `english`, `music`, `business` or `tools`), optionally `display` (`<ja> / <en>`, a name other than the tag), `summary`, `steps`, `props`, and a body saying when to use it
-- [ ] `demo.html`: a sample lesson of 1–3 slides, plus a slide showing the variants side by side when the part has variants, whose texts and data are yours, public domain or fictional
+- [ ] `demo.html`: a sample file of 1–3 slides, plus a slide showing the variants side by side when the part has variants, whose texts and data are yours, public domain or fictional
 - [ ] a wrong-shape example for it in `tools/test-shape.mjs`
 - [ ] `node tools/catalog.mjs` re-run (CATALOG.md is generated)
 - [ ] `npm test` passes, and you looked at the screenshots it writes (mid-step and final)
 - [ ] a line in `CHANGELOG.md` under `## Unreleased`
 
-Changing an existing part: keep lessons that use it working. A change to how existing data is drawn (layout, timing, number of steps) is a new minor version at least; say so in the pull request.
+Changing an existing part: keep files that use it working. A change to how existing data is drawn (layout, timing, number of steps) is a new minor version at least; say so in the pull request.
 
 ## Tests
 

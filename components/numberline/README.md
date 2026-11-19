@@ -7,6 +7,8 @@ set: math
 summary: 数直線。点・□・ジャンプ・不等式の範囲・0.1 の拡大。2 本で比例数直線
 steps: build の順（既定 ticks,marks,links,jumps,ranges,magnify）に項目 1 つ = 1 ステップ。whole：全部で 1 ステップ
 purposes: compare
+subjects: mathematics
+audiences: primary-junior
 variants: fade, draw
 props: build, arrow, dur
 ---

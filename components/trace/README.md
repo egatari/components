@@ -7,13 +7,15 @@ tier: local
 summary: 短いコードを 1 行ずつ実行した記録を見せる。今の行に印、変わった変数に印、その時点までの出力
 steps: トレースの行の数（by="time" なら 1）
 purposes: process, model
+subjects: informatics
+audiences: high-school, university
 props: dur, by, rate, size
 ---
 
 値はローカルで動かすトレーサー `tools/trace.py`（`uv run tools/trace.py prog.py --out trace.json`）の出力をそのまま子の JSON に書く。手で書かない。パーツはコードを実行しない。
 
 <!-- llm: omit -->
-プログラミングの授業で、for 文や辞書の更新、並べ替えのような短いコードが 1 行ごとに変数をどう変えるかを見せるときに使う。チャットで使う AI には渡さない（トレーサーを動かせないため）。Claude Code やローカルで教材を作るときに使う。
+プログラミングの授業で、for 文や辞書の更新、並べ替えのような短いコードが 1 行ごとに変数をどう変えるかを見せるときに使う。対話型の生成AI（ChatGPT・Gemini・Claude など）には渡さない（トレーサーを動かせないため）。Claude Code やローカルで作成するときに使う。
 
 - トレーサー：`uv run tools/trace.py prog.py [--func 名前] [--show a,b] [--max-steps 60] [--out trace.json]`。`sys.settrace` で 1 行ごとに、その行を実行した後の変数（全部。差分ではない）と、その行の出力を書く。`--func` を付けるとその関数の呼び出しの中だけ、付けなければモジュールの一番外側だけを追う。例外で止まったら、その行の出力にエラーの 1 行を書く。60 行を超えたら止めて `source.truncated` を true にする。`random` をシードなしで使うと警告する
 - JSON：`lang`・`code`・`source`（`tool`・`python`・`sha256`・`truncated`）・`show`（見せる変数と順。6 個まで）・`steps`（`line` か `lines: [a, b]`、`vars`、`out`、`note`）

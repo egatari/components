@@ -4,12 +4,13 @@
 //   dist/egatari-components-v1.0.0.tar.gz   LICENSE and components/<name>/… as <name>/… (every file of each component except out/)
 //   dist/manifest.json                       {name, version, tag, repository, license, tarball: {file, sha256, bytes},
 //                                             purposes: [{id, ja, en, steps: {ja, en}, reserved?}] (purposes.json's list),
+//                                             subjects, audiences: [{id, ja, en, reserved?}] (subjects.json's and audiences.json's lists),
 //                                             components: {<name>: {kind: "element", tag, version (the part's own version, README frontmatter version:),
 //                                               tier ("standard" | "specialized" | "extra" | "local", README frontmatter tier:), set (specialized parts only: stats, math,
 //                                               maps, kokugo, english, music, business, tools), display? (README frontmatter display:,
 //                                               "<ja> / <en>", when the part has a name other than its tag), build? and glyphs? (the class's
 //                                               static build and glyphs, Egatari spec §6.2: fields to render, data to subset, characters
-//                                               drawn at play time), series, purposes, variants, interactive?, viewerInput?, clock? (true when index.js declares
+//                                               drawn at play time), series, purposes, subjects? and audiences? (README frontmatter; left out = fits every one), variants, interactive?, viewerInput?, clock? (true when index.js declares
 //                                               static interactive / viewerInput / clock = true; left out otherwise), preview? ("none" when index.js
 //                                               declares static preview = "none": the part shows nothing ahead under preview), license (an SPDX expression,
 //                                               on every entry: README frontmatter license:, else "MIT"; spec §6 Registry manifest), withdrawn? ({<part version>:
@@ -131,7 +132,7 @@ export function release(version, { previous } = {}) {
     }
     const C = partClass(js, `${name}/index.js`) || {};
     components[name] = { kind: 'element', tag: `m-${name}`, version: fm.version, tier: fm.tier, ...(fm.set ? { set: fm.set } : {}), ...(fm.display ? { display: fm.display } : {}),
-      ...(C.build ? { build: JSON.parse(JSON.stringify(C.build)) } : {}), ...(typeof C.glyphs === 'string' ? { glyphs: C.glyphs } : {}), ...(meta ? { requires: { ...(meta.requires || {}) } } : {}), series: fm.series, license: fm.license || 'MIT', ...withdrawn, purposes: list(fm.purposes), variants: list(fm.variants), ...(fl.interactive ? { interactive: true } : {}), ...(fl.viewerInput ? { viewerInput: true } : {}), ...(fl.clock ? { clock: true } : {}), ...(fl.group ? { group: fl.group } : {}), ...(fl.preview ? { preview: fl.preview } : {}), ...(fl.tile ? { tile: fl.tile } : {}), sha256: code, files };
+      ...(C.build ? { build: JSON.parse(JSON.stringify(C.build)) } : {}), ...(typeof C.glyphs === 'string' ? { glyphs: C.glyphs } : {}), ...(meta ? { requires: { ...(meta.requires || {}) } } : {}), series: fm.series, license: fm.license || 'MIT', ...withdrawn, purposes: list(fm.purposes), ...(fm.subjects ? { subjects: list(fm.subjects) } : {}), ...(fm.audiences ? { audiences: list(fm.audiences) } : {}), variants: list(fm.variants), ...(fl.interactive ? { interactive: true } : {}), ...(fl.viewerInput ? { viewerInput: true } : {}), ...(fl.clock ? { clock: true } : {}), ...(fl.group ? { group: fl.group } : {}), ...(fl.preview ? { preview: fl.preview } : {}), ...(fl.tile ? { tile: fl.tile } : {}), sha256: code, files };
   }
   entries.sort((a, b) => (a[0] < b[0] ? -1 : a[0] > b[0] ? 1 : 0));
   const gz = writeTarGz(entries);
@@ -141,6 +142,9 @@ export function release(version, { previous } = {}) {
     tarball: { file, sha256: sha(gz), bytes: gz.length },
     // purposes.json rides in the manifest, not the tarball: Studio's updater takes only LICENSE and component folders
     purposes: JSON.parse(fs.readFileSync(path.join(ROOT, 'purposes.json'), 'utf8')).purposes,
+    // the subject and audience lists likewise (docs/conventions.md §4.3): ids, ja and en; a part without subjects / audiences fits every one
+    subjects: JSON.parse(fs.readFileSync(path.join(ROOT, 'subjects.json'), 'utf8')).subjects,
+    audiences: JSON.parse(fs.readFileSync(path.join(ROOT, 'audiences.json'), 'utf8')).audiences,
     components,
     yanked: readYanked(version),
     files: Object.fromEntries(entries.map(([p, b]) => [p, idSha(p, b)])),

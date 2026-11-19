@@ -8,6 +8,8 @@ set: univ
 summary: 分散分析表・分割表・潜在結果の表を、ステップごとに埋める。使ったセルと埋めたセルを示し、表の下に式。計算を確かめる
 steps: 埋めるステップの数（anova は値の列の数、contingency は計・期待度数・χ²・オッズ比、po は 3）
 purposes: part-whole, cause-effect
+subjects: statistics
+audiences: university
 props: dur, digits, size
 ---
 

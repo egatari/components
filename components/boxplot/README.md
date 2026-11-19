@@ -7,6 +7,8 @@ set: stats
 summary: 箱ひげ図。値を並べ、中央値・四分位数を求める手順のとおりに組み立てる。群を並べて比べる
 steps: steps（既定）：点 → 中央値 → 第1・第3四分位数 → 箱 → ひげ。whole：群 1 つ = 1 ステップ
 purposes: spread, compare
+subjects: statistics, mathematics
+audiences: primary-junior, high-school
 variants: fade, draw
 props: orient, xr, yr, xt, yt, xf, yf, xl, yl, method, outliers, dots, build, unit, digits, dur
 ---

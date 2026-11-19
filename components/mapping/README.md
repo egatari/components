@@ -8,6 +8,8 @@ set: data
 summary: 実験の結果を数値へ対応させ、同じ値になる結果をまとめて確率分布を作る
 steps: 結果のラベル→対応の矢印→同じ値の色と個数・確率の和→分布の横棒の 4 ステップ
 purposes: model, grouping
+subjects: statistics, mathematics
+audiences: high-school, university
 props: dur, stagger, digits, size
 ---
 確率変数を「結果を数に対応させる規則」として見せる（結果 → 値 → 分布）。
@@ -41,7 +43,7 @@ props: dur, stagger, digits, size
 
 幅 1184px、高さ 440px（4 結果）を目安にする。どの結果も同じ確率なら、確率は見出しに「どれも 1/n」と 1 度だけ書く。行は 40px 以上を確保し、収まらないときは `size` を報告する。値の箱は数の大きさの順（大きい値が上）、近すぎれば報告する。
 
-読み上げは全結果の対応、各値の確率、合計を説明する。作者の `aria-label` があれば保つ。言語は要素の `lang` または `ctx.lang` に従う。図は縦書きの教材でも横書き。
+読み上げは全結果の対応、各値の確率、合計を説明する。作者の `aria-label` があれば保つ。言語は要素の `lang` または `ctx.lang` に従う。図は縦書きのスライドでも横書き。
 
 ぶどうの例は架空。房ごとの粒の数を X とする（picture: "grapes"）。
 

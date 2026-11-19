@@ -7,6 +7,8 @@ set: english
 summary: 英文の構造：S V O C M の記号、句と節の括弧、修飾の矢印、品詞、それから和訳
 steps: 出てくる要素（S V O C M）を 1 つずつ＋括弧・矢印・和訳（あるものだけ）。build="whole" で 1
 purposes: text-structure
+subjects: english
+audiences: primary-junior, high-school
 variants: fade, draw
 props: size, pos, build, yaku
 ---

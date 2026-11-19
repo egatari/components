@@ -1,0 +1,16 @@
+{
+  "note": "The subject a part fits (shown to people as 「題材」 / \"Subject\"; docs/conventions.md §4.3). An id never changes; the list may grow. A component lists its ids in its README frontmatter (subjects:); none written means it fits every subject. reserved: an id kept with no component yet (not offered in the new-deck flow).",
+  "subjects": [
+    {"id": "statistics", "ja": "統計", "en": "Statistics"},
+    {"id": "mathematics", "ja": "数学", "en": "Mathematics"},
+    {"id": "informatics", "ja": "情報", "en": "Informatics"},
+    {"id": "science", "ja": "理科", "en": "Science"},
+    {"id": "social-studies", "ja": "社会", "en": "Social studies"},
+    {"id": "japanese", "ja": "国語", "en": "Japanese"},
+    {"id": "english", "ja": "英語", "en": "English"},
+    {"id": "music", "ja": "音楽", "en": "Music"},
+    {"id": "business", "ja": "経営", "en": "Business"},
+    {"id": "medicine", "ja": "医療", "en": "Medicine", "reserved": true},
+    {"id": "disaster", "ja": "防災", "en": "Disaster preparedness", "reserved": true}
+  ]
+}

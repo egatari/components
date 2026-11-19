@@ -7,6 +7,8 @@ set: maps
 summary: 日本の 47 都道府県の地図。地域の強調、統計の塗り分け、点、矢印、経度・緯度の重ね描きをステップごとに出す
 steps: 項目の step の最大（既定 1）。地図そのものはステップ 0 から出ている
 purposes: spatial
+subjects: social-studies
+audiences: primary-junior, high-school
 variants: fade, sweep, draw
 props: layout, islands, labels, show, territory-islands, unit, digits, legend, dur
 data-credit: 地図データ：Natural Earth（パブリックドメイン）を加工

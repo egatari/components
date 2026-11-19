@@ -7,6 +7,8 @@ set: stats
 summary: ヒストグラム・度数折れ線・ドットプロット。平均値・中央値・最頻値の線も
 steps: 分布（系列 1 つ = 1 ステップ）→ 度数折れ線 → 代表値を 1 つずつ
 purposes: spread
+subjects: statistics, mathematics
+audiences: primary-junior, high-school
 variants: fade, grow
 props: xr, yr, xt, yt, xf, yf, xl, yl, unit, digits, polygon, relative, cumulative, kind, marks, build, dur
 ---

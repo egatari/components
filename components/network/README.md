@@ -8,6 +8,8 @@ set: algo
 summary: グラフの探索（幅優先・ダイクストラなど）や巡回路を 1 ステップずつ。今の頂点・候補・訪れた頂点、選んだ辺、合計
 steps: steps の数
 purposes: process, model
+subjects: informatics, statistics
+audiences: university
 props: dur, size, weights
 ---
 

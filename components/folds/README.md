@@ -8,6 +8,8 @@ set: data
 summary: データを k 個に分けた 1 つ（フォールド）を検証に使い、検証に使うフォールドを順に替えて、各分割の誤差と平均を示す
 steps: 分割を 1 行ずつ→平均（k + 1 ステップ）
 purposes: model, compare
+subjects: informatics, statistics
+audiences: university
 props: dur, size
 ---
 

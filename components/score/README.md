@@ -7,6 +7,8 @@ set: music
 summary: 楽譜（五線譜）を 1 音・和音ずつ、または 1 小節ずつ出して音も鳴らす。ABC 記譜法で書く
 steps: 音符・和音・休符 1 つ＝1 ステップ。by="measure" なら 1 小節＝1 ステップ（per-step="N" なら N 小節。弱起の小節は次のステップに入る）
 purposes: music
+subjects: music
+audiences: primary-junior
 variants: light
 props: by, names, per-step
 ---

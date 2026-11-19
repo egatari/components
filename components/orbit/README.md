@@ -7,6 +7,8 @@ set: science
 summary: 月の満ち欠け（金星の満ち欠け）。北極の上から見た図と地球から見た形を並べ、月を位置から位置へ動かす。形は位置から計算する
 steps: 動く先の数（既定は 8 つの位置を新月から 1 周 = 8 ステップ。visit で決める）
 purposes: model, cycle
+subjects: science
+audiences: primary-junior, high-school
 props: mode, hemisphere, sun, earth, moon, observer, size, dur
 ---
 
@@ -36,7 +38,7 @@ props: mode, hemisphere, sun, earth, moon, observer, size, dur
 
 `mode="venus"`：太陽を中心に、金星と地球の軌道を描く。地球は下に止めて、金星の位置を外合（太陽の向こう側）から反時計回りに `positions` 個置く（8 つなら位置 3 が東方最大離角に近い「よいの明星」、位置 5 が西方最大離角に近い「明けの明星」）。右の図は地球から見た金星の形で、大きさは地球からの距離に反比例する（地球に近いほど大きく、細く欠ける）。説明は「夕方・西の空」「明け方・東の空」、太陽に近い位置では「太陽に近くて見えない」。軌道の比は実際の値（金星 0.723）。
 
-縦書きの教材でも、横書きの 1 つの図として置く。
+縦書きのスライドでも、横書きの 1 つの図として置く。
 
 サンプルは `demo.html`（月の 1 周、日食と月食、金星）。
 

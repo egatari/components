@@ -7,6 +7,8 @@ display: ハフマン木 / Huffman tree
 summary: ハフマン木で 2 値の系列を 1 語ずつ復号する（MH 符号）。ランは画素の升目に伸びる
 steps: 符号語の数 ＋ まとめの 1（summary="false" なら足さない）。表にない符号か、符号の途中で終わる系列なら、その誤りに ＋1。bits が空なら 0
 purposes: hierarchy, process
+subjects: informatics
+audiences: high-school
 props: bits, depth, bit, move, fill, summary, mark, window
 ---
 
