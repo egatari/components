@@ -79,7 +79,9 @@ for (const name of names) {
         const sl = DECK.slides[i], R = sl.getBoundingClientRect(), out = [];
         const vis = (e) => { for (let x = e; x && x !== sl; x = x.parentElement) { const o = +(x.getAttribute && x.getAttribute('opacity') || getComputedStyle(x).opacity); if (o < 0.5) return false; } return true; };
         const texts = sl._comps.flatMap((c) => [...c.querySelectorAll('text')]).filter((e) => e.textContent.trim() && vis(e));
-        const boxes = texts.map((e) => ({ e, r: e.getBoundingClientRect(), s: e.textContent }));
+        // text in a frame that cuts on purpose (data-clip, m-scroll) and lies wholly outside that frame is not shown: leave it out
+        const shown = (e, r) => { const c = e.closest('[data-clip]'); if (!c) return true; const C = c.getBoundingClientRect(); return r.right > C.left && r.left < C.right && r.bottom > C.top && r.top < C.bottom; };
+        const boxes = texts.map((e) => ({ e, r: e.getBoundingClientRect(), s: e.textContent })).filter(({ e, r }) => shown(e, r));
         for (const { e, r, s } of boxes) {
           // small annotations marked data-annot are exempt, as in Egatari Studio's checker (docs/conventions.md §2.3)
           if (parseFloat(getComputedStyle(e).fontSize) < 24 && !e.closest('[data-annot]')) out.push(`small text ${getComputedStyle(e).fontSize}: ${s}`);
