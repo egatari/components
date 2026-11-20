@@ -21,6 +21,7 @@ var CSS = [
 return class extends base.MotionElement {
   static partName = "scroll";
   static interactive = true;   // the viewer can scroll the frame (docs/conventions.md §6)
+  static preview = "none";     // nothing lies ahead to show faint: the figure is all there, only its place changes
   static viewerInput = true;   // a place scrolled by hand is the viewer's state until the next step (spec §8.4)
   static props = {
     dur: {type: "number", default: 0.8, doc: "秒数：ステップが変わったときに枠が動く時間"},

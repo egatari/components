@@ -5,8 +5,8 @@ version: 2.0.0
 series: common
 tier: specialized
 set: tools
-summary: 縦に長い図（インライン SVG・HTML）を高さの決まった枠に入れ、ステップごとに決めた所まで送る。見る人は枠の中を手でスクロールできる
-steps: 子の data-scroll-step の最大（k 段階目にその要素の所まで送る）
+summary: 縦に長い図（インライン SVG・HTML）を高さの決まった枠に入れ、ステップごとに決めた所まで送る。参加者は枠の中を手でスクロールできる
+steps: 子の data-scroll-step の最大（k 番目のステップでその要素の所まで送る）
 purposes: process, timeline
 props: dur, margin
 origin:
@@ -18,9 +18,9 @@ origin:
 
 `<m-scroll style="height:440px" aria-label="図の名前">` の子に、図（インライン SVG や `<pre>`）をそのまま書く。
 
-- 子の要素に `data-scroll-step="k"`（1, 2, …）を付けると、k 段階目にその要素が枠の上に来るまで送る（上に `margin` px 空ける）。ステップの数は k の最大
+- 子の要素に `data-scroll-step="k"`（1, 2, …）を付けると、k 番目のステップでその要素が枠の上に来るまで送る（上に `margin` px 空ける）。ステップの数は k の最大
 - 枠の中のホイール・タッチ・↑↓・PageUp/PageDown は枠のスクロールで、スライドは送らない。←→ と Space はスライドの操作のまま
-- 見る人が手で動かした所は、次のステップまで保たれる
+- 参加者が手で動かした所は、次のステップまで保たれる
 <!-- llm: omit -->
 ```html
 <m-scroll style="height:420px" aria-label="A 町の年表（架空）">

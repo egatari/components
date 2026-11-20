@@ -53,7 +53,7 @@ return class extends base.MotionElement {
     var nr, nc, head;
     if (kind === "cross") {
       var R = d.rows && !Array.isArray(d.rows) ? d.rows : {}, C = d.cols && !Array.isArray(d.cols) ? d.cols : {};
-      var rv = (R.values || []).map(String), cv = (C.values || []).map(String);
+      var rv = Array.isArray(R.values) ? R.values.map(String) : [], cv = Array.isArray(C.values) ? C.values.map(String) : [];
       if (rv.length < 2 || rv.length > 4 || cv.length < 2 || cv.length > 4) bad.push("cross needs 2 to 4 values on each axis (rows.values, cols.values)");
       if (order && order !== "build" && order !== "whole") bad.push("order for cross is build or whole, not " + order);
       var whole = order === "whole";
@@ -126,6 +126,7 @@ return class extends base.MotionElement {
     if (!(P.dur >= 0)) { ctx.report("attr", "[matrix] dur must be ≥ 0; using 0.6"); P.dur = 0.6; }
     if (!(P.size >= 24)) { ctx.report("attr", "[matrix] size must be ≥ 24; using 28"); P.size = 28; }
     pl.bad.forEach(function(m){ ctx.report("data", "[matrix] " + m); });
+    if (pl.bad.length && (pl.nr < 2 || pl.nc < 2)) return;   // nothing to draw a grid from
     // sizes: the largest font from size down to 24 at which the table fits; else 24 and a size report
     var fit = null;
     for (var fs = Math.round(P.size); fs >= 24 && !fit; fs -= 2) fit = this._fit(fs, W, H);
@@ -189,8 +190,6 @@ return class extends base.MotionElement {
     if (this._aria === undefined) this._aria = this.getAttribute("aria-label");
     this.setAttribute("role", "img");
     if (!this._aria) this.setAttribute("aria-label", L.label + (pl.kind === "cross" ? pl.raxis + " × " + pl.caxis : pl.cols.join(pl.L === T.ja ? "、" : ", ")));
-    this.preview = !!ctx.preview || ctx.mode === "lecture";
-    this.faint = this.preview ? base.previewOpacity(this) : 0;
   }
   // column widths and row heights at font size fs; null when the table does not fit W × H (unless force)
   _fit(fs, W, H, force){
@@ -232,7 +231,7 @@ return class extends base.MotionElement {
   duration(k){ return k >= 1 && k <= this.plan().steps ? this.props.dur : 0; }
   render(k, t, ctx){
     if (!this.cellEls) return;
-    var D = base, P = this.props, N = this.plan().steps, faint = this.faint;
+    var D = base, P = this.props, N = this.plan().steps, faint = ctx && (ctx.preview || ctx.mode === "lecture") ? base.previewOpacity(this) : 0;
     k = Math.max(0, Math.min(k, N));
     var e = k === 0 ? 1 : D.prog(t, 0, P.dur);
     var op = function(st){ var v = st === 0 || st < k ? 1 : st > k ? 0 : e; return Math.max(v, st > k ? faint : 0); };

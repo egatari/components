@@ -66,12 +66,14 @@ const WRONG = {
   'm-contour': '<script type="application/json">{"levels": []}</script>',
   'm-nnet': '<script type="application/json">{"layers": [{"n": "2"}, {"n": 1}]}</script>',
   'm-network': '<script type="application/json">{"nodes": [{"id": "A", "x": "0", "y": 0}], "steps": [{}]}</script>',
+  'm-matrix': '<script type="application/json">{"kind": "table", "rows": []}</script>',
   'm-callout': '<img src="data:image/gif;base64,R0lGODlhAQABAAAAACw=" alt="画面" width="1" height="1"><script type="application/json">{"callouts": [{"x": "0.5", "y": 0.5, "text": "押す"}]}</script>',
   // データを属性だけで受け取る部品は、要素ごと書く（digits は整数の JSON）
   'm-hissan': '<m-hissan aria-label="m-hissan の図" expr="7÷3" digits="2けた" style="height:300px"></m-hissan>',
   'm-kakijun': '<m-kakijun aria-label="m-kakijun の図" text="あさ" size="大きめ" style="height:300px"></m-kakijun>',
 };
-const comps = componentNames().map((n) => 'm-' + n);
+// m-scroll takes no data (its children are the figure), so it has no shape to get wrong
+const comps = componentNames().map((n) => 'm-' + n).filter((t) => t !== 'm-scroll');
 ok(comps.every((t) => WRONG[t] || t === 'm-sweep'), 'every component has a wrong-shape example in this test');
 // 部品は Studio の部品庫から読ませる（作業フォルダの components/ には置かない）
 const deckDir = path.join(work, 'deck');
