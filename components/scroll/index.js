@@ -23,6 +23,8 @@ return class extends base.MotionElement {
   static interactive = true;   // the viewer can scroll the frame (docs/conventions.md §6)
   static preview = "none";     // nothing lies ahead to show faint: the figure is all there, only its place changes
   static viewerInput = true;   // a place scrolled by hand is the viewer's state until the next step (spec §8.4)
+  // no JSON: the children are the figure. The example is how to write it (as m-sweep's attribute-only shape)
+  static shape = {schema: null, example: '<m-scroll style="height:440px" aria-label="年表"><svg viewBox="0 0 1000 1300" width="1000" height="1300">… <g data-scroll-step="1">…</g> …</svg></m-scroll>'};
   static props = {
     dur: {type: "number", default: 0.8, doc: "秒数：ステップが変わったときに枠が動く時間"},
     margin: {type: "number", default: 12, doc: "px：data-scroll-step の要素の上に空ける余白"},
