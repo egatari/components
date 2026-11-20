@@ -8,6 +8,26 @@ Versions follow [README.md § Releases and versions](README.md#releases-and-vers
 
 - `m-compare` `by="row"`; an "outside every set" region for `m-venn`; planned-vs-actual bars for `m-timeline`
 
+## 2.16.0 - 2026-11-20
+
+This release marks the drawings of fourteen more parts for Studio's geometry check, now that Studio 0.6.16 ships it, fixes two places it found, and labels the parts by subject, audience and origin.
+
+### Changed
+
+- **Fourteen more parts mark what they draw for Studio's geometry check (R-geometry, spec §8.4, handoff #45)**: `m-callout` 2.1.0, `m-collect` 2.1.0, `m-kakijun` 2.1.0, `m-map-japan` 2.3.0, `m-map-world` 2.3.0, `m-market` 2.1.0, `m-numberline` 2.1.0, `m-pie` 2.1.0, `m-scatter` 2.1.0, `m-seq` 2.2.0, `m-tape` 2.1.0, `m-vector` 2.1.0, `m-venn` 2.1.0, and `m-codetree` 2.1.0 put `data-part` on their boxes, marks, edges and labels (circle boxes, leaders from a mark, labels outside their box). Their drawing does not change, except `m-codetree` below. `tools/test-geometry.mjs` now runs the check from the Studio v0.6.16 tag (`geometryCommit` in tools/studio.json), at every step for shapes that must stay in a frame and strokes cut at the SVG edge; the 24 demos with marks show no geo* warning.
+- **`m-codetree` 2.1.0: the bits no longer collide in a dense summary.** When levels stand closer than a 24 px digit (a 12-bit code), it writes only the bit that was taken, on its branch with a halo; the check had found 25 overlaps in the demo.
+- **Labels for subjects and audiences (handoff #43)**: `subjects.json` and `audiences.json` list them, a part's README may name them (`subjects:`, `audiences:`; none = fits every one), and the manifest carries them beside `purposes`. 37 of the 55 element parts have them. CATALOG shows them. docs/conventions §4.3.
+- **Where a part came from (`origin:`, docs/conventions §4.4)**: an optional README field with `kind` (maintainer, colleague, student, contributor, library) and optional `from` and `ref`; no personal names. Seven parts have it. It is not in the manifest or the AI instruction pack.
+- **Wording (handoff #36)**: READMEs, CONTRIBUTING, the proposal template, CATALOG and docs say "Egatari file" (ファイル) instead of lesson (教材) where it is not teaching material, and 対話型の生成 AI / AI chatbot instead of chat AI. A group of specialized parts is a セット (set), not 束. Japanese text puts a space between full-width and half-width words (生成 AI, 北緯 50 度, 第 1 四分位数; the icon search words in `icons/ja.json` too).
+
+### Fixed
+
+- **`m-folds` 2.1.2**: a group's name stands in the middle of its frame (it stood about 5 px above it; Studio's text-box check found it), and a cell's corner radius is never negative in an element narrower than about 250 px (`tools/test-shape.mjs` draws it 20 px wide).
+
+### For Studio
+
+- Drawing changes: `m-codetree` (dense summary) and `m-folds` (group name position). The other part updates only add `data-part` marks. Many READMEs changed without a version change (manifest `changedWithoutBump`), so the AI instruction pack changes; standards runs eval B before the tag.
+
 ## 2.15.0 - 2026-11-18
 
 This release marks the boxes, edges and labels of six more parts for Studio's geometry check, and reports values outside a range that was not written in `m-sweep` and `m-seq` as `m-curves` does.
