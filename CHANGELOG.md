@@ -11,6 +11,7 @@ Versions follow [README.md § Releases and versions](README.md#releases-and-vers
 ### Changed
 
 - **Subjects carry keywords (handoff #69)**: each subject in `subjects.json` has `keywords: {ja, en}`, the words in a request that suggest it in Studio's new-deck flow (a word, or `{w, not}` for a word that does not count inside the words in `not`). They are the table Studio kept in its own code (`SUBJECT_WORDS`), moved to the manifest's `subjects` list so Studio reads them from the release. lint checks the form (docs/conventions §4.3). No part changes.
+- `m-matrix` demo and README say 時系列予測 (an established term) instead of 系列予測; the part's code does not change.
 
 ## 2.17.0 - 2026-11-20
 
