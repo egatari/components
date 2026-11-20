@@ -287,6 +287,7 @@ audiences: primary-junior, high-school
 ```
 
 - `tools/lint.mjs` rejects an id that is not in the list or is reserved, an empty or repeated value, and either field on a library part. `tools/release.mjs` puts `subjects` and `audiences` on the part's entry in `manifest.json` (only when written) and both lists at the top, next to `purposes`. `tools/catalog.mjs` adds the columns and a "subject and audience → parts" table to CATALOG.md.
+- A subject may carry `keywords: {"ja": [...], "en": [...]}` (handoff #69): words in a request that suggest the subject in Studio's new-deck flow. Each is a string, or `{"w": "国", "not": ["国語"]}` for a word that does not count inside the words in `not`. Japanese matches as a run of characters, English at word boundaries. The manifest carries them in the `subjects` list; Studio reads them there instead of keeping its own table. `tools/lint.mjs` checks the form (both languages, no repeats, subjects only).
 - How Studio uses them (handoff #43): the subject is chosen in the new-deck flow (optional), the audience follows from the scene. A part with a label that differs from the chosen one goes after the parts that fit; a part without one sits between the two.
 
 ### 4.4 Origin

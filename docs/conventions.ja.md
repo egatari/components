@@ -287,6 +287,7 @@ audiences: primary-junior, high-school
 ```
 
 - `tools/lint.mjs` は、一覧にない id・予約の id・空の値・同じ id の繰り返し・ライブラリのパーツに書いたものを落とす。`tools/release.mjs` は、書いてあるときだけ `manifest.json` のパーツの項に `subjects`・`audiences` を出し、2 つの一覧を `purposes` の隣に出す。`tools/catalog.mjs` は CATALOG.md に欄と「題材・読み手 → パーツ」の表を足す。
+- 題材には `keywords: {"ja": [...], "en": [...]}` を書ける（handoff #69）。Studio の新規作成で、依頼の言葉から題材を推すための語。字の語か、`{"w": "国", "not": ["国語"]}`（`not` の語の中に現れたときは数えない）。日本語は字の並びで、英語は語の切れ目で当てる。manifest の `subjects` の一覧に入り、Studio は自分の表の代わりにそれを読む。`tools/lint.mjs` は形（2 つの言語・同じ語の繰り返しなし・題材だけ）を確かめる。
 - Studio での使い方（handoff #43）：題材は新規作成で選ぶ（任意）。読み手は使う場面から決まる。選んだものと違うラベルのパーツは、合うパーツの後ろに置く。ラベルのないパーツはその間。
 
 ### 4.4 由来

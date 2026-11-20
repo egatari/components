@@ -17,6 +17,15 @@ ok(/subjects: is empty/.test(errs({ subjects: '' }).join('\n')), 'an empty value
 ok(/audiences: repeats an id/.test(errs({ audiences: 'university, university' }).join('\n')), 'a repeated id');
 ok(labelListErrors('subjects', { subjects: [{ id: 'a', ja: 'あ', en: 'A' }, { id: 'a', ja: 'い', en: 'I' }] }).length === 1, 'a repeated id in the list file');
 ok(labelListErrors('audiences', { audiences: [{ id: 'Big', ja: 'x', en: 'x' }, { id: 'b', ja: 'x' }] }).length === 2, 'a bad id and a missing en in the list file');
+// keywords of a subject (handoff #69)
+const kw = (k, kind = 'subjects') => labelListErrors(kind, { [kind]: [{ id: 'a', ja: 'あ', en: 'A', keywords: k }] });
+ok(kw({ ja: ['統計', { w: '国', not: ['国語'] }], en: ['statistics'] }).length === 0, 'keywords: words and {w, not} pass');
+ok(kw({ ja: ['統計', '統計'], en: ['x'] }).length === 1, 'keywords: a repeated word');
+ok(kw({ ja: ['統計'] }).length === 1, 'keywords: en is missing');
+ok(kw({ ja: ['統計'], en: ['x'], fr: ['y'] }).length === 1, 'keywords: an unknown language');
+ok(kw({ ja: [{ w: '国' }], en: ['x'] }).length === 1, 'keywords: {w} without not');
+ok(kw({ ja: [''], en: ['x'] }).length === 1, 'keywords: an empty word');
+ok(kw({ ja: ['x'], en: ['x'] }, 'audiences').length === 1, 'keywords: only subjects have them');
 ok(labelListErrors('subjects', {}).length === 1, 'a list file without its array');
 // origin: indented kind / from / ref under "origin:"; no names of people
 const fm = (body) => `---\nname: m-x\n${body}\nsummary: s\n---\nbody`;

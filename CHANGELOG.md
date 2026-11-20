@@ -8,6 +8,10 @@ Versions follow [README.md § Releases and versions](README.md#releases-and-vers
 
 - `m-compare` `by="row"`; an "outside every set" region for `m-venn`; planned-vs-actual bars for `m-timeline`
 
+### Changed
+
+- **Subjects carry keywords (handoff #69)**: each subject in `subjects.json` has `keywords: {ja, en}`, the words in a request that suggest it in Studio's new-deck flow (a word, or `{w, not}` for a word that does not count inside the words in `not`). They are the table Studio kept in its own code (`SUBJECT_WORDS`), moved to the manifest's `subjects` list so Studio reads them from the release. lint checks the form (docs/conventions §4.3). No part changes.
+
 ## 2.17.0 - 2026-11-20
 
 This release adds two parts: a comparison matrix for positioning a study, and a frame that scrolls a tall figure by step.
