@@ -8,6 +8,23 @@ Versions follow [README.md § Releases and versions](README.md#releases-and-vers
 
 - `m-compare` `by="row"`; an "outside every set" region for `m-venn`; planned-vs-actual bars for `m-timeline`
 
+## 2.17.0 - 2026-11-21
+
+This release adds two parts: a comparison matrix for positioning a study, and a frame that scrolls a tall figure by step.
+
+### Added
+
+- **`m-matrix` 2.0.0 (handoff #64)**: a table that positions a study among others. `kind: "cross"` (default) crosses two axes (2 to 4 values each); a cell lists the studies there, this work's cell is written out (本研究 / This work) and framed, an empty cell is — with a note under the table, and a third axis is a mark after a name (`marks`). Steps go axes → studies → this work → notes, or `order="whole"`. `kind: "attributes"` is studies × elements with short text (✓ △ × too), whole, by column or by row, with this work's row framed last. The readable table writes headers as "axis: value". Text shrinks to 24 px to fit, then reports size. Cells are `data-part` boxes for Studio's geometry check. Specialized (univ); purposes compare and position; audiences university and working adults.
+- **`m-scroll` 2.0.0 (handoff #66)**: a tall figure (inline SVG, HTML) in a frame of fixed height; at step k the frame scrolls to the child marked `data-scroll-step="k"`. Inside the frame the wheel, touch, ↑ ↓ and PageUp / PageDown scroll it; ← → and Space stay the player's. A place scrolled by hand stays until the next step (viewer input); video and print show the author's place; reduced motion jumps. A student of the lab made it as an embedded part; it is taken in with `origin: kind student, from research`. Specialized (tools); interactive.
+
+### Changed
+
+- `tools/test-components.mjs`: text inside a frame that cuts on purpose (`data-clip`) and wholly outside it is not shown, so it is not checked for size, overlap or leaving the slide.
+
+### For Studio
+
+- Two new parts, so the AI instruction pack grows by their READMEs; the standards side runs eval B before the tag. No other part changes.
+
 ## 2.16.0 - 2026-11-20
 
 This release marks the drawings of fourteen more parts for Studio's geometry check, now that Studio 0.6.16 ships it, fixes two places it found, and labels the parts by subject, audience and origin.
