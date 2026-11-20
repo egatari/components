@@ -64,159 +64,7 @@ document.addEventListener("DOMContentLoaded", function(){
   <h2>パーツの一覧（57 個、238 枚）</h2>
   <div class="body">
     <p>パーツごとに、説明の 1 枚とサンプルのスライドが続く。→ でステップを進める。</p>
-    <p>m-matrix（新しい）　m-scroll（新しい）　m-balance　m-bars　m-boxplot　m-callout　m-cards　m-checklist　m-ci　m-classify2d　m-code　m-codetree　m-collect　m-compare　m-contour　m-ctable　m-curves　m-cycle　m-diverge　m-fishbone　m-flow　m-folds　m-gendai　m-heatmap　m-hissan　m-hist　m-kakijun　m-kanbun　m-keyboard　m-kobun　m-kpi　m-map-japan　m-map-world　m-mapping　m-market　m-menu　m-network　m-nnet　m-numberline　m-orbit　m-particles　m-pie　m-predict　m-quad　m-sampling　m-scatter　m-score　m-seq　m-sweep　m-syntax　m-tape　m-timeline　m-timer　m-trace　m-tree　m-vector　m-venn</p>
-  </div>
-</section>
-
-<section class="slide">
-  <h2>m-matrix（新しい、v2.17.0）</h2>
-  <div class="body">
-    <p>研究の位置づけの表。2 本の軸の交差の表（マスに研究の名前、本研究のマスを枠で、空きマスは — と注）か、研究 × 要素の表（✓ △ × や短い字）を、ステップで埋める</p>
-    <ul>
-      <li>伝えたいこと：比べる（量・特徴）・位置づけ（2 軸）</li>
-      <li>見せ方：1 種類</li>
-      <li>内容の分野：数理・統計　サンプルのスライド：3 枚</li>
-    </ul>
-  </div>
-</section>
-
-<section id="g-matrix-1" class="slide">
-  <h2>系列予測の研究の位置づけ（架空）</h2>
-  <div class="body">
-    <m-matrix style="height:430px">
-      <script type="application/json">{
-        "kind": "cross",
-        "rows": {"axis": "評価基準", "values": ["予測誤差", "ベイズリスク"]},
-        "cols": {"axis": "予測の形", "values": ["点予測", "区間予測", "分布予測"]},
-        "cells": [
-          [["[1]", "[2]†"], ["[3]"], ["[4]", "[5]"]],
-          [{"none": "点予測では予測誤差と同じになる（自明）"}, {"none": "未着手"}, {"self": true}]
-        ],
-        "marks": [{"mark": "†", "text": "逐次に更新する方法"}]
-      }</script>
-    </m-matrix>
-  </div>
-  <div class="concl"><span>→ 分布予測をベイズリスクで評価する研究はまだない</span></div>
-</section>
-
-<section id="g-matrix-2" class="slide noconcl">
-  <h2>同じ研究を要素で並べる（架空）</h2>
-  <div class="body">
-    <m-matrix order="col" style="height:520px">
-      <script type="application/json">{
-        "kind": "attributes",
-        "cols": ["予測の形", "評価基準", "逐次の更新", "データ"],
-        "rows": [
-          {"label": "本研究", "self": true, "cells": ["分布", "ベイズリスク", "✓", "架空の売上"]},
-          {"label": "[1]", "cells": ["点", "予測誤差", "×", "電力"]},
-          {"label": "[2]", "cells": ["点", "予測誤差", "✓", "電力"]},
-          {"label": "[3]", "cells": ["区間", "予測誤差", "×", "気温"]},
-          {"label": "[4]", "cells": ["分布", "予測誤差", "×", "株価"]},
-          {"label": "[5]", "cells": ["分布", "予測誤差", "△", ""]}
-        ]
-      }</script>
-    </m-matrix>
-  </div>
-</section>
-
-<section id="g-matrix-3" class="slide noconcl">
-  <h2>会議の道具を比べる（架空の製品）</h2>
-  <div class="body">
-    <m-matrix order="row" style="height:440px">
-      <script type="application/json">{
-        "kind": "attributes",
-        "cols": ["月の料金", "録画", "字幕", "100 人以上"],
-        "rows": [
-          {"label": "製品 A", "cells": ["無料", "✓", "×", "×"]},
-          {"label": "製品 B", "cells": ["1,200 円", "✓", "△", "✓"]},
-          {"label": "製品 C", "cells": ["2,000 円", "✓", "✓", "✓"]},
-          {"label": "いまの方法", "self": true, "cells": ["0 円", "×", "×", "✓"]}
-        ]
-      }</script>
-    </m-matrix>
-  </div>
-</section>
-
-<section class="slide">
-  <h2>m-scroll（新しい、v2.17.0）</h2>
-  <div class="body">
-    <p style="margin:0 0 10px;line-height:1.3"><span style="display:inline-block;font-size:27px;font-weight:700;color:var(--fg);border:2px dashed var(--accent2);border-radius:8px;padding:0 12px">操作できる / Interactive</span></p>
-    <p style="border:3px dashed var(--accent2);border-radius:10px;padding:10px 16px">縦に長い図（インライン SVG・HTML）を高さの決まった枠に入れ、ステップごとに決めた所まで送る。参加者は枠の中を手でスクロールできる（学習者が押して操作できる）</p>
-    <ul>
-      <li>伝えたいこと：手順・工程・年表・予定</li>
-      <li>見せ方：1 種類</li>
-      <li>内容の分野：標準パーツ　サンプルのスライド：2 枚</li>
-    </ul>
-  </div>
-</section>
-
-<section id="g-scroll-1" class="slide">
-  <h2>A 町のあゆみ（架空）</h2>
-  <div class="body">
-    <p class="ia-badge" style="margin:0 0 10px;line-height:1.3"><span style="display:inline-block;font-size:27px;font-weight:700;color:var(--fg);border:2px dashed var(--accent2);border-radius:8px;padding:0 12px">操作できる</span></p>
-    <m-scroll style="height:380px" aria-label="A 町の年表（架空）">
-        <svg viewBox="0 0 1000 1310" width="1000" height="1310" role="img" aria-label="A 町の年表（架空）：1890 年から 2024 年までの 10 の出来事">
-          <line x1="200" y1="30" x2="200" y2="1280" stroke="var(--line)" stroke-width="4"/>
-          <g><circle cx="200" cy="60" r="10" fill="var(--term)"/><text x="170" y="70" font-size="30" text-anchor="end" fill="var(--fg)">1890</text><text x="236" y="70" font-size="30" fill="var(--fg)">A 村ができる</text></g>
-          <g><circle cx="200" cy="190" r="10" fill="var(--term)"/><text x="170" y="200" font-size="30" text-anchor="end" fill="var(--fg)">1905</text><text x="236" y="200" font-size="30" fill="var(--fg)">鉄道の駅が開く</text></g>
-          <g data-scroll-step="1"><circle cx="200" cy="320" r="10" fill="var(--term)"/><text x="170" y="330" font-size="30" text-anchor="end" fill="var(--fg)">1923</text><text x="236" y="330" font-size="30" fill="var(--fg)">大きな火事で中心部が焼ける</text></g>
-          <g><circle cx="200" cy="450" r="10" fill="var(--term)"/><text x="170" y="460" font-size="30" text-anchor="end" fill="var(--fg)">1931</text><text x="236" y="460" font-size="30" fill="var(--fg)">川に橋がかかる</text></g>
-          <g data-scroll-step="2"><circle cx="200" cy="580" r="10" fill="var(--emph)"/><text x="170" y="590" font-size="30" text-anchor="end" fill="var(--fg)">1955</text><text x="236" y="590" font-size="30" fill="var(--fg)">B 町と合わせて A 町になる</text></g>
-          <g><circle cx="200" cy="710" r="10" fill="var(--term)"/><text x="170" y="720" font-size="30" text-anchor="end" fill="var(--fg)">1964</text><text x="236" y="720" font-size="30" fill="var(--fg)">中学校が新しくなる</text></g>
-          <g data-scroll-step="3"><circle cx="200" cy="840" r="10" fill="var(--term)"/><text x="170" y="850" font-size="30" text-anchor="end" fill="var(--fg)">1978</text><text x="236" y="850" font-size="30" fill="var(--fg)">工業団地ができる</text></g>
-          <g><circle cx="200" cy="970" r="10" fill="var(--term)"/><text x="170" y="980" font-size="30" text-anchor="end" fill="var(--fg)">1995</text><text x="236" y="980" font-size="30" fill="var(--fg)">人口が 3 万人を超える</text></g>
-          <g data-scroll-step="4"><circle cx="200" cy="1100" r="10" fill="var(--emph)"/><text x="170" y="1110" font-size="30" text-anchor="end" fill="var(--fg)">2008</text><text x="236" y="1110" font-size="30" fill="var(--fg)">C 市と合わせて C 市 A 区になる</text></g>
-          <g><circle cx="200" cy="1230" r="10" fill="var(--term)"/><text x="170" y="1240" font-size="30" text-anchor="end" fill="var(--fg)">2024</text><text x="236" y="1240" font-size="30" fill="var(--fg)">駅前の再開発が終わる</text></g>
-        </svg>
-    </m-scroll>
-  </div>
-  <div class="concl"><span>→ 町の形は、2 度の合併で変わった</span></div>
-</section>
-
-<section id="g-scroll-2" class="slide noconcl">
-  <h2>点数の集計（架空のデータ）</h2>
-  <div class="body">
-    <m-scroll style="height:530px" aria-label="点数を集計する Python のコード">
-      <pre style="margin:0;padding:12px 20px;font:27px/1.45 ui-monospace, &quot;SFMono-Regular&quot;, Menlo, Consolas, monospace;color:var(--fg)"><span>import csv</span>
-<span>from statistics import mean</span>
-<span></span>
-<span></span>
-<span>def read_rows(path):</span>
-<span>    &quot;&quot;&quot;CSV を読み、1 行を 1 つの辞書にする&quot;&quot;&quot;</span>
-<span>    with open(path, encoding=&quot;utf-8&quot;) as f:</span>
-<span>        return list(csv.DictReader(f))</span>
-<span></span>
-<span></span>
-<span data-scroll-step="1">def clean(rows):</span>
-<span>    &quot;&quot;&quot;空の値と数でない値を除く&quot;&quot;&quot;</span>
-<span>    out = []</span>
-<span>    for r in rows:</span>
-<span>        try:</span>
-<span>            r[&quot;score&quot;] = float(r[&quot;score&quot;])</span>
-<span>        except ValueError:</span>
-<span>            continue</span>
-<span>        out.append(r)</span>
-<span>    return out</span>
-<span></span>
-<span></span>
-<span data-scroll-step="2">def by_class(rows):</span>
-<span>    &quot;&quot;&quot;組ごとに点数を集める&quot;&quot;&quot;</span>
-<span>    groups = {}</span>
-<span>    for r in rows:</span>
-<span>        groups.setdefault(r[&quot;class&quot;], []).append(r[&quot;score&quot;])</span>
-<span>    return groups</span>
-<span></span>
-<span></span>
-<span data-scroll-step="3">def report(groups):</span>
-<span>    &quot;&quot;&quot;組ごとの平均を、高い順に書く&quot;&quot;&quot;</span>
-<span>    pairs = [(c, mean(v)) for c, v in groups.items()]</span>
-<span>    for c, m in sorted(pairs, key=lambda p: -p[1]):</span>
-<span>        print(f&quot;{c}: {m:.1f}&quot;)</span>
-<span></span>
-<span></span>
-<span data-scroll-step="4">rows = clean(read_rows(&quot;scores.csv&quot;))</span>
-<span>report(by_class(rows))</span></pre>
-    </m-scroll>
+    <p>m-balance　m-bars　m-boxplot　m-callout　m-cards　m-checklist　m-ci　m-classify2d　m-code　m-codetree　m-collect　m-compare　m-contour　m-ctable　m-curves　m-cycle　m-diverge　m-fishbone　m-flow　m-folds　m-gendai　m-heatmap　m-hissan　m-hist　m-kakijun　m-kanbun　m-keyboard　m-kobun　m-kpi　m-map-japan　m-map-world　m-mapping　m-market　m-matrix　m-menu　m-network　m-nnet　m-numberline　m-orbit　m-particles　m-pie　m-predict　m-quad　m-sampling　m-scatter　m-score　m-scroll　m-seq　m-sweep　m-syntax　m-tape　m-timeline　m-timer　m-trace　m-tree　m-vector　m-venn</p>
   </div>
 </section>
 
@@ -2221,6 +2069,75 @@ document.addEventListener("DOMContentLoaded", function(){
 </section>
 
 <section class="slide">
+  <h2>m-matrix</h2>
+  <div class="body">
+    <p>研究の位置づけの表。2 本の軸の交差の表（マスに研究の名前、本研究のマスを枠で、空きマスは — と注）か、研究 × 要素の表（✓ △ × や短い字）を、ステップで埋める</p>
+    <ul>
+      <li>伝えたいこと：比べる（量・特徴）・位置づけ（2 軸）</li>
+      <li>見せ方：1 種類</li>
+      <li>内容の分野：数理・統計　サンプルのスライド：3 枚</li>
+    </ul>
+  </div>
+</section>
+
+<section id="g-matrix-1" class="slide">
+  <h2>系列予測の研究の位置づけ（架空）</h2>
+  <div class="body">
+    <m-matrix style="height:430px">
+      <script type="application/json">{
+        "kind": "cross",
+        "rows": {"axis": "評価基準", "values": ["予測誤差", "ベイズリスク"]},
+        "cols": {"axis": "予測の形", "values": ["点予測", "区間予測", "分布予測"]},
+        "cells": [
+          [["[1]", "[2]†"], ["[3]"], ["[4]", "[5]"]],
+          [{"none": "点予測では予測誤差と同じになる（自明）"}, {"none": "未着手"}, {"self": true}]
+        ],
+        "marks": [{"mark": "†", "text": "逐次に更新する方法"}]
+      }</script>
+    </m-matrix>
+  </div>
+  <div class="concl"><span>→ 分布予測をベイズリスクで評価する研究はまだない</span></div>
+</section>
+
+<section id="g-matrix-2" class="slide noconcl">
+  <h2>同じ研究を要素で並べる（架空）</h2>
+  <div class="body">
+    <m-matrix order="col" style="height:520px">
+      <script type="application/json">{
+        "kind": "attributes",
+        "cols": ["予測の形", "評価基準", "逐次の更新", "データ"],
+        "rows": [
+          {"label": "本研究", "self": true, "cells": ["分布", "ベイズリスク", "✓", "架空の売上"]},
+          {"label": "[1]", "cells": ["点", "予測誤差", "×", "電力"]},
+          {"label": "[2]", "cells": ["点", "予測誤差", "✓", "電力"]},
+          {"label": "[3]", "cells": ["区間", "予測誤差", "×", "気温"]},
+          {"label": "[4]", "cells": ["分布", "予測誤差", "×", "株価"]},
+          {"label": "[5]", "cells": ["分布", "予測誤差", "△", ""]}
+        ]
+      }</script>
+    </m-matrix>
+  </div>
+</section>
+
+<section id="g-matrix-3" class="slide noconcl">
+  <h2>会議の道具を比べる（架空の製品）</h2>
+  <div class="body">
+    <m-matrix order="row" style="height:440px">
+      <script type="application/json">{
+        "kind": "attributes",
+        "cols": ["月の料金", "録画", "字幕", "100 人以上"],
+        "rows": [
+          {"label": "製品 A", "cells": ["無料", "✓", "×", "×"]},
+          {"label": "製品 B", "cells": ["1,200 円", "✓", "△", "✓"]},
+          {"label": "製品 C", "cells": ["2,000 円", "✓", "✓", "✓"]},
+          {"label": "いまの方法", "self": true, "cells": ["0 円", "×", "×", "✓"]}
+        ]
+      }</script>
+    </m-matrix>
+  </div>
+</section>
+
+<section class="slide">
   <h2>m-menu</h2>
   <div class="body">
     <p style="margin:0 0 10px;line-height:1.3"><span style="display:inline-block;font-size:27px;font-weight:700;color:var(--fg);border:2px dashed var(--accent2);border-radius:8px;padding:0 12px">操作できる / Interactive</span></p>
@@ -2962,6 +2879,89 @@ document.addEventListener("DOMContentLoaded", function(){
     </m-score>
   </div>
   <div class="concl"><span>→ どの和音も、線か間に 3 つの音を重ねる</span></div>
+</section>
+
+<section class="slide">
+  <h2>m-scroll</h2>
+  <div class="body">
+    <p style="margin:0 0 10px;line-height:1.3"><span style="display:inline-block;font-size:27px;font-weight:700;color:var(--fg);border:2px dashed var(--accent2);border-radius:8px;padding:0 12px">操作できる / Interactive</span></p>
+    <p style="border:3px dashed var(--accent2);border-radius:10px;padding:10px 16px">縦に長い図（インライン SVG・HTML）を高さの決まった枠に入れ、ステップごとに決めた所まで送る。参加者は枠の中を手でスクロールできる（学習者が押して操作できる）</p>
+    <ul>
+      <li>伝えたいこと：手順・工程・年表・予定</li>
+      <li>見せ方：1 種類</li>
+      <li>内容の分野：標準パーツ　サンプルのスライド：2 枚</li>
+    </ul>
+  </div>
+</section>
+
+<section id="g-scroll-1" class="slide">
+  <h2>A 町のあゆみ（架空）</h2>
+  <div class="body">
+    <p class="ia-badge" style="margin:0 0 10px;line-height:1.3"><span style="display:inline-block;font-size:27px;font-weight:700;color:var(--fg);border:2px dashed var(--accent2);border-radius:8px;padding:0 12px">操作できる</span></p>
+    <m-scroll style="height:380px" aria-label="A 町の年表（架空）">
+        <svg viewBox="0 0 1000 1310" width="1000" height="1310" role="img" aria-label="A 町の年表（架空）：1890 年から 2024 年までの 10 の出来事">
+          <line x1="200" y1="30" x2="200" y2="1280" stroke="var(--line)" stroke-width="4"/>
+          <g><circle cx="200" cy="60" r="10" fill="var(--term)"/><text x="170" y="70" font-size="30" text-anchor="end" fill="var(--fg)">1890</text><text x="236" y="70" font-size="30" fill="var(--fg)">A 村ができる</text></g>
+          <g><circle cx="200" cy="190" r="10" fill="var(--term)"/><text x="170" y="200" font-size="30" text-anchor="end" fill="var(--fg)">1905</text><text x="236" y="200" font-size="30" fill="var(--fg)">鉄道の駅が開く</text></g>
+          <g data-scroll-step="1"><circle cx="200" cy="320" r="10" fill="var(--term)"/><text x="170" y="330" font-size="30" text-anchor="end" fill="var(--fg)">1923</text><text x="236" y="330" font-size="30" fill="var(--fg)">大きな火事で中心部が焼ける</text></g>
+          <g><circle cx="200" cy="450" r="10" fill="var(--term)"/><text x="170" y="460" font-size="30" text-anchor="end" fill="var(--fg)">1931</text><text x="236" y="460" font-size="30" fill="var(--fg)">川に橋がかかる</text></g>
+          <g data-scroll-step="2"><circle cx="200" cy="580" r="10" fill="var(--emph)"/><text x="170" y="590" font-size="30" text-anchor="end" fill="var(--fg)">1955</text><text x="236" y="590" font-size="30" fill="var(--fg)">B 町と合わせて A 町になる</text></g>
+          <g><circle cx="200" cy="710" r="10" fill="var(--term)"/><text x="170" y="720" font-size="30" text-anchor="end" fill="var(--fg)">1964</text><text x="236" y="720" font-size="30" fill="var(--fg)">中学校が新しくなる</text></g>
+          <g data-scroll-step="3"><circle cx="200" cy="840" r="10" fill="var(--term)"/><text x="170" y="850" font-size="30" text-anchor="end" fill="var(--fg)">1978</text><text x="236" y="850" font-size="30" fill="var(--fg)">工業団地ができる</text></g>
+          <g><circle cx="200" cy="970" r="10" fill="var(--term)"/><text x="170" y="980" font-size="30" text-anchor="end" fill="var(--fg)">1995</text><text x="236" y="980" font-size="30" fill="var(--fg)">人口が 3 万人を超える</text></g>
+          <g data-scroll-step="4"><circle cx="200" cy="1100" r="10" fill="var(--emph)"/><text x="170" y="1110" font-size="30" text-anchor="end" fill="var(--fg)">2008</text><text x="236" y="1110" font-size="30" fill="var(--fg)">C 市と合わせて C 市 A 区になる</text></g>
+          <g><circle cx="200" cy="1230" r="10" fill="var(--term)"/><text x="170" y="1240" font-size="30" text-anchor="end" fill="var(--fg)">2024</text><text x="236" y="1240" font-size="30" fill="var(--fg)">駅前の再開発が終わる</text></g>
+        </svg>
+    </m-scroll>
+  </div>
+  <div class="concl"><span>→ 町の形は、2 度の合併で変わった</span></div>
+</section>
+
+<section id="g-scroll-2" class="slide noconcl">
+  <h2>点数の集計（架空のデータ）</h2>
+  <div class="body">
+    <m-scroll style="height:530px" aria-label="点数を集計する Python のコード">
+      <pre style="margin:0;padding:12px 20px;font:27px/1.45 ui-monospace, &quot;SFMono-Regular&quot;, Menlo, Consolas, monospace;color:var(--fg)"><span>import csv</span>
+<span>from statistics import mean</span>
+<span></span>
+<span></span>
+<span>def read_rows(path):</span>
+<span>    &quot;&quot;&quot;CSV を読み、1 行を 1 つの辞書にする&quot;&quot;&quot;</span>
+<span>    with open(path, encoding=&quot;utf-8&quot;) as f:</span>
+<span>        return list(csv.DictReader(f))</span>
+<span></span>
+<span></span>
+<span data-scroll-step="1">def clean(rows):</span>
+<span>    &quot;&quot;&quot;空の値と数でない値を除く&quot;&quot;&quot;</span>
+<span>    out = []</span>
+<span>    for r in rows:</span>
+<span>        try:</span>
+<span>            r[&quot;score&quot;] = float(r[&quot;score&quot;])</span>
+<span>        except ValueError:</span>
+<span>            continue</span>
+<span>        out.append(r)</span>
+<span>    return out</span>
+<span></span>
+<span></span>
+<span data-scroll-step="2">def by_class(rows):</span>
+<span>    &quot;&quot;&quot;組ごとに点数を集める&quot;&quot;&quot;</span>
+<span>    groups = {}</span>
+<span>    for r in rows:</span>
+<span>        groups.setdefault(r[&quot;class&quot;], []).append(r[&quot;score&quot;])</span>
+<span>    return groups</span>
+<span></span>
+<span></span>
+<span data-scroll-step="3">def report(groups):</span>
+<span>    &quot;&quot;&quot;組ごとの平均を、高い順に書く&quot;&quot;&quot;</span>
+<span>    pairs = [(c, mean(v)) for c, v in groups.items()]</span>
+<span>    for c, m in sorted(pairs, key=lambda p: -p[1]):</span>
+<span>        print(f&quot;{c}: {m:.1f}&quot;)</span>
+<span></span>
+<span></span>
+<span data-scroll-step="4">rows = clean(read_rows(&quot;scores.csv&quot;))</span>
+<span>report(by_class(rows))</span></pre>
+    </m-scroll>
+  </div>
 </section>
 
 <section class="slide">
