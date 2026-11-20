@@ -29,7 +29,7 @@ if (!have()) {
     fs.writeFileSync(dest, git(['show', SHA + ':' + f]));
   }
 }
-const { geometryScan, geometryWithin, WITHIN_ATTRS } = await import(pathToFileURL(path.join(geoDir, SHA, FILES[0])).href);
+const { geometryScan, geometrySteps, WITHIN_ATTRS, WITHIN_NAME } = await import(pathToFileURL(path.join(geoDir, SHA, FILES[0])).href);
 const { TEXT_BANDS, DEFAULT_BAND } = await import(pathToFileURL(path.join(geoDir, SHA, FILES[1])).href);
 
 const args = process.argv.slice(2);
@@ -70,7 +70,7 @@ const scan = async (b, out) => {
   p.on('pageerror', (e) => log.push(e.message));
   await p.goto(S.browser.fileUrl(out));
   await p.waitForFunction(() => window.DECK && DECK.ready, null, { timeout: 30000 });
-  await p.evaluate(`window.__geometryScan = ${geometryScan}; window.__geometryWithin = ${geometryWithin}`);
+  await p.evaluate(`window.__geometryScan = ${geometryScan}; window.__geometrySteps = ${geometrySteps}`);
   const r = await p.evaluate(async (GEO) => {
     const found = [];
     let n = 0;
@@ -81,13 +81,13 @@ const scan = async (b, out) => {
       const el = s.el || document.querySelectorAll('section.slide')[i];
       if (el.querySelector('[data-part]')) n++;
       for (const f of window.__geometryScan(el, GEO)) found.push({ slide: el.id || String(i), ...f });
-      // a shape that must stay inside its frame is measured at the end of every step (spec §8.4 Frames)
-      const fw = window.__geometryWithin(el, GEO, (k) => DECK.seek(i, k, Infinity), window.__geometryScan);
+      // every step of the slide (spec §8.4): a shape outside its frame (geoOutsideFrame) and a stroke cut at the SVG edge (geoClippedStroke)
+      const fw = window.__geometrySteps(el, GEO, (k) => DECK.seek(i, k, Infinity), window.__geometryScan) || [];
       for (const f of fw) found.push({ slide: el.id || String(i), ...f });
       if (fw.length) { DECK.seek(i, s._max, Infinity); }
     }
     return { found, n };
-  }, { bands: TEXT_BANDS, dflt: DEFAULT_BAND, overlap: 'data-overlap', within: WITHIN_ATTRS.within, frame: WITHIN_ATTRS.frame });
+  }, { bands: TEXT_BANDS, dflt: DEFAULT_BAND, overlap: 'data-overlap', within: WITHIN_ATTRS.within, frame: WITHIN_ATTRS.frame, name: WITHIN_NAME, clip: 'data-clip' });
   await p.close();
   return { ...r, log };
 };
