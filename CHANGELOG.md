@@ -8,7 +8,7 @@ Versions follow [README.md § Releases and versions](README.md#releases-and-vers
 
 - `m-compare` `by="row"`; an "outside every set" region for `m-venn`; planned-vs-actual bars for `m-timeline`
 
-## 2.17.0 - 2026-11-21
+## 2.17.0 - 2026-11-20
 
 This release adds two parts: a comparison matrix for positioning a study, and a frame that scrolls a tall figure by step.
 
@@ -23,7 +23,8 @@ This release adds two parts: a comparison matrix for positioning a study, and a 
 
 ### For Studio
 
-- Two new parts, so the AI instruction pack grows by their READMEs; the standards side runs eval B before the tag. No other part changes.
+- Two new parts, so the AI instruction pack grows by their READMEs (English paid standard pack 49.9 → 51.3 KB; every pack within its cap). The standards side ran evals A and B on this candidate: no regression. No other part changes.
+- `m-scroll` takes no data; its `static shape` is `{schema: null, example}` (as `m-sweep`). Every element part now declares `static shape` (lint), which Studio's AI pack reads.
 
 ## 2.16.0 - 2026-11-20
 
