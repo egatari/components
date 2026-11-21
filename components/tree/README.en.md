@@ -15,18 +15,17 @@ Parent–child structures (org charts, taxonomies, outlines). No coordinates; la
 
 Child JSON: `{"nodes": [...], "edges": [...]}` (`edges` optional).
 
-- node: `id`, `label` (`\n`) or `tex` (KaTeX), `parent` (parent `id`; exactly one root without `parent`), `note` (small, **under** box), `tone` (`term` default, `emph`, `muted`, `accent2`, `series-1..4`), `step`, `at` (start s)
-- Node `dash: true`: dashed, unfilled box (e.g. a dropped premise; say so in `note`)
+- node: `id`, `label` (`\n`) or `tex` (KaTeX), `parent` (parent `id`; exactly one root without `parent`), `note` (small, **under** box), `tone` (`term` default, `emph`, `muted`, `accent2`, `series-1..4`), `dash: true` (dashed, unfilled), `step`, `at` (start s)
 - Children in array order; parent centred over them
 - edge: extra links (`from` `to` `label` `tone` `dash` `step`), dashed arrow outside the tree; best at same depth; step: later end
 - Child `branch`: line text (e.g. probability). `path`: root-first `id`s highlighted in turn (default 1 step per line, after the tree; `pathStep`: in one step; `pathNote`: end note)
 - `orient="right"` for wide taxonomies. `by="node"`: one at a time, depth-first (to follow a branch). Node `step` wins
 - Lines `--muted`, 3 px; `tone: emph` box: `--emph-tint` fill
 - Fit (~440 px high): ~8 four-character boxes per level (`down`), ~7 (`right`); ~5 levels. More leaves: 2 staggered rows (~16 / ~11), then 2-line names. Text ≥ 24 px; overflow spills, reported. Too many: split
-- `variant`: `fade` (default), `draw` (lines first), `grow`
+- `variant`: `fade`, `draw`, `grow`
 - Show later steps faintly (`ctx.preview`): later parts faint
 
-Premise contrast (positioning a study): root the question; children the positions (this work `emph`); below each its premise, then what it can say (`note`). A premise this work drops: `dash: true`.
+Premise contrast (positioning): root the question, children the positions (this work `emph`), then premises, then what each can say; a dropped premise `dash: true`.
 
 The demo is `demo.html` (company, values and the premise contrast fictional).
 
