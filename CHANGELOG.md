@@ -8,6 +8,10 @@ Versions follow [README.md § Releases and versions](README.md#releases-and-vers
 
 - `m-compare` `by="row"`; an "outside every set" region for `m-venn`; planned-vs-actual bars for `m-timeline`
 
+## 2.19.0 - 2026-11-22
+
+This release adds a contrast figure for positioning a study when the novelty is an answer or a view, and dashed boxes in the tree for a premise a study drops.
+
 ### Added
 
 - **`m-contrast` 2.0.0 (handoff #71)**: a contrast figure for positioning a study when the novelty is an answer or a view rather than a place in a table. `kind: "answers"` (default) sets each question's earlier answer (or a dashed 不明 / Unknown with what is known nearby, cited) against this work's answer and its basis, framed in `--emph`; steps go questions → earlier answers → this work, or a row per step (`order="row"`). `kind: "assumptions"` sets near studies' assumptions, as chips with what each yields, against this work's row: what it keeps, what it drops (written 外した / dropped and struck through) and what it adds (written 加えた / added, in `--emph`), then what it newly yields. `selfLabel` and `heads` rename this work and the column heads. Specialized (univ); purposes compare and position.
@@ -16,6 +20,12 @@ Versions follow [README.md § Releases and versions](README.md#releases-and-vers
 
 - `m-matrix` README: when the novelty is an answer or a view, it points to `m-contrast`, and to `m-tree` with `dash` for premise by premise (the part's code does not change).
 - **`m-tree` 2.2.0 (handoff #71)**: a node with `dash: true` is a dashed, unfilled box (a premise a study drops, something not yet there). The README shows a contrast of premises for positioning a study (question, positions, premises, what each can say). Trees without it draw as before.
+- `tools/test-same-paint.mjs` compares only the demo slides the baseline release had: slides appended since show what the baseline part cannot draw (here m-tree's `dash`).
+
+### For Studio
+
+- One new part, so the AI instruction pack grows: `m-contrast` 2331 bytes (README, frontmatter, props, shape; within the 2.5 KB the standards side set), `m-tree` +452 (the `dash` bullet and the premise contrast), `m-matrix` +55 (the pointer); `node tools/pack-bytes.mjs --base v2.18.0`. The standards side runs evals (pack size, replay, B free and paid) on this candidate before the tag.
+- The replay corpus gets `m-contrast`'s demo after the tag (handoff #79).
 
 ## 2.18.0 - 2026-11-21
 
