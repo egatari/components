@@ -5,6 +5,7 @@
 // commit that is v2.7.0; after it, still v2.7.0 until the next release). The baseline part goes through the same registry shim bundle
 // as the current one (as in tools/test-default-variant.mjs), with the current demo. Studio has no dark stage theme (the stage's
 // colours carry meaning, spec §8.4), so "dark" is the default theme with dark values for every role, set before the build.
+// Slides appended to a demo since the baseline are not compared (they show what the baseline part could not draw).
 // Frames: each step at 35 %, 70 % and its final state; equal within tools/shot-helpers.mjs's anti-aliasing tolerance.
 // After each seek the capture waits for every font the frame asks for (layout forced, then document.fonts until it is "loaded").
 // Two kinds of failure, counted apart: "pixel mismatch" (the guarantee is broken) and "aborted: <stage>" (the run could not
@@ -47,6 +48,12 @@ for (const name of NAMES) {
   if (partMeta(oldPart) && reqOf(oldPart) && reqOf(oldPart) !== reqOf(curPart)) oldPart = oldPart.replace(reqOf(oldPart), reqOf(curPart));
   const oldJs = partMeta(oldPart) && cur.split(curPart).length === 2 ? cur.split(curPart).join(oldPart) : oldPart;
   const demo = fs.readFileSync(path.join(ROOT, 'components', name, 'demo.html'), 'utf8');
+  // slides added to the demo since the baseline show what is new (the baseline part cannot draw it): only the slides the
+  // baseline's demo had are compared (new slides are appended)
+  let baseSlides = Infinity;
+  try { baseSlides = (git('show', `${base}:components/${name}/demo.html`).match(/<section\b/g) || []).length; } catch {}
+  const allSlides = (demo.match(/<section\b/g) || []).length;
+  if (allSlides > baseSlides) console.log(`-- ${name}: slide${allSlides - baseSlides > 1 ? `s ${baseSlides + 1}–${allSlides} are` : ` ${allSlides} is`} new since ${base}; not compared`);
   try {
     for (const theme of THEMES) {
       let stage = 'build base';
@@ -69,6 +76,7 @@ for (const name of NAMES) {
         await hideChrome(p);
         const plan = await p.evaluate(() => { const tl = DECK.timeline(); return DECK.slides.map((s, i) => ({ i, max: s._max, comps: s._comps.length, anim: tl.filter((x) => x.i === i).map((x) => x.anim) })).filter((s) => s.comps); });
         shots[which] = {};
+        plan.splice(0, plan.length, ...plan.filter((s) => s.i < baseSlides));
         for (const s of plan) for (let k = 0; k <= s.max; k++) {
           const a = s.anim[k];
           for (const t of a > 0 ? [a * 0.35, a * 0.7, null] : [null]) {
