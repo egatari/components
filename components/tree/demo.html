@@ -107,6 +107,29 @@
   <div class="concl"><span>→ 道に沿って枝の確率をかける：雨で遅れる確率は 0.12</span></div>
 </section>
 
+<section class="slide">
+  <h2>前提の対比：新しい教え方で点は上がるか（架空）</h2>
+  <div class="body">
+    <m-tree aria-label="立場ごとの前提と言えること（架空）" style="height:440px">
+      <script type="application/json">{
+        "nodes": [
+          {"id": "q", "label": "新しい教え方で\n点は上がるか"},
+          {"id": "a", "label": "見方 A", "parent": "q"},
+          {"id": "b", "label": "見方 B", "parent": "q"},
+          {"id": "s", "label": "本研究", "parent": "q", "tone": "emph"},
+          {"id": "a1", "label": "組は偶然に\n分けられる", "parent": "a", "note": "前提"},
+          {"id": "b1", "label": "点は 1 回で\n測れる", "parent": "b", "note": "前提"},
+          {"id": "s1", "label": "組は偶然に\n分けられる", "parent": "s", "dash": true, "note": "外した前提"},
+          {"id": "a2", "label": "平均の差", "parent": "a1"},
+          {"id": "b2", "label": "1 回の差", "parent": "b1"},
+          {"id": "s2", "label": "選び方を\n除いた差", "parent": "s1", "tone": "emph"}
+        ]
+      }</script>
+    </m-tree>
+  </div>
+  <div class="concl"><span>→ 本研究は前提を 1 つ外した（破線の箱）</span></div>
+</section>
+
 </div>
 </body>
 </html>

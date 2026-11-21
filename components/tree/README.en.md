@@ -16,6 +16,7 @@ Parent–child structures (org charts, taxonomies, outlines). No coordinates; la
 Child JSON: `{"nodes": [...], "edges": [...]}` (`edges` optional).
 
 - node: `id`, `label` (`\n`) or `tex` (KaTeX), `parent` (parent `id`; exactly one root without `parent`), `note` (small, **under** box), `tone` (`term` default, `emph`, `muted`, `accent2`, `series-1..4`), `step`, `at` (start s)
+- Node `dash: true`: dashed, unfilled box (e.g. a dropped premise; say so in `note`)
 - Children in array order; parent centred over them
 - edge: extra links (`from` `to` `label` `tone` `dash` `step`), dashed arrow outside the tree; best at same depth; step: later end
 - Child `branch`: line text (e.g. probability). `path`: root-first `id`s highlighted in turn (default 1 step per line, after the tree; `pathStep`: in one step; `pathNote`: end note)
@@ -25,7 +26,9 @@ Child JSON: `{"nodes": [...], "edges": [...]}` (`edges` optional).
 - `variant`: `fade` (default), `draw` (lines first), `grow`
 - Show later steps faintly (`ctx.preview`): later parts faint
 
-The demo is `demo.html` (company and values fictional).
+Premise contrast (positioning a study): root the question; children the positions (this work `emph`); below each its premise, then what it can say (`note`). A premise this work drops: `dash: true`.
+
+The demo is `demo.html` (company, values and the premise contrast fictional).
 
 <!-- llm: omit -->
 Notes

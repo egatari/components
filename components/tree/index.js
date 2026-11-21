@@ -19,7 +19,7 @@
 // 式（tex）は組み立てのときに KaTeX で描く（spec §6.2）：build.fields の nodes[].tex を作り手が描いて texHtml を足し、
 // この部品は markup-reader で決まった要素と属性だけを読んで置く（再生のときに KaTeX は動かない）。描いた結果がなければ tex を字のまま出して知らせる。
 // 入らないときは ctx.report("size", "[tree] …") で知らせる（1.x の console.warn の代わり）
-egatariParts.define({name: "tree", version: "2.1.2", requires: {base: "1.3.0", "markup-reader": "1.0.3"}, element: "m-tree"}, function(deps){
+egatariParts.define({name: "tree", version: "2.2.0", requires: {base: "1.3.0", "markup-reader": "1.0.3"}, element: "m-tree"}, function(deps){
 "use strict";
 var base = deps.base, MR = deps["markup-reader"];
 // KaTeX の式のおよその幅（em）。\text{…} などの中は字ごとに、命令は表から（ない命令は 1 em）、^ と _ の中は 0.7 倍
@@ -101,7 +101,7 @@ var Part = class extends base.MotionElement {
   static shape = {
     schema: {type: "object", additionalProperties: false, required: ["nodes"], properties: {
       nodes: {type: "array", minItems: 1, items: {type: "object", required: ["id"], properties: {
-        id: {type: ["string", "integer"]}, label: {type: "string"}, tex: {type: "string"}, texHtml: {type: "string"}, note: {type: "string"}, tone: {type: "string"},
+        id: {type: ["string", "integer"]}, label: {type: "string"}, tex: {type: "string"}, texHtml: {type: "string"}, note: {type: "string"}, tone: {type: "string"}, dash: {type: "boolean"},
         parent: {type: ["string", "integer"]}, branch: {type: "string"}, step: {type: "integer"}, at: {type: "number"}}}},
       edges: {type: "array", items: {type: "object", required: ["from", "to"], properties: {
         from: {type: ["string", "integer"]}, to: {type: ["string", "integer"]}, label: {type: "string"}, tone: {type: "string"}, dash: {type: "boolean"},
@@ -334,7 +334,9 @@ var Part = class extends base.MotionElement {
       o.g = D.el("g", {opacity: 0}, gN);
       // data-part：Studio の形の検査（geometry check）が測る印。箱の形に box、字に label（data-part-of で持ち主、箱の外の字は data-part-at="outside"）
       var nid = String(n.id), lb = {"data-part": "label", "data-part-id": nid, "data-part-of": "box"};
-      D.el("rect", {class: "box", x: o.x.toFixed(1), y: o.y.toFixed(1), width: o.w.toFixed(1), height: o.h.toFixed(1), rx: 10, fill: c[1], stroke: c[0], "stroke-width": n.tone === "emph" ? 3 : 2.2, "data-part": "box", "data-part-id": nid}, o.g);
+      var boxEl = D.el("rect", {class: "box", x: o.x.toFixed(1), y: o.y.toFixed(1), width: o.w.toFixed(1), height: o.h.toFixed(1), rx: 10, fill: c[1], stroke: c[0], "stroke-width": n.tone === "emph" ? 3 : 2.2, "data-part": "box", "data-part-id": nid}, o.g);
+      // dash（2.2.0）：枠を破線に（「まだない」「仮定」など、意味は名前・note・本文で言う）。破線の箱の地は塗らない
+      if (n.dash){ boxEl.setAttribute("stroke-dasharray", "9 6"); boxEl.setAttribute("style", "fill:var(--bg);stroke:" + c[0] + ";"); }
       if (n.tex){ var tf = MR.texFrame(o.g, o.cx, o.cy + s * 0.36, n, "tex", {size: s, anchor: "middle", color: c[2], w: o.w, h: o.h}, sk);
         tf.firstChild.style.verticalAlign = "top"; for (var k in lb) tf.setAttribute(k, lb[k]);
         // 式の枠は箱の幅にし、中で中央に寄せる（KaTeX の字が読み込まれた後の幅で中央になる。texFrame は読み込む前の幅で位置を決めるため）

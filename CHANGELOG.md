@@ -8,6 +8,10 @@ Versions follow [README.md § Releases and versions](README.md#releases-and-vers
 
 - `m-compare` `by="row"`; an "outside every set" region for `m-venn`; planned-vs-actual bars for `m-timeline`
 
+### Changed
+
+- **`m-tree` 2.2.0 (handoff #71)**: a node with `dash: true` is a dashed, unfilled box (a premise a study drops, something not yet there). The README shows a contrast of premises for positioning a study (question, positions, premises, what each can say). Trees without it draw as before.
+
 ## 2.18.0 - 2026-11-21
 
 This release widens the comparison matrix for the ways fields position a study, and moves the subject keywords into the manifest.

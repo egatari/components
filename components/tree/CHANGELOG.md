@@ -2,6 +2,10 @@
 
 The part's own versions (Egatari spec §6.1). Releases of the whole library are in the repository's CHANGELOG.md.
 
+## 2.2.0 (components 2.19.0)
+
+- A node can have `dash: true`: its box is outlined dashed and not filled (a premise a study drops, something not yet there). Boxes without it draw as before. The README shows a contrast of premises (fictional) for positioning a study (handoff #71).
+
 ## 2.1.2 (components 2.14.0)
 
 - Requires base 1.3.0, markup-reader 1.0.3 (sub- and superscripts in `mtext` at 0.7 of the text, at least 17 px).

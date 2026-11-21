@@ -1,6 +1,6 @@
 ---
 name: m-tree
-version: 2.1.2
+version: 2.2.0
 series: common
 tier: standard
 summary: 階層・分類の木（組織図、生物の分類など）を、根から 1 段ずつ組み立てる。座標は書かず、配置はパーツが決める
@@ -16,6 +16,7 @@ props: orient, by, link, size, fade, draw
 子の JSON：`{"nodes": [...], "edges": [...]}`（`edges` は省いてよい）。
 
 - node：`id`、`label`（`\n` で改行）か `tex`（KaTeX）、`parent`（親の `id`。`parent` のない節（根）はちょうど 1 つ）、`note`（箱の**下**に小さな一言、`--muted`）、`tone`（`term`（既定）・`emph`・`muted`・`accent2`・`series-1..4`）、`step`、`at`（ステップの中の開始秒）
+- node の `dash: true`：箱の枠を破線にし、地を塗らない（外した前提・まだないものなど。意味は `note` か本文で言う）
 - 子は配列の順に並ぶ。親は子の並びの中央に置く
 - edge：親子のほかのつながり（`from` `to` `label` `tone` `dash` `step`）。破線で矢印つき、木の外側（`down` は下、`right` は右）へふくらむ。同じ深さの節どうしに向く。ステップは既定で両端の遅いほう
 - 子の `branch`：線の字（確率など）。`path`：根からの `id` の道を順に強調（`pathStep` で一度に。`pathNote`：末尾の一言）
@@ -30,7 +31,9 @@ props: orient, by, link, size, fade, draw
 - 動きの上限：どの見せ方でも箱が動くのは 12 px まで（箱の中心で測る）、時間も `fade` の長さの中（共通の決まり §1.2）
 - 先のステップを薄く見せる表示（`ctx.preview`）では、後のステップの箱と線をテーマの薄さで出しておく
 
-サンプルは `demo.html`（架空の会社の組織図、動物の分類を右へ、見せ方の 3 種類、架空の値の確率の木）。
+前提の対比（研究の位置づけ）：根に問い、子に立場（本研究は `tone: emph`）、その下に前提、さらに下に言えること（`note` に「前提」「言えること」）。本研究が外した前提は `dash: true` に `note: "外した前提"`。
+
+サンプルは `demo.html`（架空の会社の組織図、動物の分類を右へ、見せ方の 3 種類、架空の値の確率の木、架空の前提の対比）。
 
 <!-- llm: omit -->
 注意
