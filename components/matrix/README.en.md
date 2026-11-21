@@ -1,6 +1,6 @@
 ---
 summary: A positioning table: the cross of two axes (studies in cells, this work framed, empty cells — with a note) or studies × elements (✓ △ × or short text), filled by step
-steps: cross: axes → studies → this work → notes (order="whole": 1). attributes: per column or row (order) + frame
+steps: cross: axes (0) → studies (1) → this work (2) → notes (3, only with a none cell); order="whole": 1. attributes: whole 1; col, row: columns, rows + 1 (frame)
 props:
   order: cross build|whole; attributes whole|col|row
   dur: seconds per step

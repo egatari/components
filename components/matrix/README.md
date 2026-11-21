@@ -6,7 +6,7 @@ series: academic
 tier: specialized
 set: univ
 summary: 研究の位置づけの表。2 本の軸の交差の表（マスに研究の名前、本研究のマスを枠で結論の 1 文と、空きマスは — と注、下に設計の行）か、研究 × 要素の表（✓ △ × や短い字、列の上に要件の出どころ）を、ステップで埋める
-steps: cross は 軸と空の表 → 従来の研究（と設計の行の従来）→ 本研究（と設計の行の本研究）→ 注（order="whole" で 1）。attributes は 列・行ごと（order）＋本研究の枠
+steps: cross は 軸と空の表（0）→ 従来（1）→ 本研究（2）→ 注（3、none のマスがあるときだけ）、order="whole" で 1。attributes は whole で 1、col・row で 列・行の数 + 1（枠）
 purposes: compare, position
 audiences: university, working-adult
 props: order, dur, size

@@ -18,6 +18,7 @@ This release adds a contrast figure for positioning a study when the novelty is 
 
 ### Changed
 
+- `m-matrix` README: `steps` names each step's number and says the notes step (3) comes only with a `{"none"}` cell, so a narration does not count a step a table without notes lacks (handoff #82: 8 of 14 first replies in an eval wrote a step [3] for such a table).
 - `m-matrix` README: when the novelty is an answer or a view, it points to `m-contrast`, and to `m-tree` with `dash` for premise by premise (the part's code does not change).
 - **`m-tree` 2.2.0 (handoff #71)**: a node with `dash: true` is a dashed, unfilled box (a premise a study drops, something not yet there). The README shows a contrast of premises for positioning a study (question, positions, premises, what each can say). Trees without it draw as before.
 - `tools/lint.mjs`: the check that README.en.md carries no more pack-visible text than README.md now cuts the Japanese 見せ方（`variant`） bullet to its names as Studio does before it compares, so it stops where Studio's `npm run gen` would (the first 2.19.0 candidate stopped there on `m-tree`). The English READMEs of `m-tree` and `m-scatter` say their variants by name only, as the Japanese pack does.
