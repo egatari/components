@@ -8,11 +8,21 @@ Versions follow [README.md § Releases and versions](README.md#releases-and-vers
 
 - `m-compare` `by="row"`; an "outside every set" region for `m-venn`; planned-vs-actual bars for `m-timeline`
 
+## 2.18.0 - 2026-11-21
+
+This release widens the comparison matrix for the ways fields position a study, and moves the subject keywords into the manifest.
+
 ### Changed
 
 - **`m-matrix` 2.1.0 (handoff #71)**: for the ways fields position a study. In `cross`, this work's cell can carry its finding in one sentence (`{"self": "…"}`), and `design` adds rows under the table, at the same width, setting earlier work's design of the data or identification against this work's and what it made possible (this work's row framed, at this work's step). In `attributes`, a column can name where the requirement comes from (`{"name", "source"}`, muted over the name), and `marks` explains the symbols under the table (● ×, and — for "not stated"), on one line when short. The sentence, design cells and sources wrap to their column, after a particle or 、, balanced. The README says which table to use by where the novelty lies (the problem's description: cross or attributes; an answer's value or a point of view: not this table). Data from 2.0 draws as before.
 - **Subjects carry keywords (handoff #69)**: each subject in `subjects.json` has `keywords: {ja, en}`, the words in a request that suggest it in Studio's new-deck flow (a word, or `{w, not}` for a word that does not count inside the words in `not`). They are the table Studio kept in its own code (`SUBJECT_WORDS`), moved to the manifest's `subjects` list so Studio reads them from the release. lint checks the form (docs/conventions §4.3). No part changes.
 - `m-matrix` demo and README say 時系列予測 (an established term) instead of 系列予測; the part's code does not change.
+- CI: the job timeout is 130 minutes (macOS took 88 minutes and then went over 90 with every test passing).
+
+### For Studio
+
+- `m-matrix` 2.1.0 changes what the AI instruction pack carries: +1245 bytes (README, frontmatter, shape; `node tools/pack-bytes.mjs --base v2.17.0`). No other part changes. The standards side runs eval B (free and paid packs) on this candidate before the tag.
+- `subjects.json` carries `keywords` for each subject; Studio can read them from the release instead of its own table.
 
 ## 2.17.0 - 2026-11-20
 
