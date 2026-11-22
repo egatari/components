@@ -8,10 +8,19 @@ Versions follow [README.md § Releases and versions](README.md#releases-and-vers
 
 - `m-compare` `by="row"`; an "outside every set" region for `m-venn`; planned-vs-actual bars for `m-timeline`
 
+## 2.20.0 - 2026-11-22
+
+This release lets the prediction part tell the player the viewer's answer, for completion and SCORM scores (spec WD 2026-11-22), and puts text ticks on the curve plot's x axis.
+
 ### Changed
 
 - **`m-predict` 2.2.0 (handoff #84)**: reports the viewer's guess to the player through `ctx.answer("q", correct, label)` when the answer step is reached with a guess (spec §8.4 in the WD candidate of 2026-11-22), which players use for `completion.checks` and the SCORM score. A player without `ctx.answer` gets nothing; the drawing does not change. `tools/test-predict.mjs` checks both.
 - **`m-curves` 2.4.0 (handoff #87)**: `xt` may hold text ticks: strings stand at x = 1, 2, … (months, quarters, fiscal years), `[x, "text"]` pairs at x. Numeric `xt` draws as before. The README says so in one line (the free-plan pack carries this README: +105 bytes).
+
+### For Studio
+
+- `m-predict` 2.2.0 calls `ctx.answer` (spec §8.4, WD 2026-11-22) only when the player passes it; players without it see no change. Studio's player and SCORM export use it from v0.6.19 (handoff #84).
+- The AI instruction pack grows only by `m-curves`' text-tick line: +105 bytes in its README, which the free plan carries (`node tools/pack-bytes.mjs --base v2.19.0`). The standards side runs evals on this candidate before the tag.
 
 ## 2.19.0 - 2026-11-22
 
