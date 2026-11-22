@@ -2,6 +2,10 @@
 
 The part's own versions (Egatari spec §6.1). Releases of the whole library are in the repository's CHANGELOG.md.
 
+## 2.4.0 (components 2.20.0)
+
+- `xt` may hold text ticks (handoff #87): strings are placed at x = 1, 2, … in order, and `[x, "text"]` pairs at x (a number alone stays a number tick). The part draws those ticks itself, with plot's lines and positions; numeric `xt` draws as before.
+
 ## 2.3.1 (components 2.14.1)
 
 - The report of a series outside the default `xr` or `yr` uses the kind `range`, not `data`. Studio treats `data` as data it cannot draw (an error) and `range` as a warning with the fix, which is what 2.3.0 meant. The message and the drawing do not change.

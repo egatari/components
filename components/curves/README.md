@@ -1,6 +1,6 @@
 ---
 name: m-curves
-version: 2.3.1
+version: 2.4.0
 series: common
 tier: standard
 summary: 同じ座標軸に線を 1 本ずつ引く（線の名前は凡例でなく線の端に直接書く）
@@ -28,7 +28,7 @@ props: xr, yr, xt, yt, xf, yf, xl, yl, n, dur, lw, size
 | `area` / `areaLabel` | 塗る区間 `[a, b]`（複数可、null は端）とラベル |
 | `labelAt` / `anchor` / `dx` / `dy` / `ly` | 名前の位置：横軸の値 `labelAt` の点に置く（既定は線の端）。`anchor` は向き（`right` `left` `above` `below`）。`ly` は縦軸の値で高さを決める |
 
-`size="40"`：字の大きさ（24 以上）。
+`size="40"`：字の大きさ（24 以上）。`xt` に字の目盛り：`xt='["4月","5月","6月"]'`（x = 1, 2, 3）か `[[0, "2023年度"], …]`。
 
 `f` は算術の式で、コードとしては実行しない（v1.0.2 から。[SECURITY.md](../../SECURITY.md)）：数、`x`、`Math` の関数と定数（`sin(x)` とも `Math.sin(x)` とも書ける。`Math.random` は使えない）、`N(x, 平均, 標準偏差)`、`+ - * / % **`、比較（`< <= > >= == !=`）、`&& || !`、`? :`、括弧。べき乗は `**`（`^` は書けない）。書けない式はエラーの表示になる。
 

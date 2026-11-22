@@ -8,6 +8,10 @@ Versions follow [README.md § Releases and versions](README.md#releases-and-vers
 
 - `m-compare` `by="row"`; an "outside every set" region for `m-venn`; planned-vs-actual bars for `m-timeline`
 
+### Changed
+
+- **`m-curves` 2.4.0 (handoff #87)**: `xt` may hold text ticks: strings stand at x = 1, 2, … (months, quarters, fiscal years), `[x, "text"]` pairs at x. Numeric `xt` draws as before. The README says so in one line (the free-plan pack carries this README: +105 bytes).
+
 ## 2.19.0 - 2026-11-22
 
 This release adds a contrast figure for positioning a study when the novelty is an answer or a view, and dashed boxes in the tree for a premise a study drops.

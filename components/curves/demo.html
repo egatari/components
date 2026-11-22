@@ -77,6 +77,19 @@ document.addEventListener("DOMContentLoaded", function(){
   <div class="concl"><span>→ 両端の 5 % に入れば帰無仮説を棄却する</span></div>
 </section>
 
+<section class="slide">
+  <h2>月ごとの来店者数（人、架空）</h2>
+  <div class="body">
+    <m-curves xr="[0.5,6.5]" yr="[0,400]" xt='["4月","5月","6月","7月","8月","9月"]' yt="[0,100,200,300,400]" style="height:400px">
+      <script type="application/json">[
+        {"label": "昨年", "pts": [[1, 220], [2, 260], [3, 180], [4, 240], [5, 300], [6, 210]], "tone": "muted", "anchor": "right"},
+        {"label": "今年", "pts": [[1, 250], [2, 290], [3, 230], [4, 310], [5, 360], [6, 280]], "tone": "emph", "anchor": "right"}
+      ]</script>
+    </m-curves>
+  </div>
+  <div class="concl"><span>→ 横軸に月の名前を目盛りとして書ける（xt に字の並び）</span></div>
+</section>
+
 </div>
 </body>
 </html>

@@ -31,6 +31,8 @@ Series: a JSON array in a child script. One series = one step; same `step` = tog
 | `area` / `areaLabel` | shaded span `[a, b]` (several; null = edge), labels |
 | `labelAt` / `anchor` / `dx` / `dy` / `ly` | name at x = `labelAt` (default: end); `anchor` `right` `left` `above` `below`; `ly` = y |
 
+Text ticks: `xt='["Apr","May"]'` (x = 1, 2) or `[[0, "FY2023"], …]`.
+
 `f` is arithmetic, not code: numbers, `x`, `Math` functions/constants (`sin(x)`, `PI`; no `random`), `N(x, mean, sd)`, `+ - * / % **`, comparisons, `&& || !`, `? :`. Powers: `**`. An unreadable `f` shows a card.
 
 <!-- llm: omit -->

@@ -6,7 +6,7 @@
 // 2.0（Egatari spec §6.1 の部品）：base の MotionElement・el・mtext・prog・previewOpacity、plot の Plot、expr の compile を使い、
 // プレイヤーのグローバルは使わない（1.x は式の評価器 egatari-expr を写して持っていた）。破線の mask の id は
 // curves-2-2-1-<n>m<系列>：このパーツの名前と版に、このパーツだけの数え（1.x は mc<n>m<系列> で、DECK.Plot の数えを進めていた）
-egatariParts.define({name: "curves", version: "2.3.1", requires: {base: "1.3.0", expr: "1.0.0", plot: "1.1.3"}, element: "m-curves"}, function(deps){
+egatariParts.define({name: "curves", version: "2.4.0", requires: {base: "1.3.0", expr: "1.0.0", plot: "1.1.3"}, element: "m-curves"}, function(deps){
 "use strict";
 var base = deps.base, plot = deps.plot, expr = deps.expr;
 var ID = "curves-2-3-1-";   // name and version of this part, dots replaced (spec §6.1 Identifiers)
@@ -55,7 +55,19 @@ return class extends base.MotionElement {
     // size：字の大きさ（24 未満は 24 にして知らせる）。0 なら 2.0 と同じ大きさと余白
     var SZ = P.size > 0 ? Math.max(24, P.size) : 0, K = SZ ? SZ / 26 : 1, F = SZ || 26;
     if (P.size > 0 && P.size < 24) ctx.report("attr", "[curves] size " + P.size + " is under 24 px; 24 is used");
-    var p = this.p = plot.Plot(this, {xr: P.xr, yr: P.yr, xt: P.xt, yt: P.yt, xf: P.xf, yf: P.yf, xl: P.xl, yl: P.yl, fs: SZ || undefined, m: {l: Math.round(86 * K), r: 24, t: Math.round(24 * K), b: Math.round(64 * K)}});
+    // 字の目盛り（2.4.0）：xt に字（"4月"。i 番目は x = i + 1）か [x, "字"] があれば、目盛りは自分で描く（plot は数だけを書く）
+    var XT = Array.isArray(P.xt) ? P.xt : [], named = XT.some(function(v){ return typeof v === "string" || Array.isArray(v); });
+    var ticks = named ? XT.map(function(v, i){ return typeof v === "string" ? [i + 1, v] : Array.isArray(v) ? [+v[0], String(v[1] === undefined ? v[0] : v[1])] : [+v, null]; }) : null;
+    var p = this.p = plot.Plot(this, {xr: P.xr, yr: P.yr, xt: named ? [] : P.xt, yt: P.yt, xf: P.xf, yf: P.yf, xl: P.xl, yl: P.yl, fs: SZ || undefined, m: {l: Math.round(86 * K), r: 24, t: Math.round(24 * K), b: Math.round(64 * K)}});
+    if (ticks) {
+      // plot 1.1.3 と同じ線と位置（字の大きさ fs のときは 6 + fs 下、なければ 30 下）。数の目盛りは xf の桁で書く
+      var ax = p.svg.querySelector(".axes") || p.svg, yb = p.H - p.m.b, dX = SZ ? 6 + SZ : 30;
+      ticks.forEach(function(t){
+        var x = p.x(t[0]), lab = t[1] !== null ? t[1] : (P.xf !== undefined ? t[0].toFixed(P.xf) : String(t[0])).replace("-", "−");
+        D.el("line", {x1: x, y1: yb, x2: x, y2: yb + 6, stroke: "var(--fg)", "stroke-width": 1.5}, ax);
+        D.mtext(ax, x, yb + dX, lab, SZ ? {"text-anchor": "middle", "font-size": SZ} : {"text-anchor": "middle"});
+      });
+    }
     var uid = ID + (++count), defs = D.el("defs", {}, p.svg);
     var N = function(x, m, s){ return Math.exp(-0.5 * Math.pow((x - m) / s, 2)) / (s * Math.sqrt(2 * Math.PI)); };
     var x0 = p.m.l, x1 = p.W - p.m.r, y0 = p.m.t, y1 = p.H - p.m.b;

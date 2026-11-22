@@ -61,15 +61,15 @@ document.addEventListener("DOMContentLoaded", function(){
 <div id="stage">
 
 <section class="slide">
-  <h2>パーツの一覧（58 個、245 枚）</h2>
+  <h2>パーツの一覧（58 個、246 枚）</h2>
   <div class="body">
     <p>パーツごとに、説明の 1 枚とサンプルのスライドが続く。→ でステップを進める。</p>
-    <p>m-contrast（新しい）　m-tree（変わった）　m-balance　m-bars　m-boxplot　m-callout　m-cards　m-checklist　m-ci　m-classify2d　m-code　m-codetree　m-collect　m-compare　m-contour　m-ctable　m-curves　m-cycle　m-diverge　m-fishbone　m-flow　m-folds　m-gendai　m-heatmap　m-hissan　m-hist　m-kakijun　m-kanbun　m-keyboard　m-kobun　m-kpi　m-map-japan　m-map-world　m-mapping　m-market　m-matrix　m-menu　m-network　m-nnet　m-numberline　m-orbit　m-particles　m-pie　m-predict　m-quad　m-sampling　m-scatter　m-score　m-scroll　m-seq　m-sweep　m-syntax　m-tape　m-timeline　m-timer　m-trace　m-vector　m-venn</p>
+    <p>m-contrast（新しい）　m-curves（変わった）　m-tree（変わった）　m-balance　m-bars　m-boxplot　m-callout　m-cards　m-checklist　m-ci　m-classify2d　m-code　m-codetree　m-collect　m-compare　m-contour　m-ctable　m-cycle　m-diverge　m-fishbone　m-flow　m-folds　m-gendai　m-heatmap　m-hissan　m-hist　m-kakijun　m-kanbun　m-keyboard　m-kobun　m-kpi　m-map-japan　m-map-world　m-mapping　m-market　m-matrix　m-menu　m-network　m-nnet　m-numberline　m-orbit　m-particles　m-pie　m-predict　m-quad　m-sampling　m-scatter　m-score　m-scroll　m-seq　m-sweep　m-syntax　m-tape　m-timeline　m-timer　m-trace　m-vector　m-venn</p>
   </div>
 </section>
 
 <section class="slide">
-  <h2>m-contrast（新しい、v2.19.0）</h2>
+  <h2>m-contrast（新しい、v2.20.0）</h2>
   <div class="body">
     <p>研究の位置づけの図。問いごとに従来の答え（不明は破線）と本研究の答えを並べるか、近い研究の仮定の札と本研究の札（外した・加えた）を並べ、ステップで出す</p>
     <ul>
@@ -134,7 +134,84 @@ document.addEventListener("DOMContentLoaded", function(){
 </section>
 
 <section class="slide">
-  <h2>m-tree（変わった、v2.19.0）</h2>
+  <h2>m-curves（変わった、v2.20.0）</h2>
+  <div class="body">
+    <p>同じ座標軸に線を 1 本ずつ引く（線の名前は凡例でなく線の端に直接書く）</p>
+    <ul>
+      <li>伝えたいこと：時間での変化</li>
+      <li>見せ方：1 種類</li>
+      <li>内容の分野：標準パーツ　サンプルのスライド：5 枚</li>
+    </ul>
+  </div>
+</section>
+
+<section id="g-curves-1" class="slide">
+  <h2>予測分布と代表値</h2>
+  <div class="body">
+    <m-curves xr="[0,4]" yr="[0,0.8]" xt="[0,1,2,3,4]" yt="[0,0.2,0.4,0.6,0.8]" yf="1" xl="需要 *y*" yl="密度" style="height:420px">
+      <script type="application/json" id="pred-data">[]</script>
+    </m-curves>
+  </div>
+  <div class="concl"><span>→ 右に裾が長いと，平均は中央値より右に来る</span></div>
+</section>
+
+<section id="g-curves-2" class="slide">
+  <h2>損失関数の形</h2>
+  <div class="body">
+    <m-curves xr="[-2,2]" yr="[0,4]" xt="[-2,-1,0,1,2]" yt="[0,1,2,3,4]" xl="誤差 *u* = *y* − *a*" yl="損失" style="height:420px">
+      <script type="application/json">[
+        {"label": "二乗 *u*^2", "f": "x*x", "labelAt": 1.6, "anchor": "left", "dx": -14},
+        {"label": "絶対値 |*u*|", "f": "abs(x)", "labelAt": -2, "anchor": "right", "ly": 1.1},
+        {"label": "分位点（*τ* = 0.9）", "f": "x >= 0 ? 0.9*x : -0.1*x", "labelAt": -2, "anchor": "right", "dy": -6}
+      ]</script>
+    </m-curves>
+  </div>
+  <div class="concl"><span>→ どの損失を使うかで，最適な決定 <i>a</i> が変わる</span></div>
+</section>
+
+<section id="g-curves-3" class="slide">
+  <h2>需要が増えると（架空の例）</h2>
+  <div class="body">
+    <m-curves xr="[0,10]" yr="[0,12]" xt="[0,2,4,6,8,10]" yt="[0,3,6,9,12]" xl="数量 *Q*" yl="価格 *P*" style="height:420px">
+      <script type="application/json">[
+        {"label": "需要 D", "f": "10 - x", "tone": "term", "step": 1, "labelAt": 1.5, "anchor": "below"},
+        {"label": "供給 S", "f": "2 + x", "tone": "accent2", "step": 1, "labelAt": 8.5, "anchor": "left"},
+        {"label": "増えた需要 D′", "f": "13 - x", "tone": "emph", "step": 2, "labelAt": 2, "anchor": "right"},
+        {"label": "均衡", "pts": [[4, 0], [4, 6]], "tone": "muted", "dash": true, "step": 3, "anchor": "left", "ly": 1},
+        {"label": "新しい均衡", "pts": [[5.5, 0], [5.5, 7.5]], "tone": "emph", "dash": true, "step": 3, "anchor": "right", "ly": 1}
+      ]</script>
+    </m-curves>
+  </div>
+  <div class="concl"><span>→ 需要が増えると，価格も取引量も上がる</span></div>
+</section>
+
+<section id="g-curves-4" class="slide">
+  <h2>両側検定の棄却域</h2>
+  <div class="body">
+    <m-curves xr="[-4,4]" yr="[0,0.45]" xt="[-1.96,0,1.96]" xf="2" yt="[0,0.2,0.4]" xl="検定統計量 *z*" style="height:400px">
+      <script type="application/json">[
+        {"label": "標準正規分布", "f": "N(x, 0, 1)", "labelAt": 1, "anchor": "right", "area": [[null, -1.96], [1.96, null]], "areaLabel": "2.5 %", "tone": "term"}
+      ]</script>
+    </m-curves>
+  </div>
+  <div class="concl"><span>→ 両端の 5 % に入れば帰無仮説を棄却する</span></div>
+</section>
+
+<section id="g-curves-5" class="slide">
+  <h2>月ごとの来店者数（人、架空）</h2>
+  <div class="body">
+    <m-curves xr="[0.5,6.5]" yr="[0,400]" xt='["4月","5月","6月","7月","8月","9月"]' yt="[0,100,200,300,400]" style="height:400px">
+      <script type="application/json">[
+        {"label": "昨年", "pts": [[1, 220], [2, 260], [3, 180], [4, 240], [5, 300], [6, 210]], "tone": "muted", "anchor": "right"},
+        {"label": "今年", "pts": [[1, 250], [2, 290], [3, 230], [4, 310], [5, 360], [6, 280]], "tone": "emph", "anchor": "right"}
+      ]</script>
+    </m-curves>
+  </div>
+  <div class="concl"><span>→ 横軸に月の名前を目盛りとして書ける（xt に字の並び）</span></div>
+</section>
+
+<section class="slide">
+  <h2>m-tree（変わった、v2.20.0）</h2>
   <div class="body">
     <p>階層・分類の木（組織図、生物の分類など）を、根から 1 段ずつ組み立てる。座標は書かず、配置はパーツが決める</p>
     <ul>
@@ -1173,70 +1250,6 @@ document.addEventListener("DOMContentLoaded", function(){
       <script type="application/json">{"kind": "po", "units": [{"id": "1", "t": 1, "y0": 60, "y1": 72}, {"id": "2", "t": 1, "y0": 70, "y1": 75}, {"id": "3", "t": 1, "y0": 65, "y1": 74}, {"id": "4", "t": 0, "y0": 55, "y1": 63}, {"id": "5", "t": 0, "y0": 58, "y1": 62}, {"id": "6", "t": 0, "y0": 50, "y1": 61}], "ate": 8.17, "naive": 19.33}</script>
     </m-ctable>
   </div>
-</section>
-
-<section class="slide">
-  <h2>m-curves</h2>
-  <div class="body">
-    <p>同じ座標軸に線を 1 本ずつ引く（線の名前は凡例でなく線の端に直接書く）</p>
-    <ul>
-      <li>伝えたいこと：時間での変化</li>
-      <li>見せ方：1 種類</li>
-      <li>内容の分野：標準パーツ　サンプルのスライド：4 枚</li>
-    </ul>
-  </div>
-</section>
-
-<section id="g-curves-1" class="slide">
-  <h2>予測分布と代表値</h2>
-  <div class="body">
-    <m-curves xr="[0,4]" yr="[0,0.8]" xt="[0,1,2,3,4]" yt="[0,0.2,0.4,0.6,0.8]" yf="1" xl="需要 *y*" yl="密度" style="height:420px">
-      <script type="application/json" id="pred-data">[]</script>
-    </m-curves>
-  </div>
-  <div class="concl"><span>→ 右に裾が長いと，平均は中央値より右に来る</span></div>
-</section>
-
-<section id="g-curves-2" class="slide">
-  <h2>損失関数の形</h2>
-  <div class="body">
-    <m-curves xr="[-2,2]" yr="[0,4]" xt="[-2,-1,0,1,2]" yt="[0,1,2,3,4]" xl="誤差 *u* = *y* − *a*" yl="損失" style="height:420px">
-      <script type="application/json">[
-        {"label": "二乗 *u*^2", "f": "x*x", "labelAt": 1.6, "anchor": "left", "dx": -14},
-        {"label": "絶対値 |*u*|", "f": "abs(x)", "labelAt": -2, "anchor": "right", "ly": 1.1},
-        {"label": "分位点（*τ* = 0.9）", "f": "x >= 0 ? 0.9*x : -0.1*x", "labelAt": -2, "anchor": "right", "dy": -6}
-      ]</script>
-    </m-curves>
-  </div>
-  <div class="concl"><span>→ どの損失を使うかで，最適な決定 <i>a</i> が変わる</span></div>
-</section>
-
-<section id="g-curves-3" class="slide">
-  <h2>需要が増えると（架空の例）</h2>
-  <div class="body">
-    <m-curves xr="[0,10]" yr="[0,12]" xt="[0,2,4,6,8,10]" yt="[0,3,6,9,12]" xl="数量 *Q*" yl="価格 *P*" style="height:420px">
-      <script type="application/json">[
-        {"label": "需要 D", "f": "10 - x", "tone": "term", "step": 1, "labelAt": 1.5, "anchor": "below"},
-        {"label": "供給 S", "f": "2 + x", "tone": "accent2", "step": 1, "labelAt": 8.5, "anchor": "left"},
-        {"label": "増えた需要 D′", "f": "13 - x", "tone": "emph", "step": 2, "labelAt": 2, "anchor": "right"},
-        {"label": "均衡", "pts": [[4, 0], [4, 6]], "tone": "muted", "dash": true, "step": 3, "anchor": "left", "ly": 1},
-        {"label": "新しい均衡", "pts": [[5.5, 0], [5.5, 7.5]], "tone": "emph", "dash": true, "step": 3, "anchor": "right", "ly": 1}
-      ]</script>
-    </m-curves>
-  </div>
-  <div class="concl"><span>→ 需要が増えると，価格も取引量も上がる</span></div>
-</section>
-
-<section id="g-curves-4" class="slide">
-  <h2>両側検定の棄却域</h2>
-  <div class="body">
-    <m-curves xr="[-4,4]" yr="[0,0.45]" xt="[-1.96,0,1.96]" xf="2" yt="[0,0.2,0.4]" xl="検定統計量 *z*" style="height:400px">
-      <script type="application/json">[
-        {"label": "標準正規分布", "f": "N(x, 0, 1)", "labelAt": 1, "anchor": "right", "area": [[null, -1.96], [1.96, null]], "areaLabel": "2.5 %", "tone": "term"}
-      ]</script>
-    </m-curves>
-  </div>
-  <div class="concl"><span>→ 両端の 5 % に入れば帰無仮説を棄却する</span></div>
 </section>
 
 <section class="slide">
