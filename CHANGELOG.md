@@ -10,7 +10,7 @@ Versions follow [README.md § Releases and versions](README.md#releases-and-vers
 
 ### Changed
 
-- **`m-predict` 2.2.0 (handoff #84)**: reports the viewer's guess to the player through `ctx.answer("q", correct, label)` (spec §8.4 in the WD candidate of 2026-11-22), which players use for `completion.checks` and the SCORM score. A player without `ctx.answer` gets nothing; the drawing does not change. `tools/test-predict.mjs` checks both.
+- **`m-predict` 2.2.0 (handoff #84)**: reports the viewer's guess to the player through `ctx.answer("q", correct, label)` when the answer step is reached with a guess (spec §8.4 in the WD candidate of 2026-11-22), which players use for `completion.checks` and the SCORM score. A player without `ctx.answer` gets nothing; the drawing does not change. `tools/test-predict.mjs` checks both.
 - **`m-curves` 2.4.0 (handoff #87)**: `xt` may hold text ticks: strings stand at x = 1, 2, … (months, quarters, fiscal years), `[x, "text"]` pairs at x. Numeric `xt` draws as before. The README says so in one line (the free-plan pack carries this README: +105 bytes).
 
 ## 2.19.0 - 2026-11-22

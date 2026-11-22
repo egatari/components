@@ -108,7 +108,7 @@ return class extends base.MotionElement {
     if (big.length) ctx.report("data", "[predict] counts " + big.join(", ") + " are more than 9999, the most the −1/+1 buttons and the field take; 9999 is shown");
     this.variant = base.variant(this);
     this.video = ctx.mode === "video";
-    // 答えの知らせ（2.2.0、仕様 §8.4 ctx.answer）：見る人が選んだら、正誤と選んだものをプレーヤーに渡す。ctx.answer の無いプレーヤーでは何もしない
+    // 答えの知らせ（2.2.0、仕様 §8.4 ctx.answer）：答えのステップに予想を選んだ状態で着いたとき、そのときの予想の正誤と選択肢を渡す（render）。ctx.answer の無いプレーヤーでは何もしない
     this._answer = typeof ctx.answer === "function" ? ctx.answer : null;
     this.style.display = "block"; this.style.position = "relative";
     if (!document.getElementById(CSS_ID)){ var st = document.createElement("style"); st.id = CSS_ID; st.textContent = CSS; document.head.appendChild(st); }
@@ -277,8 +277,6 @@ return class extends base.MotionElement {
     this.redraw();
     var lab = d.choices[i].label;
     this.say.textContent = this._pick === null ? T.unpicked : this.revealed() ? (i === d.answer ? T.pickedRight(lab) : T.pickedWrong(d.choices[d.answer].label)) : T.myGuess(lab);
-    // 1 つの部品に問いは 1 つ（id "q"）。外したとき（null）は知らせない
-    if (this._pick !== null && this._answer) this._answer("q", i === d.answer, String(lab));
   }
   revealed(){ return this._k !== undefined && this._k >= this.aStep; }
   key(e, i, field){
@@ -317,6 +315,11 @@ return class extends base.MotionElement {
     // ctx.reset（触った部品が段階に入るとき）は触った跡だけを戻し、見る人の入力は消さない（仕様 §8.4）
     if (ctx.entered === true) this.reset();
     if (ctx.reset) this.untouch();
+    // 答えのステップに着いたとき（その前は答えより前のステップか、初めての描画）に予想があれば 1 回知らせる。同じステップの描き直しでは知らせない。
+    // 戻ってまた着けばもう 1 回。問いは部品に 1 つなので id は "q"。動画・印刷では知らせない
+    var a = this.aStep, was = this._k !== undefined && this._k >= a;
+    if (k >= a && !was && this._pick != null && this._answer && !this.video && !this._printing)
+      this._answer("q", this._pick === this.data.answer, String(this.data.choices[this._pick].label));
     this._k = k; this._t = t; this._ctx = {mode: ctx.mode, preview: ctx.preview, live: ctx.live};
     this.paint(k, t, this._ctx);
   }

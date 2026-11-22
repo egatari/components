@@ -196,20 +196,28 @@ try {
   }
 
   // ---- 5b. answers to the player (predict 2.2.0, spec §8.4 ctx.answer): the pinned Studio passes no ctx.answer, so the part
-  //      got none at mount (nothing called, nothing thrown); a ctx.answer set as mount would keep it is called on each guess
+  //      got none at mount (nothing called, nothing thrown); with one set (as mount would keep it), reaching the answer step
+  //      with a guess reports it once; again after going back; nothing without a guess or on a re-render of the same step
   {
     const { page } = await open();
     await page.evaluate(() => DECK.go(0, 1, false));
     const comp = page.locator('m-predict').first();
     await comp.locator('.pd-pick').nth(0).click();
+    await page.evaluate(() => DECK.go(0, 2, false));
     let r = await page.evaluate(() => { const c = DECK.slides[0]._comps[0]; return { none: c._answer === null, dot: c.rows[0].dot.getAttribute('opacity') }; });
-    ok(r.none && r.dot === '1', 'without ctx.answer a guess works as before and nothing is reported');
-    await page.evaluate(() => { const c = DECK.slides[0]._comps[0]; window.__ans = []; c._answer = (...a) => window.__ans.push(a); });
-    await comp.locator('.pd-pick').nth(2).click();   // a new guess: the right one (answer 2)
-    await comp.locator('.pd-pick').nth(2).click();   // taken back: not reported
-    await comp.locator('.pd-pick').nth(1).click();   // a wrong one
+    ok(r.none && r.dot === '1', 'without ctx.answer the answer step works as before and nothing is reported');
+    await page.evaluate(() => { const c = DECK.slides[0]._comps[0]; window.__ans = []; c._answer = (...a) => window.__ans.push(a); DECK.go(0, 1, false); });
+    await comp.locator('.pd-pick').nth(2).click();                 // the right guess, at step 1: not yet
+    const n1 = await page.evaluate(() => window.__ans.length);
+    await page.evaluate(() => { DECK.go(0, 2, false); DECK.seek(0, 2, 0.3); DECK.seek(0, 2, Infinity); });   // arrive, then re-render
+    await page.evaluate(() => DECK.go(0, 1, false));
+    await comp.locator('.pd-pick').nth(1).click();                 // a wrong guess
+    await page.evaluate(() => DECK.go(0, 2, false));               // arrive again
+    await page.evaluate(() => DECK.go(0, 1, false));
+    await comp.locator('.pd-pick').nth(1).click();                 // taken back
+    await page.evaluate(() => DECK.go(0, 2, false));               // arrive without a guess
     r = await page.evaluate(() => JSON.stringify(window.__ans));
-    ok(r === '[["q",true,"同時"],["q",false,"軽い球"]]', 'ctx.answer("q", correct, label) on each guess, not when it is taken back (' + r + ')');
+    ok(n1 === 0 && r === '[["q",true,"同時"],["q",false,"軽い球"]]', 'ctx.answer("q", correct, label) once on reaching the answer step with a guess, again after going back, not without one (' + r + ')');
     await page.close();
   }
 
