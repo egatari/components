@@ -218,6 +218,9 @@ try {
     await page.evaluate(() => DECK.go(0, 2, false));               // arrive without a guess
     r = await page.evaluate(() => JSON.stringify(window.__ans));
     ok(n1 === 0 && r === '[["q",true,"同時"],["q",false,"軽い球"]]', 'ctx.answer("q", correct, label) once on reaching the answer step with a guess, again after going back, not without one (' + r + ')');
+    // predict 2.3.0 (spec §8.4 questions): the class declares the one id it answers, so players count it before the slide is shown
+    r = await page.evaluate(() => JSON.stringify(DECK.slides[0]._comps[0].constructor.questions));
+    ok(r === '["q"]', 'the class declares static questions = ["q"] (' + r + ')');
     await page.close();
   }
 

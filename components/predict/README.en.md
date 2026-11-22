@@ -21,7 +21,7 @@ Notes for authors of parts (check with dev)
 - Steps: 0 question, choices, ticks (context first); 1 bars and controls; `answer-step` frame, "✓ correct", `note`, others faded, text `--muted` (≥ 4.5:1)
 - Show later steps faintly: nothing ahead shown (`static preview = "none"`, manifest `preview: "none"`)
 - Viewer state (spec §8.4): counts and guess survive step changes on the slide; reset to author values only on `ctx.entered` (since 2.0.0); `ctx.reset` only drops focus
-- Answers (2.2.0, spec §8.4 `ctx.answer`): reaching the answer step with a guess calls `ctx.answer("q", correct, label)` once (again after going back); none without a guess, in video, or without `ctx.answer`
+- Answers (2.2.0, spec §8.4 `ctx.answer`): reaching the answer step with a guess calls `ctx.answer("q", correct, label)` once (again after going back); none without a guess, in video, or without `ctx.answer`. Since 2.3.0 the class declares `static questions = ["q"]`, so players count the question before its slide is shown
 - Hands up; teacher counts ±1 or types. Alone: click = guess. Counts kept while on the slide
 - Print: author values, no guess marks; screen counts restored after
 - Methods: `input(choice, count)` (0–9999 integer, else console.warn; no-op in video); `counts()`

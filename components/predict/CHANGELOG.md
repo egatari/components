@@ -2,6 +2,10 @@
 
 The part's own versions (Egatari spec §6.1). Releases of the whole library are in the repository's CHANGELOG.md.
 
+## 2.3.0 (components 2.21.0)
+
+- Declares its question (handoff #84, spec §8.4 `questions`, egatari-spec 638f99a): `static questions = ["q"]`, the one id it passes to `ctx.answer`. Players count declared questions when the file is opened (spec §9.2), so `completion.checks` and the SCORM score also hold back a viewer who passed the answer step without a guess. Nothing else changes.
+
 ## 2.2.0 (components 2.20.0)
 
 - Reports the viewer's answer to the player (handoff #84, spec §8.4 `ctx.answer`, WD candidate 2026-11-22): when the viewer reaches the answer step with a guess, the part calls `ctx.answer("q", correct, label)` once with `true` or `false` and the guessed label (again after going back and reaching it again); not without a guess, not in video or print, and not at all when the player passes no `ctx.answer`. The drawing does not change.

@@ -12,7 +12,7 @@
 //                                               static build and glyphs, Egatari spec §6.2: fields to render, data to subset, characters
 //                                               drawn at play time), series, purposes, subjects? and audiences? (README frontmatter; left out = fits every one), variants, interactive?, viewerInput?, clock? (true when index.js declares
 //                                               static interactive / viewerInput / clock = true; left out otherwise), preview? ("none" when index.js
-//                                               declares static preview = "none": the part shows nothing ahead under preview), license (an SPDX expression,
+//                                               declares static preview = "none": the part shows nothing ahead under preview), questions? (the ids in static questions, spec §8.4), license (an SPDX expression,
 //                                               on every entry: README frontmatter license:, else "MIT"; spec §6 Registry manifest), withdrawn? ({<part version>:
 //                                               {replacement, reason, date}}, from yanked.json parts.<name>; left out when none), sha256 (of index.js), files: {<path>: sha256}}
 //                                               and, for a 2.0 library part (egatariParts.define without element: base, expr),
@@ -132,7 +132,7 @@ export function release(version, { previous } = {}) {
     }
     const C = partClass(js, `${name}/index.js`) || {};
     components[name] = { kind: 'element', tag: `m-${name}`, version: fm.version, tier: fm.tier, ...(fm.set ? { set: fm.set } : {}), ...(fm.display ? { display: fm.display } : {}),
-      ...(C.build ? { build: JSON.parse(JSON.stringify(C.build)) } : {}), ...(typeof C.glyphs === 'string' ? { glyphs: C.glyphs } : {}), ...(meta ? { requires: { ...(meta.requires || {}) } } : {}), series: fm.series, license: fm.license || 'MIT', ...withdrawn, purposes: list(fm.purposes), ...(fm.subjects ? { subjects: list(fm.subjects) } : {}), ...(fm.audiences ? { audiences: list(fm.audiences) } : {}), variants: list(fm.variants), ...(fl.interactive ? { interactive: true } : {}), ...(fl.viewerInput ? { viewerInput: true } : {}), ...(fl.clock ? { clock: true } : {}), ...(fl.group ? { group: fl.group } : {}), ...(fl.preview ? { preview: fl.preview } : {}), ...(fl.tile ? { tile: fl.tile } : {}), sha256: code, files };
+      ...(C.build ? { build: JSON.parse(JSON.stringify(C.build)) } : {}), ...(typeof C.glyphs === 'string' ? { glyphs: C.glyphs } : {}), ...(meta ? { requires: { ...(meta.requires || {}) } } : {}), series: fm.series, license: fm.license || 'MIT', ...withdrawn, purposes: list(fm.purposes), ...(fm.subjects ? { subjects: list(fm.subjects) } : {}), ...(fm.audiences ? { audiences: list(fm.audiences) } : {}), variants: list(fm.variants), ...(fl.interactive ? { interactive: true } : {}), ...(fl.viewerInput ? { viewerInput: true } : {}), ...(fl.clock ? { clock: true } : {}), ...(fl.group ? { group: fl.group } : {}), ...(fl.preview ? { preview: fl.preview } : {}), ...(fl.questions ? { questions: [...fl.questions] } : {}), ...(fl.tile ? { tile: fl.tile } : {}), sha256: code, files };
   }
   entries.sort((a, b) => (a[0] < b[0] ? -1 : a[0] > b[0] ? 1 : 0));
   const gz = writeTarGz(entries);

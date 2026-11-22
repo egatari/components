@@ -15,7 +15,7 @@
 // 2.0（Egatari spec §6.1 の部品）：base の MotionElement・el・mtext・prog・variant を使い、プレイヤーのグローバルは使わない。
 //   見る人の入力を戻すのは ctx.entered だけ（1.x の deck:pos の代わりはない）。動画かどうかは mount の ctx.mode。
 //   要素の大きさの問題は ctx.report("size", …)。印刷の前後は document.defaultView の beforeprint・afterprint
-egatariParts.define({name: "predict", version: "2.2.0", requires: {base: "1.3.0"}, element: "m-predict"}, function(deps){
+egatariParts.define({name: "predict", version: "2.3.0", requires: {base: "1.3.0"}, element: "m-predict"}, function(deps){
 "use strict";
 var base = deps.base;
 // 表示の文字（ctx.lang、見る人の言語ではなく文書の言語）。correct は子の JSON の labels.correct で上書きできる
@@ -70,6 +70,7 @@ return class extends base.MotionElement {
   static interactive = true;   // 操作できるパーツ（docs/conventions.md §6）
   static viewerInput = true;   // 見る人の入力を受け付ける（仕様 §8.4）
   static preview = "none";     // 先の段階は答えなので、授業の表示でも先を見せない（仕様 §8.4、docs/conventions.md §1.2）
+  static questions = ["q"];    // 問いの id（仕様 §8.4 questions）：プレーヤーはファイルを開いた時点でこれを数え、完了の条件と SCORM の点数に使う（仕様 §9.2）
   // データの形（kit/shape.js）
   static shape = {
     schema: {type: "object", additionalProperties: false, required: ["choices", "answer"], properties: {

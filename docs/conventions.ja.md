@@ -322,6 +322,7 @@ origin:
 
 - **印は index.js に書く**：パーツのクラスに `static interactive = true;`。学習者の入力（仕様 §8.4「Viewer input」）を受け付けるパーツは、さらに `static viewerInput = true;`（`m-predict` だけ）。README の frontmatter には書かない（AI への指示に入るので）。経った時間そのものを見せるパーツ（`m-timer`）は `static clock = true;`：動きを減らす設定でも、実行系は実時間の t で描く（飾りの動きだけを止める。仕様 §9.1）。`tools/release.mjs` が manifest.json の `components.<名前>.interactive`・`.viewerInput`・`.clock`（true のときだけ）にする。
 - **試験**：`tools/lint.mjs` が index.js を簡単に調べ、`input(…)` のメソッド、click・pointer・key・input・change などの受け取り、`a`・`button`・`input` の要素を作ること、子のリンクをデータにすること（`static shape = {links: true}`）のどれかがあって `static interactive = true` が無ければ誤りにする。`viewerInput` だけで `interactive` が無いのも誤り。
+- **問いの宣言**（仕様 §8.4 `questions`）：`ctx.answer(id, …)` で学習者の答えを知らせるパーツは、問いの id をクラスに `static questions = ["q"];`（1 行の JSON）と書く。プレーヤーはファイルを開いた時点でこれを数え、完了の条件（`completion.checks`）と SCORM の点数に使う（仕様 §9.2）。宣言にない id の答えは無視される。`tools/lint.mjs` は、形（重ならない id の文字列の並び）、`answer("…"` に書いた id がすべて宣言にあること、`viewerInput` があることを確かめ、`tools/release.mjs` が manifest.json の `components.<名前>.questions` に書く（今は `m-predict` だけ）。
 - **見せ方（色だけに頼らない）**：CATALOG.md ではパーツの名前の横に「操作できる」。gallery のパーツの説明の 1 枚では「操作できる / Interactive」のラベルと、説明の字を `--accent2` の破線の枠で囲む。各パーツの demo.html の 1 枚目の本文の最初に「操作できる」のラベル（27 px、破線の枠）。見出し（h2）には入れない（Studio がスライドの題と鍵に使うので）。
 
 ## 7. 道具（頼まれたときだけ使うパーツ）
