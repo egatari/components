@@ -2,6 +2,10 @@
 
 The part's own versions (Egatari spec §6.1). Releases of the whole library are in the repository's CHANGELOG.md.
 
+## 2.2.0 (components 2.20.0)
+
+- Reports the viewer's answer to the player (handoff #84, spec §8.4 `ctx.answer`, WD candidate 2026-11-22): when the viewer picks a choice as their guess, the part calls `ctx.answer("q", correct, label)` with `true` or `false` and the chosen label; not when the guess is taken back, not in video, and not at all when the player passes no `ctx.answer`. The drawing does not change.
+
 ## 2.1.2 (components 2.14.0)
 
 - Requires base 1.3.0 (sub- and superscripts in `mtext` at 0.7 of the text, at least 17 px).

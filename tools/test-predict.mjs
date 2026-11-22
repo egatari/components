@@ -195,6 +195,24 @@ try {
     await page.close();
   }
 
+  // ---- 5b. answers to the player (predict 2.2.0, spec §8.4 ctx.answer): the pinned Studio passes no ctx.answer, so the part
+  //      got none at mount (nothing called, nothing thrown); a ctx.answer set as mount would keep it is called on each guess
+  {
+    const { page } = await open();
+    await page.evaluate(() => DECK.go(0, 1, false));
+    const comp = page.locator('m-predict').first();
+    await comp.locator('.pd-pick').nth(0).click();
+    let r = await page.evaluate(() => { const c = DECK.slides[0]._comps[0]; return { none: c._answer === null, dot: c.rows[0].dot.getAttribute('opacity') }; });
+    ok(r.none && r.dot === '1', 'without ctx.answer a guess works as before and nothing is reported');
+    await page.evaluate(() => { const c = DECK.slides[0]._comps[0]; window.__ans = []; c._answer = (...a) => window.__ans.push(a); });
+    await comp.locator('.pd-pick').nth(2).click();   // a new guess: the right one (answer 2)
+    await comp.locator('.pd-pick').nth(2).click();   // taken back: not reported
+    await comp.locator('.pd-pick').nth(1).click();   // a wrong one
+    r = await page.evaluate(() => JSON.stringify(window.__ans));
+    ok(r === '[["q",true,"同時"],["q",false,"軽い球"]]', 'ctx.answer("q", correct, label) on each guess, not when it is taken back (' + r + ')');
+    await page.close();
+  }
+
   // ---- 6. live (fake ctx.live; the runtime does not pass one yet)
   {
     const { page } = await open();

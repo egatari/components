@@ -15,7 +15,7 @@
 // 2.0（Egatari spec §6.1 の部品）：base の MotionElement・el・mtext・prog・variant を使い、プレイヤーのグローバルは使わない。
 //   見る人の入力を戻すのは ctx.entered だけ（1.x の deck:pos の代わりはない）。動画かどうかは mount の ctx.mode。
 //   要素の大きさの問題は ctx.report("size", …)。印刷の前後は document.defaultView の beforeprint・afterprint
-egatariParts.define({name: "predict", version: "2.1.2", requires: {base: "1.3.0"}, element: "m-predict"}, function(deps){
+egatariParts.define({name: "predict", version: "2.2.0", requires: {base: "1.3.0"}, element: "m-predict"}, function(deps){
 "use strict";
 var base = deps.base;
 // 表示の文字（ctx.lang、見る人の言語ではなく文書の言語）。correct は子の JSON の labels.correct で上書きできる
@@ -108,6 +108,8 @@ return class extends base.MotionElement {
     if (big.length) ctx.report("data", "[predict] counts " + big.join(", ") + " are more than 9999, the most the −1/+1 buttons and the field take; 9999 is shown");
     this.variant = base.variant(this);
     this.video = ctx.mode === "video";
+    // 答えの知らせ（2.2.0、仕様 §8.4 ctx.answer）：見る人が選んだら、正誤と選んだものをプレーヤーに渡す。ctx.answer の無いプレーヤーでは何もしない
+    this._answer = typeof ctx.answer === "function" ? ctx.answer : null;
     this.style.display = "block"; this.style.position = "relative";
     if (!document.getElementById(CSS_ID)){ var st = document.createElement("style"); st.id = CSS_ID; st.textContent = CSS; document.head.appendChild(st); }
     // 読み上げソフトへの知らせ
@@ -275,6 +277,8 @@ return class extends base.MotionElement {
     this.redraw();
     var lab = d.choices[i].label;
     this.say.textContent = this._pick === null ? T.unpicked : this.revealed() ? (i === d.answer ? T.pickedRight(lab) : T.pickedWrong(d.choices[d.answer].label)) : T.myGuess(lab);
+    // 1 つの部品に問いは 1 つ（id "q"）。外したとき（null）は知らせない
+    if (this._pick !== null && this._answer) this._answer("q", i === d.answer, String(lab));
   }
   revealed(){ return this._k !== undefined && this._k >= this.aStep; }
   key(e, i, field){
