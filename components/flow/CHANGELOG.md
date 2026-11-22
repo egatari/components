@@ -2,6 +2,10 @@
 
 The part's own versions (Egatari spec §6.1). Releases of the whole library are in the repository's CHANGELOG.md.
 
+## 2.1.2 (components 2.22.0)
+
+- Reports `layout` when two boxes overlap (handoff #92): cheaper models that place boxes by hand let a long box run into its neighbour, and the quality check now shows which ones. The drawing does not change. The README says to keep boxes about 40 px apart.
+
 ## 2.1.1 (components 2.14.0)
 
 - Requires base 1.3.0 (sub- and superscripts in `mtext` at 0.7 of the text, at least 17 px).

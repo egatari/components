@@ -11,9 +11,9 @@ props:
 example: {"nodes": [{"id": "a", "label": "Observe", "x": 20, "y": 40, "w": 200, "h": 70, "step": 1}, {"id": "b", "label": "Update", "x": 320, "y": 40, "w": 200, "h": 70, "step": 2}], "edges": [{"from": "a", "to": "b", "step": 2}]}
 ---
 
-Child JSON: `{"nodes": [...], "edges": [...]}`; px; `x`, `y` = box top-left, `w`, `h` = size.
+Child JSON: `{"nodes": [...], "edges": [...]}`; px; `x`, `y` = box top-left, `w`, `h` = size; boxes 40+ px apart.
 
-- node: `id`, `label` (`\n`) or `tex` (KaTeX), `step`, `tone` (`term`/`emph`/`muted`), `at` (start s), `shape:"diamond"` (decision; ~2× text width)
+- node: `id`, `label` (`\n`) or `tex` (KaTeX), `step`, `tone` (`term`/`emph`/`muted`), `at` (start s), `shape:"diamond"` (decision, ~2× text width)
 - edge: `from` `to` `step` (default: later end), `label`, `tone`, `dash`, `offset` (label gap), `at`, `loop` (back edge: `"left"` `"right"` `"top"` `"bottom"` or `true` = auto)
 
 <!-- llm: omit -->

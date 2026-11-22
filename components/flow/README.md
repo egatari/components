@@ -1,6 +1,6 @@
 ---
 name: m-flow
-version: 2.1.1
+version: 2.1.2
 series: common
 tier: standard
 summary: 流れ図の箱と矢印をステップごとに出して、図を組み立てる
@@ -12,7 +12,7 @@ props: fade, draw, size, pulse-dur, pulse-n, label-gap
 証明や手法の各ステップに合わせて箱と矢印を出し、文と図の対応を見せるときに使う
 （motion-slides スキル §6「図を組み立てる」）。
 
-子の JSON：`{"nodes": [...], "edges": [...]}`。座標は要素の箱の px（`x`, `y` は箱の左上、`w`, `h` は大きさ）。
+子の JSON：`{"nodes": [...], "edges": [...]}`。座標は要素の箱の px（`x`, `y` は箱の左上、`w`, `h` は大きさ）。箱どうしは 40 px 以上空ける（重なれば layout を知らせる）。
 
 - node：`id` `label`（`\n` で改行）または `tex`（KaTeX）、`step`、`tone`（`term` / `emph` / `muted`）、`at`（ステップの中の開始秒）、`shape:"diamond"`（判断）
 - edge：`from` `to` `step`（既定は両端の箱の遅いほう）、`label`、`tone`、`dash`、`offset`（名前と線の距離）、`at`、`loop`（前の箱へ外側を回って戻る辺。回る側は `"left"` `"right"` `"top"` `"bottom"`、`true` なら両端が縦に並ぶとき右・横に並ぶとき下）

@@ -14,7 +14,7 @@
 // 式（tex）は組み立てのときに KaTeX で描く（spec §6.2）：build.fields の nodes[].tex を作り手が描いて texHtml を足し、
 // この部品は markup-reader で決まった要素と属性だけを読んで置く（再生のときに KaTeX は動かない）。描いた結果がなければ tex を字のまま出して知らせる。
 // 知らないデータ（loop の値、ない箱を指す辺）は ctx.report で知らせる（1.x の console.warn / console.error の代わり）
-egatariParts.define({name: "flow", version: "2.1.1", requires: {base: "1.3.0", "markup-reader": "1.0.3"}, element: "m-flow"}, function(deps){
+egatariParts.define({name: "flow", version: "2.1.2", requires: {base: "1.3.0", "markup-reader": "1.0.3"}, element: "m-flow"}, function(deps){
 "use strict";
 var base = deps.base, MR = deps["markup-reader"];
 // 複数行の名前の行の位置（1 行目からの下がり、px）と、上下に足す余白。base 1.1.0 で mtext の下付き・上付きは 24px 以上になり、
@@ -94,6 +94,13 @@ return class extends base.MotionElement {
     });
     // 同じ id の箱が 2 つ以上あれば、辺は後に書いた箱を指す（知らせる）
     if (dup.length) ctx.report("data", "[flow] node ids are not unique: " + dup.join(", ") + " (edges use the last node with that id)");
+    // 箱どうしが重なれば知らせる（2.1.2）：座標を手で決めると、字の長い箱が隣の箱にかかる。描き方は変えない
+    var nb = (data.nodes || []).filter(function(n){ return n && isFinite(n.x) && isFinite(n.y) && n.w > 0 && n.h > 0; }), ov = [];
+    for (var i = 0; i < nb.length; i++) for (var j = i + 1; j < nb.length; j++){
+      var a = nb[i], b = nb[j];
+      if (a.x < b.x + b.w && b.x < a.x + a.w && a.y < b.y + b.h && b.y < a.y + a.h) ov.push(JSON.stringify(a.id) + " and " + JSON.stringify(b.id));
+    }
+    if (ov.length) ctx.report("layout", "[flow] boxes overlap: " + ov.join(", ") + "; move them apart (leave about 40 px between boxes) or make them smaller");
     // 矢印：箱の中心どうしを結ぶ線を、箱の縁で切る
     function edgePt(n, dx, dy, gap){
       var hw = n.w / 2 + gap, hh = n.h / 2 + gap;

@@ -11,7 +11,7 @@ example: {"lang":"python","code":"import pandas as pd\ndf = pd.read_csv(\"sales.
 `<m-code>` child JSON.
 
 - `code`: 440px shows 9 lines of 76 chars; longer lines wrap, more scroll in a window (≤16; else split).
-- `lang`; `steps[{lines,note}]`: `[3]`, range `[3,4]`, or 3+ lines `[2,5,9]`; notes ≤30 chars.
+- `lang` (colours for python, r, shell, js only); `steps[{lines,note}]`: `[3]`, range `[3,4]`, or 3+ lines `[2,5,9]`; notes ≤30 chars.
 - `output`: ≤8 lines.
 
 Script: explain each line; never read code aloud.
