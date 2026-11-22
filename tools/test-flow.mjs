@@ -64,7 +64,8 @@ const el = check('owner deck: fan-out to five stacked wide targets', owner);
 ok([2, 3, 4, 5, 6].every((i, j) => Math.abs(el.edges[i].p1[1] - ([0, 65, 130, 195, 260][j] + 26)) < 1e-6), 'owner deck: each arrow ends at the middle of its target\'s left side');
 const flip = (d) => ({nodes: d.nodes.map((n) => ({...n, x: 1180 - n.x - n.w})), edges: d.edges});
 check('fan-out to the left', flip(owner));
-const swap = (d) => ({nodes: d.nodes.map((n) => ({...n, x: n.y, y: n.x / 4, w: n.h * 2, h: n.w / 6})), edges: d.edges});
+// boxes as wide as the source rows are tall, so the rows stay apart (m-flow 2.1.2 reports overlapping boxes)
+const swap = (d) => ({nodes: d.nodes.map((n) => ({...n, x: n.y, y: n.x / 4, w: n.h, h: n.w / 6})), edges: d.edges});
 check('fan-out downward (stacked rows)', swap(owner));
 check('fan-in', {nodes: owner.nodes, edges: owner.edges.slice(2).map((e) => ({from: e.to, to: e.from}))});
 check('diagonal and two-way pairs', {nodes: [{id: 'p', label: 'P', x: 20, y: 20, w: 200, h: 70}, {id: 'q', label: 'Q', x: 500, y: 200, w: 300, h: 60}, {id: 'r', label: 'R', x: 900, y: 10, w: 200, h: 70}],
