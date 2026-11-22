@@ -8,6 +8,23 @@ Versions follow [README.md § Releases and versions](README.md#releases-and-vers
 
 - `m-compare` `by="row"`; an "outside every set" region for `m-venn`; planned-vs-actual bars for `m-timeline`
 
+## 2.22.0 - 2026-11-23
+
+This release fixes the writing guides of five parts that evals and the gap audit found misleading (handoff #92, for Studio v0.6.20), and makes the flow chart say when its boxes overlap.
+
+### Changed
+
+- **`m-flow` 2.1.2**: reports `layout` when two boxes overlap, naming them. Cheaper models that place boxes by hand let a long box run into its neighbour; Studio's quality check now names the pair. The drawing does not change; no flow in the demos, Studio's examples or the sample decks has overlapping boxes. The README says to keep boxes about 40 px apart.
+- `m-bars` README: what an error bar's interval is goes in the heading or a line under the chart (slides have no footnotes).
+- `m-code` README: the `lang` line says which languages are coloured (python, r, shell, js; others stay plain).
+- `m-kobun` README: two sentences a slide at most (three, set vertically, ran into the conclusion column in an eval), and auxiliary verbs always with all four fields, with examples (`けり[助動・けり・過去・終止]`); evals wrote `[助動・過去・終止]` without the base form.
+- `m-callout` README: the screenshot is a `figs/` image of the working folder or a `data:` URL, as the editor inserts images (handoff #85); without the screenshot in hand, write a figure frame and the steps instead and place the circles once it is in.
+
+### For Studio
+
+- `m-flow` 2.1.2's new `layout` report shows in the quality check for decks whose boxes overlap; Studio's checker reports a part's report as an error (compData), so an author or AI is told to move the boxes.
+- READMEs carried by the free-plan AI pack grow by 126 bytes in Japanese (m-bars +45, m-flow +81) and 20 bytes in English (m-flow; m-bars' English README does not change). The standards side measures the English free pack against the 31,000 paste limit in its evals.
+
 ## 2.21.0 - 2026-11-22
 
 This release lets the prediction part declare its question, so that players count it when the file is opened (spec §8.4 `questions`, after WD 2026-11-22).
