@@ -8,6 +8,20 @@ Versions follow [README.md § Releases and versions](README.md#releases-and-vers
 
 - `m-compare` `by="row"`; an "outside every set" region for `m-venn`; planned-vs-actual bars for `m-timeline`
 
+## 2.21.0 - 2026-11-22
+
+This release lets the prediction part declare its question, so that players count it when the file is opened (spec §8.4 `questions`, after WD 2026-11-22).
+
+### Changed
+
+- **`m-predict` 2.3.0 (handoff #84)**: declares `static questions = ["q"]`, the one id it passes to `ctx.answer` (egatari-spec 638f99a). Players count declared questions when the file is opened (spec §9.2), so `completion.checks` and the SCORM score also hold back a viewer who passed the answer step without a guess. The drawing and the answers do not change.
+- `tools/lint.mjs` checks `static questions` (one line of JSON, distinct id strings, `viewerInput` present) and that every id written as `answer("…"` is declared; `tools/release.mjs` writes it to `manifest.json` as `components.<name>.questions`. `docs/conventions.md` says so.
+
+### For Studio
+
+- The manifest gains `components.predict.questions: ["q"]`; players read the class (spec §8.4), so the manifest entry is for catalogues and tools. Studio's player counts declared questions from v0.6.19 (handoff #84).
+- The AI instruction pack does not change (`node tools/pack-bytes.mjs --base v2.20.0`: +0). The standards side runs evals on this candidate before the tag.
+
 ## 2.20.0 - 2026-11-22
 
 This release lets the prediction part tell the player the viewer's answer, for completion and SCORM scores (spec WD 2026-11-22), and puts text ticks on the curve plot's x axis.
