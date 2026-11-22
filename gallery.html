@@ -6,8 +6,6 @@
 <title>パーツの一覧（サンプル）</title>
 <!-- tools/gallery.mjs が各パーツの demo.html と README.md から作る。手で直さない。数値・会社はすべて架空か公の事実 -->
 <style>
-/* m-tree */
-.vcap{font-size:27px;color:var(--muted);text-align:center;margin-bottom:6px}
 /* m-compare */
 .vlabel{font-size:27px;color:var(--muted);margin:0 0 6px}
 /* m-cycle */
@@ -19,6 +17,8 @@
 /* m-timer */
 /* 1 枚目は Studio の部品の一覧の見本の絵（本文の枠で撮る）にもなる。時計の 0 が枠の左端に付いて切れて見えないよう、少し内側に置く */
 .slide:first-of-type .body{padding:0 10px}
+/* m-tree */
+.vcap{font-size:27px;color:var(--muted);text-align:center;margin-bottom:6px}
 /* m-venn */
 .vlabel{font-size:27px;color:var(--muted);margin:0 0 6px}
 </style>
@@ -64,73 +64,8 @@ document.addEventListener("DOMContentLoaded", function(){
   <h2>パーツの一覧（58 個、246 枚）</h2>
   <div class="body">
     <p>パーツごとに、説明の 1 枚とサンプルのスライドが続く。→ でステップを進める。</p>
-    <p>m-contrast（新しい）　m-curves（変わった）　m-tree（変わった）　m-balance　m-bars　m-boxplot　m-callout　m-cards　m-checklist　m-ci　m-classify2d　m-code　m-codetree　m-collect　m-compare　m-contour　m-ctable　m-cycle　m-diverge　m-fishbone　m-flow　m-folds　m-gendai　m-heatmap　m-hissan　m-hist　m-kakijun　m-kanbun　m-keyboard　m-kobun　m-kpi　m-map-japan　m-map-world　m-mapping　m-market　m-matrix　m-menu　m-network　m-nnet　m-numberline　m-orbit　m-particles　m-pie　m-predict　m-quad　m-sampling　m-scatter　m-score　m-scroll　m-seq　m-sweep　m-syntax　m-tape　m-timeline　m-timer　m-trace　m-vector　m-venn</p>
+    <p>m-curves（変わった）　m-balance　m-bars　m-boxplot　m-callout　m-cards　m-checklist　m-ci　m-classify2d　m-code　m-codetree　m-collect　m-compare　m-contour　m-contrast　m-ctable　m-cycle　m-diverge　m-fishbone　m-flow　m-folds　m-gendai　m-heatmap　m-hissan　m-hist　m-kakijun　m-kanbun　m-keyboard　m-kobun　m-kpi　m-map-japan　m-map-world　m-mapping　m-market　m-matrix　m-menu　m-network　m-nnet　m-numberline　m-orbit　m-particles　m-pie　m-predict　m-quad　m-sampling　m-scatter　m-score　m-scroll　m-seq　m-sweep　m-syntax　m-tape　m-timeline　m-timer　m-trace　m-tree　m-vector　m-venn</p>
   </div>
-</section>
-
-<section class="slide">
-  <h2>m-contrast（新しい、v2.20.0）</h2>
-  <div class="body">
-    <p>研究の位置づけの図。問いごとに従来の答え（不明は破線）と本研究の答えを並べるか、近い研究の仮定の札と本研究の札（外した・加えた）を並べ、ステップで出す</p>
-    <ul>
-      <li>伝えたいこと：比べる（量・特徴）・位置づけ（2 軸）</li>
-      <li>見せ方：1 種類</li>
-      <li>内容の分野：数理・統計　サンプルのスライド：3 枚</li>
-    </ul>
-  </div>
-</section>
-
-<section id="g-contrast-1" class="slide">
-  <h2>通学時間と成績の研究の位置づけ（架空）</h2>
-  <div class="body">
-    <m-contrast style="height:440px">
-      <script type="application/json">{
-        "kind": "answers",
-        "rows": [
-          {"q": "通学が長いと成績は下がるか", "before": {"text": "下がる（1 時間で 3 点）", "by": "[1]"},
-           "after": "睡眠をそろえると差は消える", "basis": "2 千人の 3 年分の記録"},
-          {"q": "睡眠はどれだけ効くか", "before": {"unknown": true, "near": "大人では 1 時間で 5 %（[2]）"},
-           "after": "1 時間で 4 点", "basis": "同じ記録"}
-        ]
-      }</script>
-    </m-contrast>
-  </div>
-  <div class="concl"><span>→ 従来の答えを、睡眠を通して言い直した</span></div>
-</section>
-
-<section id="g-contrast-2" class="slide">
-  <h2>記述式の自動採点の仮定（架空）</h2>
-  <div class="body">
-    <m-contrast style="height:440px">
-      <script type="application/json">{
-        "kind": "assumptions",
-        "studies": [
-          {"label": "[1]", "chips": ["正答は 1 つ", "採点者は 1 人"], "result": "正答率"},
-          {"label": "[2]", "chips": ["正答は 1 つ", "採点者は 3 人"], "result": "採点者のずれ"}
-        ],
-        "self": {"kept": ["採点者は 3 人"], "dropped": ["正答は 1 つ"], "added": ["部分点がある"], "result": "部分点の付け方のずれ"}
-      }</script>
-    </m-contrast>
-  </div>
-  <div class="concl"><span>→ 正答が 1 つという仮定を外し、部分点を加えた</span></div>
-</section>
-
-<section id="g-contrast-3" class="slide">
-  <h2>Earlier and our answers (fictional)</h2>
-  <div class="body" lang="en">
-    <m-contrast order="row" style="height:440px">
-      <script type="application/json">{
-        "kind": "answers",
-        "heads": ["Question", "Before", "Our study"],
-        "selfLabel": "Our study",
-        "rows": [
-          {"q": "Does a long commute lower grades?", "before": {"text": "Yes, 3 points an hour", "by": "[1]"}, "after": "Not once sleep is equal", "basis": "2,000 pupils, 3 years"},
-          {"q": "How much does sleep matter?", "before": {"unknown": true, "near": "Adults: 5% an hour [2]"}, "after": "4 points an hour", "basis": "Same records"}
-        ]
-      }</script>
-    </m-contrast>
-  </div>
-  <div class="concl"><span>→ One row per step with order="row"</span></div>
 </section>
 
 <section class="slide">
@@ -208,136 +143,6 @@ document.addEventListener("DOMContentLoaded", function(){
     </m-curves>
   </div>
   <div class="concl"><span>→ 横軸に月の名前を目盛りとして書ける（xt に字の並び）</span></div>
-</section>
-
-<section class="slide">
-  <h2>m-tree（変わった、v2.20.0）</h2>
-  <div class="body">
-    <p>階層・分類の木（組織図、生物の分類など）を、根から 1 段ずつ組み立てる。座標は書かず、配置はパーツが決める</p>
-    <ul>
-      <li>伝えたいこと：階層・分類</li>
-      <li>見せ方：fade・draw・grow</li>
-      <li>内容の分野：標準パーツ　サンプルのスライド：5 枚</li>
-    </ul>
-  </div>
-</section>
-
-<section id="g-tree-1" class="slide">
-  <h2>会社の組織（架空）</h2>
-  <div class="body">
-    <m-tree aria-label="架空の会社の組織図" style="height:440px">
-      <script type="application/json">{
-        "nodes": [
-          {"id": "ceo", "label": "社長", "tone": "emph"},
-          {"id": "s", "label": "営業本部", "parent": "ceo"},
-          {"id": "d", "label": "開発本部", "parent": "ceo"},
-          {"id": "a", "label": "管理本部", "parent": "ceo"},
-          {"id": "s1", "label": "国内営業部", "parent": "s"},
-          {"id": "s2", "label": "海外営業部", "parent": "s"},
-          {"id": "d1", "label": "製品開発部", "parent": "d"},
-          {"id": "d2", "label": "品質保証部", "parent": "d"},
-          {"id": "a1", "label": "人事部", "parent": "a"},
-          {"id": "a2", "label": "経理部", "parent": "a"},
-          {"id": "d11", "label": "設計課", "parent": "d1"},
-          {"id": "d12", "label": "試作課", "parent": "d1"},
-          {"id": "d13", "label": "試験課", "parent": "d1", "note": "2026 年に新設"}
-        ]
-      }</script>
-    </m-tree>
-  </div>
-  <div class="concl"><span>→ 上から 1 段ずつ：本部、部、課</span></div>
-</section>
-
-<section id="g-tree-2" class="slide">
-  <h2>動物の分け方（orient="right"）</h2>
-  <div class="body">
-    <m-tree orient="right" aria-label="動物の分類" style="height:440px">
-      <script type="application/json">{
-        "nodes": [
-          {"id": "an", "label": "動物"},
-          {"id": "v", "label": "脊椎動物", "parent": "an", "note": "背骨がある"},
-          {"id": "i", "label": "無脊椎動物", "parent": "an", "note": "背骨がない", "tone": "muted"},
-          {"id": "f", "label": "魚類", "parent": "v"},
-          {"id": "am", "label": "両生類", "parent": "v"},
-          {"id": "r", "label": "は虫類", "parent": "v"},
-          {"id": "b", "label": "鳥類", "parent": "v"},
-          {"id": "m", "label": "哺乳類", "parent": "v", "tone": "emph"},
-          {"id": "ar", "label": "節足動物", "parent": "i", "tone": "muted"},
-          {"id": "mo", "label": "軟体動物", "parent": "i", "tone": "muted"}
-        ],
-        "edges": [
-          {"from": "r", "to": "b", "label": "近い仲間", "step": 4}
-        ]
-      }</script>
-    </m-tree>
-  </div>
-  <div class="concl"><span>→ 背骨の有無で分け、脊椎動物をさらに 5 つに分ける</span></div>
-</section>
-
-<section id="g-tree-3" class="slide">
-  <h2>見せ方の種類（variant）</h2>
-  <div class="body">
-    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:28px">
-      <div><div class="vcap">箱、それから線（fade、既定）</div>
-      <m-tree variant="fade" aria-label="植物の分類（fade）" style="height:330px">
-        <script type="application/json">{"nodes": [{"id": "p", "label": "植物"}, {"id": "s", "label": "種子植物", "parent": "p"}, {"id": "f", "label": "胞子植物", "parent": "p"}, {"id": "a", "label": "被子植物", "parent": "s"}, {"id": "g", "label": "裸子植物", "parent": "s"}]}</script>
-      </m-tree></div>
-      <div><div class="vcap">線を引いてから箱（draw）</div>
-      <m-tree variant="draw" aria-label="植物の分類（draw）" style="height:330px">
-        <script type="application/json">{"nodes": [{"id": "p", "label": "植物"}, {"id": "s", "label": "種子植物", "parent": "p"}, {"id": "f", "label": "胞子植物", "parent": "p"}, {"id": "a", "label": "被子植物", "parent": "s"}, {"id": "g", "label": "裸子植物", "parent": "s"}]}</script>
-      </m-tree></div>
-      <div><div class="vcap">親の側から大きくなる（grow）</div>
-      <m-tree variant="grow" aria-label="植物の分類（grow）" style="height:330px">
-        <script type="application/json">{"nodes": [{"id": "p", "label": "植物"}, {"id": "s", "label": "種子植物", "parent": "p"}, {"id": "f", "label": "胞子植物", "parent": "p"}, {"id": "a", "label": "被子植物", "parent": "s"}, {"id": "g", "label": "裸子植物", "parent": "s"}]}</script>
-      </m-tree></div>
-    </div>
-  </div>
-  <div class="concl"><span>→ 書かなければ最初の見せ方（fade）になる</span></div>
-</section>
-
-<section id="g-tree-4" class="slide">
-  <h2>確率の木：雨の日に遅れる確率（架空の値）</h2>
-  <div class="body">
-    <m-tree orient="right" aria-label="天気と遅刻の確率の木（架空の値）" style="height:440px">
-      <script type="application/json">{
-        "nodes": [
-          {"id": "s", "label": "出発"},
-          {"id": "r", "label": "雨", "parent": "s", "branch": "0.3"},
-          {"id": "f", "label": "晴れ", "parent": "s", "branch": "0.7"},
-          {"id": "rl", "label": "遅れる", "parent": "r", "branch": "0.4"},
-          {"id": "ro", "label": "間に合う", "parent": "r", "branch": "0.6"},
-          {"id": "fl", "label": "遅れる", "parent": "f", "branch": "0.1"},
-          {"id": "fo", "label": "間に合う", "parent": "f", "branch": "0.9"}
-        ],
-        "path": ["s", "r", "rl"],
-        "pathNote": "0.3 × 0.4 = 0.12"
-      }</script>
-    </m-tree>
-  </div>
-  <div class="concl"><span>→ 道に沿って枝の確率をかける：雨で遅れる確率は 0.12</span></div>
-</section>
-
-<section id="g-tree-5" class="slide">
-  <h2>前提の対比：新しい教え方で点は上がるか（架空）</h2>
-  <div class="body">
-    <m-tree aria-label="立場ごとの前提と言えること（架空）" style="height:440px">
-      <script type="application/json">{
-        "nodes": [
-          {"id": "q", "label": "新しい教え方で\n点は上がるか"},
-          {"id": "a", "label": "見方 A", "parent": "q"},
-          {"id": "b", "label": "見方 B", "parent": "q"},
-          {"id": "s", "label": "本研究", "parent": "q", "tone": "emph"},
-          {"id": "a1", "label": "組は偶然に\n分けられる", "parent": "a", "note": "前提"},
-          {"id": "b1", "label": "点は 1 回で\n測れる", "parent": "b", "note": "前提"},
-          {"id": "s1", "label": "組は偶然に\n分けられる", "parent": "s", "dash": true, "note": "外した前提"},
-          {"id": "a2", "label": "平均の差", "parent": "a1"},
-          {"id": "b2", "label": "1 回の差", "parent": "b1"},
-          {"id": "s2", "label": "選び方を\n除いた差", "parent": "s1", "tone": "emph"}
-        ]
-      }</script>
-    </m-tree>
-  </div>
-  <div class="concl"><span>→ 本研究は前提を 1 つ外した（破線の箱）</span></div>
 </section>
 
 <section class="slide">
@@ -1211,6 +1016,71 @@ document.addEventListener("DOMContentLoaded", function(){
     </m-contour>
   </div>
   <div class="concl"><span>架空の 12 点に直線を当てはめる平均二乗誤差</span></div>
+</section>
+
+<section class="slide">
+  <h2>m-contrast</h2>
+  <div class="body">
+    <p>研究の位置づけの図。問いごとに従来の答え（不明は破線）と本研究の答えを並べるか、近い研究の仮定の札と本研究の札（外した・加えた）を並べ、ステップで出す</p>
+    <ul>
+      <li>伝えたいこと：比べる（量・特徴）・位置づけ（2 軸）</li>
+      <li>見せ方：1 種類</li>
+      <li>内容の分野：数理・統計　サンプルのスライド：3 枚</li>
+    </ul>
+  </div>
+</section>
+
+<section id="g-contrast-1" class="slide">
+  <h2>通学時間と成績の研究の位置づけ（架空）</h2>
+  <div class="body">
+    <m-contrast style="height:440px">
+      <script type="application/json">{
+        "kind": "answers",
+        "rows": [
+          {"q": "通学が長いと成績は下がるか", "before": {"text": "下がる（1 時間で 3 点）", "by": "[1]"},
+           "after": "睡眠をそろえると差は消える", "basis": "2 千人の 3 年分の記録"},
+          {"q": "睡眠はどれだけ効くか", "before": {"unknown": true, "near": "大人では 1 時間で 5 %（[2]）"},
+           "after": "1 時間で 4 点", "basis": "同じ記録"}
+        ]
+      }</script>
+    </m-contrast>
+  </div>
+  <div class="concl"><span>→ 従来の答えを、睡眠を通して言い直した</span></div>
+</section>
+
+<section id="g-contrast-2" class="slide">
+  <h2>記述式の自動採点の仮定（架空）</h2>
+  <div class="body">
+    <m-contrast style="height:440px">
+      <script type="application/json">{
+        "kind": "assumptions",
+        "studies": [
+          {"label": "[1]", "chips": ["正答は 1 つ", "採点者は 1 人"], "result": "正答率"},
+          {"label": "[2]", "chips": ["正答は 1 つ", "採点者は 3 人"], "result": "採点者のずれ"}
+        ],
+        "self": {"kept": ["採点者は 3 人"], "dropped": ["正答は 1 つ"], "added": ["部分点がある"], "result": "部分点の付け方のずれ"}
+      }</script>
+    </m-contrast>
+  </div>
+  <div class="concl"><span>→ 正答が 1 つという仮定を外し、部分点を加えた</span></div>
+</section>
+
+<section id="g-contrast-3" class="slide">
+  <h2>Earlier and our answers (fictional)</h2>
+  <div class="body" lang="en">
+    <m-contrast order="row" style="height:440px">
+      <script type="application/json">{
+        "kind": "answers",
+        "heads": ["Question", "Before", "Our study"],
+        "selfLabel": "Our study",
+        "rows": [
+          {"q": "Does a long commute lower grades?", "before": {"text": "Yes, 3 points an hour", "by": "[1]"}, "after": "Not once sleep is equal", "basis": "2,000 pupils, 3 years"},
+          {"q": "How much does sleep matter?", "before": {"unknown": true, "near": "Adults: 5% an hour [2]"}, "after": "4 points an hour", "basis": "Same records"}
+        ]
+      }</script>
+    </m-contrast>
+  </div>
+  <div class="concl"><span>→ One row per step with order="row"</span></div>
 </section>
 
 <section class="slide">
@@ -3572,6 +3442,136 @@ document.addEventListener("DOMContentLoaded", function(){
     </m-trace>
   </div>
   <div class="concl"><span>隣どうしを比べて入れ替え、大きい値から右端に決まる</span></div>
+</section>
+
+<section class="slide">
+  <h2>m-tree</h2>
+  <div class="body">
+    <p>階層・分類の木（組織図、生物の分類など）を、根から 1 段ずつ組み立てる。座標は書かず、配置はパーツが決める</p>
+    <ul>
+      <li>伝えたいこと：階層・分類</li>
+      <li>見せ方：fade・draw・grow</li>
+      <li>内容の分野：標準パーツ　サンプルのスライド：5 枚</li>
+    </ul>
+  </div>
+</section>
+
+<section id="g-tree-1" class="slide">
+  <h2>会社の組織（架空）</h2>
+  <div class="body">
+    <m-tree aria-label="架空の会社の組織図" style="height:440px">
+      <script type="application/json">{
+        "nodes": [
+          {"id": "ceo", "label": "社長", "tone": "emph"},
+          {"id": "s", "label": "営業本部", "parent": "ceo"},
+          {"id": "d", "label": "開発本部", "parent": "ceo"},
+          {"id": "a", "label": "管理本部", "parent": "ceo"},
+          {"id": "s1", "label": "国内営業部", "parent": "s"},
+          {"id": "s2", "label": "海外営業部", "parent": "s"},
+          {"id": "d1", "label": "製品開発部", "parent": "d"},
+          {"id": "d2", "label": "品質保証部", "parent": "d"},
+          {"id": "a1", "label": "人事部", "parent": "a"},
+          {"id": "a2", "label": "経理部", "parent": "a"},
+          {"id": "d11", "label": "設計課", "parent": "d1"},
+          {"id": "d12", "label": "試作課", "parent": "d1"},
+          {"id": "d13", "label": "試験課", "parent": "d1", "note": "2026 年に新設"}
+        ]
+      }</script>
+    </m-tree>
+  </div>
+  <div class="concl"><span>→ 上から 1 段ずつ：本部、部、課</span></div>
+</section>
+
+<section id="g-tree-2" class="slide">
+  <h2>動物の分け方（orient="right"）</h2>
+  <div class="body">
+    <m-tree orient="right" aria-label="動物の分類" style="height:440px">
+      <script type="application/json">{
+        "nodes": [
+          {"id": "an", "label": "動物"},
+          {"id": "v", "label": "脊椎動物", "parent": "an", "note": "背骨がある"},
+          {"id": "i", "label": "無脊椎動物", "parent": "an", "note": "背骨がない", "tone": "muted"},
+          {"id": "f", "label": "魚類", "parent": "v"},
+          {"id": "am", "label": "両生類", "parent": "v"},
+          {"id": "r", "label": "は虫類", "parent": "v"},
+          {"id": "b", "label": "鳥類", "parent": "v"},
+          {"id": "m", "label": "哺乳類", "parent": "v", "tone": "emph"},
+          {"id": "ar", "label": "節足動物", "parent": "i", "tone": "muted"},
+          {"id": "mo", "label": "軟体動物", "parent": "i", "tone": "muted"}
+        ],
+        "edges": [
+          {"from": "r", "to": "b", "label": "近い仲間", "step": 4}
+        ]
+      }</script>
+    </m-tree>
+  </div>
+  <div class="concl"><span>→ 背骨の有無で分け、脊椎動物をさらに 5 つに分ける</span></div>
+</section>
+
+<section id="g-tree-3" class="slide">
+  <h2>見せ方の種類（variant）</h2>
+  <div class="body">
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:28px">
+      <div><div class="vcap">箱、それから線（fade、既定）</div>
+      <m-tree variant="fade" aria-label="植物の分類（fade）" style="height:330px">
+        <script type="application/json">{"nodes": [{"id": "p", "label": "植物"}, {"id": "s", "label": "種子植物", "parent": "p"}, {"id": "f", "label": "胞子植物", "parent": "p"}, {"id": "a", "label": "被子植物", "parent": "s"}, {"id": "g", "label": "裸子植物", "parent": "s"}]}</script>
+      </m-tree></div>
+      <div><div class="vcap">線を引いてから箱（draw）</div>
+      <m-tree variant="draw" aria-label="植物の分類（draw）" style="height:330px">
+        <script type="application/json">{"nodes": [{"id": "p", "label": "植物"}, {"id": "s", "label": "種子植物", "parent": "p"}, {"id": "f", "label": "胞子植物", "parent": "p"}, {"id": "a", "label": "被子植物", "parent": "s"}, {"id": "g", "label": "裸子植物", "parent": "s"}]}</script>
+      </m-tree></div>
+      <div><div class="vcap">親の側から大きくなる（grow）</div>
+      <m-tree variant="grow" aria-label="植物の分類（grow）" style="height:330px">
+        <script type="application/json">{"nodes": [{"id": "p", "label": "植物"}, {"id": "s", "label": "種子植物", "parent": "p"}, {"id": "f", "label": "胞子植物", "parent": "p"}, {"id": "a", "label": "被子植物", "parent": "s"}, {"id": "g", "label": "裸子植物", "parent": "s"}]}</script>
+      </m-tree></div>
+    </div>
+  </div>
+  <div class="concl"><span>→ 書かなければ最初の見せ方（fade）になる</span></div>
+</section>
+
+<section id="g-tree-4" class="slide">
+  <h2>確率の木：雨の日に遅れる確率（架空の値）</h2>
+  <div class="body">
+    <m-tree orient="right" aria-label="天気と遅刻の確率の木（架空の値）" style="height:440px">
+      <script type="application/json">{
+        "nodes": [
+          {"id": "s", "label": "出発"},
+          {"id": "r", "label": "雨", "parent": "s", "branch": "0.3"},
+          {"id": "f", "label": "晴れ", "parent": "s", "branch": "0.7"},
+          {"id": "rl", "label": "遅れる", "parent": "r", "branch": "0.4"},
+          {"id": "ro", "label": "間に合う", "parent": "r", "branch": "0.6"},
+          {"id": "fl", "label": "遅れる", "parent": "f", "branch": "0.1"},
+          {"id": "fo", "label": "間に合う", "parent": "f", "branch": "0.9"}
+        ],
+        "path": ["s", "r", "rl"],
+        "pathNote": "0.3 × 0.4 = 0.12"
+      }</script>
+    </m-tree>
+  </div>
+  <div class="concl"><span>→ 道に沿って枝の確率をかける：雨で遅れる確率は 0.12</span></div>
+</section>
+
+<section id="g-tree-5" class="slide">
+  <h2>前提の対比：新しい教え方で点は上がるか（架空）</h2>
+  <div class="body">
+    <m-tree aria-label="立場ごとの前提と言えること（架空）" style="height:440px">
+      <script type="application/json">{
+        "nodes": [
+          {"id": "q", "label": "新しい教え方で\n点は上がるか"},
+          {"id": "a", "label": "見方 A", "parent": "q"},
+          {"id": "b", "label": "見方 B", "parent": "q"},
+          {"id": "s", "label": "本研究", "parent": "q", "tone": "emph"},
+          {"id": "a1", "label": "組は偶然に\n分けられる", "parent": "a", "note": "前提"},
+          {"id": "b1", "label": "点は 1 回で\n測れる", "parent": "b", "note": "前提"},
+          {"id": "s1", "label": "組は偶然に\n分けられる", "parent": "s", "dash": true, "note": "外した前提"},
+          {"id": "a2", "label": "平均の差", "parent": "a1"},
+          {"id": "b2", "label": "1 回の差", "parent": "b1"},
+          {"id": "s2", "label": "選び方を\n除いた差", "parent": "s1", "tone": "emph"}
+        ]
+      }</script>
+    </m-tree>
+  </div>
+  <div class="concl"><span>→ 本研究は前提を 1 つ外した（破線の箱）</span></div>
 </section>
 
 <section class="slide">
