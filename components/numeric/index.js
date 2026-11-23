@@ -10,7 +10,7 @@
 // Answers (spec §8.4 ctx.answer): arriving at step 1 (k from < 1 to ≥ 1, not a re-render of the same step) with a number in
 //   the field calls ctx.answer("q", correct, number) once; again after going back and arriving again. Not without a number,
 //   in video, while printing, or when the player passes no ctx.answer.
-// Parsing: full-width digits, "．"/"." as the decimal point, "−" "－" "-" as minus, "," "，" as digit separators (ignored),
+// Parsing: full-width digits, "．"/"." as the decimal point, "−" "－" "-" as minus, "+" "＋" as plus, "," "，" as digit separators (ignored),
 //   surrounding white space and the declared unit (exactly that string) are ignored; anything else is not a number (a hint
 //   says so). Correct when |x − answer| ≤ tolerance (plus a relative 1e-9 for float error).
 // Video (ctx.mode "video"): no field, an empty box; step 1 shows the right answer only. Print: the author's state (an empty
@@ -55,8 +55,8 @@ function parse(raw, unit){
     s = s.replace(/^[\s　]+|[\s　]+$/g, "");
   }
   s = s.replace(/[０-９]/g, function(c){ return String.fromCharCode(c.charCodeAt(0) - 0xff10 + 48); })
-       .replace(/．/g, ".").replace(/^[−－]/, "-").replace(/[,，]/g, "");
-  if (!/^-?(\d+(\.\d*)?|\.\d+)$/.test(s)) return null;
+       .replace(/．/g, ".").replace(/^[−－]/, "-").replace(/^＋/, "+").replace(/[,，]/g, "");
+  if (!/^[-+]?(\d+(\.\d*)?|\.\d+)$/.test(s)) return null;
   var x = +s;
   return isFinite(x) ? x : null;
 }
