@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="ja" data-theme="default">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>m-order の見本</title>
+<!-- 組み方：node kit/build.mjs components/order/demo.html -o components/order/out/demo.html -->
+<style>
+</style>
+</head>
+<body>
+<div id="stage">
+
+<section class="slide">
+  <h2>並べてみよう：時代の順</h2>
+  <div class="body">
+    <p class="ia-badge" style="margin:0 0 10px;line-height:1.3"><span style="display:inline-block;font-size:27px;font-weight:700;color:var(--fg);border:2px dashed var(--accent2);border-radius:8px;padding:0 12px">操作できる</span></p>
+    <div style="display:grid;grid-template-columns:1fr 400px;gap:32px;align-items:start">
+      <m-order size="34" style="height:390px">
+        <script type="application/json">{
+          "question": "古い順に並べよう（上がいちばん古い）",
+          "items": ["縄文時代", "弥生時代", "古墳時代", "飛鳥時代"],
+          "note": "米づくり → 大きな古墳 → 飛鳥の都"
+        }</script>
+      </m-order>
+      <div style="border:2px solid var(--line);border-radius:10px;padding:12px 20px;font-size:28px;line-height:1.5">
+        <p style="margin:0 0 8px;font-weight:700">手がかり</p>
+        <ul style="margin:0;padding-left:1.2em">
+          <li>前方後円墳</li>
+          <li>縄目の模様の土器</li>
+          <li>飛鳥寺と聖徳太子</li>
+          <li>米づくりと青銅器</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+  <div class="concl"><span>→ 道具と暮らしの変わり方で時代を分ける</span></div>
+</section>
+
+<section class="slide layout-tate">
+  <h2>走れメロス：出来事の順</h2>
+  <div class="body">
+    <m-order size="32" style="height:560px">
+      <script type="application/json">{
+        "question": "『走れメロス』の出来事を、起きた順に並べよう",
+        "items": [
+          "王の話を聞いて激怒する",
+          "友を人質にして村へ帰る",
+          "妹の結婚式を挙げる",
+          "濁流を泳ぎ、山賊を退ける",
+          "日没までに刑場へ着く"
+        ],
+        "start": [2, 4, 0, 3, 1],
+        "note": "メロスは友との約束を守るため、日没までに走り抜く"
+      }</script>
+    </m-order>
+  </div>
+  <div class="concl"><span>→ 約束を守るために走る</span></div>
+</section>
+
+</div>
+</body>
+</html>

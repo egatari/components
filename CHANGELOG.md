@@ -4,6 +4,12 @@ Versions follow [README.md § Releases and versions](README.md#releases-and-vers
 
 ## Unreleased
 
+### Added
+
+- **`m-numeric` 2.0.0** (not released until GA): a question answered with a number. The viewer types a number (full-width digits, minus signs, decimals, digit separators and the declared `unit` are read; other text is no answer, with a hint); the answer step shows the right answer (± `tolerance`), a right/wrong mark beside the viewer's number and the note, and reports the answer once on arrival, `ctx.answer("q", correct, number)` (spec §8.4; `static questions = ["q"]`). Specialized (tools); purpose predict.
+- **`m-order` 2.0.0** (not released until GA): an ordering question. `items` are written in the right order and start in `start` or rotated by one (no randomness); the viewer drags the cards or moves them from the keyboard (Space, ↑ ↓, Esc; moves announced). The answer step moves the cards into the right order, ✓ on the cards the viewer had in place, and reports once on arrival, `ctx.answer("q", correct, "2,0,1,3")` (the `items` indices in the viewer's order). Specialized (tools); purposes predict, process.
+- Both answer on the viewer's device with the answer in the file: their READMEs say they are for checking understanding, not for exams. `tools/test-numeric.mjs` and `tools/test-order.mjs` test them.
+
 ### Later (candidates, not in this release)
 
 - `m-compare` `by="row"`; an "outside every set" region for `m-venn`; planned-vs-actual bars for `m-timeline`

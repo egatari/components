@@ -61,11 +61,140 @@ document.addEventListener("DOMContentLoaded", function(){
 <div id="stage">
 
 <section class="slide">
-  <h2>パーツの一覧（58 個、246 枚）</h2>
+  <h2>パーツの一覧（60 個、252 枚）</h2>
   <div class="body">
     <p>パーツごとに、説明の 1 枚とサンプルのスライドが続く。→ でステップを進める。</p>
-    <p>m-callout（変わった）　m-curves（変わった）　m-flow（変わった）　m-predict（変わった）　m-balance　m-bars　m-boxplot　m-cards　m-checklist　m-ci　m-classify2d　m-code　m-codetree　m-collect　m-compare　m-contour　m-contrast　m-ctable　m-cycle　m-diverge　m-fishbone　m-folds　m-gendai　m-heatmap　m-hissan　m-hist　m-kakijun　m-kanbun　m-keyboard　m-kobun　m-kpi　m-map-japan　m-map-world　m-mapping　m-market　m-matrix　m-menu　m-network　m-nnet　m-numberline　m-orbit　m-particles　m-pie　m-quad　m-sampling　m-scatter　m-score　m-scroll　m-seq　m-sweep　m-syntax　m-tape　m-timeline　m-timer　m-trace　m-tree　m-vector　m-venn</p>
+    <p>m-numeric（新しい）　m-order（新しい）　m-callout（変わった）　m-curves（変わった）　m-flow（変わった）　m-predict（変わった）　m-balance　m-bars　m-boxplot　m-cards　m-checklist　m-ci　m-classify2d　m-code　m-codetree　m-collect　m-compare　m-contour　m-contrast　m-ctable　m-cycle　m-diverge　m-fishbone　m-folds　m-gendai　m-heatmap　m-hissan　m-hist　m-kakijun　m-kanbun　m-keyboard　m-kobun　m-kpi　m-map-japan　m-map-world　m-mapping　m-market　m-matrix　m-menu　m-network　m-nnet　m-numberline　m-orbit　m-particles　m-pie　m-quad　m-sampling　m-scatter　m-score　m-scroll　m-seq　m-sweep　m-syntax　m-tape　m-timeline　m-timer　m-trace　m-tree　m-vector　m-venn</p>
   </div>
+</section>
+
+<section class="slide">
+  <h2>m-numeric（新しい、v2.20.0）</h2>
+  <div class="body">
+    <p style="margin:0 0 10px;line-height:1.3"><span style="display:inline-block;font-size:27px;font-weight:700;color:var(--fg);border:2px dashed var(--accent2);border-radius:8px;padding:0 12px">操作できる / Interactive</span></p>
+    <p style="border:3px dashed var(--accent2);border-radius:10px;padding:10px 16px">問いに数で答える。学習者が数を打ち込み、答えのステップで正しい答え・正誤の印・注を出す（学習者が押して操作できる）</p>
+    <ul>
+      <li>伝えたいこと：予想してから確かめる</li>
+      <li>見せ方：1 種類</li>
+      <li>内容の分野：標準パーツ　サンプルのスライド：2 枚</li>
+    </ul>
+  </div>
+</section>
+
+<section id="g-numeric-1" class="slide">
+  <h2>数で答えよう：立方体の体積</h2>
+  <div class="body">
+    <p class="ia-badge" style="margin:0 0 10px;line-height:1.3"><span style="display:inline-block;font-size:27px;font-weight:700;color:var(--fg);border:2px dashed var(--accent2);border-radius:8px;padding:0 12px">操作できる</span></p>
+    <div style="display:grid;grid-template-columns:390px 1fr;gap:32px;align-items:start">
+      <svg viewBox="0 0 390 360" width="390" height="360" role="img" aria-label="1 辺が 3 cm の立方体">
+        <path d="M90 120 L150 60 L340 60 L280 120 Z" style="fill:var(--term-tint);stroke:var(--term)" stroke-width="3" stroke-linejoin="round"/>
+        <path d="M280 120 L340 60 L340 250 L280 310 Z" style="fill:var(--term-tint);stroke:var(--term)" stroke-width="3" stroke-linejoin="round"/>
+        <rect x="90" y="120" width="190" height="190" style="fill:var(--bg);stroke:var(--term)" stroke-width="3"/>
+        <text x="185" y="345" font-size="28" text-anchor="middle" style="fill:var(--fg)">3 cm</text>
+        <text x="80" y="225" font-size="28" text-anchor="end" style="fill:var(--fg)">3 cm</text>
+        <text x="310" y="305" font-size="28" style="fill:var(--fg)">3 cm</text>
+      </svg>
+      <m-numeric size="36" style="height:380px">
+        <script type="application/json">{
+          "question": "1 辺が 3 cm の立方体の体積は何 cm³？",
+          "answer": 27,
+          "unit": "cm³",
+          "note": "体積は 縦 × 横 × 高さ。3 × 3 × 3 = 27"
+        }</script>
+      </m-numeric>
+    </div>
+  </div>
+  <div class="concl"><span>→ 1 辺が 2 倍になると、体積は 8 倍になる</span></div>
+</section>
+
+<section id="g-numeric-2" class="slide">
+  <h2>数で答えよう：落ちる速さ</h2>
+  <div class="body">
+    <p style="margin:0 0 12px">空気の抵抗は考えない。小数第 1 位まで答える</p>
+    <div style="display:grid;grid-template-columns:1fr 380px;gap:40px;align-items:start">
+      <m-numeric size="36" style="height:380px">
+        <script type="application/json">{
+          "question": "落ちる物の速さは、1 秒ごとに約何 m/s 速くなる？",
+          "answer": 9.8,
+          "tolerance": 0.1,
+          "unit": "m/s",
+          "note": "重力加速度 g は約 9.8 m/s²。9.7〜9.9 を正解にした"
+        }</script>
+      </m-numeric>
+      <div>
+      <table style="font-size:28px;border-collapse:collapse">
+        <thead><tr><th style="padding:8px 16px;border-bottom:2px solid var(--line)">落ちてからの時間</th><th style="padding:8px 16px;border-bottom:2px solid var(--line)">速さ</th></tr></thead>
+        <tbody>
+          <tr><td style="padding:8px 16px;text-align:right">0 秒</td><td style="padding:8px 16px;text-align:right">0 m/s</td></tr>
+          <tr><td style="padding:8px 16px;text-align:right">1 秒</td><td style="padding:8px 16px;text-align:right">？</td></tr>
+          <tr><td style="padding:8px 16px;text-align:right">2 秒</td><td style="padding:8px 16px;text-align:right">？</td></tr>
+          <tr><td style="padding:8px 16px;text-align:right">3 秒</td><td style="padding:8px 16px;text-align:right">？</td></tr>
+        </tbody>
+      </table>
+      </div>
+    </div>
+  </div>
+  <div class="concl"><span>→ 重さによらず、毎秒およそ 9.8 m/s ずつ速くなる</span></div>
+</section>
+
+<section class="slide">
+  <h2>m-order（新しい、v2.20.0）</h2>
+  <div class="body">
+    <p style="margin:0 0 10px;line-height:1.3"><span style="display:inline-block;font-size:27px;font-weight:700;color:var(--fg);border:2px dashed var(--accent2);border-radius:8px;padding:0 12px">操作できる / Interactive</span></p>
+    <p style="border:3px dashed var(--accent2);border-radius:10px;padding:10px 16px">札を正しい順に並べる問い。学習者が札を動かし、答えのステップで札が正しい順に動き、合っていた札に ✓（学習者が押して操作できる）</p>
+    <ul>
+      <li>伝えたいこと：予想してから確かめる・手順・工程</li>
+      <li>見せ方：1 種類</li>
+      <li>内容の分野：標準パーツ　サンプルのスライド：2 枚</li>
+    </ul>
+  </div>
+</section>
+
+<section id="g-order-1" class="slide">
+  <h2>並べてみよう：時代の順</h2>
+  <div class="body">
+    <p class="ia-badge" style="margin:0 0 10px;line-height:1.3"><span style="display:inline-block;font-size:27px;font-weight:700;color:var(--fg);border:2px dashed var(--accent2);border-radius:8px;padding:0 12px">操作できる</span></p>
+    <div style="display:grid;grid-template-columns:1fr 400px;gap:32px;align-items:start">
+      <m-order size="34" style="height:390px">
+        <script type="application/json">{
+          "question": "古い順に並べよう（上がいちばん古い）",
+          "items": ["縄文時代", "弥生時代", "古墳時代", "飛鳥時代"],
+          "note": "米づくり → 大きな古墳 → 飛鳥の都"
+        }</script>
+      </m-order>
+      <div style="border:2px solid var(--line);border-radius:10px;padding:12px 20px;font-size:28px;line-height:1.5">
+        <p style="margin:0 0 8px;font-weight:700">手がかり</p>
+        <ul style="margin:0;padding-left:1.2em">
+          <li>前方後円墳</li>
+          <li>縄目の模様の土器</li>
+          <li>飛鳥寺と聖徳太子</li>
+          <li>米づくりと青銅器</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+  <div class="concl"><span>→ 道具と暮らしの変わり方で時代を分ける</span></div>
+</section>
+
+<section id="g-order-2" class="slide layout-tate">
+  <h2>走れメロス：出来事の順</h2>
+  <div class="body">
+    <m-order size="32" style="height:560px">
+      <script type="application/json">{
+        "question": "『走れメロス』の出来事を、起きた順に並べよう",
+        "items": [
+          "王の話を聞いて激怒する",
+          "友を人質にして村へ帰る",
+          "妹の結婚式を挙げる",
+          "濁流を泳ぎ、山賊を退ける",
+          "日没までに刑場へ着く"
+        ],
+        "start": [2, 4, 0, 3, 1],
+        "note": "メロスは友との約束を守るため、日没までに走り抜く"
+      }</script>
+    </m-order>
+  </div>
+  <div class="concl"><span>→ 約束を守るために走る</span></div>
 </section>
 
 <section class="slide">
