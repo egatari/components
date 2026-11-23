@@ -167,7 +167,8 @@ return class extends base.MotionElement {
       var f = this.field = document.createElement("input");
       f.type = "text"; f.className = "nm-in"; f.setAttribute("inputmode", "decimal"); f.setAttribute("autocomplete", "off"); f.setAttribute("spellcheck", "false");
       f.setAttribute("aria-label", T.field(unit));
-      Object.assign(f.style, {left: "0px", top: fy + "px", width: fw + "px", height: fh + "px", fontSize: S + "px"});
+      this.fieldCss = "left: 0px; top: " + fy + "px; width: " + fw + "px; height: " + fh + "px; font-size: " + S + "px;";
+      f.setAttribute("style", this.fieldCss);
       f.value = this._raw;
       f.addEventListener("input", function(){ self._raw = f.value; self.redraw(); });
       // keys typed in the field never reach the slide; Enter and Esc leave the field
@@ -209,8 +210,10 @@ return class extends base.MotionElement {
     var f = this.field;
     if (f){
       if (document.activeElement !== f && f.value !== this._raw) f.value = this._raw;
+      // written afresh in one order, so the DOM does not depend on the order of earlier renders
+      f.removeAttribute("readonly"); f.removeAttribute("aria-readonly"); f.removeAttribute("style");
       if (k >= 1){ f.setAttribute("readonly", ""); f.setAttribute("aria-readonly", "true"); }
-      else { f.removeAttribute("readonly"); f.removeAttribute("aria-readonly"); }
+      f.setAttribute("style", this.fieldCss);
     }
     // the hint (step 0 only): text that is not a number
     this.hintEl.setAttribute("opacity", k < 1 && raw.trim() && x === null ? 1 : 0);

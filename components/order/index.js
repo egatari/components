@@ -200,7 +200,7 @@ return class extends base.MotionElement {
         var b = c.btn = document.createElement("button");
         b.type = "button"; b.className = "od-card";
         if (self.help) b.setAttribute("aria-describedby", self.help.id);
-        Object.assign(b.style, {left: cx + "px", width: cw + "px", height: ch + "px"});
+        b.setAttribute("style", "left: " + cx + "px; width: " + cw + "px; height: " + ch + "px; top: " + self.slot(self.order().indexOf(j)) + "px;");
         b.addEventListener("keydown", function(e){ self.key(e, j); });
         b.addEventListener("keyup", function(e){ if (self._k < 1) e.stopPropagation(); });
         b.addEventListener("click", function(e){ e.stopPropagation(); e.preventDefault(); });
@@ -339,11 +339,13 @@ return class extends base.MotionElement {
       c.yours.textContent = mine && k >= 1 && !ok ? T.yours(p + 1) : "";
       c.yours.setAttribute("opacity", mine && k >= 1 && !ok ? em.toFixed(3) : 0);
       if (c.btn){
-        c.btn.style.top = y.toFixed(1) + "px";
+        // the state attributes are written afresh in one order, so the DOM does not depend on the order of earlier renders
+        ["aria-label", "aria-pressed", "tabindex", "aria-disabled", "style"].forEach(function(a){ c.btn.removeAttribute(a); });
         c.btn.setAttribute("aria-label", T.card(self.items[j].label, (k >= 1 ? j : p) + 1, n));
         c.btn.setAttribute("aria-pressed", held ? "true" : "false");
-        if (k >= 1){ c.btn.setAttribute("aria-disabled", "true"); c.btn.tabIndex = -1; }
-        else { c.btn.removeAttribute("aria-disabled"); c.btn.tabIndex = 0; }
+        c.btn.setAttribute("tabindex", k >= 1 ? "-1" : "0");
+        if (k >= 1) c.btn.setAttribute("aria-disabled", "true");
+        c.btn.setAttribute("style", "left: " + G.cx + "px; width: " + G.cw + "px; height: " + G.ch + "px; top: " + y.toFixed(1) + "px;");
       }
     });
     // the result and the note
