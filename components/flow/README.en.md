@@ -8,11 +8,11 @@ props:
   pulse-dur: pulse run (s)
   pulse-n: pulse dots
   label-gap: min label–box gap px
-  dir: right or down, without coordinates
+  orient: right or down, without coordinates
 example: {"nodes": [{"id": "a", "label": "Observe", "step": 1}, {"id": "b", "label": "Update", "step": 2}], "edges": [{"from": "a", "to": "b", "step": 2}]}
 ---
 
-Child JSON: `{"nodes": [...], "edges": [...]}`. Without coordinates the part places the boxes (direction: `dir`); back edges loop outside.
+Child JSON: `{"nodes": [...], "edges": [...]}`. Without coordinates the part places the boxes (direction: `orient`); back edges and box-crossing edges run outside.
 
 For fine placement give every node `x` `y` `w` `h` (px; `x`, `y` = top-left); boxes 40+ px apart.
 
@@ -29,7 +29,7 @@ For fine placement give every node `x` `y` `w` `h` (px; `x`, `y` = top-left); bo
 - Business: `amount` opposite `label`; `shift` text on its side; pulse dots 0.22 s apart, `pulseAt` default 0.2, gone at the end
 - Label/`amount` nearer than `label-gap` to a box or off the figure: moved off the line 6 px at a time (to 60), then other side
 - `cues(k)`: pulse start times (null without pulses), for `{cue}`
-- No coordinates (2.2.0): ranks by longest path along `dir` (`loop` edges and cycle-closing edges skipped), barycentre order (ties: data order); box size from estimated text width and lines, diamond 2× width, a rank shares width (`down`: height); spread evenly, 40+ px apart plus edge-text room; too big: `layout` report, text not shrunk. Back edges without `loop` loop below (`down`: right), or the other side if a rank neighbour is there; two-way pairs stay straight. Mixed coordinates: `data` report, nothing drawn
+- No coordinates (2.2.0): ranks by longest path along `orient` (`loop` edges and cycle-closing edges skipped), barycentre order (ties: data order); box size from estimated text width and lines, diamond 2× width, a rank shares width (`down`: height); spread evenly, 40+ px apart plus edge-text room; too big: `layout` report, text not shrunk. Back edges without `loop` loop below (`down`: right), or the other side if a rank neighbour is there; two-way pairs stay straight. A rank-skipping edge whose straight line would cross a box runs outside (`right`: top, `down`: left, else the other side), with room kept, label and pulse on the path; no free side: straight, `layout` report. Loops on one side nest by rank span. Mixed coordinates: `data` report, nothing drawn
 <!-- llm: end -->
 
 <!-- llm: business -->

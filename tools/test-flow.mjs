@@ -174,7 +174,7 @@ check('diamond source and target', {nodes: [{id: 'd', label: '?', x: 20, y: 100,
     ok(el.edges.every((o) => !o.poly) && Math.abs(el.edges[0].p1[1] - el.edges[1].p0[1]) > 15, 'auto: a two-way pair stays two straight, shifted lines (not a loop)');
   }
   {
-    const {at, el} = ends('auto: dir="down"', {nodes: N('a', 'b', 'c', 'd'), edges: [{from: 'a', to: 'b'}, {from: 'b', to: 'c'}, {from: 'b', to: 'd'}, {from: 'c', to: 'a'}]}, {dir: 'down'});
+    const {at, el} = ends('auto: orient="down"', {nodes: N('a', 'b', 'c', 'd'), edges: [{from: 'a', to: 'b'}, {from: 'b', to: 'c'}, {from: 'b', to: 'd'}, {from: 'c', to: 'a'}]}, {orient: 'down'});
     ok(at.a.y < at.b.y && at.b.y < at.c.y && at.c.y === at.d.y && at.c.x < at.d.x && cx(at.a) === cx(at.b), 'auto down: ranks top to bottom, a rank left to right');
     ok(at.c.h === at.d.h, 'auto down: boxes in a rank share their height');
     ok(!!el.edges[3].poly && el.edges[3].poly.pts[1][0] < Math.min(at.a.x, at.b.x, at.c.x), 'auto down: the back edge c → a loops on the left (c has d to its right)');
@@ -187,14 +187,56 @@ check('diamond source and target', {nodes: [{id: 'd', label: '?', x: 20, y: 100,
   {
     const many = {nodes: N(...'abcdefghij'.split('')), edges: 'abcdefghi'.split('').map((c, i) => ({from: c, to: 'abcdefghij'[i + 1]}))};
     const {reports, laid} = auto(many);
-    ok(reports.length === 1 && reports[0].code === 'layout' && /10 ranks/.test(reports[0].msg) && /dir="down"/.test(reports[0].msg), 'auto: a chain too long for the width is reported (layout), suggesting dir="down"');
+    ok(reports.length === 1 && reports[0].code === 'layout' && /10 ranks/.test(reports[0].msg) && /orient="down"/.test(reports[0].msg), 'auto: a chain too long for the width is reported (layout), suggesting orient="down"');
     ok(laid.nodes.every((n, i) => !i || n.x - laid.nodes[i - 1].x - laid.nodes[i - 1].w >= 40 - 1e-6) && laid.nodes.every((n) => n.w >= 120), 'auto: too long, the boxes keep their size and 40 px gaps (text is not shrunk)');
-    const tall = auto({nodes: N('a', 'b', 'c', 'd', 'e'), edges: ['b', 'c', 'd', 'e'].map((t) => ({from: 'a', to: t}))}, {dir: 'right'});
+    const tall = auto({nodes: N('a', 'b', 'c', 'd', 'e'), edges: ['b', 'c', 'd', 'e'].map((t) => ({from: 'a', to: t}))}, {orient: 'right'});
     ok(tall.reports.length === 1 && /4 boxes side by side/.test(tall.reports[0].msg), 'auto: a rank too tall for the height is reported (layout)');
   }
   {
-    const {reports} = auto({nodes: N('a', 'b'), edges: [{from: 'a', to: 'b'}]}, {dir: 'up'});
-    ok(reports.length === 1 && reports[0].code === 'data' && /dir="up"/.test(reports[0].msg), 'auto: an unknown dir is reported (right is used)');
+    const {reports} = auto({nodes: N('a', 'b'), edges: [{from: 'a', to: 'b'}]}, {orient: 'up'});
+    ok(reports.length === 1 && reports[0].code === 'data' && /orient="up"/.test(reports[0].msg), 'auto: an unknown orient is reported (right is used)');
+  }
+  {
+    // dir (the HTML text-direction attribute) is not read: dir="down" lays out left to right, with no report
+    const {at, reports} = auto({nodes: N('a', 'b'), edges: [{from: 'a', to: 'b'}]}, {dir: 'down'});
+    ok(!reports.length && at.a.x < at.b.x && at.a.y === at.b.y, 'auto: the attribute dir is not read (orient is)');
+  }
+  // rank-skipping edges: a → c beside a → b → c would cross b; it runs outside the boxes, with room kept for it
+  {
+    const all = (el) => el.nodes.map((o) => o.n);
+    const hitsBox = (el, i) => {
+      const E = el.edges[i], pts = E.poly ? E.poly.pts : [E.p0, E.p1];
+      return all(el).filter((n) => pts.slice(1).some((p, k) => {
+        const a = pts[k], r = [n.x, n.y, n.x + n.w, n.y + n.h];
+        for (let t = 0; t <= 1; t += 1 / 200) { const x = a[0] + (p[0] - a[0]) * t, y = a[1] + (p[1] - a[1]) * t; if (x > r[0] && x < r[2] && y > r[1] && y < r[3]) return true; }
+        return false;
+      })).map((n) => n.id);
+    };
+    const skip = {nodes: N('a', 'b', 'c'), edges: [{from: 'a', to: 'b'}, {from: 'b', to: 'c'}, {from: 'a', to: 'c', label: 'まとめて', pulse: true}]};
+    for (const orient of ['right', 'down']) {
+      const {el, reports, laid} = auto(skip, {orient});
+      const pts = el.edges[2].poly && el.edges[2].poly.pts;
+      ok(!reports.length && !!pts && !hitsBox(el, 2).length && apart(laid.nodes), `auto ${orient}: the rank-skipping edge a → c runs around b (a polyline that meets no box), no report`
+        + (hitsBox(el, 2).length ? ': crosses ' + hitsBox(el, 2) : '') + (reports.length ? ': ' + reports.map((r) => r.msg) : ''));
+      const lab = el.edges[2].lab, near = pts && Math.min(...pts.map((p) => Math.hypot(+lab.attrs.x - p[0], +lab.attrs.y - p[1])));
+      ok(pts && (orient === 'right' ? pts[1][1] < Math.min(...laid.nodes.map((n) => n.y)) && +lab.attrs.y < pts[1][1] : pts[1][0] < Math.min(...laid.nodes.map((n) => n.x)) && +lab.attrs.x < pts[1][0]),
+        `auto ${orient}: it runs on the ${orient === 'right' ? 'top' : 'left'} side, its label outside the path`);
+      ok(el.edges[2].dots.length > 0 && !!el.edges[2].poly, `auto ${orient}: its pulse runs along the routed path`);
+    }
+    // the decision chart: two rank skips and a back edge, none meets a box
+    const chart = {nodes: [{id: 's', label: '受付'}, {id: 'q', label: '急ぎ？', shape: 'diamond'}, {id: 'a', label: '調べる'}, {id: 'b', label: '答える'}, {id: 'e', label: '終わり'}],
+      edges: [{from: 's', to: 'q'}, {from: 'q', to: 'a', label: 'いいえ'}, {from: 'a', to: 'b'}, {from: 'b', to: 'e'}, {from: 'q', to: 'e', label: 'はい'}, {from: 'b', to: 'a', label: '足りない'}]};
+    const {el, reports} = auto(chart);
+    ok(!reports.length && el.edges.every((_, i) => !hitsBox(el, i).length), 'auto: a chart with a rank skip, a two-way pair and labels: no line meets a box, no report'
+      + (reports.length ? ': ' + reports.map((r) => r.msg) : '') + el.edges.map((_, i) => hitsBox(el, i).length ? ` edge ${i} crosses ${hitsBox(el, i)}` : '').join(''));
+    // a straight skip that meets no box stays straight: b is beside the line, not on it
+    const aside = auto({nodes: N('a', 'x', 'b', 'c'), edges: [{from: 'a', to: 'x'}, {from: 'a', to: 'b'}, {from: 'x', to: 'c'}, {from: 'b', to: 'c'}]});
+    ok(aside.el.edges.every((o) => !o.poly), 'auto: edges that do not skip ranks stay straight');
+    // no room: both ends have a box on both sides in their ranks, so the skip cannot run around; reported, naming the edge
+    const boxed = {nodes: N('p', 'a', 'q', 'r', 'm', 's', 't', 'c', 'u'),
+      edges: [{from: 'p', to: 'r'}, {from: 'a', to: 'm'}, {from: 'q', to: 's'}, {from: 'r', to: 't'}, {from: 'm', to: 'c'}, {from: 's', to: 'u'}, {from: 'a', to: 'c'}]};
+    const nr = auto(boxed, {orient: 'right'}), msg = nr.reports.map((r) => r.code + ' ' + r.msg).join('; ');
+    ok(nr.reports.some((r) => r.code === 'layout' && /"a" → "c"/.test(r.msg) && /no room/.test(r.msg)), 'auto: a rank skip with no free side is reported (layout), naming the edge: ' + msg);
   }
   console.log(fails ? `\nFAIL: ${fails}` : '\ntest-flow: ok');
   process.exitCode = fails ? 1 : 0;

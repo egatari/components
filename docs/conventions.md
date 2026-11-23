@@ -112,7 +112,7 @@ All four keep today's step length (`at + dur`, plus 0.4 s with a delta) and the 
 
 `m-flow` takes box coordinates in px, which is right when the author wants to fix the shape by hand. When an AI writes them, boxes overlap, overflow and drift. The four new parts (`m-timeline` `m-cycle` `m-tree` `m-fishbone`) take **only the content and the connections; the part lays them out**.
 
-`m-flow` keeps its coordinates for diagrams placed by hand; from 2.2.0 it lays the boxes out itself when no node has any (`dir` `right` or `down`; handoff #103). The four new ones use the same field names as `m-flow`.
+`m-flow` keeps its coordinates for diagrams placed by hand; from 2.2.0 it lays the boxes out itself when no node has any (`orient` `right` or `down`; handoff #103). The four new ones use the same field names as `m-flow`.
 
 ### 2.2 Data shape
 

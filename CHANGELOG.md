@@ -10,12 +10,12 @@ Versions follow [README.md § Releases and versions](README.md#releases-and-vers
 
 ### Changed
 
-- **`m-flow` 2.2.0 (handoff #103)**: with no `x`, `y`, `w`, `h` on any node, the part lays the flow chart out itself: ranks by the longest path along the edges in the direction of the new attribute `dir` (`right`, default, or `down`), barycentre order within a rank, box sizes from the text, the room shared out evenly with at least 40 px between boxes. Edges that go back in rank are drawn as loops without `loop`. If the boxes do not fit, the text is not shrunk and `layout` is reported. Diagrams with coordinates on every node draw exactly as in 2.1.2 (`tools/test-same-paint.mjs`); a mix of nodes with and without coordinates is reported (`data`) and not drawn. The README's first example and the data-shape example have no coordinates, so that AI authors stop choosing them; coordinates stay for fine placement. The demo has a slide without coordinates.
+- **`m-flow` 2.2.0 (handoff #103)**: with no `x`, `y`, `w`, `h` on any node, the part lays the flow chart out itself: ranks by the longest path along the edges in the direction of the new attribute `orient` (`right`, default, or `down`), barycentre order within a rank, box sizes from the text, the room shared out evenly with at least 40 px between boxes. Edges that go back in rank are drawn as loops without `loop`, and edges that skip ranks and would cross a box run outside the boxes (reported, naming the edge, when neither side is free). If the boxes do not fit, the text is not shrunk and `layout` is reported. Diagrams with coordinates on every node draw exactly as in 2.1.2 (`tools/test-same-paint.mjs`); a mix of nodes with and without coordinates is reported (`data`) and not drawn. The README's first example and the data-shape example have no coordinates, so that AI authors stop choosing them; coordinates stay for fine placement. The demo has a slide without coordinates.
 
 ### For Studio
 
-- `m-flow`'s data shape no longer requires `x`, `y`, `w`, `h`; Studio's checker sees the part's own `data` report for a mix. The new attribute is `dir` (it shares its name with the HTML global attribute; the values `right` and `down` are not valid HTML directions, so browsers ignore them for text direction).
-- The free-plan AI pack carries m-flow's README: pack-visible bytes grow by 215 in Japanese (`node tools/pack-bytes.mjs --base v2.22.0 flow`: README +153, prop docs +58, shape +4) and by 91 in English (README.en.md outside `llm: omit`).
+- `m-flow`'s data shape no longer requires `x`, `y`, `w`, `h`; Studio's checker sees the part's own `data` report for a mix. The new attribute is `orient`.
+- The free-plan AI pack carries m-flow's README: pack-visible bytes grow by 245 in Japanese (`node tools/pack-bytes.mjs --base v2.22.0 flow`: README +183, prop docs +58, shape +4) and by 119 in English (README.en.md outside `llm: omit`, frontmatter included).
 
 ## 2.22.0 - 2026-11-23
 

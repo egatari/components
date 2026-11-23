@@ -64,12 +64,137 @@ document.addEventListener("DOMContentLoaded", function(){
   <h2>パーツの一覧（58 個、247 枚）</h2>
   <div class="body">
     <p>パーツごとに、説明の 1 枚とサンプルのスライドが続く。→ でステップを進める。</p>
-    <p>m-flow（変わった）　m-balance　m-bars　m-boxplot　m-callout　m-cards　m-checklist　m-ci　m-classify2d　m-code　m-codetree　m-collect　m-compare　m-contour　m-contrast　m-ctable　m-curves　m-cycle　m-diverge　m-fishbone　m-folds　m-gendai　m-heatmap　m-hissan　m-hist　m-kakijun　m-kanbun　m-keyboard　m-kobun　m-kpi　m-map-japan　m-map-world　m-mapping　m-market　m-matrix　m-menu　m-network　m-nnet　m-numberline　m-orbit　m-particles　m-pie　m-predict　m-quad　m-sampling　m-scatter　m-score　m-scroll　m-seq　m-sweep　m-syntax　m-tape　m-timeline　m-timer　m-trace　m-tree　m-vector　m-venn</p>
+    <p>m-callout（変わった）　m-curves（変わった）　m-flow（変わった）　m-predict（変わった）　m-balance　m-bars　m-boxplot　m-cards　m-checklist　m-ci　m-classify2d　m-code　m-codetree　m-collect　m-compare　m-contour　m-contrast　m-ctable　m-cycle　m-diverge　m-fishbone　m-folds　m-gendai　m-heatmap　m-hissan　m-hist　m-kakijun　m-kanbun　m-keyboard　m-kobun　m-kpi　m-map-japan　m-map-world　m-mapping　m-market　m-matrix　m-menu　m-network　m-nnet　m-numberline　m-orbit　m-particles　m-pie　m-quad　m-sampling　m-scatter　m-score　m-scroll　m-seq　m-sweep　m-syntax　m-tape　m-timeline　m-timer　m-trace　m-tree　m-vector　m-venn</p>
   </div>
 </section>
 
 <section class="slide">
-  <h2>m-flow（変わった、v2.23.0）</h2>
+  <h2>m-callout（変わった、v2.20.0）</h2>
+  <div class="body">
+    <p>画面の画像に番号の丸を置き、引き出し線で横の説明につなぐ。ステップごとに 1 つずつ（研修・手引き・操作の説明）</p>
+    <ul>
+      <li>伝えたいこと：手順・工程</li>
+      <li>見せ方：1 種類</li>
+      <li>内容の分野：標準パーツ　サンプルのスライド：2 枚</li>
+    </ul>
+  </div>
+</section>
+
+<section id="g-callout-1" class="slide">
+  <h2>電子申請で住所変更を届け出る（架空の画面）</h2>
+  <div class="body">
+    <m-callout style="height:440px">
+      <img src="data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%221280%22 height=%22800%22 viewBox=%220 0 1280 800%22 font-family=%22sans-serif%22%3E%3Crect width=%221280%22 height=%22800%22 fill=%22%23f4f6f9%22/%3E%3Crect width=%221280%22 height=%2272%22 fill=%22%232b4c7e%22/%3E%3Ctext x=%2232%22 y=%2247%22 font-size=%2230%22 fill=%22%23fff%22%3EA %E5%B8%82 %E9%9B%BB%E5%AD%90%E7%94%B3%E8%AB%8B%EF%BC%88%E6%9E%B6%E7%A9%BA%EF%BC%89%3C/text%3E%3Crect x=%221110%22 y=%2218%22 width=%22140%22 height=%2236%22 rx=%226%22 fill=%22%23fff%22 opacity=%22.2%22/%3E%3Ctext x=%221180%22 y=%2244%22 font-size=%2222%22 fill=%22%23fff%22 text-anchor=%22middle%22%3E%E3%83%AD%E3%82%B0%E3%82%A2%E3%82%A6%E3%83%88%3C/text%3E%3Crect x=%220%22 y=%2272%22 width=%22260%22 height=%22728%22 fill=%22%23e3e8ef%22/%3E%3Cg font-size=%2224%22 fill=%22%23333%22%3E%3Ctext x=%2232%22 y=%22130%22%3E%E3%81%8A%E7%9F%A5%E3%82%89%E3%81%9B%3C/text%3E%3Crect x=%2216%22 y=%22160%22 width=%22228%22 height=%2248%22 rx=%226%22 fill=%22%23c9d6e8%22/%3E%3Ctext x=%2232%22 y=%22193%22%3E%E7%94%B3%E8%AB%8B%E3%81%99%E3%82%8B%3C/text%3E%3Ctext x=%2232%22 y=%22256%22%3E%E7%94%B3%E8%AB%8B%E3%81%AE%E7%8A%B6%E6%B3%81%3C/text%3E%3Ctext x=%2232%22 y=%22316%22%3E%E3%82%88%E3%81%8F%E3%81%82%E3%82%8B%E8%B3%AA%E5%95%8F%3C/text%3E%3C/g%3E%3Ctext x=%22310%22 y=%22140%22 font-size=%2234%22 fill=%22%23222%22%3E%E4%BD%8F%E6%89%80%E5%A4%89%E6%9B%B4%E3%81%AE%E5%B1%8A%E3%81%91%E5%87%BA%3C/text%3E%3Cg font-size=%2224%22 fill=%22%23444%22%3E%3Ctext x=%22310%22 y=%22210%22%3E%E5%B1%8A%E3%81%91%E5%87%BA%E3%81%AE%E7%A8%AE%E9%A1%9E%3C/text%3E%3Crect x=%22310%22 y=%22225%22 width=%22560%22 height=%2252%22 rx=%226%22 fill=%22%23fff%22 stroke=%22%239aa5b5%22/%3E%3Ctext x=%22326%22 y=%22260%22 fill=%22%23222%22%3E%E8%BB%A2%E5%85%A5%EF%BC%88%E5%B8%82%E3%81%AE%E5%A4%96%E3%81%8B%E3%82%89%EF%BC%89%3C/text%3E%3Cpath d=%22M840 245l12 12 12-12%22 fill=%22none%22 stroke=%22%23555%22 stroke-width=%223%22/%3E%3Ctext x=%22310%22 y=%22330%22%3E%E6%B0%8F%E5%90%8D%3C/text%3E%3Crect x=%22310%22 y=%22345%22 width=%22560%22 height=%2252%22 rx=%226%22 fill=%22%23fff%22 stroke=%22%239aa5b5%22/%3E%3Ctext x=%22326%22 y=%22380%22 fill=%22%23999%22%3E%EF%BC%88%E5%85%A5%E5%8A%9B%E4%BE%8B%EF%BC%89A %E3%81%95%E3%82%93%3C/text%3E%3Ctext x=%22310%22 y=%22450%22%3E%E6%96%B0%E3%81%97%E3%81%84%E4%BD%8F%E6%89%80%3C/text%3E%3Crect x=%22310%22 y=%22465%22 width=%22760%22 height=%2252%22 rx=%226%22 fill=%22%23fff%22 stroke=%22%239aa5b5%22/%3E%3Ctext x=%22326%22 y=%22500%22 fill=%22%23999%22%3E%EF%BC%88%E5%85%A5%E5%8A%9B%E4%BE%8B%EF%BC%89A %E5%B8%82 1 %E4%B8%81%E7%9B%AE 1-1%3C/text%3E%3Ctext x=%22310%22 y=%22570%22%3E%E6%B7%BB%E4%BB%98%E3%81%99%E3%82%8B%E6%9B%B8%E9%A1%9E%3C/text%3E%3Crect x=%22310%22 y=%22585%22 width=%22220%22 height=%2252%22 rx=%226%22 fill=%22%23fff%22 stroke=%22%232b4c7e%22 stroke-width=%222%22/%3E%3Ctext x=%22420%22 y=%22620%22 text-anchor=%22middle%22 fill=%22%232b4c7e%22%3E%E3%83%95%E3%82%A1%E3%82%A4%E3%83%AB%E3%82%92%E9%81%B8%E3%81%B6%3C/text%3E%3C/g%3E%3Crect x=%221010%22 y=%22700%22 width=%22220%22 height=%2264%22 rx=%228%22 fill=%22%232b4c7e%22/%3E%3Ctext x=%221120%22 y=%22742%22 font-size=%2228%22 fill=%22%23fff%22 text-anchor=%22middle%22%3E%E9%80%81%E3%82%8B%3C/text%3E%3C/svg%3E" alt="A 市の電子申請の、住所変更の届け出の画面（架空）" width="1280" height="800">
+      <script type="application/json">{
+        "callouts": [
+          {"x": 0.205, "y": 0.23, "text": "左の「申請する」を選ぶ", "box": [0.013, 0.2, 0.178, 0.06]},
+          {"x": 0.66, "y": 0.315, "text": "届け出の種類を選ぶ"},
+          {"x": 0.83, "y": 0.61, "text": "新しい住所を\n建物の名前まで書く"},
+          {"x": 0.435, "y": 0.765, "text": "転出証明書の写真を\n添付する", "box": [0.242, 0.731, 0.172, 0.065]},
+          {"x": 0.962, "y": 0.915, "text": "「送る」を押す"}
+        ]
+      }</script>
+    </m-callout>
+  </div>
+  <div class="concl"><span>→ 5 つの手順で届け出が終わる</span></div>
+</section>
+
+<section id="g-callout-2" class="slide noconcl">
+  <h2>説明を両側に置く（side="both"）</h2>
+  <div class="body">
+    <m-callout side="both" label-width="0.24" per-step="0" style="height:470px">
+      <img src="data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%221280%22 height=%22800%22 viewBox=%220 0 1280 800%22 font-family=%22sans-serif%22%3E%3Crect width=%221280%22 height=%22800%22 fill=%22%23f4f6f9%22/%3E%3Crect width=%221280%22 height=%2272%22 fill=%22%232b4c7e%22/%3E%3Ctext x=%2232%22 y=%2247%22 font-size=%2230%22 fill=%22%23fff%22%3EA %E5%B8%82 %E9%9B%BB%E5%AD%90%E7%94%B3%E8%AB%8B%EF%BC%88%E6%9E%B6%E7%A9%BA%EF%BC%89%3C/text%3E%3Crect x=%221110%22 y=%2218%22 width=%22140%22 height=%2236%22 rx=%226%22 fill=%22%23fff%22 opacity=%22.2%22/%3E%3Ctext x=%221180%22 y=%2244%22 font-size=%2222%22 fill=%22%23fff%22 text-anchor=%22middle%22%3E%E3%83%AD%E3%82%B0%E3%82%A2%E3%82%A6%E3%83%88%3C/text%3E%3Crect x=%220%22 y=%2272%22 width=%22260%22 height=%22728%22 fill=%22%23e3e8ef%22/%3E%3Cg font-size=%2224%22 fill=%22%23333%22%3E%3Ctext x=%2232%22 y=%22130%22%3E%E3%81%8A%E7%9F%A5%E3%82%89%E3%81%9B%3C/text%3E%3Crect x=%2216%22 y=%22160%22 width=%22228%22 height=%2248%22 rx=%226%22 fill=%22%23c9d6e8%22/%3E%3Ctext x=%2232%22 y=%22193%22%3E%E7%94%B3%E8%AB%8B%E3%81%99%E3%82%8B%3C/text%3E%3Ctext x=%2232%22 y=%22256%22%3E%E7%94%B3%E8%AB%8B%E3%81%AE%E7%8A%B6%E6%B3%81%3C/text%3E%3Ctext x=%2232%22 y=%22316%22%3E%E3%82%88%E3%81%8F%E3%81%82%E3%82%8B%E8%B3%AA%E5%95%8F%3C/text%3E%3C/g%3E%3Ctext x=%22310%22 y=%22140%22 font-size=%2234%22 fill=%22%23222%22%3E%E4%BD%8F%E6%89%80%E5%A4%89%E6%9B%B4%E3%81%AE%E5%B1%8A%E3%81%91%E5%87%BA%3C/text%3E%3Cg font-size=%2224%22 fill=%22%23444%22%3E%3Ctext x=%22310%22 y=%22210%22%3E%E5%B1%8A%E3%81%91%E5%87%BA%E3%81%AE%E7%A8%AE%E9%A1%9E%3C/text%3E%3Crect x=%22310%22 y=%22225%22 width=%22560%22 height=%2252%22 rx=%226%22 fill=%22%23fff%22 stroke=%22%239aa5b5%22/%3E%3Ctext x=%22326%22 y=%22260%22 fill=%22%23222%22%3E%E8%BB%A2%E5%85%A5%EF%BC%88%E5%B8%82%E3%81%AE%E5%A4%96%E3%81%8B%E3%82%89%EF%BC%89%3C/text%3E%3Cpath d=%22M840 245l12 12 12-12%22 fill=%22none%22 stroke=%22%23555%22 stroke-width=%223%22/%3E%3Ctext x=%22310%22 y=%22330%22%3E%E6%B0%8F%E5%90%8D%3C/text%3E%3Crect x=%22310%22 y=%22345%22 width=%22560%22 height=%2252%22 rx=%226%22 fill=%22%23fff%22 stroke=%22%239aa5b5%22/%3E%3Ctext x=%22326%22 y=%22380%22 fill=%22%23999%22%3E%EF%BC%88%E5%85%A5%E5%8A%9B%E4%BE%8B%EF%BC%89A %E3%81%95%E3%82%93%3C/text%3E%3Ctext x=%22310%22 y=%22450%22%3E%E6%96%B0%E3%81%97%E3%81%84%E4%BD%8F%E6%89%80%3C/text%3E%3Crect x=%22310%22 y=%22465%22 width=%22760%22 height=%2252%22 rx=%226%22 fill=%22%23fff%22 stroke=%22%239aa5b5%22/%3E%3Ctext x=%22326%22 y=%22500%22 fill=%22%23999%22%3E%EF%BC%88%E5%85%A5%E5%8A%9B%E4%BE%8B%EF%BC%89A %E5%B8%82 1 %E4%B8%81%E7%9B%AE 1-1%3C/text%3E%3Ctext x=%22310%22 y=%22570%22%3E%E6%B7%BB%E4%BB%98%E3%81%99%E3%82%8B%E6%9B%B8%E9%A1%9E%3C/text%3E%3Crect x=%22310%22 y=%22585%22 width=%22220%22 height=%2252%22 rx=%226%22 fill=%22%23fff%22 stroke=%22%232b4c7e%22 stroke-width=%222%22/%3E%3Ctext x=%22420%22 y=%22620%22 text-anchor=%22middle%22 fill=%22%232b4c7e%22%3E%E3%83%95%E3%82%A1%E3%82%A4%E3%83%AB%E3%82%92%E9%81%B8%E3%81%B6%3C/text%3E%3C/g%3E%3Crect x=%221010%22 y=%22700%22 width=%22220%22 height=%2264%22 rx=%228%22 fill=%22%232b4c7e%22/%3E%3Ctext x=%221120%22 y=%22742%22 font-size=%2228%22 fill=%22%23fff%22 text-anchor=%22middle%22%3E%E9%80%81%E3%82%8B%3C/text%3E%3C/svg%3E" alt="A 市の電子申請の画面（架空）" width="1280" height="800">
+      <script type="application/json">{
+        "callouts": [
+          {"x": 0.10, "y": 0.23, "text": "メニュー"},
+          {"x": 0.30, "y": 0.42, "text": "入力の欄"},
+          {"x": 0.92, "y": 0.05, "text": "終わったら\nログアウト"},
+          {"x": 0.875, "y": 0.915, "text": "送る"}
+        ]
+      }</script>
+    </m-callout>
+  </div>
+</section>
+
+<section class="slide">
+  <h2>m-curves（変わった、v2.20.0）</h2>
+  <div class="body">
+    <p>同じ座標軸に線を 1 本ずつ引く（線の名前は凡例でなく線の端に直接書く）</p>
+    <ul>
+      <li>伝えたいこと：時間での変化</li>
+      <li>見せ方：1 種類</li>
+      <li>内容の分野：標準パーツ　サンプルのスライド：5 枚</li>
+    </ul>
+  </div>
+</section>
+
+<section id="g-curves-1" class="slide">
+  <h2>予測分布と代表値</h2>
+  <div class="body">
+    <m-curves xr="[0,4]" yr="[0,0.8]" xt="[0,1,2,3,4]" yt="[0,0.2,0.4,0.6,0.8]" yf="1" xl="需要 *y*" yl="密度" style="height:420px">
+      <script type="application/json" id="pred-data">[]</script>
+    </m-curves>
+  </div>
+  <div class="concl"><span>→ 右に裾が長いと，平均は中央値より右に来る</span></div>
+</section>
+
+<section id="g-curves-2" class="slide">
+  <h2>損失関数の形</h2>
+  <div class="body">
+    <m-curves xr="[-2,2]" yr="[0,4]" xt="[-2,-1,0,1,2]" yt="[0,1,2,3,4]" xl="誤差 *u* = *y* − *a*" yl="損失" style="height:420px">
+      <script type="application/json">[
+        {"label": "二乗 *u*^2", "f": "x*x", "labelAt": 1.6, "anchor": "left", "dx": -14},
+        {"label": "絶対値 |*u*|", "f": "abs(x)", "labelAt": -2, "anchor": "right", "ly": 1.1},
+        {"label": "分位点（*τ* = 0.9）", "f": "x >= 0 ? 0.9*x : -0.1*x", "labelAt": -2, "anchor": "right", "dy": -6}
+      ]</script>
+    </m-curves>
+  </div>
+  <div class="concl"><span>→ どの損失を使うかで，最適な決定 <i>a</i> が変わる</span></div>
+</section>
+
+<section id="g-curves-3" class="slide">
+  <h2>需要が増えると（架空の例）</h2>
+  <div class="body">
+    <m-curves xr="[0,10]" yr="[0,12]" xt="[0,2,4,6,8,10]" yt="[0,3,6,9,12]" xl="数量 *Q*" yl="価格 *P*" style="height:420px">
+      <script type="application/json">[
+        {"label": "需要 D", "f": "10 - x", "tone": "term", "step": 1, "labelAt": 1.5, "anchor": "below"},
+        {"label": "供給 S", "f": "2 + x", "tone": "accent2", "step": 1, "labelAt": 8.5, "anchor": "left"},
+        {"label": "増えた需要 D′", "f": "13 - x", "tone": "emph", "step": 2, "labelAt": 2, "anchor": "right"},
+        {"label": "均衡", "pts": [[4, 0], [4, 6]], "tone": "muted", "dash": true, "step": 3, "anchor": "left", "ly": 1},
+        {"label": "新しい均衡", "pts": [[5.5, 0], [5.5, 7.5]], "tone": "emph", "dash": true, "step": 3, "anchor": "right", "ly": 1}
+      ]</script>
+    </m-curves>
+  </div>
+  <div class="concl"><span>→ 需要が増えると，価格も取引量も上がる</span></div>
+</section>
+
+<section id="g-curves-4" class="slide">
+  <h2>両側検定の棄却域</h2>
+  <div class="body">
+    <m-curves xr="[-4,4]" yr="[0,0.45]" xt="[-1.96,0,1.96]" xf="2" yt="[0,0.2,0.4]" xl="検定統計量 *z*" style="height:400px">
+      <script type="application/json">[
+        {"label": "標準正規分布", "f": "N(x, 0, 1)", "labelAt": 1, "anchor": "right", "area": [[null, -1.96], [1.96, null]], "areaLabel": "2.5 %", "tone": "term"}
+      ]</script>
+    </m-curves>
+  </div>
+  <div class="concl"><span>→ 両端の 5 % に入れば帰無仮説を棄却する</span></div>
+</section>
+
+<section id="g-curves-5" class="slide">
+  <h2>月ごとの来店者数（人、架空）</h2>
+  <div class="body">
+    <m-curves xr="[0.5,6.5]" yr="[0,400]" xt='["4月","5月","6月","7月","8月","9月"]' yt="[0,100,200,300,400]" style="height:400px">
+      <script type="application/json">[
+        {"label": "昨年", "pts": [[1, 220], [2, 260], [3, 180], [4, 240], [5, 300], [6, 210]], "tone": "muted", "anchor": "right"},
+        {"label": "今年", "pts": [[1, 250], [2, 290], [3, 230], [4, 310], [5, 360], [6, 280]], "tone": "emph", "anchor": "right"}
+      ]</script>
+    </m-curves>
+  </div>
+  <div class="concl"><span>→ 横軸に月の名前を目盛りとして書ける（xt に字の並び）</span></div>
+</section>
+
+<section class="slide">
+  <h2>m-flow（変わった、v2.20.0）</h2>
   <div class="body">
     <p>流れ図の箱と矢印をステップごとに出して、図を組み立てる</p>
     <ul>
@@ -174,6 +299,69 @@ document.addEventListener("DOMContentLoaded", function(){
     </m-flow>
   </div>
   <div class="concl"><span>→ 目標に届かなければ試作に戻り、届いたら発売する</span></div>
+</section>
+
+<section class="slide">
+  <h2>m-predict（変わった、v2.20.0）</h2>
+  <div class="body">
+    <p style="margin:0 0 10px;line-height:1.3"><span style="display:inline-block;font-size:27px;font-weight:700;color:var(--fg);border:2px dashed var(--accent2);border-radius:8px;padding:0 12px">操作できる / Interactive</span></p>
+    <p style="border:3px dashed var(--accent2);border-radius:10px;padding:10px 16px">予想してから答えを開く。選択肢ごとの人数を棒で見せ、答えのステップで正解に枠（学習者が押して操作できる）</p>
+    <ul>
+      <li>伝えたいこと：予想してから確かめる</li>
+      <li>見せ方：fade・draw</li>
+      <li>内容の分野：標準パーツ　サンプルのスライド：3 枚</li>
+    </ul>
+  </div>
+</section>
+
+<section id="g-predict-1" class="slide">
+  <h2>予想してみよう：落ちる速さ</h2>
+  <div class="body">
+    <p class="ia-badge" style="margin:0 0 10px;line-height:1.3"><span style="display:inline-block;font-size:27px;font-weight:700;color:var(--fg);border:2px dashed var(--accent2);border-radius:8px;padding:0 12px">操作できる</span></p>
+    <m-predict unit="人" style="height:390px">
+      <script type="application/json">{
+        "question": "同じ高さから落とすと、重い球と軽い球のどちらが先に着く？",
+        "choices": [{"label": "重い球"}, {"label": "軽い球"}, {"label": "同時"}],
+        "answer": 2,
+        "counts": [17, 2, 11],
+        "note": "空気の抵抗が小さければ、重さによらず同時に着く（ガリレオ）"
+      }</script>
+    </m-predict>
+  </div>
+  <div class="concl"><span>→ 落ちる速さは重さで決まらない（人数は架空の例）</span></div>
+</section>
+
+<section id="g-predict-2" class="slide">
+  <h2>予想してみよう：小数のかけ算</h2>
+  <div class="body">
+    <m-predict unit="人" poll="p1" style="height:440px">
+      <script type="application/json">{
+        "question": "0.1 × 0.1 はいくつ？",
+        "choices": [{"label": "0.1"}, {"label": "0.01"}, {"label": "0.2"}, {"label": "1"}],
+        "answer": 1,
+        "counts": [12, 10, 6, 2],
+        "note": "0.1 は 10 分の 1。10 分の 1 の 10 分の 1 は 100 分の 1"
+      }</script>
+    </m-predict>
+  </div>
+  <div class="concl"><span>→ 1 より小さい数をかけると、もとの数より小さくなる（人数は架空の例）</span></div>
+</section>
+
+<section id="g-predict-3" class="slide">
+  <h2>見せ方の種類（variant）</h2>
+  <div class="body">
+    <div style="display:grid;grid-template-columns:190px 1fr;gap:20px 16px;align-items:center;font-size:27px">
+      <div>フェード<br>（fade）</div>
+      <m-predict variant="fade" unit="人" style="height:210px">
+        <script type="application/json">{"choices": [{"label": "A"}, {"label": "B"}], "answer": 0, "counts": [8, 5]}</script>
+      </m-predict>
+      <div>線を引く<br>（draw）</div>
+      <m-predict variant="draw" unit="人" style="height:210px">
+        <script type="application/json">{"choices": [{"label": "A"}, {"label": "B"}], "answer": 0, "counts": [8, 5]}</script>
+      </m-predict>
+    </div>
+  </div>
+  <div class="concl"><span>→ 書かなければ最初の見せ方（fade）になる。人数は架空</span></div>
 </section>
 
 <section class="slide">
@@ -386,54 +574,6 @@ document.addEventListener("DOMContentLoaded", function(){
     </div>
   </div>
   <div class="concl"><span>→ 書かなければ最初の見せ方（fade）になる。値は架空</span></div>
-</section>
-
-<section class="slide">
-  <h2>m-callout</h2>
-  <div class="body">
-    <p>画面の画像に番号の丸を置き、引き出し線で横の説明につなぐ。ステップごとに 1 つずつ（研修・手引き・操作の説明）</p>
-    <ul>
-      <li>伝えたいこと：手順・工程</li>
-      <li>見せ方：1 種類</li>
-      <li>内容の分野：標準パーツ　サンプルのスライド：2 枚</li>
-    </ul>
-  </div>
-</section>
-
-<section id="g-callout-1" class="slide">
-  <h2>電子申請で住所変更を届け出る（架空の画面）</h2>
-  <div class="body">
-    <m-callout style="height:440px">
-      <img src="data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%221280%22 height=%22800%22 viewBox=%220 0 1280 800%22 font-family=%22sans-serif%22%3E%3Crect width=%221280%22 height=%22800%22 fill=%22%23f4f6f9%22/%3E%3Crect width=%221280%22 height=%2272%22 fill=%22%232b4c7e%22/%3E%3Ctext x=%2232%22 y=%2247%22 font-size=%2230%22 fill=%22%23fff%22%3EA %E5%B8%82 %E9%9B%BB%E5%AD%90%E7%94%B3%E8%AB%8B%EF%BC%88%E6%9E%B6%E7%A9%BA%EF%BC%89%3C/text%3E%3Crect x=%221110%22 y=%2218%22 width=%22140%22 height=%2236%22 rx=%226%22 fill=%22%23fff%22 opacity=%22.2%22/%3E%3Ctext x=%221180%22 y=%2244%22 font-size=%2222%22 fill=%22%23fff%22 text-anchor=%22middle%22%3E%E3%83%AD%E3%82%B0%E3%82%A2%E3%82%A6%E3%83%88%3C/text%3E%3Crect x=%220%22 y=%2272%22 width=%22260%22 height=%22728%22 fill=%22%23e3e8ef%22/%3E%3Cg font-size=%2224%22 fill=%22%23333%22%3E%3Ctext x=%2232%22 y=%22130%22%3E%E3%81%8A%E7%9F%A5%E3%82%89%E3%81%9B%3C/text%3E%3Crect x=%2216%22 y=%22160%22 width=%22228%22 height=%2248%22 rx=%226%22 fill=%22%23c9d6e8%22/%3E%3Ctext x=%2232%22 y=%22193%22%3E%E7%94%B3%E8%AB%8B%E3%81%99%E3%82%8B%3C/text%3E%3Ctext x=%2232%22 y=%22256%22%3E%E7%94%B3%E8%AB%8B%E3%81%AE%E7%8A%B6%E6%B3%81%3C/text%3E%3Ctext x=%2232%22 y=%22316%22%3E%E3%82%88%E3%81%8F%E3%81%82%E3%82%8B%E8%B3%AA%E5%95%8F%3C/text%3E%3C/g%3E%3Ctext x=%22310%22 y=%22140%22 font-size=%2234%22 fill=%22%23222%22%3E%E4%BD%8F%E6%89%80%E5%A4%89%E6%9B%B4%E3%81%AE%E5%B1%8A%E3%81%91%E5%87%BA%3C/text%3E%3Cg font-size=%2224%22 fill=%22%23444%22%3E%3Ctext x=%22310%22 y=%22210%22%3E%E5%B1%8A%E3%81%91%E5%87%BA%E3%81%AE%E7%A8%AE%E9%A1%9E%3C/text%3E%3Crect x=%22310%22 y=%22225%22 width=%22560%22 height=%2252%22 rx=%226%22 fill=%22%23fff%22 stroke=%22%239aa5b5%22/%3E%3Ctext x=%22326%22 y=%22260%22 fill=%22%23222%22%3E%E8%BB%A2%E5%85%A5%EF%BC%88%E5%B8%82%E3%81%AE%E5%A4%96%E3%81%8B%E3%82%89%EF%BC%89%3C/text%3E%3Cpath d=%22M840 245l12 12 12-12%22 fill=%22none%22 stroke=%22%23555%22 stroke-width=%223%22/%3E%3Ctext x=%22310%22 y=%22330%22%3E%E6%B0%8F%E5%90%8D%3C/text%3E%3Crect x=%22310%22 y=%22345%22 width=%22560%22 height=%2252%22 rx=%226%22 fill=%22%23fff%22 stroke=%22%239aa5b5%22/%3E%3Ctext x=%22326%22 y=%22380%22 fill=%22%23999%22%3E%EF%BC%88%E5%85%A5%E5%8A%9B%E4%BE%8B%EF%BC%89A %E3%81%95%E3%82%93%3C/text%3E%3Ctext x=%22310%22 y=%22450%22%3E%E6%96%B0%E3%81%97%E3%81%84%E4%BD%8F%E6%89%80%3C/text%3E%3Crect x=%22310%22 y=%22465%22 width=%22760%22 height=%2252%22 rx=%226%22 fill=%22%23fff%22 stroke=%22%239aa5b5%22/%3E%3Ctext x=%22326%22 y=%22500%22 fill=%22%23999%22%3E%EF%BC%88%E5%85%A5%E5%8A%9B%E4%BE%8B%EF%BC%89A %E5%B8%82 1 %E4%B8%81%E7%9B%AE 1-1%3C/text%3E%3Ctext x=%22310%22 y=%22570%22%3E%E6%B7%BB%E4%BB%98%E3%81%99%E3%82%8B%E6%9B%B8%E9%A1%9E%3C/text%3E%3Crect x=%22310%22 y=%22585%22 width=%22220%22 height=%2252%22 rx=%226%22 fill=%22%23fff%22 stroke=%22%232b4c7e%22 stroke-width=%222%22/%3E%3Ctext x=%22420%22 y=%22620%22 text-anchor=%22middle%22 fill=%22%232b4c7e%22%3E%E3%83%95%E3%82%A1%E3%82%A4%E3%83%AB%E3%82%92%E9%81%B8%E3%81%B6%3C/text%3E%3C/g%3E%3Crect x=%221010%22 y=%22700%22 width=%22220%22 height=%2264%22 rx=%228%22 fill=%22%232b4c7e%22/%3E%3Ctext x=%221120%22 y=%22742%22 font-size=%2228%22 fill=%22%23fff%22 text-anchor=%22middle%22%3E%E9%80%81%E3%82%8B%3C/text%3E%3C/svg%3E" alt="A 市の電子申請の、住所変更の届け出の画面（架空）" width="1280" height="800">
-      <script type="application/json">{
-        "callouts": [
-          {"x": 0.205, "y": 0.23, "text": "左の「申請する」を選ぶ", "box": [0.013, 0.2, 0.178, 0.06]},
-          {"x": 0.66, "y": 0.315, "text": "届け出の種類を選ぶ"},
-          {"x": 0.83, "y": 0.61, "text": "新しい住所を\n建物の名前まで書く"},
-          {"x": 0.435, "y": 0.765, "text": "転出証明書の写真を\n添付する", "box": [0.242, 0.731, 0.172, 0.065]},
-          {"x": 0.962, "y": 0.915, "text": "「送る」を押す"}
-        ]
-      }</script>
-    </m-callout>
-  </div>
-  <div class="concl"><span>→ 5 つの手順で届け出が終わる</span></div>
-</section>
-
-<section id="g-callout-2" class="slide noconcl">
-  <h2>説明を両側に置く（side="both"）</h2>
-  <div class="body">
-    <m-callout side="both" label-width="0.24" per-step="0" style="height:470px">
-      <img src="data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%221280%22 height=%22800%22 viewBox=%220 0 1280 800%22 font-family=%22sans-serif%22%3E%3Crect width=%221280%22 height=%22800%22 fill=%22%23f4f6f9%22/%3E%3Crect width=%221280%22 height=%2272%22 fill=%22%232b4c7e%22/%3E%3Ctext x=%2232%22 y=%2247%22 font-size=%2230%22 fill=%22%23fff%22%3EA %E5%B8%82 %E9%9B%BB%E5%AD%90%E7%94%B3%E8%AB%8B%EF%BC%88%E6%9E%B6%E7%A9%BA%EF%BC%89%3C/text%3E%3Crect x=%221110%22 y=%2218%22 width=%22140%22 height=%2236%22 rx=%226%22 fill=%22%23fff%22 opacity=%22.2%22/%3E%3Ctext x=%221180%22 y=%2244%22 font-size=%2222%22 fill=%22%23fff%22 text-anchor=%22middle%22%3E%E3%83%AD%E3%82%B0%E3%82%A2%E3%82%A6%E3%83%88%3C/text%3E%3Crect x=%220%22 y=%2272%22 width=%22260%22 height=%22728%22 fill=%22%23e3e8ef%22/%3E%3Cg font-size=%2224%22 fill=%22%23333%22%3E%3Ctext x=%2232%22 y=%22130%22%3E%E3%81%8A%E7%9F%A5%E3%82%89%E3%81%9B%3C/text%3E%3Crect x=%2216%22 y=%22160%22 width=%22228%22 height=%2248%22 rx=%226%22 fill=%22%23c9d6e8%22/%3E%3Ctext x=%2232%22 y=%22193%22%3E%E7%94%B3%E8%AB%8B%E3%81%99%E3%82%8B%3C/text%3E%3Ctext x=%2232%22 y=%22256%22%3E%E7%94%B3%E8%AB%8B%E3%81%AE%E7%8A%B6%E6%B3%81%3C/text%3E%3Ctext x=%2232%22 y=%22316%22%3E%E3%82%88%E3%81%8F%E3%81%82%E3%82%8B%E8%B3%AA%E5%95%8F%3C/text%3E%3C/g%3E%3Ctext x=%22310%22 y=%22140%22 font-size=%2234%22 fill=%22%23222%22%3E%E4%BD%8F%E6%89%80%E5%A4%89%E6%9B%B4%E3%81%AE%E5%B1%8A%E3%81%91%E5%87%BA%3C/text%3E%3Cg font-size=%2224%22 fill=%22%23444%22%3E%3Ctext x=%22310%22 y=%22210%22%3E%E5%B1%8A%E3%81%91%E5%87%BA%E3%81%AE%E7%A8%AE%E9%A1%9E%3C/text%3E%3Crect x=%22310%22 y=%22225%22 width=%22560%22 height=%2252%22 rx=%226%22 fill=%22%23fff%22 stroke=%22%239aa5b5%22/%3E%3Ctext x=%22326%22 y=%22260%22 fill=%22%23222%22%3E%E8%BB%A2%E5%85%A5%EF%BC%88%E5%B8%82%E3%81%AE%E5%A4%96%E3%81%8B%E3%82%89%EF%BC%89%3C/text%3E%3Cpath d=%22M840 245l12 12 12-12%22 fill=%22none%22 stroke=%22%23555%22 stroke-width=%223%22/%3E%3Ctext x=%22310%22 y=%22330%22%3E%E6%B0%8F%E5%90%8D%3C/text%3E%3Crect x=%22310%22 y=%22345%22 width=%22560%22 height=%2252%22 rx=%226%22 fill=%22%23fff%22 stroke=%22%239aa5b5%22/%3E%3Ctext x=%22326%22 y=%22380%22 fill=%22%23999%22%3E%EF%BC%88%E5%85%A5%E5%8A%9B%E4%BE%8B%EF%BC%89A %E3%81%95%E3%82%93%3C/text%3E%3Ctext x=%22310%22 y=%22450%22%3E%E6%96%B0%E3%81%97%E3%81%84%E4%BD%8F%E6%89%80%3C/text%3E%3Crect x=%22310%22 y=%22465%22 width=%22760%22 height=%2252%22 rx=%226%22 fill=%22%23fff%22 stroke=%22%239aa5b5%22/%3E%3Ctext x=%22326%22 y=%22500%22 fill=%22%23999%22%3E%EF%BC%88%E5%85%A5%E5%8A%9B%E4%BE%8B%EF%BC%89A %E5%B8%82 1 %E4%B8%81%E7%9B%AE 1-1%3C/text%3E%3Ctext x=%22310%22 y=%22570%22%3E%E6%B7%BB%E4%BB%98%E3%81%99%E3%82%8B%E6%9B%B8%E9%A1%9E%3C/text%3E%3Crect x=%22310%22 y=%22585%22 width=%22220%22 height=%2252%22 rx=%226%22 fill=%22%23fff%22 stroke=%22%232b4c7e%22 stroke-width=%222%22/%3E%3Ctext x=%22420%22 y=%22620%22 text-anchor=%22middle%22 fill=%22%232b4c7e%22%3E%E3%83%95%E3%82%A1%E3%82%A4%E3%83%AB%E3%82%92%E9%81%B8%E3%81%B6%3C/text%3E%3C/g%3E%3Crect x=%221010%22 y=%22700%22 width=%22220%22 height=%2264%22 rx=%228%22 fill=%22%232b4c7e%22/%3E%3Ctext x=%221120%22 y=%22742%22 font-size=%2228%22 fill=%22%23fff%22 text-anchor=%22middle%22%3E%E9%80%81%E3%82%8B%3C/text%3E%3C/svg%3E" alt="A 市の電子申請の画面（架空）" width="1280" height="800">
-      <script type="application/json">{
-        "callouts": [
-          {"x": 0.10, "y": 0.23, "text": "メニュー"},
-          {"x": 0.30, "y": 0.42, "text": "入力の欄"},
-          {"x": 0.92, "y": 0.05, "text": "終わったら\nログアウト"},
-          {"x": 0.875, "y": 0.915, "text": "送る"}
-        ]
-      }</script>
-    </m-callout>
-  </div>
 </section>
 
 <section class="slide">
@@ -1151,83 +1291,6 @@ document.addEventListener("DOMContentLoaded", function(){
       <script type="application/json">{"kind": "po", "units": [{"id": "1", "t": 1, "y0": 60, "y1": 72}, {"id": "2", "t": 1, "y0": 70, "y1": 75}, {"id": "3", "t": 1, "y0": 65, "y1": 74}, {"id": "4", "t": 0, "y0": 55, "y1": 63}, {"id": "5", "t": 0, "y0": 58, "y1": 62}, {"id": "6", "t": 0, "y0": 50, "y1": 61}], "ate": 8.17, "naive": 19.33}</script>
     </m-ctable>
   </div>
-</section>
-
-<section class="slide">
-  <h2>m-curves</h2>
-  <div class="body">
-    <p>同じ座標軸に線を 1 本ずつ引く（線の名前は凡例でなく線の端に直接書く）</p>
-    <ul>
-      <li>伝えたいこと：時間での変化</li>
-      <li>見せ方：1 種類</li>
-      <li>内容の分野：標準パーツ　サンプルのスライド：5 枚</li>
-    </ul>
-  </div>
-</section>
-
-<section id="g-curves-1" class="slide">
-  <h2>予測分布と代表値</h2>
-  <div class="body">
-    <m-curves xr="[0,4]" yr="[0,0.8]" xt="[0,1,2,3,4]" yt="[0,0.2,0.4,0.6,0.8]" yf="1" xl="需要 *y*" yl="密度" style="height:420px">
-      <script type="application/json" id="pred-data">[]</script>
-    </m-curves>
-  </div>
-  <div class="concl"><span>→ 右に裾が長いと，平均は中央値より右に来る</span></div>
-</section>
-
-<section id="g-curves-2" class="slide">
-  <h2>損失関数の形</h2>
-  <div class="body">
-    <m-curves xr="[-2,2]" yr="[0,4]" xt="[-2,-1,0,1,2]" yt="[0,1,2,3,4]" xl="誤差 *u* = *y* − *a*" yl="損失" style="height:420px">
-      <script type="application/json">[
-        {"label": "二乗 *u*^2", "f": "x*x", "labelAt": 1.6, "anchor": "left", "dx": -14},
-        {"label": "絶対値 |*u*|", "f": "abs(x)", "labelAt": -2, "anchor": "right", "ly": 1.1},
-        {"label": "分位点（*τ* = 0.9）", "f": "x >= 0 ? 0.9*x : -0.1*x", "labelAt": -2, "anchor": "right", "dy": -6}
-      ]</script>
-    </m-curves>
-  </div>
-  <div class="concl"><span>→ どの損失を使うかで，最適な決定 <i>a</i> が変わる</span></div>
-</section>
-
-<section id="g-curves-3" class="slide">
-  <h2>需要が増えると（架空の例）</h2>
-  <div class="body">
-    <m-curves xr="[0,10]" yr="[0,12]" xt="[0,2,4,6,8,10]" yt="[0,3,6,9,12]" xl="数量 *Q*" yl="価格 *P*" style="height:420px">
-      <script type="application/json">[
-        {"label": "需要 D", "f": "10 - x", "tone": "term", "step": 1, "labelAt": 1.5, "anchor": "below"},
-        {"label": "供給 S", "f": "2 + x", "tone": "accent2", "step": 1, "labelAt": 8.5, "anchor": "left"},
-        {"label": "増えた需要 D′", "f": "13 - x", "tone": "emph", "step": 2, "labelAt": 2, "anchor": "right"},
-        {"label": "均衡", "pts": [[4, 0], [4, 6]], "tone": "muted", "dash": true, "step": 3, "anchor": "left", "ly": 1},
-        {"label": "新しい均衡", "pts": [[5.5, 0], [5.5, 7.5]], "tone": "emph", "dash": true, "step": 3, "anchor": "right", "ly": 1}
-      ]</script>
-    </m-curves>
-  </div>
-  <div class="concl"><span>→ 需要が増えると，価格も取引量も上がる</span></div>
-</section>
-
-<section id="g-curves-4" class="slide">
-  <h2>両側検定の棄却域</h2>
-  <div class="body">
-    <m-curves xr="[-4,4]" yr="[0,0.45]" xt="[-1.96,0,1.96]" xf="2" yt="[0,0.2,0.4]" xl="検定統計量 *z*" style="height:400px">
-      <script type="application/json">[
-        {"label": "標準正規分布", "f": "N(x, 0, 1)", "labelAt": 1, "anchor": "right", "area": [[null, -1.96], [1.96, null]], "areaLabel": "2.5 %", "tone": "term"}
-      ]</script>
-    </m-curves>
-  </div>
-  <div class="concl"><span>→ 両端の 5 % に入れば帰無仮説を棄却する</span></div>
-</section>
-
-<section id="g-curves-5" class="slide">
-  <h2>月ごとの来店者数（人、架空）</h2>
-  <div class="body">
-    <m-curves xr="[0.5,6.5]" yr="[0,400]" xt='["4月","5月","6月","7月","8月","9月"]' yt="[0,100,200,300,400]" style="height:400px">
-      <script type="application/json">[
-        {"label": "昨年", "pts": [[1, 220], [2, 260], [3, 180], [4, 240], [5, 300], [6, 210]], "tone": "muted", "anchor": "right"},
-        {"label": "今年", "pts": [[1, 250], [2, 290], [3, 230], [4, 310], [5, 360], [6, 280]], "tone": "emph", "anchor": "right"}
-      ]</script>
-    </m-curves>
-  </div>
-  <div class="concl"><span>→ 横軸に月の名前を目盛りとして書ける（xt に字の並び）</span></div>
 </section>
 
 <section class="slide">
@@ -2768,69 +2831,6 @@ document.addEventListener("DOMContentLoaded", function(){
     </div>
   </div>
   <div class="concl"><span>→ 書かなければ最初の見せ方（fade）になる。数字は架空</span></div>
-</section>
-
-<section class="slide">
-  <h2>m-predict</h2>
-  <div class="body">
-    <p style="margin:0 0 10px;line-height:1.3"><span style="display:inline-block;font-size:27px;font-weight:700;color:var(--fg);border:2px dashed var(--accent2);border-radius:8px;padding:0 12px">操作できる / Interactive</span></p>
-    <p style="border:3px dashed var(--accent2);border-radius:10px;padding:10px 16px">予想してから答えを開く。選択肢ごとの人数を棒で見せ、答えのステップで正解に枠（学習者が押して操作できる）</p>
-    <ul>
-      <li>伝えたいこと：予想してから確かめる</li>
-      <li>見せ方：fade・draw</li>
-      <li>内容の分野：標準パーツ　サンプルのスライド：3 枚</li>
-    </ul>
-  </div>
-</section>
-
-<section id="g-predict-1" class="slide">
-  <h2>予想してみよう：落ちる速さ</h2>
-  <div class="body">
-    <p class="ia-badge" style="margin:0 0 10px;line-height:1.3"><span style="display:inline-block;font-size:27px;font-weight:700;color:var(--fg);border:2px dashed var(--accent2);border-radius:8px;padding:0 12px">操作できる</span></p>
-    <m-predict unit="人" style="height:390px">
-      <script type="application/json">{
-        "question": "同じ高さから落とすと、重い球と軽い球のどちらが先に着く？",
-        "choices": [{"label": "重い球"}, {"label": "軽い球"}, {"label": "同時"}],
-        "answer": 2,
-        "counts": [17, 2, 11],
-        "note": "空気の抵抗が小さければ、重さによらず同時に着く（ガリレオ）"
-      }</script>
-    </m-predict>
-  </div>
-  <div class="concl"><span>→ 落ちる速さは重さで決まらない（人数は架空の例）</span></div>
-</section>
-
-<section id="g-predict-2" class="slide">
-  <h2>予想してみよう：小数のかけ算</h2>
-  <div class="body">
-    <m-predict unit="人" poll="p1" style="height:440px">
-      <script type="application/json">{
-        "question": "0.1 × 0.1 はいくつ？",
-        "choices": [{"label": "0.1"}, {"label": "0.01"}, {"label": "0.2"}, {"label": "1"}],
-        "answer": 1,
-        "counts": [12, 10, 6, 2],
-        "note": "0.1 は 10 分の 1。10 分の 1 の 10 分の 1 は 100 分の 1"
-      }</script>
-    </m-predict>
-  </div>
-  <div class="concl"><span>→ 1 より小さい数をかけると、もとの数より小さくなる（人数は架空の例）</span></div>
-</section>
-
-<section id="g-predict-3" class="slide">
-  <h2>見せ方の種類（variant）</h2>
-  <div class="body">
-    <div style="display:grid;grid-template-columns:190px 1fr;gap:20px 16px;align-items:center;font-size:27px">
-      <div>フェード<br>（fade）</div>
-      <m-predict variant="fade" unit="人" style="height:210px">
-        <script type="application/json">{"choices": [{"label": "A"}, {"label": "B"}], "answer": 0, "counts": [8, 5]}</script>
-      </m-predict>
-      <div>線を引く<br>（draw）</div>
-      <m-predict variant="draw" unit="人" style="height:210px">
-        <script type="application/json">{"choices": [{"label": "A"}, {"label": "B"}], "answer": 0, "counts": [8, 5]}</script>
-      </m-predict>
-    </div>
-  </div>
-  <div class="concl"><span>→ 書かなければ最初の見せ方（fade）になる。人数は架空</span></div>
 </section>
 
 <section class="slide">

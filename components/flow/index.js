@@ -4,7 +4,7 @@
 //    "edges":[{"from":"a","to":"b","step":2,"label":"更新"}]}
 // （JSON の終わり）</m-flow>
 // 座標は要素の箱の px（x, y は箱の左上）。箱は段階 step で現れ、矢印は同じ段階の箱の後に引く
-// 2.2.0: with no x, y, w, h on any node, the part lays the boxes out itself (dir: right or down; see autoLayout)
+// 2.2.0: with no x, y, w, h on any node, the part lays the boxes out itself (orient: right or down; see autoLayout)
 // 箱の字は label（*斜体*、_下付き、^上付き、\n で改行）か tex（KaTeX）。tone は term / emph / muted
 // お金・モノの流れ（ビジネスモデルの図）：edge の kind（money / service / data）で色と線種を決め、amount（金額など）を太字で添える。
 // 同じ 2 つの箱の行きと帰りは shift（線に垂直にずらす px）で分ける。pulse の辺は、点の列が始点から終点へ流れる
@@ -38,13 +38,16 @@ function lineYs(lines, lh, fs){
 //   2. order within a rank: data order, then the barycentre (mean position of the connected nodes in the neighbouring rank;
 //      without any there, in any earlier or later rank), sweeping forward, backward, forward, backward; ties keep data order
 //   3. size: from the estimated text width (base's textWidth) and line count at `size`, PADX and PADY inside; a diamond twice
-//      the text's width and height. Boxes of a rank share their width (dir right) or height (dir down)
-//   4. position: ranks along dir, boxes across it, the free room shared out evenly (half a share at both ends), at least GAP
+//      the text's width and height. Boxes of a rank share their width (orient right) or height (orient down)
+//   4. position: ranks along orient, boxes across it, the free room shared out evenly (half a share at both ends), at least GAP
 //      between boxes, more between ranks whose edges carry text, and room outside for the loops. If it does not fit, the text
 //      is not shrunk: the boxes are placed at the least gaps from the start, and layout reports it
 // Back edges (closing a cycle, no loop) are drawn as loops on the side where neither end has a box beyond it in its rank
-// (bottom, else top, for dir right; right, else left, for dir down); loop: true in such a layout is placed the same way.
-// An edge whose reverse is also an edge (a two-way pair, as in a business diagram) stays straight, shifted as in manual layout.
+// (bottom, else top, for orient right; right, else left, for orient down); loop: true in such a layout is placed the same way.
+// An edge that skips ranks and whose straight line would cross a box runs outside the boxes in the same way (top, else
+// bottom; left, else right), with room kept for it; with neither side free it stays straight and layout reports it.
+// Loops on one side take lanes, further out for longer rank spans. An edge whose reverse is also an edge (a two-way pair,
+// as in a business diagram) stays straight, shifted as in manual layout.
 var PADX = 32, PADY = 24, MINW = 120, GAP = 40;
 function texGuess(s){ return String(s).replace(/\\(mid|cdot|times|le|ge|ne|to|in|sum|int|pm)\b/g, "+").replace(/\\[A-Za-z]+/g, "x").replace(/[{}\\_^]/g, ""); }
 function autoLayout(nodes, edges, W, H, P, down, el){
@@ -103,67 +106,126 @@ function autoLayout(nodes, edges, W, H, P, down, el){
     var dia = nd.shape === "diamond";
     return {w: Math.max(MINW, Math.ceil(dia ? 2 * (w + PADX) : w + 2 * PADX)), h: Math.ceil(dia ? 2 * (h + PADY) : h + 2 * PADY)};
   });
-  // main axis (along dir) and cross axis
+  // main axis (along orient) and cross axis
   var M = down ? "h" : "w", C = down ? "w" : "h";
   var rs = ranks.map(function(rk){ return Math.max.apply(null, rk.map(function(u){ return box[u][M]; })); });
   ranks.forEach(function(rk, r){ rk.forEach(function(u){ box[u][M] = rs[r]; }); });
-  // least gaps between ranks: 40 px, or room for the text of the edges whose middle falls in that gap
-  var gmin = rs.slice(1).map(function(){ return GAP; });
-  edges.forEach(function(e, ei){
-    if (!valid[ei] || e.loop || back[ei] || !(e.label || (e.amount !== undefined && e.amount !== ""))) return;
-    var a = rank[at[e.from]], b = rank[at[e.to]], g = Math.floor((Math.min(a, b) + Math.max(a, b) - 1) / 2);
-    if (g < 0 || g >= gmin.length) return;
-    var need = down ? Math.ceil(size * 1.1 + 2 * gp + 8)
-      : Math.ceil(Math.max(e.label ? tw(e.label, 24) : 0, e.amount !== undefined && e.amount !== "" ? tw(String(e.amount), 26) : 0) + 2 * gp + 16);
-    gmin[g] = Math.max(gmin[g], need);
-  });
-  // loops: back edges (and loop: true) on the side where neither end has a box beyond it in its rank
-  var loops = {}, room = {left: 0, right: 0, top: 0, bottom: 0};
+  // loops: back edges (and loop: true) on the side where neither end has a box beyond it in its rank (the far side first:
+  // bottom for right, right for down). Rank-skipping edges whose straight line would cross a box run outside the boxes the
+  // same way (the near side first: top for right, left for down), so that they seldom share a side with the back edges
   var twoWay = function(e){ return edges.some(function(f, fi){ return valid[fi] && !f.loop && f.from === e.to && f.to === e.from; }); };
+  var FAR = down ? "right" : "bottom", NEAR = down ? "left" : "top";
+  var free = function(u, v, sd){
+    var beyond = function(w){ return sd === FAR ? idx[w] < ranks[rank[w]].length - 1 : idx[w] > 0; };
+    return !beyond(u) && !beyond(v);
+  };
+  var side = {}, loops = {};
   edges.forEach(function(e, ei){
     if (!valid[ei] && !(e && e.loop && at[e.from] !== undefined && at[e.from] === at[e.to])) return;
     var sd = e.loop;
     if (!sd && back[ei] && !twoWay(e)) sd = true;
     if (!sd) return;
-    if (sd === true){
-      var u = at[e.from], v = at[e.to], end = function(w){ return idx[w] === ranks[rank[w]].length - 1; }, start = function(w){ return idx[w] === 0; };
-      sd = down ? (end(u) && end(v) || !(start(u) && start(v)) ? "right" : "left") : (end(u) && end(v) || !(start(u) && start(v)) ? "bottom" : "top");
-      loops[ei] = sd;
-    }
-    if (!/^(left|right|top|bottom)$/.test(sd)) return;
-    var t = e.label ? (sd === "left" || sd === "right" ? 12 + tw(e.label, 26) : 36) : 0;
-    room[sd] = Math.max(room[sd], 40 + Math.ceil(t));
+    if (sd === true){ var u = at[e.from], v = at[e.to]; sd = free(u, v, FAR) || !free(u, v, NEAR) ? FAR : NEAR; loops[ei] = sd; }
+    if (/^(left|right|top|bottom)$/.test(sd)) side[ei] = sd;
   });
-  // 4. positions: share the free room evenly (half a share at both ends); without room, the least gaps from the start
-  var spread = function(sizes, mins, from, len){
-    var need = sizes.reduce(function(a, b){ return a + b; }, 0) + mins.reduce(function(a, b){ return a + b; }, 0);
-    var x = len - need, s = x >= 0 ? x / sizes.length : 0, p = from + s / 2, o = [];
-    sizes.forEach(function(sz, k){ o.push(p); p += sz + (k < mins.length ? mins[k] + s : 0); });
-    return {at: o, need: need, fits: x >= 0};
-  };
-  var m0 = down ? room.top : room.left, m1 = down ? room.bottom : room.right, c0 = down ? room.left : room.top, c1 = down ? room.right : room.bottom;
-  var LM = (down ? H : W) - m0 - m1, LC = (down ? W : H) - c0 - c1;
-  var main = spread(rs, gmin, m0, LM), crowd = [];
-  var placed = nodes.map(function(nd){ return Object.assign({}, nd); });
-  ranks.forEach(function(rk, r){
-    var cr = spread(rk.map(function(u){ return box[u][C]; }), rk.slice(1).map(function(){ return GAP; }), c0, LC);
-    if (!cr.fits) crowd.push(rk.length);
-    rk.forEach(function(u, k){
-      var q = placed[u], b = box[u];
-      q.w = b.w; q.h = b.h;
-      q[down ? "y" : "x"] = +main.at[r].toFixed(2);
-      q[down ? "x" : "y"] = +cr.at[k].toFixed(2);
+  // lanes: the loops on one side, shortest rank span first, each outside the ones before it whose spans overlap
+  var lanes = {}, room = {}, gmin;
+  var place = function(){
+    // least gaps between ranks: 40 px, or room for the text of the straight edges whose middle falls in that gap
+    gmin = rs.slice(1).map(function(){ return GAP; });
+    edges.forEach(function(e, ei){
+      if (!valid[ei] || e.loop || back[ei] || side[ei] || !(e.label || (e.amount !== undefined && e.amount !== ""))) return;
+      var a = rank[at[e.from]], b = rank[at[e.to]], g = Math.floor((Math.min(a, b) + Math.max(a, b) - 1) / 2);
+      if (g < 0 || g >= gmin.length) return;
+      var need = down ? Math.ceil(size * 1.1 + 2 * gp + 8)
+        : Math.ceil(Math.max(e.label ? tw(e.label, 24) : 0, e.amount !== undefined && e.amount !== "" ? tw(String(e.amount), 26) : 0) + 2 * gp + 16);
+      gmin[g] = Math.max(gmin[g], need);
     });
-  });
-  var report = null, other = down ? "right" : "down";
-  if (!main.fits || crowd.length){
-    var what = [];
-    if (!main.fits) what.push(R + " ranks need " + Math.ceil(main.need) + " px " + (down ? "down" : "across") + " (" + Math.floor(LM) + " px free)");
-    if (crowd.length) what.push(Math.max.apply(null, crowd) + " boxes side by side in one rank need more than the " + Math.floor(LC) + " px " + (down ? "across" : "down"));
-    report = "[flow] the laid-out boxes do not fit (text is not shrunk): " + what.join("; ") + "; use dir=\"" + other + "\", fewer boxes or shorter labels, or a larger element";
+    lanes = {}; room = {left: 0, right: 0, top: 0, bottom: 0};
+    var span = function(ei){ var a = rank[at[edges[ei].from]], b = rank[at[edges[ei].to]]; return [Math.min(a, b), Math.max(a, b)]; };
+    var done = [];
+    Object.keys(side).map(Number).sort(function(a, b){ var p = span(a), q = span(b); return (p[1] - p[0]) - (q[1] - q[0]) || a - b; }).forEach(function(ei){
+      var sd = side[ei], s = span(ei), e = edges[ei], hz = sd === "left" || sd === "right";
+      var text = e.label ? Math.ceil(hz ? 12 + tw(e.label, 26) : 36) : 0, off = 0;
+      done.forEach(function(d){ if (d.sd === sd && d.s[0] <= s[1] && s[0] <= d.s[1]) off = Math.max(off, d.off + d.text + 18); });
+      lanes[ei] = off; done.push({sd: sd, s: s, off: off, text: text});
+      room[sd] = Math.max(room[sd], 40 + off + text);
+    });
+    // 4. positions: share the free room evenly (half a share at both ends); without room, the least gaps from the start
+    var spread = function(sizes, mins, from, len){
+      var need = sizes.reduce(function(a, b){ return a + b; }, 0) + mins.reduce(function(a, b){ return a + b; }, 0);
+      var x = len - need, s = x >= 0 ? x / sizes.length : 0, p = from + s / 2, o = [];
+      sizes.forEach(function(sz, k){ o.push(p); p += sz + (k < mins.length ? mins[k] + s : 0); });
+      return {at: o, need: need, fits: x >= 0};
+    };
+    var m0 = down ? room.top : room.left, m1 = down ? room.bottom : room.right, c0 = down ? room.left : room.top, c1 = down ? room.right : room.bottom;
+    var LM = (down ? H : W) - m0 - m1, LC = (down ? W : H) - c0 - c1;
+    var main = spread(rs, gmin, m0, LM), crowd = [];
+    var placed = nodes.map(function(nd){ return Object.assign({}, nd); });
+    ranks.forEach(function(rk, r){
+      var cr = spread(rk.map(function(u){ return box[u][C]; }), rk.slice(1).map(function(){ return GAP; }), c0, LC);
+      if (!cr.fits) crowd.push(rk.length);
+      rk.forEach(function(u, k){
+        var q = placed[u], b = box[u];
+        q.w = b.w; q.h = b.h;
+        q[down ? "y" : "x"] = +main.at[r].toFixed(2);
+        q[down ? "x" : "y"] = +cr.at[k].toFixed(2);
+      });
+    });
+    return {placed: placed, main: main, crowd: crowd, LM: LM, LC: LC};
+  };
+  // the straight line the part would draw between two laid-out boxes (as in mount: facing sides), and whether it passes
+  // within 4 px of another box
+  var crosses = function(placed, u, v){
+    var A = placed[u], B = placed[v], acx = A.x + A.w / 2, acy = A.y + A.h / 2, bcx = B.x + B.w / 2, bcy = B.y + B.h / 2;
+    var gx = Math.max(B.x - A.x - A.w, A.x - B.x - B.w), gy = Math.max(B.y - A.y - A.h, A.y - B.y - B.h), p0 = [acx, acy], p1 = [bcx, bcy];
+    if (gx > 0 || gy > 0){
+      var hz = gx >= gy, sg = hz ? Math.sign(bcx - acx) : Math.sign(bcy - acy), m = Math.min((hz ? A.h : A.w) / 4, 12);
+      p1 = hz ? [bcx - sg * (B.w / 2 + 6), bcy] : [bcx, bcy - sg * (B.h / 2 + 6)];
+      if (A.shape !== "diamond") p0 = hz ? [acx + sg * (A.w / 2 + 6), Math.max(A.y + m, Math.min(A.y + A.h - m, p1[1]))]
+                                         : [Math.max(A.x + m, Math.min(A.x + A.w - m, p1[0])), acy + sg * (A.h / 2 + 6)];
+    }
+    return placed.some(function(n, w){ return w !== u && w !== v && segBox([p0, p1], [n.x - 4, n.y - 4, n.x + n.w + 4, n.y + n.h + 4]); });
+  };
+  // route the rank-skipping edges that cross a box, lay out again with their room, until no new one crosses
+  var routed = {}, stuck = {}, lay = place();
+  for (var it = 0; it <= edges.length; it++){
+    var more = false;
+    edges.forEach(function(e, ei){
+      if (!valid[ei] || e.loop || back[ei] || side[ei] || stuck[ei] || twoWay(e)) return;
+      var u = at[e.from], v = at[e.to];
+      if (Math.abs(rank[v] - rank[u]) < 2 || !crosses(lay.placed, u, v)) return;
+      var sd = free(u, v, NEAR) ? NEAR : free(u, v, FAR) ? FAR : null;
+      if (!sd){ stuck[ei] = true; return; }
+      side[ei] = routed[ei] = sd; more = true;
+    });
+    if (!more) break;
+    lay = place();
   }
-  var edges2 = edges.map(function(e, ei){ return loops[ei] ? Object.assign({}, e, {loop: loops[ei]}) : e; });
-  return {nodes: placed, edges: edges2, report: report};
+  var name = function(ei){ return JSON.stringify(edges[ei].from) + " → " + JSON.stringify(edges[ei].to); };
+  var reports = [], other = down ? "right" : "down", R2 = Object.keys(routed).map(Number);
+  if (!lay.main.fits || lay.crowd.length){
+    var what = [];
+    if (!lay.main.fits) what.push(R + " ranks need " + Math.ceil(lay.main.need) + " px " + (down ? "down" : "across") + " (" + Math.floor(lay.LM) + " px free)");
+    if (lay.crowd.length) what.push(Math.max.apply(null, lay.crowd) + " boxes side by side in one rank need more than the " + Math.floor(lay.LC) + " px " + (down ? "across" : "down")
+      + (R2.length ? " left beside the edges run around the boxes (" + R2.map(name).join(", ") + ")" : ""));
+    reports.push("[flow] the laid-out boxes do not fit (text is not shrunk): " + what.join("; ") + "; use orient=\"" + other + "\", fewer boxes or shorter labels, or a larger element");
+  }
+  Object.keys(stuck).forEach(function(ei){
+    reports.push("[flow] the edge " + name(+ei) + " skips ranks and its straight line crosses a box, but both sides are taken by boxes of its end's ranks (no room to run around them); reorder the nodes or give it fewer ranks to skip");
+  });
+  var edges2 = edges.map(function(e, ei){ var sd = loops[ei] || routed[ei]; return sd ? Object.assign({}, e, {loop: sd}) : e; });
+  return {nodes: lay.placed, edges: edges2, lanes: lanes, reports: reports};
+}
+// whether the segment s = [[x, y], [x, y]] meets the box r = [x0, y0, x1, y1] (Liang–Barsky, as segHitsBox in mount)
+function segBox(s, r){
+  var x = s[0][0], y = s[0][1], dx = s[1][0] - x, dy = s[1][1] - y, t0 = 0, t1 = 1, p = [-dx, dx, -dy, dy], q = [x - r[0], r[2] - x, y - r[1], r[3] - y];
+  for (var i = 0; i < 4; i++){
+    if (p[i] === 0){ if (q[i] < 0) return false; continue; }
+    var u = q[i] / p[i];
+    if (p[i] < 0){ if (u > t1) return false; if (u > t0) t0 = u; } else { if (u < t0) return false; if (u < t1) t1 = u; }
+  }
+  return true;
 }
 return class extends base.MotionElement {
   static partName = "flow";   // the registry name (define meta name), for report prefixes
@@ -189,7 +251,7 @@ return class extends base.MotionElement {
     "pulse-dur": {type: "number", default: 1.2, doc: "pulse の点が始点から終点まで流れる秒数"},
     "pulse-n":   {type: "number", default: 3, doc: "pulse で流れる点の数"},
     "label-gap": {type: "number", default: 12, doc: "辺の名前・金額と箱との最小の間（px）。近ければ線から離す"},
-    dir: {type: "string", default: "right", doc: "座標がないときの向き：right か down"},
+    orient: {type: "string", default: "right", doc: "座標がないときの向き：right か down"},
   };
   get steps(){
     if (this.getAttribute("steps") !== null) return +this.getAttribute("steps");
@@ -205,12 +267,12 @@ return class extends base.MotionElement {
     var W = this.clientWidth, H = this.clientHeight;
     // 2.2.0: when no node has any of x, y, w, h, the part lays the nodes out (autoLayout). Nodes that all have the four draw as
     // in 2.1.2. Anything in between is reported (data), naming the nodes without all four, and nothing is drawn
-    var nds = data.nodes || [], nco = function(n){ return ["x", "y", "w", "h"].filter(function(k){ return n && n[k] !== undefined; }).length; };
+    var lanes = {}, nds = data.nodes || [], nco = function(n){ return ["x", "y", "w", "h"].filter(function(k){ return n && n[k] !== undefined; }).length; };
     if (nds.length && nds.every(function(n){ return !nco(n); })){
-      if (P.dir !== "right" && P.dir !== "down") ctx.report("data", "[flow] dir=" + JSON.stringify(P.dir) + " is not right or down (right is used)");
-      var lay = autoLayout(nds, data.edges || [], W, H, P, P.dir === "down", this);
-      if (lay.report) ctx.report("layout", lay.report);
-      data = {nodes: lay.nodes, edges: lay.edges};
+      if (P.orient !== "right" && P.orient !== "down") ctx.report("data", "[flow] orient=" + JSON.stringify(P.orient) + " is not right or down (right is used)");
+      var lay = autoLayout(nds, data.edges || [], W, H, P, P.orient === "down", this);
+      lay.reports.forEach(function(m){ ctx.report("layout", m); });
+      data = {nodes: lay.nodes, edges: lay.edges}; lanes = lay.lanes;
     } else if (nds.some(function(n){ return nco(n) < 4; })){
       ctx.report("data", "[flow] some nodes have x, y, w, h and some do not (nothing is drawn); without all four: " + nds.filter(function(n){ return nco(n) < 4; }).map(function(n){ return JSON.stringify(n && n.id); }).join(", ")
         + ". Leave x, y, w, h out of every node to let the part place them, or give all four to every node");
@@ -258,7 +320,8 @@ return class extends base.MotionElement {
       return [n.x + n.w / 2 + dx * s, n.y + n.h / 2 + dy * s];
     }
     // 戻る辺の道：箱の side の側の辺の中点から出て、両端の間にある箱（と両端）の外側 28 px を回り、戻り先の同じ側に入る
-    function loopRoute(lp, A, B){
+    // lane (automatic layout only, 2.2.0): px further out, so that loops on one side do not share a line
+    function loopRoute(lp, A, B, lane){
       var sd = lp === true ? (Math.abs(B.y + B.h / 2 - A.y - A.h / 2) >= Math.abs(B.x + B.w / 2 - A.x - A.w / 2) ? "right" : "bottom") : lp;
       if (!/^(left|right|top|bottom)$/.test(sd)){ ctx.report("data", "[flow] loop=" + JSON.stringify(lp) + " is not true, left, right, top or bottom (right is used)"); sd = "right"; }
       var hz = sd === "left" || sd === "right", sg = sd === "right" || sd === "bottom" ? 1 : -1;
@@ -274,7 +337,7 @@ return class extends base.MotionElement {
         var f = hz ? (sg > 0 ? n.x + n.w : n.x) : (sg > 0 ? n.y + n.h : n.y);
         ch = sg > 0 ? Math.max(ch, f + 6) : Math.min(ch, f - 6);
       });
-      ch += sg * 28;
+      ch += sg * (28 + (lane || 0));
       var pts = hz ? [q0, [ch, q0[1]], [ch, q1[1]], q1] : [q0, [q0[0], ch], [q1[0], ch], q1];
       return {pts: pts, poly: self.poly(pts), hz: hz, sg: sg, ch: ch};
     }
@@ -284,7 +347,7 @@ return class extends base.MotionElement {
     var autoShift = function(e){
       return !e.shift && !e.loop && es.some(function(f){ return f !== e && f.from === e.to && f.to === e.from && !f.shift && !f.loop; });
     };
-    var geo = es.map(function(e){
+    var geo = es.map(function(e, ei){
       var a = byId[e.from], b = byId[e.to];
       if (!a || !b) return null;
       var dx = b.cx - a.cx, dy = b.cy - a.cy, L = Math.hypot(dx, dy) || 1;
@@ -309,7 +372,7 @@ return class extends base.MotionElement {
           dx = p1[0] - p0[0]; dy = p1[1] - p0[1]; L = Math.hypot(dx, dy) || 1; face = hz ? 1 : 2;
         }
       }
-      if (lp) route = loopRoute(lp, a.n, b.n);
+      if (lp) route = loopRoute(lp, a.n, b.n, lanes[ei]);
       if (route){ p0 = route.pts[0]; p1 = route.pts[3]; }
       // shift：線に垂直に（進む向きの右へ）ずらす。行きと帰りの 2 本を並べるときに使う（向かい合う辺の間はもうずらしてある）
       if (sh && !face){ var sx = -dy / L * sh, sy = dx / L * sh; p0 = [p0[0] + sx, p0[1] + sy]; p1 = [p1[0] + sx, p1[1] + sy]; }
