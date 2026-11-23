@@ -1,5 +1,6 @@
 // node tools/test-flow.mjs: m-flow's edges start on their source box and end on the facing side of their target box,
-// within the box, for fan-out, fan-in, stacked, diagonal, two-way and diamond layouts (no browser)
+// within the box, for fan-out, fan-in, stacked, diagonal, two-way and diamond layouts (no browser); and the automatic layout
+// of 2.2.0 (nodes without x, y, w, h): ranks, order, dir, back edges, and its reports
 import fs from 'node:fs';
 import path from 'node:path';
 import vm from 'node:vm';
@@ -32,8 +33,9 @@ const context = vm.createContext({HTMLElement: Node, console,
 });
 for (const name of ['shape', 'base', 'markup-reader', 'flow']) vm.runInContext(fs.readFileSync(path.join(ROOT, 'components', name, 'index.js'), 'utf8'), context);
 const Part = registry.flow;
-const make = (data) => {
+const make = (data, attrs = {}) => {
   const el = new Part(); el.setAttribute('lang', 'ja');
+  for (const [k, v] of Object.entries(attrs)) el.setAttribute(k, v);
   const script = el.appendChild(new Node('script')); script.setAttribute('type', 'application/json'); script.textContent = JSON.stringify(data);
   const reports = []; el.mount({lang: 'ja', report: (code, msg) => reports.push({code, msg})});
   return {el, reports};
@@ -94,6 +96,106 @@ check('diamond source and target', {nodes: [{id: 'd', label: '?', x: 20, y: 100,
 {
   const {reports} = make({nodes: [{id: 'a', label: 'A', x: 0, y: 0, w: 200, h: 40}, {id: 'b', label: 'B', x: 600, y: 0, w: 200, h: 40}], edges: [{from: 'a', to: 'b', shift: 30}]});
   ok(reports.length === 1 && reports[0].code === 'layout' && /leaves the side/.test(reports[0].msg), 'an end pushed off its side by shift is reported (layout)');
+}
+// ---- automatic layout (2.2.0): no node has x, y, w, h
+{
+  const auto = (data, attrs) => {
+    const {el, reports} = make(data, attrs), at = Object.fromEntries(el.nodes.map((o) => [o.n.id, o.n]));
+    return {el, reports, at, laid: {nodes: el.nodes.map((o) => o.n), edges: data.edges}};
+  };
+  const cx = (n) => n.x + n.w / 2, cy = (n) => n.y + n.h / 2;
+  // no two boxes closer than 40 px (along the axis that separates them), all inside the element
+  const apart = (nodes, W = 1184, H = 330) => nodes.every((a, i) => a.x >= 0 && a.y >= 0 && a.x + a.w <= W + 1e-6 && a.y + a.h <= H + 1e-6
+    && nodes.slice(i + 1).every((b) => Math.max(b.x - a.x - a.w, a.x - b.x - b.w) >= 40 - 1e-6 || Math.max(b.y - a.y - a.h, a.y - b.y - b.h) >= 40 - 1e-6));
+  // the edge-end check of the hand-placed fixtures, on the laid-out boxes
+  const ends = (name, data, attrs) => {
+    const {el, reports, laid} = auto(data, attrs), by = Object.fromEntries(laid.nodes.map((n) => [n.id, n])), bad = [];
+    data.edges.forEach((e, i) => {
+      const E = el.edges[i], A = by[e.from], B = by[e.to];
+      if (E.poly) return;
+      const [x, y] = E.p1;
+      const onSide = Math.abs(x - (B.x - 6)) < 1e-6 || Math.abs(x - (B.x + B.w + 6)) < 1e-6 ? inside(y, B.y, B.y + B.h)
+        : Math.abs(y - (B.y - 6)) < 1e-6 || Math.abs(y - (B.y + B.h + 6)) < 1e-6 ? inside(x, B.x, B.x + B.w) : false;
+      if (!onSide) bad.push(`${e.from}→${e.to} ends off ${e.to}`);
+      if (!near(E.p0, A, 6 + 1e-6)) bad.push(`${e.from}→${e.to} starts off ${e.from}`);
+    });
+    ok(!bad.length && !reports.length && apart(laid.nodes), name + (bad.length ? ': ' + bad.join('; ') : '') + (reports.length ? ' reports: ' + reports.map((r) => r.msg).join('; ') : '')
+      + (apart(laid.nodes) ? '' : ': boxes closer than 40 px or outside the element'));
+    return auto(data, attrs);
+  };
+  const N = (...ids) => ids.map((id) => ({id, label: id.toUpperCase()}));
+  // the flow chart of the demo, written without coordinates
+  const sum = {nodes: [{id: 'init', label: '*S* ← 0, *i* ← 1'}, {id: 'dec', label: '*i* ≤ *n* ?', shape: 'diamond'}, {id: 'add', label: '*S* ← *S* + *i*'},
+    {id: 'inc', label: '*i* ← *i* + 1'}, {id: 'out', label: '*S* を出力'}],
+    edges: [{from: 'init', to: 'dec'}, {from: 'dec', to: 'add', label: 'はい'}, {from: 'add', to: 'inc'}, {from: 'inc', to: 'dec', label: 'くり返す'}, {from: 'dec', to: 'out', label: 'いいえ'}]};
+  {
+    const one = JSON.stringify(auto(sum).laid.nodes), two = JSON.stringify(auto(JSON.parse(JSON.stringify(sum))).laid.nodes);
+    ok(one === two, 'auto layout is deterministic (same data, same boxes)');
+    const {el} = make(sum); el.mount({lang: 'ja', report: () => {}});
+    ok(JSON.stringify(el.nodes.map((o) => o.n)) === one, 'auto layout: mounting again gives the same boxes (the data keeps no coordinates)');
+  }
+  {
+    const {at} = ends('auto: chain', {nodes: N('a', 'b', 'c'), edges: [{from: 'a', to: 'b'}, {from: 'b', to: 'c'}]});
+    ok(at.a.x < at.b.x && at.b.x < at.c.x && cy(at.a) === cy(at.b) && cy(at.b) === cy(at.c), 'auto chain: one rank each, left to right, on one line');
+    ok(Math.abs(at.a.x - (1184 - at.c.x - at.c.w)) < 1e-6 && Math.abs((at.b.x - at.a.x - at.a.w) - (at.c.x - at.b.x - at.b.w)) < 1e-6, 'auto chain: spread evenly, centred');
+  }
+  {
+    const {at} = ends('auto: fan-out', {nodes: N('a', 'b', 'c', 'd'), edges: [{from: 'a', to: 'b'}, {from: 'a', to: 'c'}, {from: 'a', to: 'd'}]});
+    ok(at.b.x === at.c.x && at.c.x === at.d.x && at.b.y < at.c.y && at.c.y < at.d.y && Math.abs(cy(at.a) - cy(at.c)) < 1e-6, 'auto fan-out: the targets share a rank in data order, the source level with the middle one');
+    ok(at.b.w === at.c.w && at.c.w === at.d.w, 'auto fan-out: boxes in a rank share their width');
+  }
+  {
+    const {at} = ends('auto: fan-in', {nodes: N('a', 'b', 'c'), edges: [{from: 'a', to: 'c'}, {from: 'b', to: 'c'}]});
+    ok(at.a.x === at.b.x && at.a.y < at.b.y && at.c.x > at.a.x && Math.abs(cy(at.c) - (cy(at.a) + cy(at.b)) / 2) < 1e-6, 'auto fan-in: the sources share rank 0, the target between them');
+  }
+  {
+    // barycentre: data order would cross the edges (b→e, c→d); the sweep swaps d and e
+    const {at} = auto({nodes: N('a', 'b', 'c', 'd', 'e'), edges: [{from: 'a', to: 'b'}, {from: 'a', to: 'c'}, {from: 'b', to: 'e'}, {from: 'c', to: 'd'}]});
+    ok(at.e.y < at.d.y, 'auto order: the barycentre sweep puts e (child of b) above d (child of c)');
+  }
+  {
+    const tw = (s) => registry.base.textWidth(s, 26, {font: 'BIZ UDPGothic', mark: true});
+    const {at, el} = ends('auto: diamond decision with yes and no', {nodes: [{id: 'q', label: '在庫はある？', shape: 'diamond'}, {id: 'y', label: '出荷する'}, {id: 'n', label: '取り寄せる'}],
+      edges: [{from: 'q', to: 'y', label: 'はい'}, {from: 'q', to: 'n', label: 'いいえ'}]});
+    ok(Math.abs(at.q.w - Math.ceil(2 * (tw('在庫はある？') + 32))) < 1e-6 && at.q.h > at.y.h, 'auto diamond: twice the text width (with padding), taller than a box');
+    ok(at.y.y < at.n.y && at.y.x === at.n.x && at.y.x - at.q.x - at.q.w >= tw('いいえ') * 24 / 26 + 24, 'auto diamond: yes above no in the next rank, with room for the edge text');
+    ok(el.edges.every((o) => o.lab), 'auto diamond: both edge texts drawn');
+  }
+  {
+    const {at, el, reports} = auto(sum);
+    ok(!reports.length && apart(auto(sum).laid.nodes), 'auto: the sum flow chart lays out with no report (no overlap, no free-place report)');
+    ok(at.init.x < at.dec.x && at.dec.x < at.add.x && at.add.x === at.out.x && at.add.x < at.inc.x, 'auto: ranks init | dec | add, out | inc');
+    ok(!!el.edges[3].poly && el.edges.filter((o) => o.poly).length === 1, 'auto: the back edge inc → dec (no loop) is drawn as a loop; the others straight');
+    const P = el.edges[3].poly.pts, bottom = Math.max(...Object.values(at).map((n) => n.y + n.h));
+    ok(P[1][1] > bottom && P[2][1] > bottom && P[1][1] <= 330, 'auto: the loop runs below every box, inside the element');
+  }
+  {
+    const {el} = auto({nodes: N('a', 'b'), edges: [{from: 'a', to: 'b', label: 'x'}, {from: 'b', to: 'a', amount: 5}]});
+    ok(el.edges.every((o) => !o.poly) && Math.abs(el.edges[0].p1[1] - el.edges[1].p0[1]) > 15, 'auto: a two-way pair stays two straight, shifted lines (not a loop)');
+  }
+  {
+    const {at, el} = ends('auto: dir="down"', {nodes: N('a', 'b', 'c', 'd'), edges: [{from: 'a', to: 'b'}, {from: 'b', to: 'c'}, {from: 'b', to: 'd'}, {from: 'c', to: 'a'}]}, {dir: 'down'});
+    ok(at.a.y < at.b.y && at.b.y < at.c.y && at.c.y === at.d.y && at.c.x < at.d.x && cx(at.a) === cx(at.b), 'auto down: ranks top to bottom, a rank left to right');
+    ok(at.c.h === at.d.h, 'auto down: boxes in a rank share their height');
+    ok(!!el.edges[3].poly && el.edges[3].poly.pts[1][0] < Math.min(at.a.x, at.b.x, at.c.x), 'auto down: the back edge c → a loops on the left (c has d to its right)');
+  }
+  {
+    const {el, reports} = auto({nodes: [{id: 'a', label: 'A', x: 0, y: 0, w: 200, h: 60}, {id: 'b', label: 'B'}, {id: 'c', label: 'C', x: 400}], edges: [{from: 'a', to: 'b'}]});
+    ok(reports.length === 1 && reports[0].code === 'data' && /"b", "c"/.test(reports[0].msg) && !el.nodes.length && !el.edges.length,
+      'mixed coordinates are reported (data), naming the nodes without all four, and nothing is drawn');
+  }
+  {
+    const many = {nodes: N(...'abcdefghij'.split('')), edges: 'abcdefghi'.split('').map((c, i) => ({from: c, to: 'abcdefghij'[i + 1]}))};
+    const {reports, laid} = auto(many);
+    ok(reports.length === 1 && reports[0].code === 'layout' && /10 ranks/.test(reports[0].msg) && /dir="down"/.test(reports[0].msg), 'auto: a chain too long for the width is reported (layout), suggesting dir="down"');
+    ok(laid.nodes.every((n, i) => !i || n.x - laid.nodes[i - 1].x - laid.nodes[i - 1].w >= 40 - 1e-6) && laid.nodes.every((n) => n.w >= 120), 'auto: too long, the boxes keep their size and 40 px gaps (text is not shrunk)');
+    const tall = auto({nodes: N('a', 'b', 'c', 'd', 'e'), edges: ['b', 'c', 'd', 'e'].map((t) => ({from: 'a', to: t}))}, {dir: 'right'});
+    ok(tall.reports.length === 1 && /4 boxes side by side/.test(tall.reports[0].msg), 'auto: a rank too tall for the height is reported (layout)');
+  }
+  {
+    const {reports} = auto({nodes: N('a', 'b'), edges: [{from: 'a', to: 'b'}]}, {dir: 'up'});
+    ok(reports.length === 1 && reports[0].code === 'data' && /dir="up"/.test(reports[0].msg), 'auto: an unknown dir is reported (right is used)');
+  }
   console.log(fails ? `\nFAIL: ${fails}` : '\ntest-flow: ok');
   process.exitCode = fails ? 1 : 0;
 }

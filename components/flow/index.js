@@ -4,6 +4,7 @@
 //    "edges":[{"from":"a","to":"b","step":2,"label":"更新"}]}
 // （JSON の終わり）</m-flow>
 // 座標は要素の箱の px（x, y は箱の左上）。箱は段階 step で現れ、矢印は同じ段階の箱の後に引く
+// 2.2.0: with no x, y, w, h on any node, the part lays the boxes out itself (dir: right or down; see autoLayout)
 // 箱の字は label（*斜体*、_下付き、^上付き、\n で改行）か tex（KaTeX）。tone は term / emph / muted
 // お金・モノの流れ（ビジネスモデルの図）：edge の kind（money / service / data）で色と線種を決め、amount（金額など）を太字で添える。
 // 同じ 2 つの箱の行きと帰りは shift（線に垂直にずらす px）で分ける。pulse の辺は、点の列が始点から終点へ流れる
@@ -14,7 +15,7 @@
 // 式（tex）は組み立てのときに KaTeX で描く（spec §6.2）：build.fields の nodes[].tex を作り手が描いて texHtml を足し、
 // この部品は markup-reader で決まった要素と属性だけを読んで置く（再生のときに KaTeX は動かない）。描いた結果がなければ tex を字のまま出して知らせる。
 // 知らないデータ（loop の値、ない箱を指す辺）は ctx.report で知らせる（1.x の console.warn / console.error の代わり）
-egatariParts.define({name: "flow", version: "2.1.2", requires: {base: "1.3.0", "markup-reader": "1.0.3"}, element: "m-flow"}, function(deps){
+egatariParts.define({name: "flow", version: "2.2.0", requires: {base: "1.3.0", "markup-reader": "1.0.3"}, element: "m-flow"}, function(deps){
 "use strict";
 var base = deps.base, MR = deps["markup-reader"];
 // 複数行の名前の行の位置（1 行目からの下がり、px）と、上下に足す余白。base 1.1.0 で mtext の下付き・上付きは 24px 以上になり、
@@ -30,6 +31,140 @@ function lineYs(lines, lh, fs){
   y.top = supX(lines[0], fs); y.bottom = subX(lines[lines.length - 1], fs);
   return y;
 }
+// ---------------------------------------------------------------- automatic layout (2.2.0, handoff #103)
+// When no node has any of x, y, w, h, the part places the nodes itself (deterministic, no randomness):
+//   1. ranks: longest path from the sources along the edges. Edges with loop, edges from a node to itself and edges that close
+//      a cycle (a depth-first search in data order: an edge to a node still on the search path) are left out of the ranking
+//   2. order within a rank: data order, then the barycentre (mean position of the connected nodes in the neighbouring rank;
+//      without any there, in any earlier or later rank), sweeping forward, backward, forward, backward; ties keep data order
+//   3. size: from the estimated text width (base's textWidth) and line count at `size`, PADX and PADY inside; a diamond twice
+//      the text's width and height. Boxes of a rank share their width (dir right) or height (dir down)
+//   4. position: ranks along dir, boxes across it, the free room shared out evenly (half a share at both ends), at least GAP
+//      between boxes, more between ranks whose edges carry text, and room outside for the loops. If it does not fit, the text
+//      is not shrunk: the boxes are placed at the least gaps from the start, and layout reports it
+// Back edges (closing a cycle, no loop) are drawn as loops on the side where neither end has a box beyond it in its rank
+// (bottom, else top, for dir right; right, else left, for dir down); loop: true in such a layout is placed the same way.
+// An edge whose reverse is also an edge (a two-way pair, as in a business diagram) stays straight, shifted as in manual layout.
+var PADX = 32, PADY = 24, MINW = 120, GAP = 40;
+function texGuess(s){ return String(s).replace(/\\(mid|cdot|times|le|ge|ne|to|in|sum|int|pm)\b/g, "+").replace(/\\[A-Za-z]+/g, "x").replace(/[{}\\_^]/g, ""); }
+function autoLayout(nodes, edges, W, H, P, down, el){
+  var size = P.size, gp = P["label-gap"], n = nodes.length, at = {}, i, j, r;
+  nodes.forEach(function(nd, k){ at[nd.id] = k; });
+  // forward and back edges, in data order
+  var out = nodes.map(function(){ return []; }), state = nodes.map(function(){ return 0; }), back = {}, post = [];
+  var valid = edges.map(function(e){ return e && at[e.from] !== undefined && at[e.to] !== undefined && at[e.from] !== at[e.to]; });
+  edges.forEach(function(e, ei){ if (valid[ei] && !e.loop) out[at[e.from]].push(ei); });
+  function dfs(u){
+    state[u] = 1;
+    out[u].forEach(function(ei){ var v = at[edges[ei].to]; if (state[v] === 1) back[ei] = true; else if (!state[v]) dfs(v); });
+    state[u] = 2; post.push(u);
+  }
+  for (i = 0; i < n; i++) if (!state[i]) dfs(i);
+  var fwd = [];
+  edges.forEach(function(e, ei){ if (valid[ei] && !e.loop && !back[ei]) fwd.push([at[e.from], at[e.to], ei]); });
+  // 1. ranks: longest path, in topological order (reverse post-order)
+  var rank = nodes.map(function(){ return 0; });
+  post.slice().reverse().forEach(function(u){ fwd.forEach(function(f){ if (f[0] === u) rank[f[1]] = Math.max(rank[f[1]], rank[u] + 1); }); });
+  var R = Math.max.apply(null, rank) + 1, ranks = [];
+  for (r = 0; r < R; r++) ranks.push([]);
+  for (i = 0; i < n; i++) ranks[rank[i]].push(i);
+  // 2. order within a rank: barycentre sweeps
+  var pos = [];
+  var setPos = function(rk){ rk.forEach(function(u, k){ pos[u] = (k + 0.5) / rk.length; }); };
+  ranks.forEach(setPos);
+  var sweep = function(r, fromLower){
+    var bary = {};
+    ranks[r].forEach(function(u){
+      var near = [], far = [];
+      fwd.forEach(function(f){
+        var o = fromLower ? (f[1] === u ? f[0] : -1) : (f[0] === u ? f[1] : -1);
+        if (o < 0) return;
+        (rank[o] === r + (fromLower ? -1 : 1) ? near : far).push(pos[o]);
+      });
+      var L = near.length ? near : far;
+      bary[u] = L.length ? L.reduce(function(a, b){ return a + b; }, 0) / L.length : pos[u];
+    });
+    ranks[r].sort(function(a, b){ return bary[a] - bary[b] || a - b; });
+    setPos(ranks[r]);
+  };
+  for (var pass = 0; pass < 4; pass++){
+    if (pass % 2 === 0) for (r = 1; r < R; r++) sweep(r, true);
+    else for (r = R - 2; r >= 0; r--) sweep(r, false);
+  }
+  var idx = [];
+  ranks.forEach(function(rk){ rk.forEach(function(u, k){ idx[u] = k; }); });
+  // 3. sizes
+  var tw = function(s, fs){ return base.textWidth(s, fs, {font: el, mark: true}); };
+  var box = nodes.map(function(nd){
+    var lines = nd.tex !== undefined ? [texGuess(nd.tex)] : String(nd.label || "").split("\n");
+    var w = Math.max.apply(null, lines.map(function(s){ return tw(s, size); }));
+    var ys = lineYs(lines, size * 1.25, size), h = ys[ys.length - 1] + ys.top + ys.bottom + size * 1.25;
+    if (nd.tex !== undefined && /\\(frac|dfrac|sum|int|binom)/.test(nd.tex)) h += size * 0.8;
+    var dia = nd.shape === "diamond";
+    return {w: Math.max(MINW, Math.ceil(dia ? 2 * (w + PADX) : w + 2 * PADX)), h: Math.ceil(dia ? 2 * (h + PADY) : h + 2 * PADY)};
+  });
+  // main axis (along dir) and cross axis
+  var M = down ? "h" : "w", C = down ? "w" : "h";
+  var rs = ranks.map(function(rk){ return Math.max.apply(null, rk.map(function(u){ return box[u][M]; })); });
+  ranks.forEach(function(rk, r){ rk.forEach(function(u){ box[u][M] = rs[r]; }); });
+  // least gaps between ranks: 40 px, or room for the text of the edges whose middle falls in that gap
+  var gmin = rs.slice(1).map(function(){ return GAP; });
+  edges.forEach(function(e, ei){
+    if (!valid[ei] || e.loop || back[ei] || !(e.label || (e.amount !== undefined && e.amount !== ""))) return;
+    var a = rank[at[e.from]], b = rank[at[e.to]], g = Math.floor((Math.min(a, b) + Math.max(a, b) - 1) / 2);
+    if (g < 0 || g >= gmin.length) return;
+    var need = down ? Math.ceil(size * 1.1 + 2 * gp + 8)
+      : Math.ceil(Math.max(e.label ? tw(e.label, 24) : 0, e.amount !== undefined && e.amount !== "" ? tw(String(e.amount), 26) : 0) + 2 * gp + 16);
+    gmin[g] = Math.max(gmin[g], need);
+  });
+  // loops: back edges (and loop: true) on the side where neither end has a box beyond it in its rank
+  var loops = {}, room = {left: 0, right: 0, top: 0, bottom: 0};
+  var twoWay = function(e){ return edges.some(function(f, fi){ return valid[fi] && !f.loop && f.from === e.to && f.to === e.from; }); };
+  edges.forEach(function(e, ei){
+    if (!valid[ei] && !(e && e.loop && at[e.from] !== undefined && at[e.from] === at[e.to])) return;
+    var sd = e.loop;
+    if (!sd && back[ei] && !twoWay(e)) sd = true;
+    if (!sd) return;
+    if (sd === true){
+      var u = at[e.from], v = at[e.to], end = function(w){ return idx[w] === ranks[rank[w]].length - 1; }, start = function(w){ return idx[w] === 0; };
+      sd = down ? (end(u) && end(v) || !(start(u) && start(v)) ? "right" : "left") : (end(u) && end(v) || !(start(u) && start(v)) ? "bottom" : "top");
+      loops[ei] = sd;
+    }
+    if (!/^(left|right|top|bottom)$/.test(sd)) return;
+    var t = e.label ? (sd === "left" || sd === "right" ? 12 + tw(e.label, 26) : 36) : 0;
+    room[sd] = Math.max(room[sd], 40 + Math.ceil(t));
+  });
+  // 4. positions: share the free room evenly (half a share at both ends); without room, the least gaps from the start
+  var spread = function(sizes, mins, from, len){
+    var need = sizes.reduce(function(a, b){ return a + b; }, 0) + mins.reduce(function(a, b){ return a + b; }, 0);
+    var x = len - need, s = x >= 0 ? x / sizes.length : 0, p = from + s / 2, o = [];
+    sizes.forEach(function(sz, k){ o.push(p); p += sz + (k < mins.length ? mins[k] + s : 0); });
+    return {at: o, need: need, fits: x >= 0};
+  };
+  var m0 = down ? room.top : room.left, m1 = down ? room.bottom : room.right, c0 = down ? room.left : room.top, c1 = down ? room.right : room.bottom;
+  var LM = (down ? H : W) - m0 - m1, LC = (down ? W : H) - c0 - c1;
+  var main = spread(rs, gmin, m0, LM), crowd = [];
+  var placed = nodes.map(function(nd){ return Object.assign({}, nd); });
+  ranks.forEach(function(rk, r){
+    var cr = spread(rk.map(function(u){ return box[u][C]; }), rk.slice(1).map(function(){ return GAP; }), c0, LC);
+    if (!cr.fits) crowd.push(rk.length);
+    rk.forEach(function(u, k){
+      var q = placed[u], b = box[u];
+      q.w = b.w; q.h = b.h;
+      q[down ? "y" : "x"] = +main.at[r].toFixed(2);
+      q[down ? "x" : "y"] = +cr.at[k].toFixed(2);
+    });
+  });
+  var report = null, other = down ? "right" : "down";
+  if (!main.fits || crowd.length){
+    var what = [];
+    if (!main.fits) what.push(R + " ranks need " + Math.ceil(main.need) + " px " + (down ? "down" : "across") + " (" + Math.floor(LM) + " px free)");
+    if (crowd.length) what.push(Math.max.apply(null, crowd) + " boxes side by side in one rank need more than the " + Math.floor(LC) + " px " + (down ? "across" : "down"));
+    report = "[flow] the laid-out boxes do not fit (text is not shrunk): " + what.join("; ") + "; use dir=\"" + other + "\", fewer boxes or shorter labels, or a larger element";
+  }
+  var edges2 = edges.map(function(e, ei){ return loops[ei] ? Object.assign({}, e, {loop: loops[ei]}) : e; });
+  return {nodes: placed, edges: edges2, report: report};
+}
 return class extends base.MotionElement {
   static partName = "flow";   // the registry name (define meta name), for report prefixes
   // 組み立てのときに描く欄（spec §6.2）。式の意味は字（tex）でも持つので、KaTeX の出力は HTML だけ
@@ -37,7 +172,7 @@ return class extends base.MotionElement {
   // データの形（kit/shape.js）。座標は要素の箱の px（x, y は箱の左上）
   static shape = {
     schema: {type: "object", additionalProperties: false, required: ["nodes"], properties: {
-      nodes: {type: "array", minItems: 1, items: {type: "object", required: ["id", "x", "y", "w", "h"], properties: {
+      nodes: {type: "array", minItems: 1, items: {type: "object", required: ["id"], properties: {
         id: {type: ["string", "integer"]}, label: {type: "string"}, tex: {type: "string"}, texHtml: {type: "string"}, x: {type: "number"}, y: {type: "number"}, w: {type: "number"}, h: {type: "number"},
         step: {type: "integer"}, tone: {type: "string"}, at: {type: "number"}, shape: {type: "string"}}}},
       edges: {type: "array", items: {type: "object", required: ["from", "to"], properties: {
@@ -45,7 +180,7 @@ return class extends base.MotionElement {
         kind: {enum: ["money", "service", "data"]}, amount: {type: ["string", "number"]}, shift: {type: "number"}, pulse: {type: ["boolean", "array"]}, pulseAt: {type: "number"}, offset: {type: "number"}, at: {type: "number"},
         loop: {type: ["boolean", "string"]}}}},
       renderers: {type: "object"}}},
-    example: {nodes: [{id: "a", label: "観測", x: 20, y: 40, w: 200, h: 70, step: 1}, {id: "b", label: "更新", x: 320, y: 40, w: 200, h: 70, step: 2}], edges: [{from: "a", to: "b", step: 2}]},
+    example: {nodes: [{id: "a", label: "観測", step: 1}, {id: "b", label: "更新", step: 2}], edges: [{from: "a", to: "b", step: 2}]},
   };
   static props = {
     fade: {type: "number", default: 0.45, doc: "箱が現れる秒数"},
@@ -54,6 +189,7 @@ return class extends base.MotionElement {
     "pulse-dur": {type: "number", default: 1.2, doc: "pulse の点が始点から終点まで流れる秒数"},
     "pulse-n":   {type: "number", default: 3, doc: "pulse で流れる点の数"},
     "label-gap": {type: "number", default: 12, doc: "辺の名前・金額と箱との最小の間（px）。近ければ線から離す"},
+    dir: {type: "string", default: "right", doc: "座標がないときの向き：right か down"},
   };
   get steps(){
     if (this.getAttribute("steps") !== null) return +this.getAttribute("steps");
@@ -67,6 +203,19 @@ return class extends base.MotionElement {
     var P = this.props, D = base, self = this, data = this.data || {nodes: [], edges: []}, sk = MR.sink(this, ctx);
     this.style.display = "block"; this.style.position = "relative";
     var W = this.clientWidth, H = this.clientHeight;
+    // 2.2.0: when no node has any of x, y, w, h, the part lays the nodes out (autoLayout). Nodes that all have the four draw as
+    // in 2.1.2. Anything in between is reported (data), naming the nodes without all four, and nothing is drawn
+    var nds = data.nodes || [], nco = function(n){ return ["x", "y", "w", "h"].filter(function(k){ return n && n[k] !== undefined; }).length; };
+    if (nds.length && nds.every(function(n){ return !nco(n); })){
+      if (P.dir !== "right" && P.dir !== "down") ctx.report("data", "[flow] dir=" + JSON.stringify(P.dir) + " is not right or down (right is used)");
+      var lay = autoLayout(nds, data.edges || [], W, H, P, P.dir === "down", this);
+      if (lay.report) ctx.report("layout", lay.report);
+      data = {nodes: lay.nodes, edges: lay.edges};
+    } else if (nds.some(function(n){ return nco(n) < 4; })){
+      ctx.report("data", "[flow] some nodes have x, y, w, h and some do not (nothing is drawn); without all four: " + nds.filter(function(n){ return nco(n) < 4; }).map(function(n){ return JSON.stringify(n && n.id); }).join(", ")
+        + ". Leave x, y, w, h out of every node to let the part place them, or give all four to every node");
+      data = {nodes: [], edges: []};
+    }
     var svg = D.el("svg", {viewBox: "0 0 " + W + " " + H, width: W, height: H, style: "display:block;overflow:visible"}, this);
     var gE = D.el("g", {}, svg), gN = D.el("g", {}, svg);
     var tone = {term: ["var(--term)", "var(--term-tint)", "var(--fg)"], emph: ["var(--emph)", "var(--emph-tint)", "var(--emph)"],

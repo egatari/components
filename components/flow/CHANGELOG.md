@@ -2,6 +2,12 @@
 
 The part's own versions (Egatari spec §6.1). Releases of the whole library are in the repository's CHANGELOG.md.
 
+## 2.2.0 (components 2.23.0)
+
+- Lays the boxes out itself when no node has any of `x`, `y`, `w`, `h` (handoff #103): AI authors that chose coordinates by hand let boxes overlap and drift. Ranks follow the longest path along the edges, in the direction of the new attribute `dir` (`right`, the default, or `down`); the order within a rank comes from barycentre sweeps (ties keep data order); box sizes come from the estimated text width and line count at `size` (a diamond twice the width), shared across a rank; the free room is shared out evenly, with at least 40 px between boxes and room for edge text. If the boxes do not fit, the text is not shrunk and `layout` is reported, suggesting the other `dir` or fewer boxes. An edge that goes back in rank without `loop` is drawn as a loop (below for `right`, right for `down`, or the other side when a rank neighbour is in the way); a two-way pair stays two straight lines. Everything is deterministic.
+- `x`, `y`, `w`, `h` are no longer required by the data shape; the part checks "all or none": nodes that all have the four draw exactly as in 2.1.2, and a mix is reported (`data`), naming the nodes without all four, and nothing is drawn.
+- The data-shape example and the READMEs' first example have no coordinates; coordinates are described as the way for fine placement.
+
 ## 2.1.2 (components 2.22.0)
 
 - Reports `layout` when two boxes overlap (handoff #92): cheaper models that place boxes by hand let a long box run into its neighbour, and the quality check now shows which ones. The drawing does not change. The README says to keep boxes about 40 px apart.

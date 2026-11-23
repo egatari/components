@@ -8,10 +8,13 @@ props:
   pulse-dur: pulse run (s)
   pulse-n: pulse dots
   label-gap: min label–box gap px
-example: {"nodes": [{"id": "a", "label": "Observe", "x": 20, "y": 40, "w": 200, "h": 70, "step": 1}, {"id": "b", "label": "Update", "x": 320, "y": 40, "w": 200, "h": 70, "step": 2}], "edges": [{"from": "a", "to": "b", "step": 2}]}
+  dir: right or down, without coordinates
+example: {"nodes": [{"id": "a", "label": "Observe", "step": 1}, {"id": "b", "label": "Update", "step": 2}], "edges": [{"from": "a", "to": "b", "step": 2}]}
 ---
 
-Child JSON: `{"nodes": [...], "edges": [...]}`; px; `x`, `y` = box top-left, `w`, `h` = size; boxes 40+ px apart.
+Child JSON: `{"nodes": [...], "edges": [...]}`. Without coordinates the part places the boxes (direction: `dir`); back edges loop outside.
+
+For fine placement give every node `x` `y` `w` `h` (px; `x`, `y` = top-left); boxes 40+ px apart.
 
 - node: `id`, `label` (`\n`) or `tex` (KaTeX), `step`, `tone` (`term`/`emph`/`muted`), `at` (start s), `shape:"diamond"` (decision, ~2× text width)
 - edge: `from` `to` `step` (default: later end), `label`, `tone`, `dash`, `offset` (label gap), `at`, `loop` (back edge: `"left"` `"right"` `"top"` `"bottom"` or `true` = auto)
@@ -26,6 +29,7 @@ Child JSON: `{"nodes": [...], "edges": [...]}`; px; `x`, `y` = box top-left, `w`
 - Business: `amount` opposite `label`; `shift` text on its side; pulse dots 0.22 s apart, `pulseAt` default 0.2, gone at the end
 - Label/`amount` nearer than `label-gap` to a box or off the figure: moved off the line 6 px at a time (to 60), then other side
 - `cues(k)`: pulse start times (null without pulses), for `{cue}`
+- No coordinates (2.2.0): ranks by longest path along `dir` (`loop` edges and cycle-closing edges skipped), barycentre order (ties: data order); box size from estimated text width and lines, diamond 2× width, a rank shares width (`down`: height); spread evenly, 40+ px apart plus edge-text room; too big: `layout` report, text not shrunk. Back edges without `loop` loop below (`down`: right), or the other side if a rank neighbour is there; two-way pairs stay straight. Mixed coordinates: `data` report, nothing drawn
 <!-- llm: end -->
 
 <!-- llm: business -->

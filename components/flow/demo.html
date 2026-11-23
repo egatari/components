@@ -84,6 +84,29 @@
   <div class="concl"><span>→ <i>i</i> が <i>n</i> をこえるまで足してから，<i>S</i> を出力する</span></div>
 </section>
 
+<section class="slide">
+  <h2>目標に届くまで試作をくり返す（架空）</h2>
+  <div class="body">
+    <m-flow aria-label="試作して試してもらい、目標に届けば発売する流れ図" style="height:420px">
+      <script type="application/json">{
+        "nodes": [
+          {"id": "make", "label": "試作する",       "step": 1},
+          {"id": "try",  "label": "試してもらう",   "step": 1},
+          {"id": "goal", "label": "目標に\n届いた？", "step": 2, "shape": "diamond"},
+          {"id": "sell", "label": "発売する",       "step": 3, "tone": "emph"}
+        ],
+        "edges": [
+          {"from": "make", "to": "try"},
+          {"from": "try",  "to": "goal"},
+          {"from": "goal", "to": "make", "label": "いいえ", "step": 2},
+          {"from": "goal", "to": "sell", "label": "はい", "step": 3, "tone": "emph"}
+        ]
+      }</script>
+    </m-flow>
+  </div>
+  <div class="concl"><span>→ 目標に届かなければ試作に戻り，届いたら発売する</span></div>
+</section>
+
 </div>
 </body>
 </html>
