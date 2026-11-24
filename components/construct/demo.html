@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="ja" data-theme="default">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>m-construct の見本</title>
+<!-- 組み方：node kit/build.mjs components/construct/demo.html -o components/construct/out/demo.html -->
+</head>
+<body>
+<div id="stage">
+
+<section class="slide">
+  <h2>線分の垂直二等分線の作図</h2>
+  <div class="body">
+    <m-construct style="height:440px">
+      <script type="application/json">{"points": {"A": [-3, 0], "B": [3, 0]}, "ops": [
+        {"seg": ["A", "B"]},
+        {"arc": {"c": "A", "r": 4}, "note": "A を中心に、AB の半分より大きい半径で弧をかく"},
+        {"arc": {"c": "B", "r": 4}, "note": "同じ半径で、B を中心に弧をかく"},
+        {"meet": ["arc1", "arc2"], "name": ["P", "Q"], "note": "2 つの弧の交点を P、Q とする"},
+        {"line": ["P", "Q"], "tone": "emph", "note": "直線 PQ をひく"},
+        {"meet": ["line1", "seg1"], "name": "M"},
+        {"equal": [["A", "M"], ["M", "B"]], "ticks": 2},
+        {"angle": ["B", "M", "P"], "show": "mark", "note": "PQ は AB の中点 M を通り、AB に垂直"}
+      ]}</script>
+    </m-construct>
+  </div>
+  <div class="concl"><span>→ A と B から同じ距離にある点を 2 つ見つけて結ぶ</span></div>
+</section>
+
+<section class="slide">
+  <h2>角の二等分線の作図</h2>
+  <div class="body">
+    <m-construct style="height:440px">
+      <script type="application/json">{"points": {"O": [0, 0], "X": [7, 0], "Y": [4.2, 5.6]}, "ops": [
+        {"ray": ["O", "X"]},
+        {"ray": ["O", "Y"]},
+        {"arc": {"c": "O", "r": 3}, "note": "O を中心に弧をかき、2 辺との交点を A、B とする"},
+        {"meet": ["ray1", "arc1"], "name": "A"},
+        {"meet": ["ray2", "arc1"], "name": "B"},
+        {"arc": {"c": "A", "r": 2.6}, "note": "A、B を中心に、同じ半径で弧をかく"},
+        {"arc": {"c": "B", "r": 2.6}},
+        {"meet": ["arc2", "arc3"], "name": "C", "note": "2 つの弧の交点を C とする"},
+        {"ray": ["O", "C"], "tone": "emph", "note": "半直線 OC が ∠XOY の二等分線"},
+        {"equal": [["A", "O", "C"], ["C", "O", "B"]]}
+      ]}</script>
+    </m-construct>
+  </div>
+  <div class="concl"><span>→ OA = OB、AC = BC なので、2 つの三角形は合同になる</span></div>
+</section>
+
+<section class="slide">
+  <h2>円周角は、点 P がどこにあっても同じ</h2>
+  <div class="body">
+    <m-construct mode="invariant" style="height:440px">
+      <script type="application/json">{"points": {"O": [0, 0]}, "ops": [
+        {"circle": {"c": "O", "r": 4}},
+        {"point": "A", "on": "circle1", "deg": 210},
+        {"point": "B", "on": "circle1", "deg": 330},
+        {"point": "P", "on": "circle1", "deg": 90},
+        {"seg": ["A", "B"], "tone": "muted"},
+        {"seg": ["P", "A"]},
+        {"seg": ["P", "B"]},
+        {"angle": ["A", "P", "B"]}
+      ], "move": "P", "visit": [140, 40, 160], "measure": {"angle": ["A", "P", "B"]}}</script>
+    </m-construct>
+  </div>
+  <div class="concl"><span>→ 同じ弧 AB に対する円周角は等しい</span></div>
+</section>
+
+<section class="slide">
+  <h2>三角形の内角の和</h2>
+  <div class="body">
+    <m-construct mode="invariant" style="height:440px">
+      <script type="application/json">{"points": {"A": [-4, 0], "B": [4, 0], "C": [-1, 4]}, "ops": [
+        {"polygon": ["A", "B", "C"]},
+        {"seg": ["A", "B"]}, {"seg": ["B", "C"]}, {"seg": ["C", "A"]},
+        {"angle": ["B", "A", "C"]}, {"angle": ["C", "B", "A"]}, {"angle": ["A", "C", "B"]}
+      ], "move": "C", "visit": [[2.5, 3], [0.5, 6], [-0.5, 3.5]], "measure": {"sum": [["B", "A", "C"], ["C", "B", "A"], ["A", "C", "B"]]}}</script>
+    </m-construct>
+  </div>
+  <div class="concl"><span>→ 形が変わっても、3 つの角の和は 180°</span></div>
+</section>
+
+</div>
+</body>
+</html>

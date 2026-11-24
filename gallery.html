@@ -61,11 +61,96 @@ document.addEventListener("DOMContentLoaded", function(){
 <div id="stage">
 
 <section class="slide">
-  <h2>パーツの一覧（58 個、246 枚）</h2>
+  <h2>パーツの一覧（59 個、251 枚）</h2>
   <div class="body">
     <p>パーツごとに、説明の 1 枚とサンプルのスライドが続く。→ でステップを進める。</p>
-    <p>m-callout（変わった）　m-flow（変わった）　m-balance　m-bars　m-boxplot　m-cards　m-checklist　m-ci　m-classify2d　m-code　m-codetree　m-collect　m-compare　m-contour　m-contrast　m-ctable　m-curves　m-cycle　m-diverge　m-fishbone　m-folds　m-gendai　m-heatmap　m-hissan　m-hist　m-kakijun　m-kanbun　m-keyboard　m-kobun　m-kpi　m-map-japan　m-map-world　m-mapping　m-market　m-matrix　m-menu　m-network　m-nnet　m-numberline　m-orbit　m-particles　m-pie　m-predict　m-quad　m-sampling　m-scatter　m-score　m-scroll　m-seq　m-sweep　m-syntax　m-tape　m-timeline　m-timer　m-trace　m-tree　m-vector　m-venn</p>
+    <p>m-construct（新しい）　m-callout（変わった）　m-flow（変わった）　m-balance　m-bars　m-boxplot　m-cards　m-checklist　m-ci　m-classify2d　m-code　m-codetree　m-collect　m-compare　m-contour　m-contrast　m-ctable　m-curves　m-cycle　m-diverge　m-fishbone　m-folds　m-gendai　m-heatmap　m-hissan　m-hist　m-kakijun　m-kanbun　m-keyboard　m-kobun　m-kpi　m-map-japan　m-map-world　m-mapping　m-market　m-matrix　m-menu　m-network　m-nnet　m-numberline　m-orbit　m-particles　m-pie　m-predict　m-quad　m-sampling　m-scatter　m-score　m-scroll　m-seq　m-sweep　m-syntax　m-tape　m-timeline　m-timer　m-trace　m-tree　m-vector　m-venn</p>
   </div>
+</section>
+
+<section class="slide">
+  <h2>m-construct（新しい、v2.22.0）</h2>
+  <div class="body">
+    <p>コンパスと定規の作図を 1 手ずつ描き、交点はパーツが計算する。点を動かしても変わらない量（円周角、三角形の内角の和）も見せる</p>
+    <ul>
+      <li>伝えたいこと：手順・工程・仕組みをモデルで見る</li>
+      <li>見せ方：1 種類</li>
+      <li>内容の分野：数理・統計　サンプルのスライド：4 枚</li>
+    </ul>
+  </div>
+</section>
+
+<section id="g-construct-1" class="slide">
+  <h2>線分の垂直二等分線の作図</h2>
+  <div class="body">
+    <m-construct style="height:440px">
+      <script type="application/json">{"points": {"A": [-3, 0], "B": [3, 0]}, "ops": [
+        {"seg": ["A", "B"]},
+        {"arc": {"c": "A", "r": 4}, "note": "A を中心に、AB の半分より大きい半径で弧をかく"},
+        {"arc": {"c": "B", "r": 4}, "note": "同じ半径で、B を中心に弧をかく"},
+        {"meet": ["arc1", "arc2"], "name": ["P", "Q"], "note": "2 つの弧の交点を P、Q とする"},
+        {"line": ["P", "Q"], "tone": "emph", "note": "直線 PQ をひく"},
+        {"meet": ["line1", "seg1"], "name": "M"},
+        {"equal": [["A", "M"], ["M", "B"]], "ticks": 2},
+        {"angle": ["B", "M", "P"], "show": "mark", "note": "PQ は AB の中点 M を通り、AB に垂直"}
+      ]}</script>
+    </m-construct>
+  </div>
+  <div class="concl"><span>→ A と B から同じ距離にある点を 2 つ見つけて結ぶ</span></div>
+</section>
+
+<section id="g-construct-2" class="slide">
+  <h2>角の二等分線の作図</h2>
+  <div class="body">
+    <m-construct style="height:440px">
+      <script type="application/json">{"points": {"O": [0, 0], "X": [7, 0], "Y": [4.2, 5.6]}, "ops": [
+        {"ray": ["O", "X"]},
+        {"ray": ["O", "Y"]},
+        {"arc": {"c": "O", "r": 3}, "note": "O を中心に弧をかき、2 辺との交点を A、B とする"},
+        {"meet": ["ray1", "arc1"], "name": "A"},
+        {"meet": ["ray2", "arc1"], "name": "B"},
+        {"arc": {"c": "A", "r": 2.6}, "note": "A、B を中心に、同じ半径で弧をかく"},
+        {"arc": {"c": "B", "r": 2.6}},
+        {"meet": ["arc2", "arc3"], "name": "C", "note": "2 つの弧の交点を C とする"},
+        {"ray": ["O", "C"], "tone": "emph", "note": "半直線 OC が ∠XOY の二等分線"},
+        {"equal": [["A", "O", "C"], ["C", "O", "B"]]}
+      ]}</script>
+    </m-construct>
+  </div>
+  <div class="concl"><span>→ OA = OB、AC = BC なので、2 つの三角形は合同になる</span></div>
+</section>
+
+<section id="g-construct-3" class="slide">
+  <h2>円周角は、点 P がどこにあっても同じ</h2>
+  <div class="body">
+    <m-construct mode="invariant" style="height:440px">
+      <script type="application/json">{"points": {"O": [0, 0]}, "ops": [
+        {"circle": {"c": "O", "r": 4}},
+        {"point": "A", "on": "circle1", "deg": 210},
+        {"point": "B", "on": "circle1", "deg": 330},
+        {"point": "P", "on": "circle1", "deg": 90},
+        {"seg": ["A", "B"], "tone": "muted"},
+        {"seg": ["P", "A"]},
+        {"seg": ["P", "B"]},
+        {"angle": ["A", "P", "B"]}
+      ], "move": "P", "visit": [140, 40, 160], "measure": {"angle": ["A", "P", "B"]}}</script>
+    </m-construct>
+  </div>
+  <div class="concl"><span>→ 同じ弧 AB に対する円周角は等しい</span></div>
+</section>
+
+<section id="g-construct-4" class="slide">
+  <h2>三角形の内角の和</h2>
+  <div class="body">
+    <m-construct mode="invariant" style="height:440px">
+      <script type="application/json">{"points": {"A": [-4, 0], "B": [4, 0], "C": [-1, 4]}, "ops": [
+        {"polygon": ["A", "B", "C"]},
+        {"seg": ["A", "B"]}, {"seg": ["B", "C"]}, {"seg": ["C", "A"]},
+        {"angle": ["B", "A", "C"]}, {"angle": ["C", "B", "A"]}, {"angle": ["A", "C", "B"]}
+      ], "move": "C", "visit": [[2.5, 3], [0.5, 6], [-0.5, 3.5]], "measure": {"sum": [["B", "A", "C"], ["C", "B", "A"], ["A", "C", "B"]]}}</script>
+    </m-construct>
+  </div>
+  <div class="concl"><span>→ 形が変わっても、3 つの角の和は 180°</span></div>
 </section>
 
 <section class="slide">

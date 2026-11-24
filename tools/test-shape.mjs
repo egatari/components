@@ -45,6 +45,7 @@ const WRONG = {
   'm-sampling': '<script type="application/json">{"values": [1, "2"], "n": 2}</script>',
   'm-mapping': '<script type="application/json">{"outcomes": [{"label": "表", "x": "1"}, {"label": "裏", "x": 0}]}</script>',
   'm-orbit': '<script type="application/json">{"positions": "8"}</script>',
+  'm-construct': '<script type="application/json">{"points": {"A": [0, 0]}, "ops": [{"segment": ["A", "B"]}]}</script>',
   'm-map-japan': '<script type="application/json">{"regions": [{"code": "13", "tone": "emph"}]}</script>',
   'm-map-world': '<script type="application/json">{"regions": [{"code": "JPN", "tone": "emph"}]}</script>',
   'm-timer': '<script type="application/json">{"phases": [{"title": "付箋に書く", "sec": "3分"}]}</script>',

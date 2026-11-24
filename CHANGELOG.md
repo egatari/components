@@ -4,6 +4,10 @@ Versions follow [README.md § Releases and versions](README.md#releases-and-vers
 
 ## Unreleased
 
+### Added
+
+- **`m-construct` 2.0.0** (not released until GA): constructions and figures for school mathematics. `mode="steps"` draws a compass-and-straightedge construction one op per step (points, segments, lines, rays, circles, compass arcs, angle marks and values, equal ticks, polygons), with the meeting points computed by the part (`meet`) and a numbered notes panel; `mode="invariant"` moves one point (on a circle by degrees, or by coordinates) while a measure is computed as it moves (an inscribed angle, the sum of a triangle's angles) and lists the value at each position. Reports arcs that do not meet with the radius they need, unknown names with the near one, and overlapping text. Specialized (mathematics); purposes process, model. `tools/test-construct.mjs` tests it.
+
 ### Later (candidates, not in this release)
 
 - `m-compare` `by="row"`; an "outside every set" region for `m-venn`; planned-vs-actual bars for `m-timeline`
