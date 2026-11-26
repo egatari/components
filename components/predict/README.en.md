@@ -11,6 +11,7 @@ example: {"question": "Which falls first?", "choices": [{"label": "Heavy"}, {"la
 
 Child JSON: `{"question", "choices": [{"label", "tone"?}], "answer": 0-based, "counts"?: [sample], "note"?: answer line, "labels"?: {"correct"?: mark (default "✓ Correct")}}`
 
+- Only for a real vote or guess; not asides or answer-only
 - 2–6 choices. Video/print/start show `counts` (or 0)
 - Script uses `counts`; vote at `{note:hands up}` (parens get read)
 - `poll="p1"`: live poll totals

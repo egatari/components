@@ -4,6 +4,10 @@ Versions follow [README.md § Releases and versions](README.md#releases-and-vers
 
 ## Unreleased
 
+### Changed
+
+- `m-predict` README: use it only when the audience really raises hands or makes a guess, not for a question asked in passing or a slide that only shows the answer (handoff #109, for Studio v0.6.21). A student's seminar slides used it with no show of hands; Studio now writes its full guide only for lessons and training (handoff #108).
+
 ### Later (candidates, not in this release)
 
 - `m-compare` `by="row"`; an "outside every set" region for `m-venn`; planned-vs-actual bars for `m-timeline`
